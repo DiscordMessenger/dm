@@ -1,0 +1,602 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Resource Files\Resources">
+      <UniqueIdentifier>{ec175753-84d9-4781-bd7a-c2a1bcb56cab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Discord">
+      <UniqueIdentifier>{19720693-d546-4980-b291-a943e984edae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Windows">
+      <UniqueIdentifier>{bd66bef8-5b49-4965-8fa0-fde4f0ba3e48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Discord">
+      <UniqueIdentifier>{5b8e314d-7910-4ba4-8722-58ff5e3ff6dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windows">
+      <UniqueIdentifier>{6c57dfcb-2940-4d09-96c1-6ed567c4bf04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Deps">
+      <UniqueIdentifier>{b6c48d61-732c-4089-b993-c5458ed5bc3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Deps\Asio">
+      <UniqueIdentifier>{8e44d3dc-2050-4d65-846a-3c9b3b0b880a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Deps\Mwas">
+      <UniqueIdentifier>{09b7fb78-aa62-416c-ab35-65573760614c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Deps\Md5">
+      <UniqueIdentifier>{8baa4f98-a70c-4417-afbc-c45523d2fb51}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\res\bmp_banner.bmp">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\bmp_category.bmp">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\bmp_channel.bmp">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\bmp_default.bmp">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\bmp_dm.bmp">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\bmp_empty.bmp">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\bmp_groupdm.bmp">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\bmp_profile.bmp">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\bmp_status_dnd.bmp">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\bmp_status_idle.bmp">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\bmp_status_mask_circ.bmp">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\bmp_status_mask_moon.bmp">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\bmp_status_offline.bmp">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\bmp_status_online.bmp">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\bmp_voice.bmp">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_add.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_bot.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_bot_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_cancel.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_category.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_category_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_channel.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_channel_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_channel_mentioned.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_channel_mentioned_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_channel_unread.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_channel_unread_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_discord.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_discord_small.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_dm.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_dm_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_download.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_file.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_file_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_groupdm.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_groupdm_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_jump.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_jump_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_marker_1.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_marker_2.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_marker_3.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_marker_4.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_marker_5.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_marker_6.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_marker_7.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_marker_8.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_marker_9.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_marker_9plus.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_members.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_members_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_offline_small.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_online_small.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_pin.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_pin_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_profile_border.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_profile_border_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_profile_border_sel.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_profile_border_sel_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_reply_line.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_reply_line_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_send.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_send_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_status_dnd.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_status_idle.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_status_offline.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_status_online.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_typing_f1.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_typing_f1_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_typing_f2.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_typing_f2_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_typing_f3.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_typing_f3_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_upload.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_user_join.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_user_leave.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_voice.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_voice_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_warning.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\modern_app.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\target.bmp">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\res\cur_zoomin.cur">
+      <Filter>Resource Files\Resources</Filter>
+    </None>
+    <None Include="..\res\cur_zoomout.cur">
+      <Filter>Resource Files\Resources</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="..\res\app.manifest">
+      <Filter>Resource Files\Resources</Filter>
+    </Manifest>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\resource.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\resource.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\QRCodeDialog.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\RoleList.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\TextManager.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\TextToSpeech.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\UploadDialog.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\WindowMessages.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\WinUtils.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\AboutDialog.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\AvatarCache.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\ChannelView.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\Config.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\Frontend_Win32.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\GuildHeader.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\GuildLister.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\ImageLoader.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\ImageViewer.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\LoadingMessage.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\LogonDialog.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\Main.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\Measurements.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\MemberList.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\MessageEditor.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\MessageList.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\MissingDefinitions.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\NetworkerThread.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\OptionsDialog.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\PinnedMessageViewer.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\ProfilePopout.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\ProfileView.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\SettingsManager.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\Snowflake.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\TextInterface.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\Util.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\WebsocketClient.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\ActiveStatus.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\Attachment.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\Channel.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\ContentType.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\DiscordAPI.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\DiscordInstance.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\DiscordRequest.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\FormattedText.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\Frontend.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\Guild.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\GuildMember.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\HTTPClient.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\LocalSettings.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\Message.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\MessageCache.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\MessageType.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\Permissions.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\Profile.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\ProfileCache.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\RectAndPoint.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\ScrollDir.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\windows\ProfileView.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\QRCodeDialog.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\RoleList.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\TextInterface_Win32.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\TextManager.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\TextToSpeech.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\UploadDialog.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\WinUtils.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\AboutDialog.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\AvatarCache.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\ChannelView.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\Frontend_Win32.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\GuildHeader.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\GuildLister.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\ImageLoader.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\ImageViewer.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\LoadingMessage.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\LogonDialog.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\Main.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\MemberList.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\MessageEditor.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\MessageList.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\NetworkerThread.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\OptionsDialog.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\PinnedMessageViewer.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\ProfilePopout.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\Message.cpp">
+      <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\MessageCache.cpp">
+      <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\ProfileCache.cpp">
+      <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\SettingsManager.cpp">
+      <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\Util.cpp">
+      <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\WebsocketClient.cpp">
+      <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\Channel.cpp">
+      <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\DiscordInstance.cpp">
+      <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\FormattedText.cpp">
+      <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\Guild.cpp">
+      <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\HTTPClient.cpp">
+      <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\LocalSettings.cpp">
+      <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\asio\src\asio.cpp">
+      <Filter>Source Files\Deps\Asio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\asio\src\asio_ssl.cpp">
+      <Filter>Source Files\Deps\Asio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\mwas\src\reimpl.cpp">
+      <Filter>Source Files\Deps\Mwas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\md5\MD5.cpp">
+      <Filter>Source Files\Deps\Md5</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

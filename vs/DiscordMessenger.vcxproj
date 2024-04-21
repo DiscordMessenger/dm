@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{3249eac3-35d9-4646-ace2-e2bd3b7f4812}</ProjectGuid>
+    <RootNamespace>DiscordMessenger</RootNamespace>
+    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)..\bin\$(Configuration)\</OutDir>
+    <IntDir>obj\$(Configuration)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)..\bin\$(Configuration)\</OutDir>
+    <IntDir>obj\$(Configuration)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Image Include="..\res\bmp_banner.bmp" />
+    <Image Include="..\res\bmp_category.bmp" />
+    <Image Include="..\res\bmp_channel.bmp" />
+    <Image Include="..\res\bmp_default.bmp" />
+    <Image Include="..\res\bmp_dm.bmp" />
+    <Image Include="..\res\bmp_empty.bmp" />
+    <Image Include="..\res\bmp_groupdm.bmp" />
+    <Image Include="..\res\bmp_profile.bmp" />
+    <Image Include="..\res\bmp_status_dnd.bmp" />
+    <Image Include="..\res\bmp_status_idle.bmp" />
+    <Image Include="..\res\bmp_status_mask_circ.bmp" />
+    <Image Include="..\res\bmp_status_mask_moon.bmp" />
+    <Image Include="..\res\bmp_status_offline.bmp" />
+    <Image Include="..\res\bmp_status_online.bmp" />
+    <Image Include="..\res\bmp_voice.bmp" />
+    <Image Include="..\res\icon_add.ico" />
+    <Image Include="..\res\icon_bot.ico" />
+    <Image Include="..\res\icon_bot_2k.ico" />
+    <Image Include="..\res\icon_cancel.ico" />
+    <Image Include="..\res\icon_category.ico" />
+    <Image Include="..\res\icon_category_2k.ico" />
+    <Image Include="..\res\icon_channel.ico" />
+    <Image Include="..\res\icon_channel_2k.ico" />
+    <Image Include="..\res\icon_channel_mentioned.ico" />
+    <Image Include="..\res\icon_channel_mentioned_2k.ico" />
+    <Image Include="..\res\icon_channel_unread.ico" />
+    <Image Include="..\res\icon_channel_unread_2k.ico" />
+    <Image Include="..\res\icon_discord.ico" />
+    <Image Include="..\res\icon_discord_small.ico" />
+    <Image Include="..\res\icon_dm.ico" />
+    <Image Include="..\res\icon_dm_2k.ico" />
+    <Image Include="..\res\icon_download.ico" />
+    <Image Include="..\res\icon_file.ico" />
+    <Image Include="..\res\icon_file_2k.ico" />
+    <Image Include="..\res\icon_groupdm.ico" />
+    <Image Include="..\res\icon_groupdm_2k.ico" />
+    <Image Include="..\res\icon_jump.ico" />
+    <Image Include="..\res\icon_jump_2k.ico" />
+    <Image Include="..\res\icon_marker_1.ico" />
+    <Image Include="..\res\icon_marker_2.ico" />
+    <Image Include="..\res\icon_marker_3.ico" />
+    <Image Include="..\res\icon_marker_4.ico" />
+    <Image Include="..\res\icon_marker_5.ico" />
+    <Image Include="..\res\icon_marker_6.ico" />
+    <Image Include="..\res\icon_marker_7.ico" />
+    <Image Include="..\res\icon_marker_8.ico" />
+    <Image Include="..\res\icon_marker_9.ico" />
+    <Image Include="..\res\icon_marker_9plus.ico" />
+    <Image Include="..\res\icon_members.ico" />
+    <Image Include="..\res\icon_members_2k.ico" />
+    <Image Include="..\res\icon_offline_small.ico" />
+    <Image Include="..\res\icon_online_small.ico" />
+    <Image Include="..\res\icon_pin.ico" />
+    <Image Include="..\res\icon_pin_2k.ico" />
+    <Image Include="..\res\icon_profile_border.ico" />
+    <Image Include="..\res\icon_profile_border_2k.ico" />
+    <Image Include="..\res\icon_profile_border_sel.ico" />
+    <Image Include="..\res\icon_profile_border_sel_2k.ico" />
+    <Image Include="..\res\icon_reply_line.ico" />
+    <Image Include="..\res\icon_reply_line_2k.ico" />
+    <Image Include="..\res\icon_send.ico" />
+    <Image Include="..\res\icon_send_2k.ico" />
+    <Image Include="..\res\icon_status_dnd.ico" />
+    <Image Include="..\res\icon_status_idle.ico" />
+    <Image Include="..\res\icon_status_offline.ico" />
+    <Image Include="..\res\icon_status_online.ico" />
+    <Image Include="..\res\icon_typing_f1.ico" />
+    <Image Include="..\res\icon_typing_f1_2k.ico" />
+    <Image Include="..\res\icon_typing_f2.ico" />
+    <Image Include="..\res\icon_typing_f2_2k.ico" />
+    <Image Include="..\res\icon_typing_f3.ico" />
+    <Image Include="..\res\icon_typing_f3_2k.ico" />
+    <Image Include="..\res\icon_upload.ico" />
+    <Image Include="..\res\icon_user_join.ico" />
+    <Image Include="..\res\icon_user_leave.ico" />
+    <Image Include="..\res\icon_voice.ico" />
+    <Image Include="..\res\icon_voice_2k.ico" />
+    <Image Include="..\res\icon_warning.ico" />
+    <Image Include="..\res\modern_app.ico" />
+    <Image Include="..\res\target.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\res\cur_zoomin.cur" />
+    <None Include="..\res\cur_zoomout.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="..\res\app.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\discord\ActiveStatus.hpp" />
+    <ClInclude Include="..\src\discord\Attachment.hpp" />
+    <ClInclude Include="..\src\discord\Channel.hpp" />
+    <ClInclude Include="..\src\discord\ContentType.hpp" />
+    <ClInclude Include="..\src\discord\DiscordAPI.hpp" />
+    <ClInclude Include="..\src\discord\DiscordInstance.hpp" />
+    <ClInclude Include="..\src\discord\DiscordRequest.hpp" />
+    <ClInclude Include="..\src\discord\FormattedText.hpp" />
+    <ClInclude Include="..\src\discord\Frontend.hpp" />
+    <ClInclude Include="..\src\discord\Guild.hpp" />
+    <ClInclude Include="..\src\discord\GuildMember.hpp" />
+    <ClInclude Include="..\src\discord\HTTPClient.hpp" />
+    <ClInclude Include="..\src\discord\LocalSettings.hpp" />
+    <ClInclude Include="..\src\discord\Message.hpp" />
+    <ClInclude Include="..\src\discord\MessageCache.hpp" />
+    <ClInclude Include="..\src\discord\MessageType.hpp" />
+    <ClInclude Include="..\src\discord\Permissions.hpp" />
+    <ClInclude Include="..\src\discord\Profile.hpp" />
+    <ClInclude Include="..\src\discord\ProfileCache.hpp" />
+    <ClInclude Include="..\src\discord\RectAndPoint.hpp" />
+    <ClInclude Include="..\src\discord\ScrollDir.hpp" />
+    <ClInclude Include="..\src\discord\SettingsManager.hpp" />
+    <ClInclude Include="..\src\discord\Snowflake.hpp" />
+    <ClInclude Include="..\src\discord\TextInterface.hpp" />
+    <ClInclude Include="..\src\discord\Util.hpp" />
+    <ClInclude Include="..\src\discord\WebsocketClient.hpp" />
+    <ClInclude Include="..\src\resource.h" />
+    <ClInclude Include="..\src\windows\AboutDialog.hpp" />
+    <ClInclude Include="..\src\windows\AvatarCache.hpp" />
+    <ClInclude Include="..\src\windows\ChannelView.hpp" />
+    <ClInclude Include="..\src\windows\Config.hpp" />
+    <ClInclude Include="..\src\windows\Frontend_Win32.hpp" />
+    <ClInclude Include="..\src\windows\GuildHeader.hpp" />
+    <ClInclude Include="..\src\windows\GuildLister.hpp" />
+    <ClInclude Include="..\src\windows\ImageLoader.hpp" />
+    <ClInclude Include="..\src\windows\ImageViewer.hpp" />
+    <ClInclude Include="..\src\windows\LoadingMessage.hpp" />
+    <ClInclude Include="..\src\windows\LogonDialog.hpp" />
+    <ClInclude Include="..\src\windows\Main.hpp" />
+    <ClInclude Include="..\src\windows\Measurements.hpp" />
+    <ClInclude Include="..\src\windows\MemberList.hpp" />
+    <ClInclude Include="..\src\windows\MessageEditor.hpp" />
+    <ClInclude Include="..\src\windows\MessageList.hpp" />
+    <ClInclude Include="..\src\windows\MissingDefinitions.hpp" />
+    <ClInclude Include="..\src\windows\NetworkerThread.hpp" />
+    <ClInclude Include="..\src\windows\OptionsDialog.hpp" />
+    <ClInclude Include="..\src\windows\PinnedMessageViewer.hpp" />
+    <ClInclude Include="..\src\windows\ProfilePopout.hpp" />
+    <ClInclude Include="..\src\windows\ProfileView.hpp" />
+    <ClInclude Include="..\src\windows\QRCodeDialog.hpp" />
+    <ClInclude Include="..\src\windows\RoleList.hpp" />
+    <ClInclude Include="..\src\windows\TextManager.hpp" />
+    <ClInclude Include="..\src\windows\TextToSpeech.hpp" />
+    <ClInclude Include="..\src\windows\UploadDialog.hpp" />
+    <ClInclude Include="..\src\windows\WindowMessages.hpp" />
+    <ClInclude Include="..\src\windows\WinUtils.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\deps\asio\src\asio.cpp" />
+    <ClCompile Include="..\deps\asio\src\asio_ssl.cpp" />
+    <ClCompile Include="..\deps\md5\MD5.cpp" />
+    <ClCompile Include="..\deps\mwas\src\reimpl.cpp" />
+    <ClCompile Include="..\src\discord\Channel.cpp" />
+    <ClCompile Include="..\src\discord\DiscordInstance.cpp" />
+    <ClCompile Include="..\src\discord\FormattedText.cpp" />
+    <ClCompile Include="..\src\discord\Guild.cpp" />
+    <ClCompile Include="..\src\discord\HTTPClient.cpp" />
+    <ClCompile Include="..\src\discord\LocalSettings.cpp" />
+    <ClCompile Include="..\src\discord\Message.cpp" />
+    <ClCompile Include="..\src\discord\MessageCache.cpp" />
+    <ClCompile Include="..\src\discord\ProfileCache.cpp" />
+    <ClCompile Include="..\src\discord\SettingsManager.cpp" />
+    <ClCompile Include="..\src\discord\Util.cpp" />
+    <ClCompile Include="..\src\discord\WebsocketClient.cpp" />
+    <ClCompile Include="..\src\windows\AboutDialog.cpp" />
+    <ClCompile Include="..\src\windows\AvatarCache.cpp" />
+    <ClCompile Include="..\src\windows\ChannelView.cpp" />
+    <ClCompile Include="..\src\windows\Frontend_Win32.cpp" />
+    <ClCompile Include="..\src\windows\GuildHeader.cpp" />
+    <ClCompile Include="..\src\windows\GuildLister.cpp" />
+    <ClCompile Include="..\src\windows\ImageLoader.cpp" />
+    <ClCompile Include="..\src\windows\ImageViewer.cpp" />
+    <ClCompile Include="..\src\windows\LoadingMessage.cpp" />
+    <ClCompile Include="..\src\windows\LogonDialog.cpp" />
+    <ClCompile Include="..\src\windows\Main.cpp" />
+    <ClCompile Include="..\src\windows\MemberList.cpp" />
+    <ClCompile Include="..\src\windows\MessageEditor.cpp" />
+    <ClCompile Include="..\src\windows\MessageList.cpp" />
+    <ClCompile Include="..\src\windows\NetworkerThread.cpp" />
+    <ClCompile Include="..\src\windows\OptionsDialog.cpp" />
+    <ClCompile Include="..\src\windows\PinnedMessageViewer.cpp" />
+    <ClCompile Include="..\src\windows\ProfilePopout.cpp" />
+    <ClCompile Include="..\src\windows\ProfileView.cpp" />
+    <ClCompile Include="..\src\windows\QRCodeDialog.cpp" />
+    <ClCompile Include="..\src\windows\RoleList.cpp" />
+    <ClCompile Include="..\src\windows\TextInterface_Win32.cpp" />
+    <ClCompile Include="..\src\windows\TextManager.cpp" />
+    <ClCompile Include="..\src\windows\TextToSpeech.cpp" />
+    <ClCompile Include="..\src\windows\UploadDialog.cpp" />
+    <ClCompile Include="..\src\windows\WinUtils.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

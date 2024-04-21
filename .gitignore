@@ -1,9 +1,12 @@
-bin/*
-build/*
-keep/*
+bin/
+obj/
+build/
+keep/
 *.exe
 *.obj
 *.o
 *.d
 *.tlog
 *.aps
+.vs/
+*.user

@@ -28,10 +28,10 @@ WR = windres
 INC_DIRS = \
 	$(USER_INC_DIRS) \
 	-I$(OPENSSL_INC_DIR)         \
-	-Ideps/iprogsthreads/include \
-	-Ideps/mwas/include          \
 	-Ideps                       \
-	-Ideps/asio
+	-Ideps/asio                  \
+	-Ideps/iprogsthreads/include \
+	-Ideps/mwas/include
 
 LIB_DIRS = \
 	-L$(OPENSSL_LIB_DIR)
