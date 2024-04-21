@@ -1,0 +1,903 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "main.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINMENU MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Preferences",                ID_FILE_PREFERENCES
+        MENUITEM SEPARATOR
+        MENUITEM "&STOP All Speech",            ID_FILE_STOPALLSPEECH
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_FILE_EXIT
+    END
+    POPUP "&Server"
+    BEGIN
+        MENUITEM "Server &Boost",               ID_SERVER_SERVERBOOST
+        MENUITEM SEPARATOR
+        MENUITEM "&Invite People",              ID_SERVER_INVITEPEOPLE
+        MENUITEM "&Server Settings",            ID_SERVER_SERVERSETTINGS
+        MENUITEM SEPARATOR
+        MENUITEM "&Notification Settings",      ID_SERVER_NOTIFICATIONSETTINGS
+        MENUITEM "&Privacy Settings",           ID_SERVER_PRIVACYSETTINGS
+        MENUITEM SEPARATOR
+        MENUITEM "Edit Server Pro&file",        ID_SERVER_EDITSERVERPROFILE
+        MENUITEM "Hide &Muted Channels",        ID_SERVER_HIDEMUTEDCHANNELS, CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "&Leave Server",               ID_SERVER_LEAVESERVER
+    END
+    POPUP "&Actions"
+    BEGIN
+        MENUITEM "&Search...",                  ID_ACTIONS_SEARCH
+        MENUITEM SEPARATOR
+        MENUITEM "New Group &DM...",            ID_ACTIONS_NEWGROUPDM
+        MENUITEM "Add &Friend...",              ID_ACTIONS_ADDFRIEND
+    END
+    POPUP "A&ccount"
+    BEGIN
+        POPUP "S&tatus"
+        BEGIN
+            MENUITEM "Online",                      ID_ONLINESTATUSPLACEHOLDER_ONLINE, CHECKED
+            MENUITEM SEPARATOR
+            MENUITEM "Idle",                        ID_ONLINESTATUSPLACEHOLDER_IDLE
+            MENUITEM "Do not disturb",              ID_ONLINESTATUSPLACEHOLDER_DONOTDISTURB
+            MENUITEM "Invisible",                   ID_ONLINESTATUSPLACEHOLDER_INVISIBLE
+        END
+        MENUITEM "Set &Custom Status",          ID_ACCOUNT_SETCUSTOMSTATUS
+        MENUITEM SEPARATOR
+        MENUITEM "Switch &Accounts",            ID_ACCOUNT_SWITCHACCOUNTS
+        MENUITEM SEPARATOR
+        MENUITEM "&Unmute",                     ID_ACCOUNT_UNMUTE
+        MENUITEM "&Deafen",                     ID_ACCOUNT_DEAFEN
+        MENUITEM SEPARATOR
+        MENUITEM "User &Settings",              ID_ACCOUNT_USERSETTINGS
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "Help &Topics...",             ID_HELP_HELPTOPICS
+        MENUITEM SEPARATOR
+        MENUITEM "&About Discord Messenger...", ID_HELP_ABOUTDISCORDMESSENGER
+    END
+END
+
+IDR_MESSAGE_CONTEXT MENU
+BEGIN
+    POPUP "Dummy Popup"
+    BEGIN
+        POPUP "Add Reaction"
+        BEGIN
+            MENUITEM "Reaction1",                   ID_ADDREACTION_REACTION1
+            MENUITEM "Reaction2",                   ID_ADDREACTION_REACTION2
+            MENUITEM "Reaction3",                   ID_ADDREACTION_REACTION3
+            MENUITEM "Reaction4",                   ID_ADDREACTION_REACTION4
+            MENUITEM "Reaction5",                   ID_ADDREACTION_REACTION5
+            MENUITEM "Reaction6",                   ID_ADDREACTION_REACTION6
+            MENUITEM "Reaction7",                   ID_ADDREACTION_REACTION7
+            MENUITEM "Reaction8",                   ID_ADDREACTION_REACTION8
+            MENUITEM SEPARATOR
+            MENUITEM "View More",                   ID_ADDREACTION_VIEWMORE
+        END
+        MENUITEM "Edit Message",                ID_DUMMYPOPUP_EDITMESSAGE
+        MENUITEM "Pin Message",                 ID_DUMMYPOPUP_PINMESSAGE
+        MENUITEM "Reply",                       ID_DUMMYPOPUP_REPLY
+        MENUITEM "Copy Text",                   ID_DUMMYPOPUP_COPYTEXT
+        MENUITEM "Mark Unread",                 ID_DUMMYPOPUP_MARKUNREAD
+        MENUITEM "Copy Message Link",           ID_DUMMYPOPUP_COPYMESSAGELINK
+        MENUITEM "Speak Message",               ID_DUMMYPOPUP_SPEAKMESSAGE
+        MENUITEM "Delete Message",              ID_DUMMYPOPUP_DELETEMESSAGE
+        MENUITEM SEPARATOR
+        MENUITEM "Copy Message ID",             ID_DUMMYPOPUP_COPYID
+    END
+END
+
+IDR_GUILD_CONTEXT MENU
+BEGIN
+    POPUP "Dummy"
+    BEGIN
+        MENUITEM "Mark as Read",                IDM_MARKASREAD
+        MENUITEM SEPARATOR
+        MENUITEM "Invite People",               IDM_INVITEPEOPLE
+        MENUITEM SEPARATOR
+        MENUITEM "Mute Server",                 IDM_MUTESERVER, CHECKED
+        POPUP "Notification Settings"
+        BEGIN
+            MENUITEM "All Messages",                IDM_NOTIFYALL
+            MENUITEM "Only @mentions",              IDM_NOTIFYMENTS
+            MENUITEM "No Notifications",            IDM_NOTIFYNONE
+            MENUITEM SEPARATOR
+            MENUITEM "Suppress @everyone and @here", IDM_NOTIFYSUPPRGLOB
+            MENUITEM "Suppress all role @mentions", IDM_NOTIFYSUPPRROLE
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Server Settings",             IDM_GUILDSETTINGS
+        MENUITEM "Privacy Settings",            IDM_PRIVACYSETTINGS
+        MENUITEM "Change Nickname",             IDM_EDITNICKNAME
+        MENUITEM SEPARATOR
+        MENUITEM "Create Channel",              IDM_CREATECHAN
+        MENUITEM "Create Category",             IDM_CREATECATEG
+        MENUITEM SEPARATOR
+        MENUITEM "Leave Server",                IDM_LEAVEGUILD
+        MENUITEM SEPARATOR
+        MENUITEM "Copy Server ID",              IDM_COPYGUILDID
+    END
+END
+
+IDR_GUILD_HEADER MENU
+BEGIN
+    POPUP "Dummy"
+    BEGIN
+        MENUITEM "Invite People",               IDM_INVITEPEOPLE
+        MENUITEM SEPARATOR
+        POPUP "Notification Settings"
+        BEGIN
+            MENUITEM "All Messages",                IDM_NOTIFYALL
+            MENUITEM "Only @mentions",              IDM_NOTIFYMENTS
+            MENUITEM "No Notifications",            IDM_NOTIFYNONE
+            MENUITEM SEPARATOR
+            MENUITEM "Suppress @everyone and @here", IDM_NOTIFYSUPPRGLOB
+            MENUITEM "Suppress all role @mentions", IDM_NOTIFYSUPPRROLE
+        END
+        MENUITEM "Server Settings",             IDM_GUILDSETTINGS
+        MENUITEM "Privacy Settings",            IDM_PRIVACYSETTINGS
+        MENUITEM SEPARATOR
+        MENUITEM "Change Nickname",             IDM_EDITNICKNAME
+        MENUITEM SEPARATOR
+        MENUITEM "Leave Server",                IDM_LEAVEGUILD
+    END
+END
+
+IDR_CHANNEL_CONTEXT MENU
+BEGIN
+    POPUP "Dummy"
+    BEGIN
+        MENUITEM "Mute Channel",                IDM_MUTECHANNEL, CHECKED
+        MENUITEM "Mark as Read",                IDM_MARKASREAD
+        MENUITEM SEPARATOR
+        MENUITEM "Instant Invite",              IDM_INSTANTINVITE
+        MENUITEM SEPARATOR
+        MENUITEM "Copy ID",                     IDM_COPYCHANID
+    END
+END
+
+IDR_DMCHANNEL_CONTEXT MENU
+BEGIN
+    POPUP "Dummy"
+    BEGIN
+        MENUITEM "Profile",                     IDM_PROFILE
+        MENUITEM "Close DM",                    IDM_CLOSEDM
+        MENUITEM SEPARATOR
+        MENUITEM "Add Friend",                  IDM_ADDFRIEND, INACTIVE
+        MENUITEM "Block",                       IDM_BLOCK
+        MENUITEM SEPARATOR
+        MENUITEM "Copy ID",                     IDM_COPYID
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON                ICON                    "../res/icon_discord.ico"
+
+IDI_SEND                ICON                    "../res/icon_send.ico"
+
+IDI_FILE                ICON                    "../res/icon_file.ico"
+
+IDI_ICON_SMALL          ICON                    "../res/icon_discord_small.ico"
+
+IDI_WARNING_IC          ICON                    "../res/icon_warning.ico"
+
+IDI_CATEGORY            ICON                    "../res/icon_category.ico"
+
+IDI_CHANNEL             ICON                    "../res/icon_channel.ico"
+
+IDI_DM                  ICON                    "../res/icon_dm.ico"
+
+IDI_GROUPDM             ICON                    "../res/icon_groupdm.ico"
+
+IDI_VOICE               ICON                    "../res/icon_voice.ico"
+
+IDI_PROFILE_BORDER      ICON                    "../res/icon_profile_border.ico"
+
+IDI_OFFLINE_SM          ICON                    "../res/icon_offline_small.ico"
+
+IDI_ONLINE_SM           ICON                    "../res/icon_online_small.ico"
+
+IDI_MENTION_MARKER_1    ICON                    "../res/icon_marker_1.ico"
+
+IDI_MENTION_MARKER_2    ICON                    "../res/icon_marker_2.ico"
+
+IDI_MENTION_MARKER_3    ICON                    "../res/icon_marker_3.ico"
+
+IDI_MENTION_MARKER_4    ICON                    "../res/icon_marker_4.ico"
+
+IDI_MENTION_MARKER_5    ICON                    "../res/icon_marker_5.ico"
+
+IDI_MENTION_MARKER_6    ICON                    "../res/icon_marker_6.ico"
+
+IDI_MENTION_MARKER_7    ICON                    "../res/icon_marker_7.ico"
+
+IDI_MENTION_MARKER_8    ICON                    "../res/icon_marker_8.ico"
+
+IDI_MENTION_MARKER_9    ICON                    "../res/icon_marker_9.ico"
+
+IDI_MENTION_MARKER_9P   ICON                    "../res/icon_marker_9plus.ico"
+
+IDI_CHANNEL_MENTIONED   ICON                    "../res/icon_channel_mentioned.ico"
+
+IDI_CHANNEL_UNREAD      ICON                    "../res/icon_channel_unread.ico"
+
+IDI_PIN                 ICON                    "../res/icon_pin.ico"
+
+IDI_MEMBERS             ICON                    "../res/icon_members.ico"
+
+IDI_BOT                 ICON                    "../res/icon_bot.ico"
+
+IDI_REPLY_PIECE         ICON                    "../res/icon_reply_line.ico"
+
+IDI_USER_JOIN           ICON                    "../res/icon_user_join.ico"
+
+IDI_USER_LEAVE          ICON                    "../res/icon_user_leave.ico"
+
+IDI_TYPING_FRAME1       ICON                    "../res/icon_typing_f1.ico"
+
+IDI_TYPING_FRAME2       ICON                    "../res/icon_typing_f2.ico"
+
+IDI_TYPING_FRAME3       ICON                    "../res/icon_typing_f3.ico"
+
+IDI_DOWNLOAD            ICON                    "../res/icon_download.ico"
+
+IDI_CANCEL              ICON                    "../res/icon_cancel.ico"
+
+IDI_JUMP                ICON                    "../res/icon_jump.ico"
+
+IDI_UPLOAD              ICON                    "../res/icon_upload.ico"
+
+IDI_PROFILE_BORDER_2K   ICON                    "../res/icon_profile_border_2k.ico"
+
+IDI_CHANNEL_2K          ICON                    "../res/icon_channel_2k.ico"
+
+IDI_MEMBERS_2K          ICON                    "../res/icon_members_2k.ico"
+
+IDI_PIN_2K              ICON                    "../res/icon_pin_2k.ico"
+
+IDI_CATEGORY_2K         ICON                    "../res/icon_category_2k.ico"
+
+IDI_DM_2K               ICON                    "../res/icon_dm_2k.ico"
+
+IDI_GROUPDM_2K          ICON                    "../res/icon_groupdm_2k.ico"
+
+IDI_VOICE_2K            ICON                    "../res/icon_voice_2k.ico"
+
+IDI_CHANNEL_MENTIONED_2K ICON                    "../res/icon_channel_mentioned_2k.ico"
+
+IDI_CHANNEL_UNREAD_2K   ICON                    "../res/icon_channel_unread_2k.ico"
+
+IDI_FILE_2K             ICON                    "../res/icon_file_2k.ico"
+
+IDI_BOT_2K              ICON                    "../res/icon_bot_2k.ico"
+
+IDI_STATUS_DND          ICON                    "../res/icon_status_dnd.ico"
+
+IDI_STATUS_IDLE         ICON                    "../res/icon_status_idle.ico"
+
+IDI_STATUS_OFFLINE      ICON                    "../res/icon_status_offline.ico"
+
+IDI_STATUS_ONLINE       ICON                    "../res/icon_status_online.ico"
+
+IDI_PROFILE_BORDER_GOLD ICON                    "../res/icon_profile_border_sel.ico"
+
+IDI_PROFILE_BORDER_GOLD_2K ICON                    "../res/icon_profile_border_sel_2k.ico"
+
+IDI_JUMP_2K             ICON                    "../res/icon_jump_2k.ico"
+
+IDI_REPLY_PIECE_2K      ICON                    "../res/icon_reply_line_2k.ico"
+
+IDI_SEND_2K             ICON                    "../res/icon_send_2k.ico"
+
+IDI_TYPING_FRAME1_2K    ICON                    "../res/icon_typing_f1_2k.ico"
+
+IDI_TYPING_FRAME2_2K    ICON                    "../res/icon_typing_f2_2k.ico"
+
+IDI_TYPING_FRAME3_2K    ICON                    "../res/icon_typing_f3_2k.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOG_ABOUT DIALOGEX 0, 0, 247, 77
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About Discord Messenger"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,97,58,50,14
+    CTEXT           "Discord Messenger",IDC_STATIC,1,6,246,8,SS_CENTERIMAGE
+    CTEXT           "Copyright (C) 2023-2024 iProgramInCpp. Licensed under the MIT license.",IDC_STATIC,1,42,246,12,SS_CENTERIMAGE
+    ICON            IDI_ICON,IDC_STATIC,112,21,20,20
+END
+
+IDD_DIALOG_OPTIONS DIALOGEX 0, 0, 498, 268
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Preferences"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_OPTIONS_TABS,"SysTabControl32",0x0,7,7,484,254
+END
+
+IDD_DIALOG_MY_ACCOUNT DIALOGEX 0, 0, 260, 242
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    GROUPBOX        "My Account",IDC_MY_ACCOUNT_BOX,6,6,246,53
+    LTEXT           "User Name#Tag",IDC_MY_ACCOUNT_NAME,54,25,190,8
+    LTEXT           "*******@*****.com",IDC_EMAIL_DISPLAY,54,42,126,8
+    LTEXT           "Email:",IDC_EMAIL_TEXT,12,42,20,8
+    PUSHBUTTON      "Reveal Email",IDC_REVEALEMAIL,182,38,64,15
+    GROUPBOX        "Safe direct messaging",IDC_STATIC,6,60,246,90
+    LTEXT           "Automatically scan and delete direct messages you receive that contain explicit media content.",IDC_STATIC,12,72,234,18
+    CONTROL         "I live on the edge\nTurn this off. Don't scan anything. Go straight to the dark side.",IDC_SDM_LEVEL0,
+                    "Button",BS_AUTORADIOBUTTON | BS_MULTILINE,12,126,234,18
+    CONTROL         "My friends are nice\nScan direct messages from everyone unless they are a friend.",IDC_SDM_LEVEL1,
+                    "Button",BS_AUTORADIOBUTTON | BS_MULTILINE,12,108,234,18
+    CONTROL         "Keep me safe\nScan direct messages from everyone.",IDC_SDM_LEVEL2,
+                    "Button",BS_AUTORADIOBUTTON | BS_MULTILINE,12,90,234,18
+    GROUPBOX        "Server privacy defaults",IDC_STATIC,6,150,246,42
+    CONTROL         "Allow direct messages from server members.",IDC_ENABLE_DMS,
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,12,162,234,8
+    LTEXT           "This setting is applied when you join a new server. It does not apply retroactively to your existing servers.",IDC_STATIC,23,171,223,17
+    GROUPBOX        "Log Out",IDC_STATIC,6,192,246,42
+    LTEXT           "Click this button to log out.",IDC_STATIC,12,204,234,8
+    PUSHBUTTON      "Log Out",IDC_LOG_OUT,104,216,50,14
+    CONTROL         "",IDC_STATIC_PROFILE_IMAGE,"Static",SS_BITMAP | SS_CENTERIMAGE,12,18,24,22
+END
+
+IDD_DIALOG_APPEARANCE DIALOGEX 0, 0, 260, 200
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    GROUPBOX        "Message Display",IDC_MDISPLAY_BOX,6,6,245,41
+    CONTROL         "Cozy: Modern, beautiful, and easy on your eyes.",IDC_APPEARANCE_COZY,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,18,174,10
+    CONTROL         "Compact: Fit more messages on screen at one time. #IRC",IDC_APPEARANCE_COMPACT,
+                    "Button",BS_AUTORADIOBUTTON,12,30,201,10
+    GROUPBOX        "Message Style",IDC_MSTYLE_BOX,6,54,245,66
+    CONTROL         "3-D Frame",IDC_RADIO_3D_FRAME,"Button",BS_AUTORADIOBUTTON | WS_GROUP,12,65,49,10
+    CONTROL         "Gradient",IDC_RADIO_GRADIENT,"Button",BS_AUTORADIOBUTTON,12,78,43,10
+    CONTROL         "Flat Color 1",IDC_RADIO_FLAT_1,"Button",BS_AUTORADIOBUTTON,12,91,53,10
+    CONTROL         "Flat Color 2",IDC_RADIO_FLAT_2,"Button",BS_AUTORADIOBUTTON,12,104,53,10
+END
+
+IDD_DIALOG_PROFILE_POPOUT DIALOGEX 0, 0, 228, 221
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP
+EXSTYLE WS_EX_NOACTIVATE
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Name",IDC_GLOBAL_NAME,33,8,189,12,SS_CENTERIMAGE | SS_WORDELLIPSIS
+    LTEXT           "Username",IDC_USERNAME,33,19,189,12,SS_CENTERIMAGE | SS_WORDELLIPSIS
+    LTEXT           "Status",IDC_PROFILE_STATUS,7,31,214,8,SS_WORDELLIPSIS
+    CONTROL         "",IDC_STATIC_PROFILE_IMAGE,"Static",SS_BITMAP | SS_CENTERIMAGE,7,8,24,22
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,43,214,1
+    GROUPBOX        "Member since",IDC_MEMBERSINCEGROUP,7,50,214,40
+    LTEXT           "Static",IDC_GUILD_JOIN_DATE,27,62,190,8
+    LTEXT           "Static",IDC_DISCORD_JOIN_DATE,27,76,190,8
+    CONTROL         IDB_DEFAULT,IDC_ICON_GUILD,"Static",SS_BITMAP,12,62,11,10
+    ICON            IDI_ICON_SMALL,IDC_ICON_DISCORD,12,76,20,20,SS_REALSIZEIMAGE
+    GROUPBOX        "Role(s)",IDC_ROLE_GROUP,7,93,214,46
+    CONTROL         "",IDC_ROLE_STATIC,"Static",SS_BLACKRECT,14,103,200,30,WS_EX_CLIENTEDGE
+    GROUPBOX        "Note",IDC_NOTE_GROUP,7,142,214,34
+    EDITTEXT        IDC_NOTE_TEXT,14,155,200,14,ES_AUTOHSCROLL
+    GROUPBOX        "Message This User",IDC_MESSAGE_GROUP,7,177,214,34
+    EDITTEXT        IDC_MESSAGE_TEXT,14,188,200,14,ES_AUTOHSCROLL
+END
+
+IDD_DIALOG_LOGON DIALOGEX 0, 0, 274, 218
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Log On to Discord Messenger"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Log In",IDOK,162,197,50,14
+    PUSHBUTTON      "Quit",IDCANCEL,217,197,50,14
+    CONTROL         IDB_LOGON_BANNER,IDC_LOGON_BANNER,"Static",SS_BITMAP,0,0,274,57
+    LTEXT           "E-mail address or phone number:",IDC_LBL_EMAIL,7,77,106,8
+    EDITTEXT        IDC_EDIT_EMAIL,7,86,259,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PASSWORD,7,117,259,14,ES_PASSWORD | ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_TOKEN,7,172,259,14,ES_AUTOHSCROLL
+    LTEXT           "Password",IDC_LBL_PASSWORD,7,108,32,8
+    CONTROL         "Log in using the following details:",IDC_RADIO_EMAILPASS,
+                    "Button",BS_AUTORADIOBUTTON,7,62,121,10
+    CONTROL         "Or log in faster using a token:",IDC_RADIO_TOKEN,"Button",BS_AUTORADIOBUTTON,7,160,111,10
+    ICON            IDI_WARNING_IC,IDC_ICON_WARN_CAPTCHA,7,140,20,20,SS_REALSIZEIMAGE
+    LTEXT           "Warning, a CAPTCHA may be required if using an e-mail address and password to log in. If so, you will need to log in with a token.",IDC_WARN_CAPTCHA,27,138,236,17
+    PUSHBUTTON      "Log In Using QR Code",IDC_LOGIN_QR_CODE,60,197,94,14
+END
+
+IDD_DIALOG_QRCODELOGIN DIALOGEX 0, 0, 203, 238
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Log In with QR Code"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,146,217,50,14
+    LTEXT           "Scan this with the Discord mobile app to log in instantly.",IDC_LBL_LOGINQR,7,7,189,11
+    LTEXT           "Code doesn't go here, placeholder text does.\n\nIt'd say:\n\nNo code, but here's the URL:\nhttps://discord.com/ra/blablablabla\n\nI want to get the core functionality working first!",IDC_QRCODE_PLACEHOLDER,7,66,189,89
+END
+
+IDD_DIALOG_INSTANT_INVITE DIALOGEX 0, 0, 259, 192
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Accept Instant Invitation"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Join SERVERNAMEHERE",IDOK,7,143,245,14
+    PUSHBUTTON      "No Thanks",IDCANCEL,105,171,50,14
+    CTEXT           "You've been invited to join",IDC_STATIC,7,7,245,8
+    CONTROL         IDB_DEFAULT,IDC_INVITE_GUILD_IMAGE,"Static",SS_BITMAP,120,26,24,22
+    CTEXT           "GUILD NAME HERE",IDC_GUILD_NAME,7,60,245,25
+    LTEXT           "1,000 Online",IDC_NUM_ONLINE,110,97,42,8
+    LTEXT           "2,000 Members",IDC_NUM_MEMBERS,110,108,50,8
+    ICON            IDI_ONLINE_SM,IDC_STATIC,98,97,21,20,SS_REALSIZEIMAGE
+    ICON            IDI_OFFLINE_SM,IDC_STATIC,98,108,21,20,SS_REALSIZEIMAGE
+END
+
+IDD_DIALOG_PINNEDMESSAGES DIALOGEX 0, 0, 281, 254
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Pinned Messages In [Channel]"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CTEXT           "PROTIP: Users with the 'Manage messages' permission can pin a message from its context menu.",IDC_STATIC,7,229,267,18
+    CONTROL         "",IDC_MESSAGE_LIST,"Static",SS_BLACKRECT,7,18,267,210
+    LTEXT           "Click on a message to jump to it.",IDC_STATIC,7,7,267,8
+END
+
+IDD_DIALOG_UPLOADFILES DIALOGEX 0, 0, 307, 108
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Upload Files"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Upload",IDOK,198,87,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,250,87,50,14
+    ICON            "",IDC_FILE_ICON,7,7,21,20
+    LTEXT           "Static",IDC_FILE_NAME,32,7,224,18,SS_CENTERIMAGE
+    LTEXT           "Upload to",IDC_STATIC,7,31,32,13,SS_CENTERIMAGE
+    LTEXT           "#channelnamehere",IDC_CHANNEL_NAME,40,31,260,13,SS_CENTERIMAGE
+    GROUPBOX        "Add a comment (optional)",IDC_STATIC,7,52,293,31
+    EDITTEXT        IDC_ATTACH_COMMENT,13,63,280,14,ES_AUTOHSCROLL
+    CONTROL         "Mark as spoiler",IDC_MARK_AS_SPOILER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,88,173,13
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_DIALOG_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        TOPMARGIN, 7
+    END
+
+    IDD_DIALOG_OPTIONS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 491
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 261
+    END
+
+    IDD_DIALOG_MY_ACCOUNT, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 251
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 234
+    END
+
+    IDD_DIALOG_APPEARANCE, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 251
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 192
+    END
+
+    IDD_DIALOG_PROFILE_POPOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 222
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 210
+    END
+
+    IDD_DIALOG_LOGON, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 211
+    END
+
+    IDD_DIALOG_QRCODELOGIN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 196
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 231
+    END
+
+    IDD_DIALOG_INSTANT_INVITE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 252
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 185
+    END
+
+    IDD_DIALOG_PINNEDMESSAGES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 274
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 247
+    END
+
+    IDD_DIALOG_UPLOADFILES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 300
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 101
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_DIALOG_ABOUT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_OPTIONS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_MY_ACCOUNT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_APPEARANCE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_PROFILE_POPOUT AFX_DIALOG_LAYOUT
+BEGIN
+    0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 50, 50,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0
+END
+
+IDD_DIALOG_LOGON AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_QRCODELOGIN AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_INSTANT_INVITE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_PINNEDMESSAGES AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_UPLOADFILES AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// RT_MANIFEST
+//
+
+1                       RT_MANIFEST             "../res/app.manifest"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "iProgramInCpp"
+            VALUE "FileDescription", "Discord Messenger"
+            VALUE "FileVersion", "1.0"
+            VALUE "InternalName", "Discord.exe"
+            VALUE "LegalCopyright", "Copyright (C) 2023-2024 iProgramInCpp - Licensed under the MIT license."
+            VALUE "OriginalFilename", "Discord.exe"
+            VALUE "ProductName", "Discord Messenger"
+            VALUE "ProductVersion", "1.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_CHANNEL             BITMAP                  "../res/bmp_channel.bmp"
+
+IDB_CATEGORY            BITMAP                  "../res/bmp_category.bmp"
+
+IDB_VOICE               BITMAP                  "../res/bmp_voice.bmp"
+
+IDB_PROFILE             BITMAP                  "../res/bmp_profile.bmp"
+
+IDB_DEFAULT             BITMAP                  "../res/bmp_default.bmp"
+
+IDB_DM                  BITMAP                  "../res/bmp_dm.bmp"
+
+IDB_GROUPDM             BITMAP                  "../res/bmp_groupdm.bmp"
+
+IDB_STATUS_OFFLINE      BITMAP                  "../res/bmp_status_offline.bmp"
+
+IDB_STATUS_DND          BITMAP                  "../res/bmp_status_dnd.bmp"
+
+IDB_STATUS_IDLE         BITMAP                  "../res/bmp_status_idle.bmp"
+
+IDB_STATUS_ONLINE       BITMAP                  "../res/bmp_status_online.bmp"
+
+IDB_STATUS_MASK_CIRC    BITMAP                  "../res/bmp_status_mask_circ.bmp"
+
+IDB_STATUS_MASK_MOON    BITMAP                  "../res/bmp_status_mask_moon.bmp"
+
+IDB_TARGET              BITMAP                  "../res/target.bmp"
+
+IDB_LOGON_BANNER        BITMAP                  "../res/bmp_banner.bmp"
+
+IDB_EMPTY               BITMAP                  "../res/bmp_empty.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_ZOOMIN              CURSOR                  "../res/cur_zoomin.cur"
+
+IDC_ZOOMOUT             CURSOR                  "../res/cur_zoomout.cur"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_PROGRAM_NAME        "Discord Messenger"
+    IDS_MY_ACCOUNT          "My Account"
+    IDS_WELCOME_MSG         "Welcome to Discord Messenger!  Before you use the app, you must first log in.\n\nDISCLAIMER: Using third party clients is against Discord's TOS!  Although the risk to get banned is low, the risk is there!  The author of this software is not responsible for the status of your Discord account."
+    IDS_PRIVACY_SAFETY      "Privacy & Safety"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_MESSAGE_TOO_LONG_MSG 
+                            "Your message is too long...\n\nYou've hit the 2000 character limit.  Speak your mind with 2x longer messages, send larger file uploads and more with Discord Nitro! "
+    IDS_DMBLOCK_APPLY_RETROACTIVELY 
+                            "Do you want to also apply this change to all your existing servers?  You can also disable direct messages from individual servers by visiting that server's settings page."
+    IDS_NOTLOGGEDIN         "You are not logged in to Discord Messenger.\nThis could be because the token has expired or is invalid.\n\nLog in using a real Discord client, and use its token to log in."
+    IDS_APPEARANCE          "Appearance"
+    IDS_LOG_OUT             "Log Out"
+    IDS_SESSION_ERROR       "Discord has closed the current gateway with the error code of %d.  Try restarting the app or using a different token."
+    IDS_CONNECT_FAILURE     "Could not connect to Discord servers.\n\nThis could be because you aren't connected to the Internet, or because Discord servers are down."
+    IDS_ACCOUNT_PRIVACY     "Account && Privacy"
+    IDS_DANGEROUS_DOWNLOAD  "Woah there!  While programs downloaded from the Internet may be beneficial, this type of file can damage your device or steal your personal data. Make sure to only run executables from developers that you trust!\n\nWould you like to download the file %s anyway?"
+    IDS_DANGEROUS_DOWNLOAD_TITLE "Potentially Dangerous Download Warning"
+    IDS_PLEASE_WAIT         "Please wait..."
+    IDS_LOADING_MESSAGES    "Discord Messenger is loading messages... "
+    IDS_CHANGED_GROUP_ICON  " changed the group icon."
+    IDS_CHANGED_CHANNEL_NAME_L " changed the channel name to """
+    IDS_CHANGED_CHANNEL_NAME_R """."
+    IDS_REMOVED_FROM_GROUP  " removed someone from the group."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ADDED_TO_GROUP      " added someone to the group."
+    IDS_PINNED_MESSAGE      " pinned a message to this channel."
+    IDS_WELCOME_001_R       " joined the party."
+    IDS_WELCOME_002_R       " is here."
+    IDS_WELCOME_003_L       "Welcome, "
+    IDS_WELCOME_003_R       ". We hope you brought pizza."
+    IDS_WELCOME_004_L       "A wild "
+    IDS_WELCOME_004_R       " appeared."
+    IDS_WELCOME_005_R       " just landed."
+    IDS_WELCOME_006_R       " just slid into the server!"
+    IDS_WELCOME_007_R       " just showed up!"
+    IDS_WELCOME_008_L       "Welcome "
+    IDS_WELCOME_008_R       ". Say hi!"
+    IDS_WELCOME_009_R       " hopped into the server."
+    IDS_WELCOME_010_L       "Everyone welcome "
+    IDS_WELCOME_011_L       "Glad you're here, "
+END
+
+STRINGTABLE
+BEGIN
+    IDS_WELCOME_012_L       "Good to see you, "
+    IDS_WELCOME_013_L       "Yay you made it, "
+    IDS_WELCOME_EXCLAM      "!"
+    IDS_WELCOME_PERIOD      "."
+    IDS_SAVE_IMAGE          "Save image as..."
+    IDS_SAVE_FILE_AS_TITLE  "Save File"
+    IDS_ERROR_ACCESSING_FILE "The resource %s could not be accessed.\n\n%s"
+    IDS_ERROR_SAVING_FILE   "The file could not be saved at %s.\n\n%s"
+    IDS_IMAGE_SAVING        "Downloading..."
+    IDS_IMAGE_SAVED         "Saved!"
+    IDS_TOKEN_TOO_LONG      "Your token is too long!  Try using an actual Discord token."
+    IDS_TOKEN_TOO_SHORT     "Your token is too short!  Try using an actual Discord token."
+    IDS_LOGIN_NO_INTERNET   "Cannot connect to Discord Messenger.\n\nClose the QR code login dialog, check your Internet connection, and then try again."
+    IDS_TODAY_AT            "Today at %H:%M"
+    IDS_YESTERDAY_AT        "Yesterday at %H:%M"
+    IDS_LONG_DATE_FMT       "%d-%m-%Y at %H:%M"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_SHORT_DATE_FMT      "%d/%m %H:%M"
+    IDS_ONLY_DATE_FMT       "%s %d%s, %d"
+    IDS_MONTH_JANUARY       "January"
+    IDS_MONTH_FEBRUARY      "February"
+    IDS_MONTH_MARCH         "March"
+    IDS_MONTH_APRIL         "April"
+    IDS_MONTH_MAY           "May"
+    IDS_MONTH_JUNE          "June"
+    IDS_MONTH_JULY          "July"
+    IDS_MONTH_AUGUST        "August"
+    IDS_MONTH_SEPTEMBER     "September"
+    IDS_MONTH_OCTOBER       "October"
+    IDS_MONTH_NOVEMBER      "November"
+    IDS_MONTH_DECEMBER      "December"
+    IDS_CANT_VIEW_CHANNEL   "You do not have permission to view the channel #%s."
+    IDS_CANT_VIEW_MESSAGE_HISTORY 
+                            "You do not have permission to view the message history of "
+END
+
+STRINGTABLE
+BEGIN
+    IDS_CANT_SEND_MESSAGES  "You do not have permission to send messages in this channel."
+    IDS_SHORT_TIME_FMT      "%H:%M"
+    IDS_CONFIRM_DELETE      "Are you sure you want to delete this message?\n\n%s (%s)\n\n%s"
+    IDS_CONFIRM_DELETE_TITLE "Discord Messenger - Delete Message"
+    IDS_CONFIRM_PIN         "Hey, just double checking that you want to pin this message to #%s for posterity and greatness?\n\n%s (%s)\n\n%s"
+    IDS_CONFIRM_PIN_TITLE   "Discord Messenger - Pin It. Pin It Good."
+    IDS_DIRECT_MESSAGES     "Direct Messages"
+    IDS_LINK_CONFIRM        "Links are spoopy.  This link goes to %s. Are you sure you want to go there?"
+    IDS_LINK_CONFIRM_TITLE  "Discord Messenger - Hold Up"
+    IDS_LOADING_PINNED_MESSAGES "Loading pinned messages..."
+    IDS_NO_PINNED_MESSAGES  "This channel doesn't have any pinned messages... yet."
+    IDS_PINNED_MESSAGES_IN  "Pinned Messages In #%s"
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

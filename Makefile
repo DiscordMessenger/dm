@@ -23,6 +23,7 @@ TARGET = $(BIN_DIR)/DiscordMessenger.exe
 # Location of certain utilities.  Because Win32 takes over if you don't
 MKDIR = $(MSYS_PATH)\bin\mkdir.exe
 FIND  = $(MSYS_PATH)\bin\find.exe
+WR = windres
 
 INC_DIRS = \
 	$(USER_INC_DIRS) \
@@ -75,6 +76,7 @@ CXXFLAGS = \
 
 LDFLAGS = \
 	$(LIB_DIRS) \
+	-mwindows   \
 	-lmswsock   \
 	-lws2_32    \
 	-lcomctl32  \

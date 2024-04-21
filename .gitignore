@@ -6,3 +6,4 @@ keep/*
 *.o
 *.d
 *.tlog
+*.aps
