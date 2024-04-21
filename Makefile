@@ -30,12 +30,8 @@ INC_DIRS = \
 	-I$(OPENSSL_INC_DIR)         \
 	-Ideps/iprogsthreads/include \
 	-Ideps/mwas/include          \
-	-Ideps/asio                  \
-	-Ideps/boost                 \
-	-Ideps/websocketpp           \
-	-Ideps/httplib               \
-	-Ideps/json                  \
-	-Ideps/stb
+	-Ideps                       \
+	-Ideps/asio
 
 LIB_DIRS = \
 	-L$(OPENSSL_LIB_DIR)
@@ -89,15 +85,24 @@ LDFLAGS = \
 WRFLAGS = \
 	-Ihacks
 
+AUX_CXXFILES = \
+	$(shell $(FIND) deps/iprogsthreads/src -not -path '*/.*' -type f -name '*.cpp') \
+	$(shell $(FIND) deps/asio/src          -not -path '*/.*' -type f -name '*.cpp') \
+	$(shell $(FIND) deps/mwas/src          -not -path '*/.*' -type f -name '*.cpp') \
+	$(shell $(FIND) deps/md5               -not -path '*/.*' -type f -name '*.cpp')
+
 # Use find to glob all *.cpp files in the directory and extract the object names.
-override CXXFILES := $(shell $(FIND) $(SRC_DIR) -not -path '*/.*' -type f -name '*.cpp')
+override CXXFILES := $(shell $(FIND) $(SRC_DIR) -not -path '*/.*' -type f -name '*.cpp') $(AUX_CXXFILES)
 override RESFILES := $(shell $(FIND) $(SRC_DIR) -not -path '*/.*' -type f -name '*.rc')
-override OBJ := $(patsubst $(SRC_DIR)/%, $(BUILD_DIR)/%, $(CXXFILES:.cpp=.o) $(RESFILES:.rc=.o))
-override DEP := $(patsubst $(SRC_DIR)/%, $(BUILD_DIR)/%, $(CXXFILES:.cpp=.d))
+override OBJ := $(patsubst %, $(BUILD_DIR)/%, $(CXXFILES:.cpp=.o) $(RESFILES:.rc=.o))
+override DEP := $(patsubst %, $(BUILD_DIR)/%, $(CXXFILES:.cpp=.d))
 
 .PHONY: all
 all: all2
 all2: $(TARGET)
+
+clean:
+	rm -rf $(BUILD_DIR)/*
 
 -include $(DEP)
 
@@ -107,12 +112,12 @@ $(TARGET): $(OBJ)
 	@$(CXX) $(OBJ) $(LDFLAGS) -o $@
 
 # NOTE: Using --use-temp-file seems to get rid of some weirdness with MinGW 6.3.0's windres?
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.rc
+$(BUILD_DIR)/%.o: %.rc
 	@echo \>\> Compiling resource $<
 	@$(MKDIR) -p $(dir $@)
 	@$(WR) $(WRFLAGS) -i $< -o $@ --use-temp-file
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+$(BUILD_DIR)/%.o: %.cpp
 	@echo \>\> Compiling $<
 	@$(MKDIR) -p $(dir $@)
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
