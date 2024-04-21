@@ -4,3 +4,6 @@
 [submodule "deps/mwas"]
 	path = deps/mwas
 	url = https://github.com/DiscordMessenger/mwas.git
+[submodule "deps/stb"]
+	path = deps/stb
+	url = https://github.com/nothings/stb.git
