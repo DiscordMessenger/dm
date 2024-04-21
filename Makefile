@@ -17,6 +17,13 @@ BUILD_DIR = build
 BIN_DIR = bin
 SRC_DIR = src
 
+# Target executable
+TARGET = $(BIN_DIR)/DiscordMessenger.exe
+
+# Location of certain utilities.  Because Win32 takes over if you don't
+MKDIR = $(MSYS_PATH)\bin\mkdir.exe
+FIND  = $(MSYS_PATH)\bin\find.exe
+
 INC_DIRS = \
 	$(USER_INC_DIRS) \
 	-I$(OPENSSL_INC_DIR)         \
@@ -63,13 +70,11 @@ CXXFLAGS = \
 	$(DEFINES)     \
 	-MMD           \
 	-std=c++11     \
-	-mwindows      \
 	$(UNICODE_DEF) \
 	$(DEBUG_DEF)
 
 LDFLAGS = \
 	$(LIB_DIRS) \
-	-mwindows   \
 	-lmswsock   \
 	-lws2_32    \
 	-lcomctl32  \
@@ -78,3 +83,34 @@ LDFLAGS = \
 	-lole32     \
 	-lcrypto    \
 	-lssl
+
+WRFLAGS = \
+	-Ihacks
+
+# Use find to glob all *.cpp files in the directory and extract the object names.
+override CXXFILES := $(shell $(FIND) $(SRC_DIR) -not -path '*/.*' -type f -name '*.cpp')
+override RESFILES := $(shell $(FIND) $(SRC_DIR) -not -path '*/.*' -type f -name '*.rc')
+override OBJ := $(patsubst $(SRC_DIR)/%, $(BUILD_DIR)/%, $(CXXFILES:.cpp=.o) $(RESFILES:.rc=.o))
+override DEP := $(patsubst $(SRC_DIR)/%, $(BUILD_DIR)/%, $(CXXFILES:.cpp=.d))
+
+.PHONY: all
+all: all2
+all2: $(TARGET)
+
+-include $(DEP)
+
+$(TARGET): $(OBJ)
+	@echo \>\> LINKING $@
+	@$(MKDIR) -p $(dir $@)
+	@$(CXX) $(OBJ) $(LDFLAGS) -o $@
+
+# NOTE: Using --use-temp-file seems to get rid of some weirdness with MinGW 6.3.0's windres?
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.rc
+	@echo \>\> Compiling resource $<
+	@$(MKDIR) -p $(dir $@)
+	@$(WR) $(WRFLAGS) -i $< -o $@ --use-temp-file
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@echo \>\> Compiling $<
+	@$(MKDIR) -p $(dir $@)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
