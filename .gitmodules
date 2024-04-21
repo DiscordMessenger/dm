@@ -1,0 +1,6 @@
+[submodule "deps/iprogsthreads"]
+	path = deps/iprogsthreads
+	url = https://github.com/DiscordMessenger/iprogsthreads.git
+[submodule "deps/mwas"]
+	path = deps/mwas
+	url = https://github.com/DiscordMessenger/mwas.git
