@@ -178,8 +178,18 @@ public:
 	Channel* GetChannel(Snowflake sf)
 	{
 		Guild* pGuild = GetCurrentGuild();
-		if (!pGuild) return NULL;
-		return pGuild->GetChannel(sf);
+		if (!pGuild) return nullptr;
+
+		Channel* pChan = pGuild->GetChannel(sf);
+		if (pChan) return pChan;
+
+		for (auto& gld : m_guilds) {
+			pChan = pGuild->GetChannel(sf);
+			if (pChan)
+				return pChan;
+		}
+
+		return m_dmGuild.GetChannel(sf);
 	}
 
 	Channel* GetCurrentChannel()
@@ -192,14 +202,7 @@ public:
 	}
 
 	Channel* GetChannelGlobally(Snowflake sf) {
-		Channel* chn = nullptr;
-		for (auto& gld : m_guilds) {
-			chn = gld.GetChannel(sf);
-			if (chn)
-				return chn;
-		}
-
-		return m_dmGuild.GetChannel(sf);
+		return GetChannel(sf);
 	}
 
 	void HandledChannelSwitch() {
