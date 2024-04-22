@@ -1395,10 +1395,16 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 		setColorBG = true;
 		flags |= DT_WORDBREAK;
 	}
-
 	HDC hdc = context->m_hdc;
 	HFONT font = MdDetermineFont(styleFlags);
 	HGDIOBJ old = SelectObject(hdc, font);
+	if ((styleFlags & (WORD_AFNEWLINE | WORD_QUOTE)) == (WORD_AFNEWLINE | WORD_QUOTE)) {
+		// draw a rectangle to signify the quote
+		RECT rc2 = rc;
+		rc2.left -= ScaleByDPI(SIZE_QUOTE_INDENT);
+		rc2.right = rc2.left + ScaleByDPI(3);
+		FillRect(hdc, &rc2, GetSysColorBrush(COLOR_SCROLLBAR));
+	}
 	DrawText(context->m_hdc, str.GetWrapped(), -1, &rc, flags);
 	SelectObject(hdc, old);
 	if (setColor)
