@@ -348,8 +348,8 @@ private:
 	int m_total_height = 0;
 	int m_oldPos = 0;
 
-	int m_oldWidth = 0;
-	int m_oldHeight = 0;
+	int m_oldWidth = -1;
+	int m_oldHeight = -1;
 
 	bool m_bManagedByOwner = false;
 	bool m_bIsTopDown = false;

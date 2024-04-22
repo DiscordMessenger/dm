@@ -2380,7 +2380,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			pThis->m_oldWidth  = newWidth;
 			pThis->m_oldHeight = newHeight;
 
-			if (oldWidth != 0)
+			if (oldWidth != -1)
 			{
 				if (oldWidth != GET_X_LPARAM(lParam))
 					pThis->RecalcMessageSizes();
