@@ -54,7 +54,17 @@ bool LocalSettings::Load()
 	if (j.contains("ReplyMentionDefault"))
 		m_bReplyMentionDefault = j["ReplyMentionDefault"];
 
-	// TODO: what else
+	if (j.contains("WindowWidth"))
+		m_width = j["WindowWidth"];
+
+	if (j.contains("WindowHeight"))
+		m_height = j["WindowHeight"];
+
+	if (m_width < 500)
+		m_width = 500;
+	if (m_height < 300)
+		m_height = 300;
+	
 	return true;
 }
 
@@ -69,6 +79,9 @@ bool LocalSettings::Save()
 	j["Token"] = m_token;
 	j["MessageStyle"] = int(m_messageStyle);
 	j["TrustedDomains"] = trustedDomains;
+	j["ReplyMentionDefault"] = m_bReplyMentionDefault;
+	j["WindowWidth"]  = m_width;
+	j["WindowHeight"] = m_height;
 
 	// save the file
 	std::string fileName = GetBasePath() + "/settings.json";

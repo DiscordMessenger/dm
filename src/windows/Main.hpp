@@ -1,8 +1,5 @@
 #pragma once
 
-// TODO: This is a hack. Fix this properly
-typedef struct IUnknown IUnknown;
-
 #include "Config.hpp"
 
 #define WIN32_LEAN_AND_MEAN

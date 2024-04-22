@@ -178,6 +178,15 @@
 #define IDS_NO_PINNED_MESSAGES          679
 #define IDS_PINNED_MESSAGES_IN          680
 #define IDS_CONFIRM_LEAVE_GUILD         681
+#define IDS_FAILED_TO_INITIALIZE_SAPI   682
+#define IDS_FAILED_TO_INITIALIZE_SAPI_TITLE 683
+#define IDS_FAILED_TO_SPEAK_MESSAGE     684
+#define IDS_CANNOT_UPLOAD_ATTACHMENT    685
+#define IDS_FILE_TOO_BIG                686
+#define IDS_FILE_EMPTY                  687
+#define IDS_FILE_OUT_OF_MEMORY          688
+#define IDS_FILE_NO_OPEN                689
+#define IDS_FILE_NO_READ                690
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803

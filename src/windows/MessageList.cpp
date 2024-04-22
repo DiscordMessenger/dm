@@ -12,9 +12,9 @@
 #define IDC_HAND            MAKEINTRESOURCE(32649)
 #endif//IDC_HAND
 
-#define ATTACHMENT_HEIGHT (ScaleByDPI(40)) // TODO: Hard coded
-#define ATTACHMENT_GAP    (ScaleByDPI(4))  // TODO: Hard coded
-#define DATE_GAP_HEIGHT   (ScaleByDPI(20)) // TODO: Hard coded
+#define ATTACHMENT_HEIGHT (ScaleByDPI(40))
+#define ATTACHMENT_GAP    (ScaleByDPI(4))
+#define DATE_GAP_HEIGHT   (ScaleByDPI(20))
 #define PROFILE_PICTURE_GAP (PROFILE_PICTURE_SIZE + 8);
 
 static int GetProfileBorderRenderSize()
@@ -751,7 +751,8 @@ void MessageList::RefetchMessages(Snowflake gapCulprit)
 
 	// Find the message we are looking at.
 
-	// TODO: Fix this:
+	// TODO: Fix this.  It's supposed to only include messages from the island we are looking at, for
+	// a nicer experience, but it doesn't work...
 
 	/*
 	//m_firstShownMessage
@@ -1222,7 +1223,6 @@ void MessageList::DrawImageAttachment(HDC hdc, RECT& paintRect, AttachmentItem& 
 
 	if (pAttach->PreviewDifferent())
 	{
-		// TODO: Better method
 		bool hasQMark = false;
 		for (auto ch : url) {
 			if (ch == '?') {
@@ -3002,8 +3002,6 @@ void MessageList::UpdateMembers(std::set<Snowflake>& mems)
 			replyAuthWidth,
 			replyHeight
 		);
-
-		// TODO: message height could change because of the new author width
 
 		msg.m_authWidth  = authWidth;
 		msg.m_authHeight = authHeight;

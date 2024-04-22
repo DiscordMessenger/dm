@@ -112,6 +112,13 @@ bool ProfileCache::NeedRequestGuildMember(Snowflake user, Snowflake guild)
 	return false;
 }
 
+void ProfileCache::ForgetProfile(Snowflake user)
+{
+	auto iter = m_profileSets.find(user);
+	if (iter != m_profileSets.end())
+		m_profileSets.erase(iter);
+}
+
 void ProfileCache::RequestLoadProfile(Snowflake user)
 {
 	DbgPrintF("Request load for profile %lld", user);

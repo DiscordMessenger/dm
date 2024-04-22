@@ -46,26 +46,25 @@ void UploadDialogFireInitialRequest(int id)
 	j["files"] = files;
 }
 
-// TODO: Placeholders, replace soon
 void UploadDialogOnFileTooBig(HWND hWnd)
 {
-	MessageBox(hWnd, TEXT("Your file is too big sucka!"), TEXT("yo"), MB_OK);
+	MessageBox(hWnd, TmGetTString(IDS_FILE_TOO_BIG), TmGetTString(IDS_PROGRAM_NAME), MB_OK | MB_ICONERROR);
 }
 void UploadDialogOnEmptyFile(HWND hWnd)
 {
-	MessageBox(hWnd, TEXT("Your file is empty man!"), TEXT("yo"), MB_OK);
+	MessageBox(hWnd, TmGetTString(IDS_FILE_EMPTY), TmGetTString(IDS_PROGRAM_NAME), MB_OK | MB_ICONERROR);
 }
 void UploadDialogOutOfMemory(HWND hWnd)
 {
-	MessageBox(hWnd, TEXT("Yer outta memory, duuude!"), TEXT("yo"), MB_OK);
+	MessageBox(hWnd, TmGetTString(IDS_FILE_OUT_OF_MEMORY), TmGetTString(IDS_PROGRAM_NAME), MB_OK | MB_ICONERROR);
 }
 void UploadDialogCantReadFile(HWND hWnd)
 {
-	MessageBox(hWnd, TEXT("Can't read from the file, yo!"), TEXT("yo"), MB_OK);
+	MessageBox(hWnd, TmGetTString(IDS_FILE_NO_READ), TmGetTString(IDS_PROGRAM_NAME), MB_OK | MB_ICONERROR);
 }
 void UploadDialogCantOpenFile(HWND hWnd)
 {
-	MessageBox(hWnd, TEXT("Can't open from the file, yo!"), TEXT("yo"), MB_OK);
+	MessageBox(hWnd, TmGetTString(IDS_FILE_NO_OPEN), TmGetTString(IDS_PROGRAM_NAME), MB_OK | MB_ICONERROR);
 }
 
 typedef void(*FailErrorDialog)(HWND hWnd);
@@ -243,7 +242,7 @@ void UploadDialogShowWithFileName(LPTSTR lpstrFileName, LPTSTR lpstrFileTitle)
 	else
 	{
 		// TODO: Placeholder, replace
-		MessageBox(g_Hwnd, TEXT("Can't upload attachment to this channel!"), TEXT("yo"), MB_OK);
+		MessageBox(g_Hwnd, TmGetTString(IDS_CANNOT_UPLOAD_ATTACHMENT), TmGetTString(IDS_PROGRAM_NAME), MB_OK);
 	}
 
 	delete data;

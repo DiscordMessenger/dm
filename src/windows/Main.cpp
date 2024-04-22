@@ -183,7 +183,7 @@ void OnUpdateAvatar(const std::string& resid)
 	}
 }
 
-const int g_Width = 1000, g_Height = 700; // TODO
+const int g_Width = 1000, g_Height = 700; // TODO - Fetch from LocalSettings instead
 
 bool g_bMemberListVisible = false;
 
@@ -802,7 +802,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			std::string msg;
 
-			// HACK: This gets rid of all '\r' characters
+			// This gets rid of all '\r' characters that the text edit control adds.
 			std::vector<TCHAR> tch2;
 			TCHAR* tcString = parms.m_rawMessage;
 			for (; *tcString; tcString++) {

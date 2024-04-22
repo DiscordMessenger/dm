@@ -140,7 +140,7 @@ std::string SettingsManager::GetCustomStatusText()
 		return "";
 
 	if (!pObject->IsStringObject())
-		return ""; // TODO
+		return ""; // failed
 
 	return dynamic_cast<Protobuf::ObjectString*>(pObject)->GetContent();
 }
@@ -189,7 +189,7 @@ eExplicitFilter SettingsManager::GetExplicitFilter()
 
 void SettingsManager::SetGuildDMBlocklist(const std::vector<Snowflake>& guilds)
 {
-	// TODO: big endian support
+	// XXX: big endian support?
 	std::vector<uint8_t> data;
 	data.resize(guilds.size() * sizeof(Snowflake));
 	memcpy(data.data(), guilds.data(), data.size());
@@ -206,7 +206,7 @@ void SettingsManager::SetGuildDMBlocklist(const std::vector<Snowflake>& guilds)
 
 void SettingsManager::GetGuildDMBlocklist(std::vector<Snowflake>& guilds)
 {
-	// TODO: big endian support
+	// XXX: big endian support?
 	std::vector<uint8_t> data = m_pSettingsMessage
 		->GetFieldObjectDefault<Protobuf::ObjectMessage>(Settings::FIELD_PRIVACY)
 		->GetFieldObjectDefault<Protobuf::ObjectBytes>(Settings::Privacy::FIELD_DM_BLOCK_GUILDS)
@@ -273,8 +273,8 @@ std::vector<Snowflake> SettingsManager::GetGuildFolders()
 	for (auto& item : *items)
 	{
 		auto pBytesBase = item->GetFieldObject(Settings::GuildFolders::Item::FIELD_GUILD_IDS);
-		// TODO: Don't entirely support guild folders right now, so...
 
+		// TODO: Don't support guild folders OR reordering right now, so this will do.
 		if (!pBytesBase) {
 			DbgPrintF("Guild folders: No guilds!");
 			continue;

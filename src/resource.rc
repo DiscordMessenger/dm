@@ -877,6 +877,21 @@ BEGIN
     IDS_NO_PINNED_MESSAGES  "This channel doesn't have any pinned messages... yet."
     IDS_PINNED_MESSAGES_IN  "Pinned Messages In #%s"
     IDS_CONFIRM_LEAVE_GUILD "Are you sure you want to leave %S? You won't be able to rejoin this server unless you are re-invited."
+    IDS_FAILED_TO_INITIALIZE_SAPI "Failed to initialize Speech API"
+    IDS_FAILED_TO_INITIALIZE_SAPI_TITLE 
+                            "Discord Messenger - Could Not Initialize SAPI"
+    IDS_FAILED_TO_SPEAK_MESSAGE "Failed to speak message"
+    IDS_CANNOT_UPLOAD_ATTACHMENT 
+                            "Can't upload attachment to this channel, do you have the permissions?"
+    IDS_FILE_TOO_BIG        "Your files are too powerful! They can't be sent out like that."
+    IDS_FILE_EMPTY          "You can't upload an empty file.  Why would you want to do that, anyway?!"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_FILE_OUT_OF_MEMORY  "Not enough memory to begin the upload process.  Try closing some programs."
+    IDS_FILE_NO_OPEN        "Error, can't open the attached file.  Try again."
+    IDS_FILE_NO_READ        "Error, can't read from the attached file.  Do you have the required permission from Windows?"
 END
 
 #endif    // English (United States) resources

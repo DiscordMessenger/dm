@@ -126,7 +126,8 @@ bool MemberList::OnNotify(LRESULT& out, WPARAM wParam, LPARAM lParam)
 
 	switch (hdr->code)
 	{
-		// TODO: WTF IS THIS?!  Looks like the lParam structure is a hittestinfo after the hdr
+		// TODO: WTF IS THIS?!  Looks like the lParam structure is a hittestinfo after the hdr.
+		// This ain't defined anywhere.  Only modern Windows seems to emit it.  I don't know why
 		case -165:
 		{
 			LPLVHITTESTINFO hti = (LPLVHITTESTINFO)(hdr + 1);
@@ -217,7 +218,6 @@ void MemberList::Initialize()
 	ListView_SetExtendedListViewStyleEx(m_listHwnd, LVS_EX_DOUBLEBUFFER, LVS_EX_DOUBLEBUFFER);
 #endif
 
-	// TODO: Not sure I need this.
 	LVCOLUMN col{};
 	col.mask = LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
 	col.pszText = TEXT("Name");

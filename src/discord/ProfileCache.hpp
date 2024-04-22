@@ -24,6 +24,9 @@ public:
 	// Check if the guild member needs to be requested
 	bool NeedRequestGuildMember(Snowflake user, Snowflake guild);
 
+	// Forget a profile.
+	void ForgetProfile(Snowflake user);
+
 private:
 	void RequestLoadProfile(Snowflake user);
 

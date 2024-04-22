@@ -22,9 +22,9 @@ void TextToSpeech::Initialize()
 
 	if (!SUCCEEDED(hr))
 	{
-		std::string xstr = "Failed to initialize SAPI:\n\n(" + std::to_string((long)hr) + ") " + GetStringFromHResult(hr);
+		std::string xstr = TmGetString(IDS_FAILED_TO_INITIALIZE_SAPI) + "\n\n(" + std::to_string((long)hr) + ") " + GetStringFromHResult(hr);
 		LPCTSTR tstr1 = ConvertCppStringToTString(xstr);
-		MessageBox(g_Hwnd, tstr1, TEXT("Discord Messenger - Could Not Initialize SAPI"), MB_OK | MB_ICONERROR);
+		MessageBox(g_Hwnd, tstr1, TmGetTString(IDS_FAILED_TO_INITIALIZE_SAPI_TITLE), MB_OK | MB_ICONERROR);
 		free((void*)tstr1);
 		// TODO: Let the user know that there is no text to speech.
 		return;
@@ -50,9 +50,9 @@ void TextToSpeech::Speak(const std::string& str)
 	HRESULT hr = g_pVoice->Speak(tstr, SPF_ASYNC, NULL);
 	if (FAILED(hr))
 	{
-		std::string xstr = "Failed to speak message \"" + str + "\":\n\n(" + std::to_string((long)hr) + ") " + GetStringFromHResult(hr);
+		std::string xstr = TmGetString(IDS_FAILED_TO_SPEAK_MESSAGE) + " \"" + str + "\":\n\n(" + std::to_string((long)hr) + ") " + GetStringFromHResult(hr);
 		LPCTSTR tstr1 = ConvertCppStringToTString(xstr);
-		MessageBox(g_Hwnd, tstr1, TEXT("Discord Messenger"), MB_OK | MB_ICONERROR);
+		MessageBox(g_Hwnd, tstr1, TmGetTString(IDS_PROGRAM_NAME), MB_OK | MB_ICONERROR);
 		free((void*)tstr1);
 	}
 	free((void*)tstr);

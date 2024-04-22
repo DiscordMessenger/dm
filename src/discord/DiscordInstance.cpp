@@ -895,7 +895,7 @@ void DiscordInstance::RequestDeleteMessage(Snowflake chan, Snowflake msg)
 void DiscordInstance::UpdateSubscriptions(Snowflake guildId, Snowflake channelId, bool typing, bool activities, bool threads, int rangeMembers)
 {
 	if (guildId == 0) {
-		// TODO
+		// TODO - Subscriptions for DMs and groups.
 		return;
 	}
 
@@ -1938,7 +1938,7 @@ void DiscordInstance::HandleGuildMemberListUpdate_Delete(Snowflake guild, nlohma
 
 	if (member.m_bIsGroup) {
 		// also remove that group
-		//TODO: GetProfileCache()->ForgetProfile(memberId);
+		GetProfileCache()->ForgetProfile(memberId);
 	}
 
 	pGld->m_members.erase(pGld->m_members.begin() + index);

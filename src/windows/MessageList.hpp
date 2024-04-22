@@ -242,12 +242,12 @@ public:
 		m_embedHeight = other.m_embedHeight;
 		m_bNeedUpdate = true;
 
-		// HACK: Update pointers to the attachment data
+		// Update pointers to the attachment data
 		for (size_t i = 0; i < m_attachmentData.size(); i++) {
 			ptrdiff_t offs = m_attachmentData[i].m_pAttachment - other.m_msg.m_attachments.data();
 			m_attachmentData[i].m_pAttachment = (m_msg.m_attachments.data() + offs);
 		}
-		// HACK: Update pointers to the embed data
+		// Update pointers to the embed data
 		for (size_t i = 0; i < m_embedData.size(); i++) {
 			ptrdiff_t offs = m_embedData[i].m_pEmbed - other.m_msg.m_embeds.data();
 			m_embedData[i].m_pEmbed = (m_msg.m_embeds.data() + offs);
@@ -282,12 +282,12 @@ public:
 		m_embedHeight = other.m_embedHeight;
 		m_bNeedUpdate = other.m_bNeedUpdate;
 
-		// HACK: Update pointers to the attachment data
+		// Update pointers to the attachment data
 		for (size_t i = 0; i < m_attachmentData.size(); i++) {
 			ptrdiff_t offs = m_attachmentData[i].m_pAttachment - other.m_msg.m_attachments.data();
 			m_attachmentData[i].m_pAttachment = (m_msg.m_attachments.data() + offs);
 		}
-		// HACK: Update pointers to the embed data
+		// Update pointers to the embed data
 		for (size_t i = 0; i < m_embedData.size(); i++) {
 			ptrdiff_t offs = m_embedData[i].m_pEmbed - other.m_msg.m_embeds.data();
 			m_embedData[i].m_pEmbed = (m_msg.m_embeds.data() + offs);

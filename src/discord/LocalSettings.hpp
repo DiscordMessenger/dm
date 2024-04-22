@@ -44,6 +44,8 @@ private:
 	std::set<std::string> m_trustedDomains;
 	eMessageStyle m_messageStyle = MS_3DFACE;
 	bool m_bReplyMentionDefault = true;
+	int m_width = 1000;
+	int m_height = 700;
 };
 
 LocalSettings* GetLocalSettings();
