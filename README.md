@@ -10,6 +10,11 @@ Its motto: *It's time to ditch MSN and Yahoo.*
 
 Licensed under the MIT license.
 
+## Screenshots
+
+![Windows 2000 screenshot](doc/ss_2000.png)
+![Windows XP screenshot](doc/ss_xp.png)
+
 ## Minimum System Requirements
 
 - Windows 2000 or newer (MinGW version)
