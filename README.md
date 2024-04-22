@@ -10,14 +10,14 @@
 
 - [Libwebp](https://github.com/webmproject/libwebp) - I only need the includes.
 
-- [Httplib](https://github.com/yhirose/cpp-httplib) - I only need the headers. I made modifications
-  to the headers to make it compile with MinGW 6.3.0.\*  I'll add them.
+- [Httplib](https://github.com/yhirose/cpp-httplib) - I only need the headers. I made
+  [modifications](doc/httplib.diff) to the headers to make it compile with MinGW 6.3.0.\*
 
-- [Asio](https://think-async.com/Asio) - I made changes\* to asio that allow Discord Messenger
-  to start on Windows NT 4 (not run though... more details soon)
+- [Asio](https://think-async.com/Asio) - I made [changes](doc/asio.diff) \* to asio that allow
+  Discord Messenger to start on Windows NT 4 (not run though unfortunately)
 
-- [Websocketpp](https://github.com/zaphoyd/websocketpp) - I made some changes\* to make it compile
-  with MinGW 6.3.0.  The modifications will be documented.
+- [Websocketpp](https://github.com/zaphoyd/websocketpp) - I made some [changes](doc/websocketpp.diff)\*
+  to make it compile with MinGW 6.3.0.
 
 \* -- You can use the vanilla version of these libraries, as long as you don't intend on compiling
    with MinGW.  Visual Studio 2022 will always compile these.
@@ -28,3 +28,8 @@ The `hacks` directory contains one file - `winres.h`. It is placed there because
 really any better place to put it.  It is included in the resource file `resource.rc`. It's a hack,
 because MinGW doesn't provide me with such a file, but Visual Studio does (and it keeps re-adding
 the include everytime I modify it)
+
+### You said this starts on Windows NT 4...  why don't you say it works on NT 4?
+
+Because it doesn't.  HTTPS requests work fine, but Websocketpp just won't connect to Discord's
+gateway service.  I'll look into it another time.

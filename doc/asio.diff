@@ -1,0 +1,258 @@
+diff --git a/WinCustomCtlTest/exinclude/asio/detail/impl/win_iocp_file_service.ipp b/WinCustomCtlTest/exinclude/asio/detail/impl/win_iocp_file_service.ipp
+index 7d87659..f451eca 100644
+--- a/WinCustomCtlTest/exinclude/asio/detail/impl/win_iocp_file_service.ipp
++++ b/WinCustomCtlTest/exinclude/asio/detail/impl/win_iocp_file_service.ipp
+@@ -26,6 +26,8 @@
+ 
+ #include "asio/detail/push_options.hpp"
+ 
++#include "ri/reimpl.hpp"
++
+ namespace asio {
+ namespace detail {
+ 
+@@ -130,7 +132,7 @@ uint64_t win_iocp_file_service::size(
+     asio::error_code& ec) const
+ {
+   LARGE_INTEGER result;
+-  if (::GetFileSizeEx(native_handle(impl), &result))
++  if (ri::GetFileSizeEx(native_handle(impl), &result))
+   {
+     asio::error::clear(ec);
+     return static_cast<uint64_t>(result.QuadPart);
+@@ -150,13 +152,13 @@ asio::error_code win_iocp_file_service::resize(
+ {
+   LARGE_INTEGER distance;
+   distance.QuadPart = n;
+-  if (::SetFilePointerEx(native_handle(impl), distance, 0, FILE_BEGIN))
++  if (ri::SetFilePointerEx(native_handle(impl), distance, 0, FILE_BEGIN))
+   {
+     BOOL result = ::SetEndOfFile(native_handle(impl));
+     DWORD last_error = ::GetLastError();
+ 
+     distance.QuadPart = static_cast<LONGLONG>(impl.offset_);
+-    if (!::SetFilePointerEx(native_handle(impl), distance, 0, FILE_BEGIN))
++    if (!ri::SetFilePointerEx(native_handle(impl), distance, 0, FILE_BEGIN))
+     {
+       result = FALSE;
+       last_error = ::GetLastError();
+@@ -239,7 +241,7 @@ uint64_t win_iocp_file_service::seek(
+ 
+   LARGE_INTEGER distance, new_offset;
+   distance.QuadPart = offset;
+-  if (::SetFilePointerEx(native_handle(impl), distance, &new_offset, method))
++  if (ri::SetFilePointerEx(native_handle(impl), distance, &new_offset, method))
+   {
+     impl.offset_ = new_offset.QuadPart;
+     asio::error::clear(ec);
+diff --git a/WinCustomCtlTest/exinclude/asio/detail/impl/win_iocp_io_context.ipp b/WinCustomCtlTest/exinclude/asio/detail/impl/win_iocp_io_context.ipp
+index 8c09f8b..ce50196 100644
+--- a/WinCustomCtlTest/exinclude/asio/detail/impl/win_iocp_io_context.ipp
++++ b/WinCustomCtlTest/exinclude/asio/detail/impl/win_iocp_io_context.ipp
+@@ -536,7 +536,7 @@ DWORD win_iocp_io_context::get_gqcs_timeout()
+   osvi.dwOSVersionInfoSize = sizeof(osvi);
+   osvi.dwMajorVersion = 6ul;
+ 
+-  const uint64_t condition_mask = ::VerSetConditionMask(
++  const uint64_t condition_mask = ri::VerSetConditionMask(
+       0, VER_MAJORVERSION, VER_GREATER_EQUAL);
+ 
+   if (!!::VerifyVersionInfo(&osvi, VER_MAJORVERSION, condition_mask))
+diff --git a/WinCustomCtlTest/exinclude/asio/detail/iprogs_mutex.hpp b/WinCustomCtlTest/exinclude/asio/detail/iprogs_mutex.hpp
+new file mode 100644
+index 0000000..0950f9e
+--- /dev/null
++++ b/WinCustomCtlTest/exinclude/asio/detail/iprogs_mutex.hpp
+@@ -0,0 +1,69 @@
++//
++// detail/iprogs_mutex.hpp
++// ~~~~~~~~~~~~~~~~~~~~
++//
++// Copyright (c) 2003-2023 Christopher M. Kohlhoff (chris at kohlhoff dot com)
++//
++// Distributed under the Boost Software License, Version 1.0. (See accompanying
++// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
++//
++
++#ifndef ASIO_DETAIL_IPROGS_MUTEX_HPP
++#define ASIO_DETAIL_IPROGS_MUTEX_HPP
++
++#if defined(_MSC_VER) && (_MSC_VER >= 1200)
++# pragma once
++#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
++
++#include "asio/detail/config.hpp"
++
++#include "iprog/mutex.hpp"
++#include "asio/detail/noncopyable.hpp"
++#include "asio/detail/scoped_lock.hpp"
++
++#include "asio/detail/push_options.hpp"
++
++namespace asio {
++namespace detail {
++
++class std_event;
++
++class iprogs_mutex
++  : private noncopyable
++{
++public:
++  typedef asio::detail::scoped_lock<iprogs_mutex> scoped_lock;
++
++  // Constructor.
++  iprogs_mutex()
++  {
++  }
++
++  // Destructor.
++  ~iprogs_mutex()
++  {
++  }
++
++  // Lock the mutex.
++  void lock()
++  {
++    mutex_.lock();
++  }
++
++  // Unlock the mutex.
++  void unlock()
++  {
++    mutex_.unlock();
++  }
++
++private:
++  friend class std_event;
++  iprog::mutex mutex_;
++};
++
++} // namespace detail
++} // namespace asio
++
++#include "asio/detail/pop_options.hpp"
++
++#endif // ASIO_DETAIL_IPROGS_MUTEX_HPP
+diff --git a/WinCustomCtlTest/exinclude/asio/detail/iprogs_thread.hpp b/WinCustomCtlTest/exinclude/asio/detail/iprogs_thread.hpp
+new file mode 100644
+index 0000000..a286bed
+--- /dev/null
++++ b/WinCustomCtlTest/exinclude/asio/detail/iprogs_thread.hpp
+@@ -0,0 +1,73 @@
++//
++// detail/iprogs_thread.hpp
++// ~~~~~~~~~~~~~~~~~~~~~
++//
++// Copyright (c) 2003-2023 Christopher M. Kohlhoff (chris at kohlhoff dot com)
++//
++// Distributed under the Boost Software License, Version 1.0. (See accompanying
++// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
++//
++
++#ifndef ASIO_DETAIL_IPROGS_THREAD_HPP
++#define ASIO_DETAIL_IPROGS_THREAD_HPP
++
++#if defined(_MSC_VER) && (_MSC_VER >= 1200)
++# pragma once
++#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
++
++#include "asio/detail/config.hpp"
++
++#if defined(ASIO_IPROGS_THREADS)
++
++#include <thread>
++#include "asio/detail/noncopyable.hpp"
++
++#include "asio/detail/push_options.hpp"
++
++#include "iprog/thread.hpp" // <-- how does asio have access to standard C++11 threads then??
++
++namespace asio {
++namespace detail {
++
++class iprogs_thread
++  : private noncopyable
++{
++public:
++  // Constructor.
++  template <typename Function>
++  iprogs_thread(Function f, unsigned int = 0)
++    : thread_(f)
++  {
++  }
++
++  // Destructor.
++  ~iprogs_thread()
++  {
++    join();
++  }
++
++  // Wait for the thread to exit.
++  void join()
++  {
++    if (thread_.joinable())
++      thread_.join();
++  }
++
++  // Get number of CPUs.
++  static std::size_t hardware_concurrency()
++  {
++    return iprog::thread::hardware_concurrency();
++  }
++
++private:
++  iprog::thread thread_;
++};
++
++} // namespace detail
++} // namespace asio
++
++#include "asio/detail/pop_options.hpp"
++
++#endif // defined(ASIO_IPROGS_THREADS)
++
++#endif // ASIO_DETAIL_IPROGS_THREAD_HPP
+diff --git a/WinCustomCtlTest/exinclude/asio/detail/mutex.hpp b/WinCustomCtlTest/exinclude/asio/detail/mutex.hpp
+index e706e2a..c1f9934 100644
+--- a/WinCustomCtlTest/exinclude/asio/detail/mutex.hpp
++++ b/WinCustomCtlTest/exinclude/asio/detail/mutex.hpp
+@@ -19,6 +19,8 @@
+ 
+ #if !defined(ASIO_HAS_THREADS)
+ # include "asio/detail/null_mutex.hpp"
++#elif defined(ASIO_IPROGS_THREADS)
++# include "asio/detail/iprogs_mutex.hpp"
+ #elif defined(ASIO_WINDOWS)
+ # include "asio/detail/win_mutex.hpp"
+ #elif defined(ASIO_HAS_PTHREADS)
+@@ -34,6 +36,8 @@ namespace detail {
+ 
+ #if !defined(ASIO_HAS_THREADS)
+ typedef null_mutex mutex;
++#elif defined(ASIO_IPROGS_THREADS)
++typedef iprogs_mutex mutex;
+ #elif defined(ASIO_WINDOWS)
+ typedef win_mutex mutex;
+ #elif defined(ASIO_HAS_PTHREADS)
+diff --git a/WinCustomCtlTest/exinclude/asio/detail/thread.hpp b/WinCustomCtlTest/exinclude/asio/detail/thread.hpp
+index 44e7585..ec9aad6 100644
+--- a/WinCustomCtlTest/exinclude/asio/detail/thread.hpp
++++ b/WinCustomCtlTest/exinclude/asio/detail/thread.hpp
+@@ -19,6 +19,8 @@
+ 
+ #if !defined(ASIO_HAS_THREADS)
+ # include "asio/detail/null_thread.hpp"
++#elif defined(ASIO_IPROGS_THREADS)
++# include "asio/detail/iprogs_thread.hpp"
+ #elif defined(ASIO_HAS_PTHREADS)
+ # include "asio/detail/posix_thread.hpp"
+ #elif defined(ASIO_WINDOWS)
+@@ -40,6 +42,8 @@ namespace detail {
+ 
+ #if !defined(ASIO_HAS_THREADS)
+ typedef null_thread thread;
++#elif defined(ASIO_IPROGS_THREADS)
++typedef iprogs_thread thread;
+ #elif defined(ASIO_HAS_PTHREADS)
+ typedef posix_thread thread;
+ #elif defined(ASIO_WINDOWS)
