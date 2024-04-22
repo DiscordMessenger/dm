@@ -33,12 +33,19 @@ You can build this project in two ways.
 
 This method can only support down to Windows XP SP2, but it's easier to get started with.
 
-1. Install OpenSSL for Win32. You can acquire it from the following website:
-https://slproweb.com/products/Win32OpenSSL.html, or if that one's dead, compile OpenSSL with VS
-tools.  Make sure to install the Win32 version, not the x64 one.
+1. Compile OpenSSL for Win32, or find a distribution of OpenSSL 3.X which also declares the
+APIs deprecated in OpenSSL 3.X.
+
+If you want to have a quick attempt, you can use the following distribution:
+https://web.archive.org/web/20211215214922/https://slproweb.com/download/Win32OpenSSL-3_0_1.exe
+
+However, please note that this version may have security vulnerabilities that freshly made
+OpenSSL distributions don't have.
+
+I'll soon look for alternatives to OpenSSL.Install OpenSSL for Win32. You can acquire it from the following website:
 
 2. Add an entry to your user/system environment variables called `OPENSSL_INSTALL`.  Set its value
-to the place where you installed OpenSSL (for example, `C:\Program Files (x86)\OpenSSL-Win32`.
+to the place where your OpenSSL distribution is located.
 
 3. If you want to use a later version of libwebp, acquire libwebp from the following web site:
 https://developers.google.com/speed/webp/download.  Extract the archive and place "libwebp.lib" in
