@@ -775,7 +775,7 @@ STRINGTABLE
 BEGIN
     IDS_PROGRAM_NAME        "Discord Messenger"
     IDS_MY_ACCOUNT          "My Account"
-    IDS_WELCOME_MSG         "Welcome to Discord Messenger!  Before you use the app, you must first log in.\n\nDISCLAIMER: Using third party clients is against Discord's TOS!  Although the risk to get banned is low, the risk is there!  The author of this software is not responsible for the status of your Discord account."
+    IDS_WELCOME_MSG         "Welcome to Discord Messenger! Before you use the app, you must first log in.\n\nDISCLAIMER: Using third party clients is against Discord's TOS! Although the risk to get banned is low, the risk is there! The author of this software is not responsible for the status of your Discord account.\n\nDISCLAIMER: This program is in beta. As such, you may experience instability or glitches. Please file an issue if that happens!"
     IDS_PRIVACY_SAFETY      "Privacy & Safety"
     IDS_MESSAGE_TOO_LONG_MSG 
                             "Your message is too long...\n\nYou've hit the 2000 character limit.  Speak your mind with 2x longer messages, send larger file uploads and more with Discord Nitro! "

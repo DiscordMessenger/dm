@@ -646,16 +646,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pMemberList  = MemberList ::Create(hWnd, &rect);
 			g_pMessageEditor = MessageEditor::Create(hWnd, &rect);
 			g_pLoadingMessage = LoadingMessage::Create(hWnd, &rcLoading);
-/*
-			if(!g_pMessageList){MessageBox(hWnd, TEXT("CRAAAAAAAP 1"), TEXT("CRAAAP"), MB_OK);exit(1);}
-			if(!g_pChannelView){MessageBox(hWnd, TEXT("CRAAAAAAAP 2"), TEXT("CRAAAP"), MB_OK);exit(1);}
-			if(!g_pProfileView){MessageBox(hWnd, TEXT("CRAAAAAAAP 3"), TEXT("CRAAAP"), MB_OK);exit(1);}
-			if(!g_pGuildHeader){MessageBox(hWnd, TEXT("CRAAAAAAAP 4"), TEXT("CRAAAP"), MB_OK);exit(1);}
-			if(!g_pGuildLister){MessageBox(hWnd, TEXT("CRAAAAAAAP 5"), TEXT("CRAAAP"), MB_OK);exit(1);}
-			if(!g_pMemberList ){MessageBox(hWnd, TEXT("CRAAAAAAAP 6"), TEXT("CRAAAP"), MB_OK);exit(1);}
-			if(!g_pMessageEditor){MessageBox(hWnd, TEXT("CRAAAAAAAP 7"), TEXT("CRAAAP"), MB_OK);exit(1);}
-			if(!g_pLoadingMessage){MessageBox(hWnd, TEXT("CRAAAAAAAP 8"), TEXT("CRAAAP"), MB_OK);exit(1);}
-*/
+
 			ProperlySizeControls(hWnd);
 
 			SendMessage(hWnd, WM_LOGINAGAIN, 0, 0);
@@ -761,9 +752,13 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_DESTROY:
 		{
-			GetDiscordInstance()->CloseGatewaySession();
-			GetAvatarCache()->WipeBitmaps();
-			g_pLoadingMessage->Hide();
+			if (GetDiscordInstance())
+				GetDiscordInstance()->CloseGatewaySession();
+			if (GetAvatarCache())
+				GetAvatarCache()->WipeBitmaps();
+			if (g_pLoadingMessage)
+				g_pLoadingMessage->Hide();
+
 			PostQuitMessage(0);
 			break;
 		}
