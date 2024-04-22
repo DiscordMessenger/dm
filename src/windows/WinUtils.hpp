@@ -58,6 +58,7 @@ int GetSystemDpiU();
 int GetSystemDPI(); // cached
 void ForgetSystemDPI();
 int ScaleByDPI(int pos);
+int UnscaleByDPI(int pos);
 void ScreenToClientRect(HWND hWnd, RECT* rect);
 void ShiftWindow(HWND hWnd, int diffX, int diffY, bool bRepaint);
 void ResizeWindow(HWND hWnd, int diffX, int diffY, bool byLeft, bool byTop, bool bRepaint);

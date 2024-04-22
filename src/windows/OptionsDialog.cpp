@@ -131,12 +131,7 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 			eExplicitFilter filter = GetSettingsManager()->GetExplicitFilter();
 			CheckRadioButton(hwndDlg, IDC_SDM_LEVEL0, IDC_SDM_LEVEL2, IDC_SDM_LEVEL0 + int(filter));
 
-			SendMessage(
-				GetDlgItem(hwndDlg, IDC_ENABLE_DMS),
-				BM_SETCHECK,
-				GetSettingsManager()->GetDMBlockDefault() ? BST_UNCHECKED : BST_CHECKED,
-				0
-			);
+			CheckDlgButton(hwndDlg, IDC_ENABLE_DMS, GetSettingsManager()->GetDMBlockDefault() ? BST_UNCHECKED : BST_CHECKED);
 			break;
 		}
 		case PG_APPEARANCE:
@@ -163,6 +158,10 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 				IDC_RADIO_FLAT_2,
 				mStyleId
 			);
+
+			CheckDlgButton(hwndDlg, IDC_SAVE_WINDOW_SIZE, GetLocalSettings()->GetSaveWindowSize() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_START_MAXIMIZED,  GetLocalSettings()->GetStartMaximized() ? BST_CHECKED : BST_UNCHECKED);
+
 			break;
 		}
 	}
@@ -260,6 +259,12 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 						case IDC_RADIO_FLAT_2:
 							GetLocalSettings()->SetMessageStyle(MS_FLATBR);
 							SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
+							break;
+						case IDC_SAVE_WINDOW_SIZE:
+							GetLocalSettings()->SetSaveWindowSize(IsDlgButtonChecked(hWnd, IDC_SAVE_WINDOW_SIZE));
+							break;
+						case IDC_START_MAXIMIZED:
+							GetLocalSettings()->SetStartMaximized(IsDlgButtonChecked(hWnd, IDC_START_MAXIMIZED));
 							break;
 					}
 					break;

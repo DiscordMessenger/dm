@@ -57,6 +57,11 @@ int ScaleByDPI(int pos)
 	return MulDiv( pos, GetSystemDPI(), DEFAULT_DPI );
 }
 
+int UnscaleByDPI(int pos)
+{
+	return MulDiv( pos, DEFAULT_DPI, GetSystemDPI() );
+}
+
 void ScreenToClientRect(HWND hWnd, RECT* rect)
 {
 	POINT p1 { rect->left, rect->top }, p2 { rect->right, rect->bottom };

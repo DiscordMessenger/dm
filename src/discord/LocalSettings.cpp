@@ -29,11 +29,15 @@ LocalSettings::LocalSettings()
 
 bool LocalSettings::Load()
 {
+	m_bIsFirstStart = false;
+
 	std::string fileName = GetBasePath() + "/settings.json";
 	std::string data = LoadEntireTextFile(fileName);
 
-	if (data.empty())
+	if (data.empty()) {
+		m_bIsFirstStart = true;
 		return false;
+	}
 
 	m_messageStyle = MS_GRADIENT;
 
@@ -54,16 +58,25 @@ bool LocalSettings::Load()
 	if (j.contains("ReplyMentionDefault"))
 		m_bReplyMentionDefault = j["ReplyMentionDefault"];
 
-	if (j.contains("WindowWidth"))
-		m_width = j["WindowWidth"];
+	if (j.contains("SaveWindowSize"))
+		m_bSaveWindowSize = j["SaveWindowSize"];
 
-	if (j.contains("WindowHeight"))
-		m_height = j["WindowHeight"];
+	if (j.contains("StartMaximized"))
+		m_bStartMaximized = j["StartMaximized"];
 
-	if (m_width < 500)
-		m_width = 500;
-	if (m_height < 300)
-		m_height = 300;
+	if (m_bSaveWindowSize)
+	{
+		if (j.contains("WindowWidth"))
+			m_width = j["WindowWidth"];
+
+		if (j.contains("WindowHeight"))
+			m_height = j["WindowHeight"];
+
+		if (m_width < 900)
+			m_width = 900;
+		if (m_height < 600)
+			m_height = 600;
+	}
 	
 	return true;
 }
@@ -80,8 +93,12 @@ bool LocalSettings::Save()
 	j["MessageStyle"] = int(m_messageStyle);
 	j["TrustedDomains"] = trustedDomains;
 	j["ReplyMentionDefault"] = m_bReplyMentionDefault;
-	j["WindowWidth"]  = m_width;
-	j["WindowHeight"] = m_height;
+	j["StartMaximized"] = m_bStartMaximized;
+	j["SaveWindowSize"] = m_bSaveWindowSize;
+	if (m_bSaveWindowSize) {
+		j["WindowWidth"] = m_width;
+		j["WindowHeight"] = m_height;
+	}
 
 	// save the file
 	std::string fileName = GetBasePath() + "/settings.json";

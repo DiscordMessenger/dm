@@ -183,8 +183,6 @@ void OnUpdateAvatar(const std::string& resid)
 	}
 }
 
-const int g_Width = 1000, g_Height = 700; // TODO - Fetch from LocalSettings instead
-
 bool g_bMemberListVisible = false;
 
 void ProperlySizeControls(HWND hWnd)
@@ -582,10 +580,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			ForgetSystemDPI();
 			g_ProfilePictureSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF);
 
-			SetupCachePathIfNeeded();
 			GetWebsocketClient()->Init();
 
-			if (!GetLocalSettings()->Load())
+			if (GetLocalSettings()->IsFirstStart())
 			{
 				MessageBox(
 					NULL,
@@ -647,8 +644,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pMessageEditor = MessageEditor::Create(hWnd, &rect);
 			g_pLoadingMessage = LoadingMessage::Create(hWnd, &rcLoading);
 
-			ProperlySizeControls(hWnd);
-
 			SendMessage(hWnd, WM_LOGINAGAIN, 0, 0);
 			break;
 		}
@@ -679,10 +674,16 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			DismissProfilePopout();
 			g_pLoadingMessage->Hide();
 			break;
-		case WM_SIZE:
+		case WM_SIZE: {
+			int width = LOWORD(lParam);
+			int height = HIWORD(lParam);
+			// Save the new size
+			GetLocalSettings()->SetWindowSize(UnscaleByDPI(width), UnscaleByDPI(height));
+
 			DismissProfilePopout();
 			ProperlySizeControls(hWnd);
 			break;
+		}
 		case WM_COMMAND:
 		{
 			switch (LOWORD(wParam))
@@ -1126,13 +1127,21 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	InitializeCOM(); // important because otherwise TTS/shell stuff might not work
 	InitCommonControls(); // actually a dummy but adds the needed reference to comctl32
 	// (see https://devblogs.microsoft.com/oldnewthing/20050718-16/?p=34913 )
-	XSetProcessDPIAware(); // we aren't actually doing any scaling though. Cheap ass
+	XSetProcessDPIAware();
 
 	g_pFrontEnd = new Frontend_Win32;
 	g_pHTTPClient = new NetworkerThreadManager;
 
 	// Create a background brush.
 	g_backgroundBrush = GetSysColorBrush(COLOR_3DFACE);
+
+	SetupCachePathIfNeeded();
+	GetLocalSettings()->Load();
+
+	int wndWidth = 0, wndHeight = 0;
+	bool startMaximized = false;
+	GetLocalSettings()->GetWindowSize(wndWidth, wndHeight);
+	startMaximized = GetLocalSettings()->GetStartMaximized();
 
 	// Initialize the window class.
 	WNDCLASS& wc = g_MainWindowClass;
@@ -1166,14 +1175,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	// Create some fonts.
 	InitializeFonts();
 
+	int flags = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+	if (startMaximized) {
+		//nShowCmd = SW_SHOWMAXIMIZED;
+		flags |= WS_MAXIMIZE;
+	}
+
 	g_Hwnd = CreateWindow(
 		/* class */      TEXT("DiscordMessengerClass"),
 		/* title */      TmGetTString(IDS_PROGRAM_NAME),
-		/* style */      WS_OVERLAPPEDWINDOW,
+		/* style */      flags,
 		/* x pos */      CW_USEDEFAULT,
 		/* y pos */      CW_USEDEFAULT,
-		/* x siz */      ScaleByDPI(g_Width),
-		/* y siz */      ScaleByDPI(g_Height),
+		/* x siz */      ScaleByDPI(wndWidth),
+		/* y siz */      ScaleByDPI(wndHeight),
 		/* parent */     NULL,
 		/* menu  */      NULL,
 		/* instance */   hInstance,
@@ -1190,9 +1205,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	}
 	else {
 		TextToSpeech::Initialize();
-
-		ShowWindow(g_Hwnd, nShowCmd);
-		UpdateWindow(g_Hwnd);
 
 		// Run the message loop.
 		extern HWND g_ProfilePopoutHwnd;

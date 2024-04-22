@@ -165,9 +165,6 @@ void LoadingMessage::InitializeClass()
 LoadingMessage* LoadingMessage::Create(HWND hwnd, LPRECT pRect, int comboId)
 {
 	LoadingMessage* newThis = new LoadingMessage;
-
 	newThis->parHwnd = hwnd;
-	newThis->CreateWnd();
-
 	return newThis;
 }

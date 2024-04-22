@@ -38,12 +38,36 @@ public:
 	void SetReplyMentionByDefault(bool b) {
 		m_bReplyMentionDefault = b;
 	}
+	void SetWindowSize(int w, int h) {
+		m_width = w; m_height = h;
+	}
+	void GetWindowSize(int& w, int& h) {
+		w = m_width; h = m_height;
+	}
+	void SetSaveWindowSize(bool b) {
+		m_bSaveWindowSize = b;
+	}
+	bool GetSaveWindowSize() const {
+		return m_bSaveWindowSize;
+	}
+	void SetStartMaximized(bool b) {
+		m_bStartMaximized = b;
+	}
+	bool GetStartMaximized() const {
+		return m_bStartMaximized;
+	}
+	bool IsFirstStart() const {
+		return m_bIsFirstStart;
+	}
 
 private:
 	std::string m_token;
 	std::set<std::string> m_trustedDomains;
 	eMessageStyle m_messageStyle = MS_3DFACE;
 	bool m_bReplyMentionDefault = true;
+	bool m_bSaveWindowSize = false;
+	bool m_bStartMaximized = false;
+	bool m_bIsFirstStart = false;
 	int m_width = 1000;
 	int m_height = 700;
 };

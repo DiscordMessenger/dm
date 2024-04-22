@@ -15,6 +15,7 @@ public:
 	void Show();
 	void Hide();
 	void DrawLoading(HDC hdc);
+	void UpdateSize(int width, int height);
 
 public:
 	static WNDCLASS g_LoadingMessageClass;
