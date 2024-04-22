@@ -875,9 +875,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			m.SetTime(time(NULL));
 			m.m_dateFull = "Sending...";
 			m.m_dateCompact = "Sending...";
-			if (lastTime / 86400 != m.m_dateTime / 86400)
-				m.m_bIsDateGap = true;
-
 			g_pMessageList->AddMessage(m);
 			return 0;
 		}

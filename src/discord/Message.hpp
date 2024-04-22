@@ -100,7 +100,6 @@ public:
 	std::string m_editedTextCompact = "";
 	time_t m_dateTime = 0;
 	time_t m_timeEdited = 0;
-	bool m_bIsDateGap = false;
 	std::set<Snowflake> m_userMentions;
 	std::set<Snowflake> m_roleMentions;
 	bool m_bMentionedEveryone = false;

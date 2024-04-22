@@ -350,24 +350,31 @@ void MessageList::MeasureMessage(
 	int& datewidth,
 	int& replymsgwidth,
 	int& replyauthwidth,
-	int& replyheight)
+	int& replyheight,
+	int placeinchain)
 {
 	bool bIsCompact = IsCompact();
 
 	// measure the author text
 	HGDIOBJ gdiObj = SelectObject(hdc, g_AuthorTextFont);
 	RECT rcCommon1 = msgRect, rcCommon2;
-	rcCommon1.right  -= ScaleByDPI(20);
+	RECT rc;
+	rcCommon1.right -= ScaleByDPI(20);
 	rcCommon1.bottom -= ScaleByDPI(20);
-	rcCommon2 = rcCommon1;
-	if (!bIsCompact)
-		rcCommon1.right -= ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
+	if (placeinchain == 0) {
+		rcCommon2 = rcCommon1;
+		if (!bIsCompact)
+			rcCommon1.right -= ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 
-	RECT rc = rcCommon1;
-	DrawText(hdc, strAuth, -1, &rc, DT_CALCRECT | DT_NOPREFIX);
-	authheight = rc.bottom - rc.top, authwidth = rc.right - rc.left;
+		rc = rcCommon1;
+		DrawText(hdc, strAuth, -1, &rc, DT_CALCRECT | DT_NOPREFIX);
+		authheight = rc.bottom - rc.top, authwidth = rc.right - rc.left;
+	}
+	else {
+		authwidth = authheight = 0;
+	}
 	
-	if (strReplyMsg || strReplyAuth)
+	if (placeinchain == 0 && (strReplyMsg || strReplyAuth))
 	{
 		int replyheight2 = 0;
 		SelectObject(hdc, g_ReplyTextFont);
@@ -392,7 +399,7 @@ void MessageList::MeasureMessage(
 		replyheight = replyauthwidth = replymsgwidth = 0;
 	}
 
-	if (bIsCompact)
+	if (bIsCompact || placeinchain == 0)
 	{
 		datewidth = 0;
 		SelectObject(hdc, g_DateTextFont);
@@ -646,8 +653,47 @@ void MessageList::DeleteMessage(Snowflake sf)
 
 	// delete it
 	RECT messageRect = iter->m_rect;
+	RECT invalidateLater{};
+	bool invalidateLaterExists = false;
 	int messageHeight = iter->m_height;
-	m_messages.erase(--(iter.base())); // still stupid that I have to do this decrement crap
+
+	// Adjust the message afterwards
+	std::list<MessageItem>::iterator niter = --(iter.base()), afteriter = niter, beforeiter = niter;
+	++afteriter;
+
+	if (afteriter != m_messages.end())
+	{
+		Snowflake sf = Snowflake(-1);
+		time_t tm = 0;
+		int pl = 0;
+		if (beforeiter != m_messages.begin()) {
+			--beforeiter;
+			sf = beforeiter->m_msg.m_author_snowflake;
+			tm = beforeiter->m_msg.m_dateTime;
+			pl = beforeiter->m_placeInChain;
+		}
+
+		bool shouldRecalc = false;
+		if (ShouldStartNewChain(sf, tm, pl, *afteriter)) {
+			afteriter->m_placeInChain = 0; // don't care about the rest to be honest
+			shouldRecalc = true;
+		}
+
+		if (ShouldBeDateGap(tm, afteriter->m_msg.m_dateTime)) {
+			afteriter->m_bIsDateGap = true;
+		}
+
+		if (shouldRecalc) {
+			// recalculate
+			int oldHeight = afteriter->m_height;
+			DetermineMessageMeasurements(*afteriter);
+			int diff = afteriter->m_height - oldHeight;
+			messageHeight -= diff;
+			// TODO: invalidatelater crap
+		}
+	}
+
+	m_messages.erase(niter); // still stupid that I have to do this decrement crap
 
 	UpdateScrollBar(-messageHeight, -messageHeight, false, false);
 
@@ -682,7 +728,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit)
 	int oldYMessage = 0;
 	for (auto& msg : m_messages) {
 		if (msg.m_msg.m_snowflake == m_firstShownMessage) {
-			if (m_bManagedByOwner && msg.m_msg.m_bIsDateGap)
+			if (m_bManagedByOwner && msg.m_bIsDateGap)
 				oldYMessage += DATE_GAP_HEIGHT;
 			break;
 		}
@@ -850,7 +896,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit)
 	int newYMessage = 0;
 	for (auto& msg : m_messages) {
 		if (msg.m_msg.m_snowflake == m_firstShownMessage) {
-			if (!m_bManagedByOwner && msg.m_msg.m_bIsDateGap)
+			if (!m_bManagedByOwner && msg.m_bIsDateGap)
 				newYMessage += DATE_GAP_HEIGHT;
 			break;
 		}
@@ -1257,21 +1303,6 @@ void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem
 	int iconSize = ScaleByDPI(32);
 	int rectHeight = childAttachRect.bottom - childAttachRect.top;
 
-	if (inView)
-	{
-		DrawIconEx(
-			hdc,
-			childAttachRect.left + 4,
-			childAttachRect.top + rectHeight / 2 - iconSize / 2,
-			LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_FILE)),
-			iconSize,
-			iconSize,
-			0,
-			NULL,
-			DI_COMPAT | DI_NORMAL
-		);
-	}
-
 	COLORREF old = CLR_NONE;
 	if (attachItem.m_bHighlighted && inView)
 		old = SetTextColor(hdc, RGB(0, 0, 255));
@@ -1290,14 +1321,31 @@ void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem
 	textRect.left += ScaleByDPI(5);
 	textRect.right = textRect.left + rcMeasure.right;
 
+	childAttachRect.right = childAttachRect.left + iconSize + iconSize + width + ScaleByDPI(20);
+	attachRect.bottom = attachRect.top = childAttachRect.bottom + ATTACHMENT_GAP;
+
 	if (inView)
+	{
+		DrawEdge(hdc, &childAttachRect, BDR_RAISEDINNER | BDR_RAISEDOUTER, BF_RECT | BF_MIDDLE);
 		DrawText(hdc, name, -1, &textRect, DT_NOPREFIX | DT_NOCLIP);
+		DrawIconEx(
+			hdc,
+			childAttachRect.left + 4,
+			childAttachRect.top + rectHeight / 2 - iconSize / 2,
+			LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_FILE)),
+			iconSize,
+			iconSize,
+			0,
+			NULL,
+			DI_COMPAT | DI_NORMAL
+		);
+	}
 
 	attachItem.m_textRect = textRect;
 
 	if (attachItem.m_bHighlighted && inView)
 		SetTextColor(hdc, old);
-
+	
 	LPCTSTR sizeStr = attachItem.m_sizeText;
 	textRect.top += rcMeasure.bottom;
 	textRect.bottom += rcMeasure.bottom;
@@ -1309,9 +1357,6 @@ void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem
 	}
 
 	int dlIconSize = iconSize / 2;
-
-	childAttachRect.right = childAttachRect.left + iconSize + iconSize + width + ScaleByDPI(20);
-	attachRect.bottom = attachRect.top = childAttachRect.bottom + ATTACHMENT_GAP;
 
 	int dlIconX = childAttachRect.right - 4 - iconSize + (iconSize - dlIconSize) / 2;
 	int dlIconY = childAttachRect.top + rectHeight / 2 - dlIconSize / 2;
@@ -1329,8 +1374,6 @@ void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem
 			NULL,
 			DI_NORMAL | DI_COMPAT
 		);
-
-		DrawEdge(hdc, &childAttachRect, BDR_RAISEDINNER | BDR_RAISEDOUTER, BF_RECT);
 	}
 
 	attachItem.m_boxRect = childAttachRect;
@@ -1732,15 +1775,17 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		m_firstShownMessage = item.m_msg.m_snowflake;
 
 	const int pfpOffset = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
+	const eMessageStyle mStyle = GetLocalSettings()->GetMessageStyle();
+	const bool isChainBegin = item.m_placeInChain == 0;
+	const bool isChainCont = item.m_placeInChain != 0;
 
-	eMessageStyle mStyle = GetLocalSettings()->GetMessageStyle();
-
-	rc.left   += ScaleByDPI(10);
-	rc.top    += ScaleByDPI(10);
-	rc.right  -= ScaleByDPI(10);
+	rc.left += ScaleByDPI(10);
+	rc.right -= ScaleByDPI(10);
 	rc.bottom -= ScaleByDPI(10);
+	if (isChainBegin)
+		rc.top += ScaleByDPI(10);
 
-	if (!m_bManagedByOwner && item.m_msg.m_bIsDateGap)
+	if (!m_bManagedByOwner && item.m_bIsDateGap && isChainBegin)
 	{
 		RECT dgRect = msgRect;
 		dgRect.bottom = dgRect.top + DATE_GAP_HEIGHT;
@@ -1776,9 +1821,9 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		POINT old;
 		HGDIOBJ oldob = SelectObject(hdc, GetStockPen(DC_PEN));
 		MoveToEx(hdc, l1, (dgRect.top + dgRect.bottom) / 2, &old);
-		LineTo  (hdc, r1, (dgRect.top + dgRect.bottom) / 2);
+		LineTo(hdc, r1, (dgRect.top + dgRect.bottom) / 2);
 		MoveToEx(hdc, l2, (dgRect.top + dgRect.bottom) / 2, NULL);
-		LineTo  (hdc, r2, (dgRect.top + dgRect.bottom) / 2);
+		LineTo(hdc, r2, (dgRect.top + dgRect.bottom) / 2);
 		MoveToEx(hdc, old.x, old.y, NULL);
 		SelectObject(hdc, oldob);
 
@@ -1811,18 +1856,26 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 				c2 = tmp;
 			}
 
+			if (isChainCont) {
+				// Just render a flat background using the bottom color
+				COLORREF oldCol = SetDCBrushColor(hdc, c2);
+				FillRect(hdc, &msgRect, GetStockBrush(DC_BRUSH));
+				SetDCBrushColor(hdc, oldCol);
+				break;
+			}
+
 			TRIVERTEX vt[2] = { {}, {} };
 			vt[0].x = msgRect.left;
 			vt[0].y = msgRect.top;
 			vt[1].x = msgRect.right;
 			vt[1].y = msgRect.bottom;
-			vt[0].Red   = ( c1 & 0xFF) << 8;
+			vt[0].Red = (c1 & 0xFF) << 8;
 			vt[0].Green = ((c1 >> 8) & 0xFF) << 8;
-			vt[0].Blue  = ((c1 >> 16) & 0xFF) << 8;
+			vt[0].Blue = ((c1 >> 16) & 0xFF) << 8;
 			vt[0].Alpha = 0;
-			vt[1].Red   = int( c2 & 0xFF) << 8;
+			vt[1].Red = int(c2 & 0xFF) << 8;
 			vt[1].Green = int((c2 >> 8) & 0xFF) << 8;
-			vt[1].Blue  = int((c2 >> 16) & 0xFF) << 8;
+			vt[1].Blue = int((c2 >> 16) & 0xFF) << 8;
 			vt[1].Alpha = 0;
 
 			GRADIENT_RECT grect;
@@ -1923,76 +1976,79 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	// draw the reply if needed
 	int replyOffset = 0;
 
-	if (item.m_msg.m_bHaveReferencedMessage && !isActionMessage)
+	if (item.m_msg.m_bHaveReferencedMessage && !isActionMessage && isChainBegin)
 		replyOffset = DrawMessageReply(hdc, item, rc);
 
 	rc.top += replyOffset;
 
-	// draw the author text
-	SelectObject(hdc, item.m_authorHighlighted ? g_AuthorTextUnderlinedFont : g_AuthorTextFont);
+	if (isChainBegin)
+	{
+		// draw the author text
+		SelectObject(hdc, item.m_authorHighlighted ? g_AuthorTextUnderlinedFont : g_AuthorTextFont);
 
-	RECT rcb = rc;
-	DrawText(hdc, strAuth, -1, &rc, DT_CALCRECT);
-	int auth_wid = rc.right - rc.left;
-	int auth_hei = rc.bottom - rc.top;
-	rc = rcb;
+		RECT rcb = rc;
+		DrawText(hdc, strAuth, -1, &rc, DT_CALCRECT);
+		int auth_wid = rc.right - rc.left;
+		int auth_hei = rc.bottom - rc.top;
+		rc = rcb;
 
-	COLORREF old = CLR_NONE;
-	if (inView) {
-		if (item.m_authorHighlighted) {
-			old = SetTextColor(hdc, RGB(0, 0, 255));
+		COLORREF old = CLR_NONE;
+		if (inView) {
+			if (item.m_authorHighlighted) {
+				old = SetTextColor(hdc, RGB(0, 0, 255));
+			}
+			else {
+				// figure out the color of the author
+				Profile* pf = GetProfileCache()->LookupProfile(item.m_msg.m_author_snowflake, "", "", "", false);
+				COLORREF cr = GetNameColor(pf, m_guildID);
+
+				if (cr != CLR_NONE)
+					old = SetTextColor(hdc, cr);
+			}
 		}
-		else {
-			// figure out the color of the author
-			Profile* pf = GetProfileCache()->LookupProfile(item.m_msg.m_author_snowflake, "", "", "", false);
-			COLORREF cr = GetNameColor(pf, m_guildID);
 
-			if (cr != CLR_NONE)
-				old = SetTextColor(hdc, cr);
+		rc.left += authorOffset;
+		rc.right += authorOffset;
+		if (inView)
+			DrawText(hdc, strAuth, -1, &rc, DT_NOPREFIX | DT_NOCLIP);
+
+		if (old != CLR_NONE) {
+			SetTextColor(hdc, old);
 		}
-	}
 
-	rc.left += authorOffset;
-	rc.right += authorOffset;
-	if (inView)
-		DrawText(hdc, strAuth, -1, &rc, DT_NOPREFIX | DT_NOCLIP);
+		item.m_authorRect = rc;
+		item.m_authorRect.bottom = item.m_authorRect.top + auth_hei;
+		item.m_authorRect.right = item.m_authorRect.left + auth_wid;
 
-	if (old != CLR_NONE) {
-		SetTextColor(hdc, old);
-	}
+		// draw the date text
+		SelectObject(hdc, g_DateTextFont);
 
-	item.m_authorRect = rc;
-	item.m_authorRect.bottom = item.m_authorRect.top + auth_hei;
-	item.m_authorRect.right = item.m_authorRect.left + auth_wid;
+		int oldLeft = rc.left;
+		if (inView) {
+			if (!bIsCompact || isActionMessage)
+				rc.left += authwidth + ScaleByDPI(10);
+			rc.left += dateOffset;
+			rc.left -= authorOffset;
+			DrawText(hdc, strDate, -1, &rc, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP);
+			if (item.m_msg.m_timeEdited) {
+				RECT rcMeasure{};
+				DrawText(hdc, strDate, -1, &rcMeasure, DT_SINGLELINE | DT_NOPREFIX | DT_CALCRECT);
+				rc.left += rcMeasure.right - rcMeasure.left + ScaleByDPI(5);
+				DrawText(hdc, strEditDate, -1, &rc, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP);
+				rc.left -= rcMeasure.right - rcMeasure.left + ScaleByDPI(5);
+			}
+		}
+		rc.left = oldLeft;
 
-	// draw the date text
-	SelectObject(hdc, g_DateTextFont);
-
-	int oldLeft = rc.left;
-	if (inView) {
-		if (!bIsCompact || isActionMessage)
-			rc.left += authwidth + ScaleByDPI(10);
-		rc.left += dateOffset;
 		rc.left -= authorOffset;
-		DrawText(hdc, strDate, -1, &rc, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP);
-		if (item.m_msg.m_timeEdited) {
-			RECT rcMeasure{};
-			DrawText(hdc, strDate, -1, &rcMeasure, DT_SINGLELINE | DT_NOPREFIX | DT_CALCRECT);
-			rc.left += rcMeasure.right - rcMeasure.left + ScaleByDPI(5);
-			DrawText(hdc, strEditDate, -1, &rc, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP);
-			rc.left -= rcMeasure.right - rcMeasure.left + ScaleByDPI(5);
-		}
-	}
-	rc.left = oldLeft;
+		rc.right -= authorOffset;
 
-	rc.left -= authorOffset;
-	rc.right -= authorOffset;
+		if (!bIsCompact)
+			rc.top += authheight;
+	}
 
 	// draw the message text
 	SelectObject(hdc, g_MessageTextFont);
-
-	if (!bIsCompact)
-		rc.top += authheight;
 
 	if (isActionMessage)
 	{
@@ -2081,7 +2137,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	}
 	else
 	{
-		if (!bIsCompact)
+		if (!bIsCompact && isChainBegin)
 			rc.top += ScaleByDPI(5);
 
 		RECT rcMsg = rc;
@@ -2168,7 +2224,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 		assert(ext.left != 0);
 
-		if (!bIsCompact)
+		if (!bIsCompact && isChainBegin)
 		{
 			rc.left -= pfpOffset;
 
@@ -2201,12 +2257,14 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 	// draw available embeds, if any:
 	RECT embedRect = item.m_messageRect;
-	embedRect.bottom += ScaleByDPI(5);
+	auto& embedVec = item.m_embedData;
+	size_t sz = embedVec.size();
+	if (isChainBegin && sz)
+		embedRect.bottom += ScaleByDPI(5);
+
 	embedRect.right = msgRect.right - ScaleByDPI(10);
 	embedRect.top = embedRect.bottom;
 
-	auto& embedVec = item.m_embedData;
-	size_t sz = embedVec.size();
 	for (size_t i = 0; i < sz; i++)
 	{
 		auto& eitem = embedVec[i];
@@ -2239,11 +2297,12 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	}
 
 	// draw available attachments, if any:
-	RECT attachRect    = embedRect;
-	attachRect.bottom += ScaleByDPI(5);
+	RECT attachRect = embedRect;
+	if (isChainBegin || sz != 0)
+		attachRect.bottom += ScaleByDPI(5) + ATTACHMENT_GAP;
+
 	attachRect.right   = msgRect.right - ScaleByDPI(10);
 	attachRect.top     = attachRect.bottom;
-	attachRect.bottom += ATTACHMENT_GAP;
 
 	if (bIsCompact) attachRect.left = rc.left;
 
@@ -3004,7 +3063,8 @@ void MessageList::UpdateMembers(std::set<Snowflake>& mems)
 			dateWidth,
 			replyMsgWidth,
 			replyAuthWidth,
-			replyHeight
+			replyHeight,
+			msg.m_placeInChain
 		);
 
 		msg.m_authWidth  = authWidth;
@@ -3145,6 +3205,12 @@ void MessageList::AdjustHeightInfo(const MessageItem& msg, int& height, int& tex
 	if (replyheight2)
 		replyheight2 += ScaleByDPI(5);
 
+	bool isChainCont = msg.m_placeInChain != 0;
+	if (isChainCont)
+	{
+		authheight = 0;
+	}
+
 	if (IsActionMessage(msg.m_msg.m_type))
 	{
 		replyheight2 = 0;
@@ -3156,13 +3222,16 @@ void MessageList::AdjustHeightInfo(const MessageItem& msg, int& height, int& tex
 	}
 	else
 	{
-		height = replyheight2 + textheight + authheight + ScaleByDPI(25);
+		int pad = 25;
+		if (!authheight) pad = 20;
+		if (isChainCont) pad = 10;
+		height = replyheight2 + textheight + authheight + ScaleByDPI(pad);
 	}
 
 	int minHeight = replyheight2 + ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 20);
 
 	// If a date gap, add an extra X pixels
-	if (!m_bManagedByOwner && msg.m_msg.m_bIsDateGap)
+	if (!m_bManagedByOwner && msg.m_bIsDateGap)
 		height += DATE_GAP_HEIGHT, minHeight += DATE_GAP_HEIGHT;
 
 	// also figure out embed size
@@ -3189,13 +3258,40 @@ void MessageList::AdjustHeightInfo(const MessageItem& msg, int& height, int& tex
 		attachheight += inc;
 	}
 
-	if (attachheight != 0)
-		height += ScaleByDPI(5);
-	if (embedheight != 0)
-		height += ScaleByDPI(5);
+	if (isChainCont) {
+		if (embedheight != 0)
+			height -= ScaleByDPI(5);
+		else if (attachheight != 0)
+			height -= ATTACHMENT_GAP;
+	}
+	else {
+		// add some separators
+		if (attachheight != 0)
+			height += ScaleByDPI(5);
+		if (embedheight != 0)
+			height += ScaleByDPI(5);
+	}
 
-	if (!IsActionMessage(msg.m_msg.m_type) && !IsCompact() && height < minHeight)
+	if (!IsActionMessage(msg.m_msg.m_type) && !IsCompact() && !isChainCont && height < minHeight)
 		height = minHeight;
+}
+
+bool MessageList::ShouldBeDateGap(time_t oldTime, time_t newTime)
+{
+	return !m_bManagedByOwner && (oldTime / 86400 != newTime / 86400);
+}
+
+bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, const MessageItem& item)
+{
+	return m_bManagedByOwner || (
+		prevAuthor != item.m_msg.m_author_snowflake ||
+		prevTime + 15 * 60 < item.m_msg.m_dateTime ||
+		prevPlaceInChain >= 10 ||
+		item.m_msg.IsLoadGap() ||
+		item.m_msg.m_bHaveReferencedMessage ||
+		item.m_msg.m_type == MessageType::REPLY ||
+		IsActionMessage(item.m_msg.m_type)
+	);
 }
 
 void MessageList::RecalcMessageSizes(bool update)
@@ -3209,6 +3305,8 @@ void MessageList::RecalcMessageSizes(bool update)
 
 	HDC hdc = GetDC(m_scrollable_hwnd);
 	time_t prevTime = 0;
+	Snowflake prevAuthor = Snowflake(-1);
+	int prevPlaceInChain = 0;
 
 	for (std::list<MessageItem>::iterator iter = m_messages.begin();
 		iter != m_messages.end();
@@ -3223,26 +3321,40 @@ void MessageList::RecalcMessageSizes(bool update)
 			iter->m_bKeepHeightRecalc = false;
 			iter->Update(m_guildID);
 		}
+		
+		bool bIsDateGap = ShouldBeDateGap(prevTime, iter->m_msg.m_dateTime);
+		bool startNewChain = ShouldStartNewChain(prevAuthor, prevTime, prevPlaceInChain, *iter);
+
+		iter->m_bIsDateGap = bIsDateGap;
+		iter->m_placeInChain = startNewChain ? 0 : 1 + prevPlaceInChain;
 
 		if (iter->m_bKeepHeightRecalc)
 		{
-			bool bIsDateGap = !m_bManagedByOwner && (prevTime / 86400 != iter->m_msg.m_dateTime / 86400);
-			prevTime = iter->m_msg.m_dateTime;
+			// XXX - this is the new chain height - maybe a better formula exists?
+			int newChainHeight = iter->m_authHeight + ScaleByDPI(10);
+			if (!startNewChain && iter->m_placeInChain == 0) {
+				// TODO: Can this happen
+				assert(!"Can this happen?");
+				iter->m_height -= newChainHeight;
+			}
+			if (startNewChain && iter->m_placeInChain != 0)
+				iter->m_height += newChainHeight;
 
-			if (bIsDateGap && !iter->m_msg.m_bIsDateGap)
+			if (bIsDateGap && !iter->m_bIsDateGap)
 				iter->m_height += DATE_GAP_HEIGHT;
-			if (!bIsDateGap && iter->m_msg.m_bIsDateGap)
+			if (!bIsDateGap && iter->m_bIsDateGap)
 				iter->m_height -= DATE_GAP_HEIGHT;
 
-			iter->m_msg.m_bIsDateGap = bIsDateGap;
 			iter->m_bKeepHeightRecalc = false;
 		}
 		else
 		{
-			iter->m_msg.m_bIsDateGap = !m_bManagedByOwner && (prevTime / 86400 != iter->m_msg.m_dateTime / 86400);
-			prevTime = iter->m_msg.m_dateTime;
 			DetermineMessageMeasurements(*iter, hdc, &msgRect);
 		}
+
+		prevPlaceInChain = iter->m_placeInChain;
+		prevAuthor = iter->m_msg.m_author_snowflake;
+		prevTime = iter->m_msg.m_dateTime;
 
 		m_total_height += iter->m_height;
 	}
@@ -3350,7 +3462,8 @@ void MessageList::DetermineMessageMeasurements(MessageItem& mi, HDC _hdc, LPRECT
 		mi.m_dateWidth,
 		mi.m_replyMessageWidth,
 		mi.m_replyAuthorWidth,
-		mi.m_replyHeight
+		mi.m_replyHeight,
+		mi.m_placeInChain
 	);
 	
 	const bool isCompact = IsCompact();
@@ -3365,8 +3478,7 @@ void MessageList::DetermineMessageMeasurements(MessageItem& mi, HDC _hdc, LPRECT
 void MessageList::EditMessage(const Message& newMsg)
 {
 	MessageItem mi;
-	Message& copy = mi.m_msg;
-	copy = newMsg; // please copy
+	mi.m_msg = newMsg; // please copy
 	mi.Update(m_guildID);
 	
 	LPCTSTR strAuth = mi.m_author;
@@ -3377,7 +3489,10 @@ void MessageList::EditMessage(const Message& newMsg)
 	int oldHeight = 0;
 
 	// If the message exists, then delete it.
+	// TODO: Why are we doing this instead of just replacing the message in-place?
 	bool bDeletedOldMsg = false;
+	int  placeInChainOld = -1;
+	bool wasDateGap = false;
 	RECT oldMsgRect = {};
 	for (auto iter = m_messages.rbegin(); iter != m_messages.rend(); ++iter)
 	{
@@ -3386,6 +3501,8 @@ void MessageList::EditMessage(const Message& newMsg)
 			// delete it!
 			oldHeight = iter->m_height;
 			oldMsgRect = iter->m_rect;
+			wasDateGap = iter->m_bIsDateGap;
+			placeInChainOld = iter->m_placeInChain;
 			auto msgIter = --(iter.base());
 			m_messages.erase(msgIter); // sucks
 			bDeletedOldMsg = true;
@@ -3394,32 +3511,46 @@ void MessageList::EditMessage(const Message& newMsg)
 	}
 
 	bool canInsert = false;
-	auto insertIter = m_messages.begin();
-	for (; insertIter != m_messages.end(); ++insertIter)
+	bool firstTime = true;
+	auto insertIter = m_messages.end();
+	for (; firstTime || insertIter != m_messages.end(); ++insertIter)
 	{
-		Snowflake thisSF = insertIter->m_msg.m_snowflake;
-		Snowflake nextSF = UINT64_MAX;
+		Snowflake thisSF = 0, nextSF = UINT64_MAX;
+
+		if (!firstTime)
+			thisSF = insertIter->m_msg.m_snowflake;
+
 		auto nextiter = insertIter;
-		++nextiter;
+		if (firstTime)
+			nextiter = m_messages.begin();
+		else
+			++nextiter;
+
 		if (nextiter != m_messages.end()) {
 			nextSF = nextiter->m_msg.m_snowflake;
 		}
 
 		if (thisSF < newMsg.m_snowflake && newMsg.m_snowflake < nextSF) {
-			// note: advancing because list.insert(iter) shifts elements
-			// starting from iter to the right, not from iter+1
-			++insertIter;
+			// note: using nextIter because list.insert(iter) shifts elements
+			// starting from iter to the right, not from iter+1. We want to insert
+			// AFTER `insertIter`.
+			insertIter = nextiter;
 			canInsert = true;
 			break;
 		}
+
+		if (firstTime)
+			insertIter = m_messages.begin();
 	}
 	
 	assert(canInsert);
 	assert(bDeletedOldMsg);
-	assert(insertIter != m_messages.begin());
+
+	mi.m_bIsDateGap = wasDateGap;
+	mi.m_placeInChain = placeInChainOld;
 
 	DetermineMessageMeasurements(mi, NULL, NULL);
-	copy.m_anchor = 0;
+	mi.m_msg.m_anchor = 0;
 
 	bool toStart = false;
 	m_messages.insert(insertIter, mi);
@@ -3478,19 +3609,31 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool rese
 		}
 	}
 
+	Snowflake prevAuthor = Snowflake(-1);
 	time_t prevDate = 0;
+	int prevPlaceInChain = -1;
 	if (!m_messages.empty())
 	{
-		if (toStart) {
-			prevDate = m_messages.begin()->m_msg.m_dateTime;
-		}
-		else {
-			prevDate = m_messages.rbegin()->m_msg.m_dateTime;
+		MessageItem* item = nullptr;
+		if (toStart)
+			item = &*m_messages.begin();
+		else
+			item = &*m_messages.rbegin();
+
+		if (item) {
+			prevAuthor = item->m_msg.m_author_snowflake;
+			prevDate = item->m_msg.m_dateTime;
+			prevPlaceInChain = item->m_placeInChain;
 		}
 	}
 
-	if (m_bManagedByOwner && prevDate / 86400 != mi.m_msg.m_dateTime / 86400)
-		mi.m_msg.m_bIsDateGap = true;
+	if (ShouldBeDateGap(prevDate, mi.m_msg.m_dateTime))
+		mi.m_bIsDateGap = true;
+
+	if (prevPlaceInChain < 0 || ShouldStartNewChain(prevAuthor, prevDate, prevPlaceInChain, mi))
+		mi.m_placeInChain = 0;
+	else
+		mi.m_placeInChain = prevPlaceInChain + 1;
 
 	DetermineMessageMeasurements(mi, NULL, NULL);
 
