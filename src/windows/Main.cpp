@@ -318,6 +318,21 @@ void OnStopTyping(Snowflake channelID, Snowflake userID)
 		g_pMessageEditor->RemoveTypingName(userID);
 }
 
+void UpdateMainWindowTitle(HWND hWnd)
+{
+	std::string windowTitle;
+
+	Channel* pChannel = GetDiscordInstance()->GetCurrentChannel();
+	if (pChannel)
+		windowTitle += pChannel->GetTypeSymbol() + pChannel->m_name + " - ";
+
+	windowTitle += TmGetString(IDS_PROGRAM_NAME);
+	
+	LPTSTR tstr = ConvertCppStringToTString(windowTitle);
+	SetWindowText(hWnd, tstr);
+	free(tstr);
+}
+
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -392,9 +407,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			g_pMessageList->UpdateAllowDrop();
 
+			UpdateMainWindowTitle(hWnd);
+
 			if (!GetDiscordInstance()->GetCurrentChannel())
 			{
-				//no channel selected
 				InvalidateRect(g_pMessageList->m_hwnd, NULL, false);
 				InvalidateRect(g_pGuildHeader->m_hwnd, NULL, false);
 				break;

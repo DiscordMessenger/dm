@@ -6,6 +6,10 @@ attempted).
 
 Its motto: *It's time to ditch MSN and Yahoo.*
 
+**NOTE**: This is beta software, so there may be issues which need to be fixed!
+
+Licensed under the MIT license.
+
 ## Minimum System Requirements
 
 - Windows 2000 or newer (MinGW version)

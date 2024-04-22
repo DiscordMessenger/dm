@@ -346,7 +346,7 @@ CAPTION "About Discord Messenger"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,97,58,50,14
-    CTEXT           "Discord Messenger",IDC_STATIC,1,6,246,8,SS_CENTERIMAGE
+    CTEXT           "Discord Messenger",IDC_PROGRAM_NAME,1,6,246,8,SS_CENTERIMAGE
     CTEXT           "Copyright (C) 2023-2024 iProgramInCpp. Licensed under the MIT license.",IDC_STATIC,1,42,246,12,SS_CENTERIMAGE
     ICON            IDI_ICON,IDC_STATIC,112,21,20,20
 END
@@ -381,7 +381,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,12,162,234,8
     LTEXT           "This setting is applied when you join a new server. It does not apply retroactively to your existing servers.",IDC_STATIC,23,171,223,17
     GROUPBOX        "Log Out",IDC_STATIC,6,192,246,42
-    LTEXT           "Click this button to log out.",IDC_STATIC,12,204,234,8
+    LTEXT           "Click this button to log out.  Discord Messenger will only forget your token, it won't be revoked.",IDC_STATIC,12,200,234,17
     PUSHBUTTON      "Log Out",IDC_LOG_OUT,104,216,50,14
     CONTROL         "",IDC_STATIC_PROFILE_IMAGE,"Static",SS_BITMAP | SS_CENTERIMAGE,12,18,24,22
 END

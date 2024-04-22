@@ -3,10 +3,27 @@
 
 static LRESULT CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if ((uMsg == WM_COMMAND && LOWORD(wParam) == IDOK) || uMsg == WM_CLOSE)
+	switch (uMsg)
 	{
-		EndDialog(hWnd, wParam);
-		return TRUE;
+		case WM_INITDIALOG: {
+			std::string name = TmGetString(IDS_PROGRAM_NAME) + " " + GetAppVersionString();
+			LPTSTR tstr = ConvertCppStringToTString(name);
+
+			SetDlgItemText(hWnd, IDC_PROGRAM_NAME, tstr);
+			free(tstr);
+			break;
+		}
+
+		case WM_COMMAND:
+			if (LOWORD(wParam) == IDOK) {
+				EndDialog(hWnd, LOWORD(wParam));
+				return TRUE;
+			}
+
+			break;
+		case WM_CLOSE:
+			EndDialog(hWnd, IDCANCEL);
+			return TRUE;
 	}
 
 	return 0L;

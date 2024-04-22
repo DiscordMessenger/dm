@@ -244,6 +244,7 @@
 #define IDC_CHANNEL_NAME                855
 #define IDC_ATTACH_COMMENT              856
 #define IDC_MARK_AS_SPOILER             857
+#define IDC_PROGRAM_NAME                858
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
 #define ID_FILE_EXIT                    1003
@@ -321,7 +322,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        10000
 #define _APS_NEXT_COMMAND_VALUE         20001
-#define _APS_NEXT_CONTROL_VALUE         30000
+#define _APS_NEXT_CONTROL_VALUE         30001
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif
 #endif

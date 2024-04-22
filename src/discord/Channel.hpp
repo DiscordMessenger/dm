@@ -81,4 +81,13 @@ struct Channel
 	bool HasUnreadMessages() const {
 		return m_lastViewedMsg < m_lastSentMsg;
 	}
+
+	std::string GetTypeSymbol() const {
+		switch (m_channelType) {
+			case DM:    return "@";
+			case VOICE:
+			case TEXT:  return "#";
+			default:    return "";
+		}
+	}
 };

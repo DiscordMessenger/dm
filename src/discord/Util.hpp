@@ -36,6 +36,8 @@ std::string FormatTimeShort(time_t time);
 std::string FormatTimeShorter(time_t time);
 void SplitURL(const std::string& url, std::string& domainOut, std::string& resourceOut);
 std::string CreateMessageLink(Snowflake guild, Snowflake channel, Snowflake message);
+float GetAppVersion();
+std::string GetAppVersionString();
 
 #ifdef _DEBUG
 void DbgPrintF(const char* fmt, ...);

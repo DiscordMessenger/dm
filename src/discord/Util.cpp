@@ -419,6 +419,16 @@ void SplitURL(const std::string& url, std::string& domainOut, std::string& resou
 	}
 }
 
+float GetAppVersion()
+{
+	return 1.00f;
+}
+
+std::string GetAppVersionString()
+{
+	return "V1.00";
+}
+
 #ifdef _DEBUG
 void DbgPrintF(const char* fmt, ...)
 {
