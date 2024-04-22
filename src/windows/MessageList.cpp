@@ -3543,6 +3543,8 @@ void MessageList::EditMessage(const Message& newMsg)
 
 		if (firstTime)
 			insertIter = m_messages.begin();
+
+		firstTime = false;
 	}
 	
 	assert(canInsert);
