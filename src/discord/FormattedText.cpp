@@ -493,11 +493,6 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 			wordPos.x += MdGetQuoteIndentSize();
 
 		int offs = 0;
-		if (wflags & WORD_CODE) {
-			offs = -2;
-			size.x += 4;
-			size.y += 4;
-		}
 
 		word.m_rect = { wordPos.x + offs, wordPos.y + offs, wordPos.x + offs + size.x, wordPos.y + offs + size.y };
 		wordPos.x += size.x;
@@ -546,7 +541,7 @@ void FormattedText::Draw(DrawingContext* context, int offsetY)
 	// draw backgrounds for code blocks
 	for (auto& w : m_words)
 	{
-		if (w.m_flags & (WORD_MLCODE | WORD_CODE)) {
+		if (w.m_flags & WORD_MLCODE) {
 			Rect rc = w.m_rect;
 			rc.top    += offsetY;
 			rc.bottom += offsetY;

@@ -1364,17 +1364,16 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 {
 	RECT rc = RectToNative(rect);
 
-	if (styleFlags & WORD_CODE) {
-		rc.left   += 2;
-		rc.top    += 2;
-		rc.right  -= 2;
-		rc.bottom -= 2;
-	}
 	if (styleFlags & WORD_MLCODE) {
 		rc.left   += 4;
 		rc.top    += 4;
 		rc.right  -= 4;
 		rc.bottom -= 4;
+	}
+	if (styleFlags & WORD_CODE) {
+		// TODO: why should I do this?
+		rc.left   -= 2;
+		rc.right  -= 2;
 	}
 	COLORREF oldColor   = CLR_NONE;
 	COLORREF oldColorBG = CLR_NONE;
