@@ -356,7 +356,7 @@ private:
 
 	void MessageHeightChanged(int oldHeight, int newHeight, bool toStart = false);
 	void AddMessageInternal(const Message& msg, bool toStart, bool resetAnchor = true);
-	void UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bool update = true, int offsetY = 0);
+	void UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bool update = true, int offsetY = 0, bool addingMessage = false);
 
 	std::list<MessageItem>::iterator FindMessage(Snowflake sf);
 

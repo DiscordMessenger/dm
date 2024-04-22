@@ -3026,7 +3026,7 @@ void MessageList::UpdateMembers(std::set<Snowflake>& mems)
 		InvalidateRect(m_hwnd, &update, FALSE);
 }
 
-void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bool update, int offsetY)
+void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bool update, int offsetY, bool addingMessage)
 {
 	int totalHeightOld = m_total_height;
 	m_total_height += addToHeight;
@@ -3049,7 +3049,7 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 	bool scroll = true;
 
 	// Check if the current position is at the bottom.
-	if (scrollInfo.nPos != totalHeightOld - pageHeight) {
+	if (scrollInfo.nPos != totalHeightOld - pageHeight && addingMessage) {
 		// No, so don't scroll.
 		scroll = false;
 		diffNow = 0;
@@ -3428,7 +3428,7 @@ void MessageList::EditMessage(const Message& newMsg)
 	GetClientRect(m_scrollable_hwnd, &rcClient);
 
 	// totally new message
-	UpdateScrollBar(mi.m_height - oldHeight, mi.m_height - oldHeight, toStart, true, bDeletedOldMsg ? (rcClient.bottom - oldMsgRect.top) : 0);
+	UpdateScrollBar(mi.m_height - oldHeight, mi.m_height - oldHeight, toStart, true, bDeletedOldMsg ? (rcClient.bottom - oldMsgRect.top) : 0, true);
 
 	if (bDeletedOldMsg)
 	{
@@ -3513,7 +3513,7 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool rese
 			offsetY = rcClient.bottom - nonceRect.top;
 	}
 
-	UpdateScrollBar(mi.m_height - oldHeight, mi.m_height - oldHeight, toStart, true, offsetY);
+	UpdateScrollBar(mi.m_height - oldHeight, mi.m_height - oldHeight, toStart, true, offsetY, true);
 
 	if (bDeletedNonce)
 	{
