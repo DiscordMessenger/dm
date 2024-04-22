@@ -299,10 +299,10 @@ void DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, co
 		HGDIOBJ go = SelectObject(hdc, g_AuthorTextFont);
 		LPTSTR tstr = ConvertCppStringToTString(textOver);
 		RECT rcProfile = {
-			rect.left + BORDER_SIZE + 2,
-			rect.top  + BORDER_SIZE + 2 + y,
-			rect.left + pfpBorderSize + BORDER_SIZE - 2,
-			rect.top  + y + pfpBorderSize + BORDER_SIZE - 2
+			rect.left + BORDER_SIZE + ScaleByDPI(6),
+			rect.top  + y + BORDER_SIZE + ScaleByDPI(4),
+			rect.left + BORDER_SIZE + pfpBorderSize - ScaleByDPI(6),
+			rect.top  + y + pfpBorderSize + BORDER_SIZE * 2 - ScaleByDPI(10)
 		};
 		DrawText(hdc, tstr, -1, &rcProfile, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX | DT_WORD_ELLIPSIS);
 		free(tstr);
