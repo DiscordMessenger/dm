@@ -686,6 +686,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_CLOSE:
 			KillImageViewer();
 			DismissProfilePopout();
+			g_pLoadingMessage->Hide();
 			break;
 		case WM_SIZE:
 			DismissProfilePopout();
@@ -762,6 +763,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			GetDiscordInstance()->CloseGatewaySession();
 			GetAvatarCache()->WipeBitmaps();
+			g_pLoadingMessage->Hide();
 			PostQuitMessage(0);
 			break;
 		}

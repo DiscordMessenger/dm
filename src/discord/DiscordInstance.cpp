@@ -590,6 +590,7 @@ void DiscordInstance::GatewayClosed(int errorCode)
 void DiscordInstance::StartGatewaySession()
 {
 	GetFrontend()->OnConnecting();
+
 	if (m_gatewayConnId)
 		GetWebsocketClient()->Close(m_gatewayConnId, websocketpp::close::status::normal);
 

@@ -376,15 +376,10 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			SetFocus(hWnd);
 			break;
 		}
-		case WM_SETCURSOR:
-		{
-			return TRUE;
-		}
 		case WM_MOUSEMOVE:
 		{
 			RECT rect = {};
 			GetClientRect(hWnd, &rect);
-			LPWSTR cursor = IDC_ARROW;
 			POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 			Snowflake selected = 2;
 			int y = -pThis->m_scroll_pos;
@@ -423,15 +418,11 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				y += height;
 			}
 
-			if (selected != 2)
-				cursor = IDC_HAND;
+			if (selected != 2) {
+				SetCursor(LoadCursor(NULL, IDC_HAND));
+				return TRUE;
+			}
 
-			SetCursor(LoadCursor(NULL, cursor));
-			break;
-		}
-		case WM_MOUSELEAVE:
-		{
-			SetCursor(LoadCursor(NULL, IDC_ARROW));
 			break;
 		}
 		case WM_MOUSEWHEEL:

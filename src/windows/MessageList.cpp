@@ -928,7 +928,7 @@ void MessageList::ProperlyResizeSubWindows()
 	MoveWindow(m_scroll_hwnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
 }
 
-void MessageList::HitTestAuthor(POINT pt)
+void MessageList::HitTestAuthor(POINT pt, BOOL& hit)
 {
 	auto msg = FindMessageByPointAuthorRect(pt);
 
@@ -952,7 +952,7 @@ void MessageList::HitTestAuthor(POINT pt)
 	}
 	
 	SetCursor(LoadCursor(NULL, IDC_HAND));
-
+	hit = TRUE;
 	if (m_highlightedMessage == msg->m_msg.m_snowflake)
 		return;
 
@@ -962,7 +962,7 @@ void MessageList::HitTestAuthor(POINT pt)
 	DbgPrintW("Hand!  Profile ID: %lld   Message ID: %lld", msg->m_msg.m_author_snowflake, msg->m_msg.m_snowflake);
 }
 
-void MessageList::HitTestAttachments(POINT pt)
+void MessageList::HitTestAttachments(POINT pt, BOOL& hit)
 {
 	auto msg = FindMessageByPoint(pt);
 
@@ -1012,6 +1012,7 @@ void MessageList::HitTestAttachments(POINT pt)
 	}
 
 	SetCursor(LoadCursor(NULL, IDC_HAND));
+	hit = TRUE;
 	if (pAttach->m_pAttachment->m_id == m_highlightedAttachment)
 		return;
 
@@ -1027,7 +1028,7 @@ void MessageList::HitTestAttachments(POINT pt)
 	DbgPrintW("Hand!  Attachment ID: %lld   Message ID: %lld", pAttach->m_pAttachment->m_id, msg->m_msg.m_snowflake);
 }
 
-void MessageList::HitTestInteractables(POINT pt)
+void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 {
 	auto msg = FindMessageByPoint(pt);
 
@@ -1072,6 +1073,8 @@ void MessageList::HitTestInteractables(POINT pt)
 		goto _fail;
 	}
 
+	SetCursor(LoadCursor(NULL, IDC_HAND));
+	hit = TRUE;
 	if (pItem->m_wordIndex == m_highlightedInteractable)
 		return;
 
@@ -1086,7 +1089,6 @@ void MessageList::HitTestInteractables(POINT pt)
 		}
 	}
 
-	SetCursor(LoadCursor(NULL, IDC_HAND));
 	m_highlightedInteractable = pItem->m_wordIndex;
 	m_highlightedInteractableMessage = msg->m_msg.m_snowflake;
 	pItem->m_bHighlighted = true;
@@ -2727,27 +2729,29 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_MOUSEMOVE:
 		{
 			POINT pt = { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) };
-			pThis->HitTestAuthor(pt);
-			pThis->HitTestAttachments(pt);
-			pThis->HitTestInteractables(pt);
+			BOOL hit = FALSE;
+			pThis->HitTestAuthor(pt, hit);
+			pThis->HitTestAttachments(pt, hit);
+			pThis->HitTestInteractables(pt, hit);
 			TRACKMOUSEEVENT tme;
 			tme.cbSize = sizeof tme;
 			tme.dwFlags = TME_LEAVE;
 			tme.hwndTrack = hWnd;
 			tme.dwHoverTime = 0;
 			_TrackMouseEvent(&tme);
+			if (hit)
+				return TRUE;
 			break;
 		}
 		case WM_MOUSELEAVE:
 		{
 			POINT pt = { -1, -1 };
-			pThis->HitTestAuthor(pt);
-			pThis->HitTestAttachments(pt);
-			pThis->HitTestInteractables(pt);
+			BOOL hitunused = TRUE;
+			pThis->HitTestAuthor(pt, hitunused);
+			pThis->HitTestAttachments(pt, hitunused);
+			pThis->HitTestInteractables(pt, hitunused);
 			break;
 		}
-		case WM_SETCURSOR:
-			return TRUE;
 		case WM_PAINT:
 		{
 			PAINTSTRUCT ps = {};

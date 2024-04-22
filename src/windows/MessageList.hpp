@@ -452,9 +452,9 @@ protected:
 	static bool IsActionMessage(MessageType::eType msgType);
 
 private:
-	void HitTestAuthor(POINT pt);
-	void HitTestAttachments(POINT pt);
-	void HitTestInteractables(POINT pt);
+	void HitTestAuthor(POINT pt, BOOL& hit);
+	void HitTestAttachments(POINT pt, BOOL& hit);
+	void HitTestInteractables(POINT pt, BOOL& hit);
 
 	void AdjustHeightInfo(const MessageItem& msg, int& height, int& textheight, int& authheight, int& replyheight, int& attachheight, int& embedheight);
 	void OpenAttachment( AttachmentItem* pItem );

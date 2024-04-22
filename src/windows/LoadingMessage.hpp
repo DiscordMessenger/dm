@@ -14,6 +14,7 @@ public:
 
 	void Show();
 	void Hide();
+	void DrawLoading(HDC hdc);
 
 public:
 	static WNDCLASS g_LoadingMessageClass;
@@ -25,6 +26,12 @@ public:
 
 private:
 	HWND parHwnd = NULL;
+	HICON m_icon = NULL;
+	HICON m_dot_0 = NULL;
+	HICON m_dot_1 = NULL;
+	int m_icon_stage = 0;
+	UINT_PTR m_timer_id = 0;
+	RECT m_load_rect {};
 
 	void CreateWnd();
 };

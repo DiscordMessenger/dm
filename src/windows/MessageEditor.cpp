@@ -835,12 +835,6 @@ MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
 
 	SelectObject(hdc, objOld);
 	ReleaseDC(newThis->m_hwnd, hdc);
-	
-	// Add some test typing users.
-	time_t timez = time(NULL);
-	newThis->AddTypingName(1, timez, "Test 1");
-	newThis->AddTypingName(2, timez, "Test 2");
-	newThis->AddTypingName(3, timez, "Test 3");
 
 	// note : Windows XP only
 #ifdef NEW_WINDOWS
