@@ -3046,8 +3046,21 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 
 	GetScrollInfo(m_scroll_hwnd, SB_CTL, &scrollInfo);
 
-	if ((!toStart && !m_bIsTopDown) || (toStart && m_bIsTopDown))
-		scrollInfo.nPos += diffNow;
+	bool scroll = true;
+
+	// Check if the current position is at the bottom.
+	if (scrollInfo.nPos != totalHeightOld - pageHeight) {
+		// No, so don't scroll.
+		scroll = false;
+		diffNow = 0;
+		offsetY = 0;
+	}
+
+	if (scroll)
+	{
+		if ((!toStart && !m_bIsTopDown) || (toStart && m_bIsTopDown))
+			scrollInfo.nPos += diffNow;
+	}
 
 	scrollInfo.nMin = 0;
 	scrollInfo.nMax = th;
