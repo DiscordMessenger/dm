@@ -286,6 +286,7 @@
     <ClInclude Include="..\src\windows\ProfileView.hpp" />
     <ClInclude Include="..\src\windows\QRCodeDialog.hpp" />
     <ClInclude Include="..\src\windows\RoleList.hpp" />
+    <ClInclude Include="..\src\windows\TextInterface_Win32.hpp" />
     <ClInclude Include="..\src\windows\TextManager.hpp" />
     <ClInclude Include="..\src\windows\TextToSpeech.hpp" />
     <ClInclude Include="..\src\windows\UploadDialog.hpp" />

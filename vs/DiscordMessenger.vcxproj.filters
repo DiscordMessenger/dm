@@ -470,6 +470,9 @@
     <ClInclude Include="..\src\discord\ScrollDir.hpp">
       <Filter>Header Files\Discord</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\windows\TextInterface_Win32.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\windows\ProfileView.cpp">
