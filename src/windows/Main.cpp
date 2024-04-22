@@ -871,7 +871,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			m.m_author_snowflake = pf->m_snowflake;
 			m.m_author = pf->m_name;
 			m.m_message = psmap->m_message;
-			m.m_type = MessageType::DEFAULT;
+			m.m_type = MessageType::SENDING_MESSAGE;
 			m.SetTime(time(NULL));
 			m.m_dateFull = "Sending...";
 			m.m_dateCompact = "Sending...";

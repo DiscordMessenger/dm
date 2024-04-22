@@ -2191,6 +2191,8 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 			if (item.m_msg.m_type == MessageType::UNSENT_MESSAGE)
 				oldTextColor = SetTextColor(hdc, RGB(255, 0, 0));
+			else if (item.m_msg.m_type == MessageType::SENDING_MESSAGE)
+				oldTextColor = SetTextColor(hdc, GetSysColor(COLOR_GRAYTEXT));
 			
 			item.m_message.Draw(&mddc, offsetY);
 
