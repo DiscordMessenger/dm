@@ -726,12 +726,14 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 				// Accelerators
 				case IDA_SEARCH:
+				case ID_ACTIONS_SEARCH:
 				{
 					// TODO
 					DbgPrintW("Search!");
 					break;
 				}
 				case IDA_QUICKSWITCHER:
+				case ID_ACTIONS_QUICKSWITCHER:
 				{
 					// TODO
 					DbgPrintW("Quick switcher!");
