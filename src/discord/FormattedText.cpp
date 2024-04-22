@@ -307,7 +307,7 @@ void FormattedText::Tokenize(const std::string& msg, const std::string& oldmsg)
 					else if (msg[i] == '}') curlyDepth--;
 
 					if (parenDepth < 0 || brackDepth < 0 || curlyDepth < 0 ||
-						msg[i] == ' ' || msg[i] == '\n' || msg[i] == '\r')
+						msg[i] == ' ' || msg[i] == '\n' || msg[i] == '\r' || msg[i] == '>')
 						break;
 				}
 
