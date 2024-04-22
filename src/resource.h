@@ -1,10 +1,7 @@
-//{{NO_DEPENDENCIES}}                   
+//{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by main.rc                      
-//                                      
-
-
-// ICONS - 1                            
+// Used by resource.rc
+//
 #define IDI_ICON                        1
 #define IDI_SEND                        2
 #define IDI_FILE                        3
@@ -67,8 +64,6 @@
 #define IDI_JUMP_2K                     60
 #define IDI_SEND_2K                     61
 #define IDI_REPLY_PIECE_2K              62
-
-// BITMAPS - 200 - Most of these aren't even used  I think?
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -85,12 +80,8 @@
 #define IDB_STATUS_MASK_MOON            213
 #define IDB_LOGON_BANNER                214
 #define IDB_EMPTY                       215
-
-// CURSORS - 351
 #define IDC_ZOOMIN                      350
 #define IDC_ZOOMOUT                     351
-
-// DIALOGS - 401
 #define IDD_DIALOG_ABOUT                401
 #define IDD_DIALOG_OPTIONS              402
 #define IDD_DIALOG_MY_ACCOUNT           403
@@ -101,16 +92,11 @@
 #define IDD_DIALOG_INSTANT_INVITE       408
 #define IDD_DIALOG_PINNEDMESSAGES       409
 #define IDD_DIALOG_UPLOADFILES          410
-
-// MENUS - 501
 #define IDR_MAINMENU                    501
 #define IDR_MESSAGE_CONTEXT             502
 #define IDR_GUILD_CONTEXT               503
-#define IDR_GUILD_HEADER                504
 #define IDR_CHANNEL_CONTEXT             505
 #define IDR_DMCHANNEL_CONTEXT           506
-
-// STRINGS - 601
 #define IDS_PROGRAM_NAME                601
 #define IDS_MY_ACCOUNT                  602
 #define IDS_WELCOME_MSG                 603
@@ -191,8 +177,7 @@
 #define IDS_LOADING_PINNED_MESSAGES     678
 #define IDS_NO_PINNED_MESSAGES          679
 #define IDS_PINNED_MESSAGES_IN          680
-
-// CONTROLS - 801
+#define IDS_CONFIRM_LEAVE_GUILD         681
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803
@@ -213,45 +198,43 @@
 #define IDC_PROFILE_STATUS              818
 #define IDC_RADIO_3D_FRAME              819
 #define IDC_RADIO_GRADIENT              820
+#define IDC_ROLE_STATIC                 820
 #define IDC_RADIO_FLAT_1                821
 #define IDC_RADIO_FLAT_2                822
 #define IDC_STATIC_PROFILE_IMAGE        823
 #define IDC_MEMBERSINCEGROUP            824
 #define IDC_GUILD_JOIN_DATE             825
-#define IDC_DISCORD_JOIN_DATE           825
-#define IDC_ICON_GUILD                  826
-#define IDC_ICON_DISCORD                827
-#define IDC_ROLE_GROUP                  828
-#define IDC_ROLE_STATIC                 829
-#define IDC_NOTE_GROUP                  830
-#define IDC_NOTE_TEXT                   831
-#define IDC_MESSAGE_GROUP               832
-#define IDC_MESSAGE_TEXT                833
-#define IDC_LOGON_BANNER                834
-#define IDC_LBL_EMAIL                   835
-#define IDC_LBL_PASSWORD                836
-#define IDC_EDIT_EMAIL                  837
-#define IDC_EDIT_PASSWORD               838
-#define IDC_EDIT_TOKEN                  839
-#define IDC_RADIO_EMAILPASS             840
-#define IDC_RADIO_TOKEN                 841
-#define IDC_ICON_WARN_CAPTCHA           842
-#define IDC_WARN_CAPTCHA                843
-#define IDC_LOGIN_QR_CODE               844
-#define IDC_LBL_LOGINQR                 845
-#define IDC_QRCODE_PLACEHOLDER          846
-#define IDC_INVITE_GUILD_IMAGE          847
-#define IDC_GUILD_NAME                  848
-#define IDC_NUM_ONLINE                  849
-#define IDC_NUM_MEMBERS                 850
-#define IDC_MESSAGE_LIST                851
-#define IDC_FILE_ICON                   852
-#define IDC_FILE_NAME                   853
-#define IDC_CHANNEL_NAME                854
-#define IDC_ATTACH_COMMENT              855
-#define IDC_MARK_AS_SPOILER             856
-
-// MENU ITEMS - 1001
+#define IDC_DISCORD_JOIN_DATE           826
+#define IDC_ICON_GUILD                  827
+#define IDC_ICON_DISCORD                828
+#define IDC_ROLE_GROUP                  829
+#define IDC_EDIT_TOKEN                  830
+#define IDC_NOTE_GROUP                  831
+#define IDC_NOTE_TEXT                   832
+#define IDC_MESSAGE_GROUP               833
+#define IDC_MESSAGE_TEXT                834
+#define IDC_LOGON_BANNER                835
+#define IDC_LBL_EMAIL                   836
+#define IDC_LBL_PASSWORD                837
+#define IDC_EDIT_EMAIL                  838
+#define IDC_EDIT_PASSWORD               839
+#define IDC_NUM_ONLINE                  840
+#define IDC_RADIO_EMAILPASS             841
+#define IDC_RADIO_TOKEN                 842
+#define IDC_ICON_WARN_CAPTCHA           843
+#define IDC_WARN_CAPTCHA                844
+#define IDC_LOGIN_QR_CODE               845
+#define IDC_LBL_LOGINQR                 846
+#define IDC_QRCODE_PLACEHOLDER          847
+#define IDC_INVITE_GUILD_IMAGE          848
+#define IDC_GUILD_NAME                  849
+#define IDC_NUM_MEMBERS                 851
+#define IDC_MESSAGE_LIST                852
+#define IDC_FILE_ICON                   853
+#define IDC_FILE_NAME                   854
+#define IDC_CHANNEL_NAME                855
+#define IDC_ATTACH_COMMENT              856
+#define IDC_MARK_AS_SPOILER             857
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
 #define ID_FILE_EXIT                    1003
@@ -266,10 +249,10 @@
 #define ID_ACTIONS_SEARCH               1012
 #define ID_ACTIONS_NEWGROUPDM           1013
 #define ID_ACTIONS_ADDFRIEND            1014
-#define ID_ONLINESTATUSPLACEHOLDER_ONLINE       1015
-#define ID_ONLINESTATUSPLACEHOLDER_IDLE         1016
+#define ID_ONLINESTATUSPLACEHOLDER_ONLINE 1015
+#define ID_ONLINESTATUSPLACEHOLDER_IDLE 1016
 #define ID_ONLINESTATUSPLACEHOLDER_DONOTDISTURB 1017
-#define ID_ONLINESTATUSPLACEHOLDER_INVISIBLE    1018
+#define ID_ONLINESTATUSPLACEHOLDER_INVISIBLE 1018
 #define ID_ACCOUNT_SETCUSTOMSTATUS      1019
 #define ID_ACCOUNT_SWITCHACCOUNTS       1020
 #define ID_ACCOUNT_UNMUTE               1021
@@ -318,6 +301,8 @@
 #define IDM_ADDFRIEND                   1064
 #define IDM_BLOCK                       1065
 #define IDM_COPYID                      1066
+#define IDR_MAIN_ACCELS                 1201
+#define IDA_SEARCH                      1301
 
 // Next default values for new objects
 // 

@@ -27,7 +27,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 1 TEXTINCLUDE 
 BEGIN
-    "main.h\0"
+    "resource.h\0"
 END
 
 2 TEXTINCLUDE 
@@ -62,18 +62,23 @@ BEGIN
     END
     POPUP "&Server"
     BEGIN
-        MENUITEM "Server &Boost",               ID_SERVER_SERVERBOOST
+        MENUITEM "&Invite People",              IDM_INVITEPEOPLE, GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "&Invite People",              ID_SERVER_INVITEPEOPLE
-        MENUITEM "&Server Settings",            ID_SERVER_SERVERSETTINGS
+        POPUP "&Notification Settings", GRAYED
+        BEGIN
+            MENUITEM "All Messages",                IDM_NOTIFYALL, GRAYED
+            MENUITEM "Only @mentions",              IDM_NOTIFYMENTS, GRAYED
+            MENUITEM "No Notifications",            IDM_NOTIFYNONE, GRAYED
+            MENUITEM SEPARATOR
+            MENUITEM "Suppress @everyone and @here", IDM_NOTIFYSUPPRGLOB, GRAYED
+            MENUITEM "Suppress all role @mentions", IDM_NOTIFYSUPPRROLE, GRAYED
+        END
+        MENUITEM "&Server Settings",            IDM_GUILDSETTINGS, GRAYED
+        MENUITEM "&Privacy Settings",           IDM_PRIVACYSETTINGS, GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "&Notification Settings",      ID_SERVER_NOTIFICATIONSETTINGS
-        MENUITEM "&Privacy Settings",           ID_SERVER_PRIVACYSETTINGS
+        MENUITEM "Edit Server Pro&file",        IDM_EDITNICKNAME, GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "Edit Server Pro&file",        ID_SERVER_EDITSERVERPROFILE
-        MENUITEM "Hide &Muted Channels",        ID_SERVER_HIDEMUTEDCHANNELS, CHECKED
-        MENUITEM SEPARATOR
-        MENUITEM "&Leave Server",               ID_SERVER_LEAVESERVER
+        MENUITEM "&Leave Server",               IDM_LEAVEGUILD
     END
     POPUP "&Actions"
     BEGIN
@@ -168,30 +173,6 @@ BEGIN
         MENUITEM "Leave Server",                IDM_LEAVEGUILD
         MENUITEM SEPARATOR
         MENUITEM "Copy Server ID",              IDM_COPYGUILDID
-    END
-END
-
-IDR_GUILD_HEADER MENU
-BEGIN
-    POPUP "Dummy"
-    BEGIN
-        MENUITEM "Invite People",               IDM_INVITEPEOPLE
-        MENUITEM SEPARATOR
-        POPUP "Notification Settings"
-        BEGIN
-            MENUITEM "All Messages",                IDM_NOTIFYALL
-            MENUITEM "Only @mentions",              IDM_NOTIFYMENTS
-            MENUITEM "No Notifications",            IDM_NOTIFYNONE
-            MENUITEM SEPARATOR
-            MENUITEM "Suppress @everyone and @here", IDM_NOTIFYSUPPRGLOB
-            MENUITEM "Suppress all role @mentions", IDM_NOTIFYSUPPRROLE
-        END
-        MENUITEM "Server Settings",             IDM_GUILDSETTINGS
-        MENUITEM "Privacy Settings",            IDM_PRIVACYSETTINGS
-        MENUITEM SEPARATOR
-        MENUITEM "Change Nickname",             IDM_EDITNICKNAME
-        MENUITEM SEPARATOR
-        MENUITEM "Leave Server",                IDM_LEAVEGUILD
     END
 END
 
@@ -435,7 +416,7 @@ BEGIN
     GROUPBOX        "Member since",IDC_MEMBERSINCEGROUP,7,50,214,40
     LTEXT           "Static",IDC_GUILD_JOIN_DATE,27,62,190,8
     LTEXT           "Static",IDC_DISCORD_JOIN_DATE,27,76,190,8
-    CONTROL         IDB_DEFAULT,IDC_ICON_GUILD,"Static",SS_BITMAP,12,62,11,10
+    CONTROL         IDB_CHANNEL,IDC_ICON_GUILD,"Static",SS_BITMAP,12,62,11,10
     ICON            IDI_ICON_SMALL,IDC_ICON_DISCORD,12,76,20,20,SS_REALSIZEIMAGE
     GROUPBOX        "Role(s)",IDC_ROLE_GROUP,7,93,214,46
     CONTROL         "",IDC_ROLE_STATIC,"Static",SS_BLACKRECT,14,103,200,30,WS_EX_CLIENTEDGE
@@ -776,6 +757,17 @@ IDC_ZOOMOUT             CURSOR                  "../res/cur_zoomout.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Accelerator
+//
+
+IDR_MAIN_ACCELS ACCELERATORS
+BEGIN
+    "K",            IDA_SEARCH,             VIRTKEY, CONTROL, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
@@ -785,15 +777,15 @@ BEGIN
     IDS_MY_ACCOUNT          "My Account"
     IDS_WELCOME_MSG         "Welcome to Discord Messenger!  Before you use the app, you must first log in.\n\nDISCLAIMER: Using third party clients is against Discord's TOS!  Although the risk to get banned is low, the risk is there!  The author of this software is not responsible for the status of your Discord account."
     IDS_PRIVACY_SAFETY      "Privacy & Safety"
-END
-
-STRINGTABLE
-BEGIN
     IDS_MESSAGE_TOO_LONG_MSG 
                             "Your message is too long...\n\nYou've hit the 2000 character limit.  Speak your mind with 2x longer messages, send larger file uploads and more with Discord Nitro! "
     IDS_DMBLOCK_APPLY_RETROACTIVELY 
                             "Do you want to also apply this change to all your existing servers?  You can also disable direct messages from individual servers by visiting that server's settings page."
     IDS_NOTLOGGEDIN         "You are not logged in to Discord Messenger.\nThis could be because the token has expired or is invalid.\n\nLog in using a real Discord client, and use its token to log in."
+END
+
+STRINGTABLE
+BEGIN
     IDS_APPEARANCE          "Appearance"
     IDS_LOG_OUT             "Log Out"
     IDS_SESSION_ERROR       "Discord has closed the current gateway with the error code of %d.  Try restarting the app or using a different token."
@@ -807,13 +799,13 @@ BEGIN
     IDS_CHANGED_CHANNEL_NAME_L " changed the channel name to """
     IDS_CHANGED_CHANNEL_NAME_R """."
     IDS_REMOVED_FROM_GROUP  " removed someone from the group."
+    IDS_ADDED_TO_GROUP      " added someone to the group."
+    IDS_PINNED_MESSAGE      " pinned a message to this channel."
+    IDS_WELCOME_001_R       " joined the party."
 END
 
 STRINGTABLE
 BEGIN
-    IDS_ADDED_TO_GROUP      " added someone to the group."
-    IDS_PINNED_MESSAGE      " pinned a message to this channel."
-    IDS_WELCOME_001_R       " joined the party."
     IDS_WELCOME_002_R       " is here."
     IDS_WELCOME_003_L       "Welcome, "
     IDS_WELCOME_003_R       ". We hope you brought pizza."
@@ -827,13 +819,13 @@ BEGIN
     IDS_WELCOME_009_R       " hopped into the server."
     IDS_WELCOME_010_L       "Everyone welcome "
     IDS_WELCOME_011_L       "Glad you're here, "
+    IDS_WELCOME_012_L       "Good to see you, "
+    IDS_WELCOME_013_L       "Yay you made it, "
+    IDS_WELCOME_EXCLAM      "!"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_WELCOME_012_L       "Good to see you, "
-    IDS_WELCOME_013_L       "Yay you made it, "
-    IDS_WELCOME_EXCLAM      "!"
     IDS_WELCOME_PERIOD      "."
     IDS_SAVE_IMAGE          "Save image as..."
     IDS_SAVE_FILE_AS_TITLE  "Save File"
@@ -847,13 +839,13 @@ BEGIN
     IDS_TODAY_AT            "Today at %H:%M"
     IDS_YESTERDAY_AT        "Yesterday at %H:%M"
     IDS_LONG_DATE_FMT       "%d-%m-%Y at %H:%M"
+    IDS_SHORT_DATE_FMT      "%d/%m %H:%M"
+    IDS_ONLY_DATE_FMT       "%s %d%s, %d"
+    IDS_MONTH_JANUARY       "January"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_SHORT_DATE_FMT      "%d/%m %H:%M"
-    IDS_ONLY_DATE_FMT       "%s %d%s, %d"
-    IDS_MONTH_JANUARY       "January"
     IDS_MONTH_FEBRUARY      "February"
     IDS_MONTH_MARCH         "March"
     IDS_MONTH_APRIL         "April"
@@ -868,13 +860,13 @@ BEGIN
     IDS_CANT_VIEW_CHANNEL   "You do not have permission to view the channel #%s."
     IDS_CANT_VIEW_MESSAGE_HISTORY 
                             "You do not have permission to view the message history of "
+    IDS_CANT_SEND_MESSAGES  "You do not have permission to send messages in this channel."
+    IDS_SHORT_TIME_FMT      "%H:%M"
+    IDS_CONFIRM_DELETE      "Are you sure you want to delete this message?\n\n%s (%s)\n\n%s"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_CANT_SEND_MESSAGES  "You do not have permission to send messages in this channel."
-    IDS_SHORT_TIME_FMT      "%H:%M"
-    IDS_CONFIRM_DELETE      "Are you sure you want to delete this message?\n\n%s (%s)\n\n%s"
     IDS_CONFIRM_DELETE_TITLE "Discord Messenger - Delete Message"
     IDS_CONFIRM_PIN         "Hey, just double checking that you want to pin this message to #%s for posterity and greatness?\n\n%s (%s)\n\n%s"
     IDS_CONFIRM_PIN_TITLE   "Discord Messenger - Pin It. Pin It Good."
@@ -884,6 +876,7 @@ BEGIN
     IDS_LOADING_PINNED_MESSAGES "Loading pinned messages..."
     IDS_NO_PINNED_MESSAGES  "This channel doesn't have any pinned messages... yet."
     IDS_PINNED_MESSAGES_IN  "Pinned Messages In #%s"
+    IDS_CONFIRM_LEAVE_GUILD "Are you sure you want to leave %S? You won't be able to rejoin this server unless you are re-invited."
 END
 
 #endif    // English (United States) resources

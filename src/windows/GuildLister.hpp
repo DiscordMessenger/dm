@@ -36,6 +36,7 @@ public:
 	void Update();
 	void OnScroll();
 	void ShowMenu(Snowflake guild, POINT pt);
+	void AskLeave(Snowflake guild);
 
 public:
 	static WNDCLASS g_GuildListerParentClass;

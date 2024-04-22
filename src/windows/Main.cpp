@@ -719,6 +719,18 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					GetDiscordInstance()->SetActivityStatus(eActiveStatus::STATUS_OFFLINE);
 					break;
 				}
+				case IDM_LEAVEGUILD: // Server > Leave Server
+				{
+					g_pGuildLister->AskLeave(GetDiscordInstance()->GetCurrentGuildID());
+					break;
+				}
+				// Accelerators
+				case IDA_SEARCH:
+				{
+					// TODO
+					DbgPrintW("Search!");
+					break;
+				}
 			}
 			break;
 		}
@@ -1110,6 +1122,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	if (!RegisterImageViewerClass())
 		return 1;
 
+	HACCEL hAccTable = LoadAccelerators(g_hInstance, MAKEINTRESOURCE(IDR_MAIN_ACCELS));
+
 	// Initialize the worker thread manager
 	GetHTTPClient()->Init();
 
@@ -1149,30 +1163,34 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 		while (GetMessage(&msg, NULL, 0, 0) > 0)
 		{
-			if (!IsWindow(g_ProfilePopoutHwnd) || !IsDialogMessage(g_ProfilePopoutHwnd, &msg))
+			if (IsWindow(g_ProfilePopoutHwnd) && IsDialogMessage(g_ProfilePopoutHwnd, &msg))
+				continue;
+
+			if (hAccTable &&
+				TranslateAccelerator(g_Hwnd, hAccTable, &msg))
+				continue;
+
+			//
+			// Hack.  This inspects ALL messages, including ones delivered to children
+			// of the main window.  This is fine, since that means that I won't have to
+			// add code to the child windows themselves to dismiss the popout.
+			//
+			// Note, this is safe to do because if msg's hwnd member is equal to
+			// g_ProfilePopoutHwnd, IsDialogMessage has already called its dialogproc,
+			// and returned false, therefore we wouldn't even get here.
+			//
+			//if (msg.message == WM_LBUTTONDOWN)
+			//	DismissProfilePopout();
+
+			if (msg.message == WM_LBUTTONDOWN)
 			{
-				//
-				// Hack.  This inspects ALL messages, including ones delivered to children
-				// of the main window.  This is fine, since that means that I won't have to
-				// add code to the child windows themselves to dismiss the popout.
-				//
-				// Note, this is safe to do because if msg's hwnd member is equal to
-				// g_ProfilePopoutHwnd, IsDialogMessage has already called its dialogproc,
-				// and returned false, therefore we wouldn't even get here.
-				//
-				//if (msg.message == WM_LBUTTONDOWN)
-				//	DismissProfilePopout();
-
-				if (msg.message == WM_LBUTTONDOWN)
-				{
-					// If the focus isn't sent to a child of the profile popout, dismiss the latter
-					if (!IsChildOf(msg.hwnd, g_ProfilePopoutHwnd))
-						DismissProfilePopout();
-				}
-
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
+				// If the focus isn't sent to a child of the profile popout, dismiss the latter
+				if (!IsChildOf(msg.hwnd, g_ProfilePopoutHwnd))
+					DismissProfilePopout();
 			}
+
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
 		}
 
 		TextToSpeech::Deinitialize();

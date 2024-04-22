@@ -218,6 +218,22 @@ void GuildLister::ShowMenu(Snowflake guild, POINT pt)
 	TrackPopupMenu(menu, TPM_RIGHTBUTTON, pt.x, pt.y, 0, m_scrollable_hwnd, NULL);
 }
 
+void GuildLister::AskLeave(Snowflake guild)
+{
+	Guild* pGuild = GetDiscordInstance()->GetGuild(guild);
+	if (!pGuild)
+		return;
+
+	TCHAR buff[4096];
+	WAsnprintf(buff, _countof(buff), TmGetTString(IDS_CONFIRM_LEAVE_GUILD), pGuild->m_name.c_str());
+
+	if (MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_YESNO | MB_ICONQUESTION) == IDYES)
+	{
+		// Leave Server
+		GetDiscordInstance()->RequestLeaveGuild(guild);
+	}
+}
+
 LRESULT CALLBACK GuildLister::ParentWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	GuildLister* pThis = (GuildLister*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
@@ -514,24 +530,12 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					break;
 
 				case IDM_LEAVEGUILD:
-				{
-					TCHAR buff[4096];
-					WAsnprintf(buff, _countof(buff), TEXT("Are you sure you want to leave %S? You won't be able to rejoin this server unless you are re-invited."), pGuild->m_name.c_str());
-
-					if (MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_YESNO | MB_ICONQUESTION) == IDYES)
-					{
-						// Leave Server
-						GetDiscordInstance()->RequestLeaveGuild(guildID);
-					}
-
+					pThis->AskLeave(guildID);
 					break;
-				}
 
 				case IDM_MARKASREAD:
-				{
 					GetDiscordInstance()->RequestAcknowledgeGuild(guildID);
 					break;
-				}
 			}
 			break;
 		}
