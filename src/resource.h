@@ -301,15 +301,17 @@
 #define IDM_ADDFRIEND                   1064
 #define IDM_BLOCK                       1065
 #define IDM_COPYID                      1066
+#define ID_ACTIONS_QUICKSWITCHER        1067
 #define IDR_MAIN_ACCELS                 1201
 #define IDA_SEARCH                      1301
+#define IDA_QUICKSWITCHER               1302
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        10000
-#define _APS_NEXT_COMMAND_VALUE         20000
+#define _APS_NEXT_COMMAND_VALUE         20001
 #define _APS_NEXT_CONTROL_VALUE         30000
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif

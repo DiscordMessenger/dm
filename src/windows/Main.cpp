@@ -731,6 +731,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					DbgPrintW("Search!");
 					break;
 				}
+				case IDA_QUICKSWITCHER:
+				{
+					// TODO
+					DbgPrintW("Quick switcher!");
+					break;
+				}
 			}
 			break;
 		}
@@ -753,15 +759,33 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_INITMENUPOPUP:
 		{
 			HMENU Menu = (HMENU)wParam;
+			int firstMenuItem = GetMenuItemID(Menu, 0);
 
-			if (GetMenuItemID(Menu, 0) == ID_ONLINESTATUSPLACEHOLDER_ONLINE)
+			switch (firstMenuItem)
 			{
-				// It's the account status menu
-				Profile* pf = GetDiscordInstance()->GetProfile();
-				CheckMenuItem(Menu, ID_ONLINESTATUSPLACEHOLDER_ONLINE,       pf->m_activeStatus == STATUS_ONLINE  ? MF_CHECKED : 0);
-				CheckMenuItem(Menu, ID_ONLINESTATUSPLACEHOLDER_IDLE,         pf->m_activeStatus == STATUS_IDLE    ? MF_CHECKED : 0);
-				CheckMenuItem(Menu, ID_ONLINESTATUSPLACEHOLDER_DONOTDISTURB, pf->m_activeStatus == STATUS_DND     ? MF_CHECKED : 0);
-				CheckMenuItem(Menu, ID_ONLINESTATUSPLACEHOLDER_INVISIBLE,    pf->m_activeStatus == STATUS_OFFLINE ? MF_CHECKED : 0);
+				case ID_ONLINESTATUSPLACEHOLDER_ONLINE:
+				{
+					Profile* pf = GetDiscordInstance()->GetProfile();
+					if (!pf)
+						break;
+
+					// It's the account status menu
+					CheckMenuItem(Menu, ID_ONLINESTATUSPLACEHOLDER_ONLINE,       pf->m_activeStatus == STATUS_ONLINE  ? MF_CHECKED : 0);
+					CheckMenuItem(Menu, ID_ONLINESTATUSPLACEHOLDER_IDLE,         pf->m_activeStatus == STATUS_IDLE    ? MF_CHECKED : 0);
+					CheckMenuItem(Menu, ID_ONLINESTATUSPLACEHOLDER_DONOTDISTURB, pf->m_activeStatus == STATUS_DND     ? MF_CHECKED : 0);
+					CheckMenuItem(Menu, ID_ONLINESTATUSPLACEHOLDER_INVISIBLE,    pf->m_activeStatus == STATUS_OFFLINE ? MF_CHECKED : 0);
+					break;
+				}
+				case IDM_INVITEPEOPLE:
+				{
+					Profile* pf = GetDiscordInstance()->GetProfile();
+					Guild* pGuild = GetDiscordInstance()->GetCurrentGuild();
+					if (!pGuild || !pf)
+						break;
+
+					EnableMenuItem(Menu, IDM_LEAVEGUILD, pGuild->m_ownerId == pf->m_snowflake ? MF_GRAYED : MF_ENABLED);
+					break;
+				}
 			}
 
 			break;

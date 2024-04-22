@@ -76,16 +76,17 @@ BEGIN
         MENUITEM "&Server Settings",            IDM_GUILDSETTINGS, GRAYED
         MENUITEM "&Privacy Settings",           IDM_PRIVACYSETTINGS, GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "Edit Server Pro&file",        IDM_EDITNICKNAME, GRAYED
+        MENUITEM "&Change Nickname",            IDM_EDITNICKNAME, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "&Leave Server",               IDM_LEAVEGUILD
     END
     POPUP "&Actions"
     BEGIN
-        MENUITEM "&Search...",                  ID_ACTIONS_SEARCH
+        MENUITEM "&Search...\tCtrl+F",          ID_ACTIONS_SEARCH
+        MENUITEM "Quick Switcher...\tCtrl+K",   ID_ACTIONS_QUICKSWITCHER
         MENUITEM SEPARATOR
-        MENUITEM "New Group &DM...",            ID_ACTIONS_NEWGROUPDM
-        MENUITEM "Add &Friend...",              ID_ACTIONS_ADDFRIEND
+        MENUITEM "New Group &DM...",            ID_ACTIONS_NEWGROUPDM, GRAYED
+        MENUITEM "Add &Friend...",              ID_ACTIONS_ADDFRIEND, GRAYED
     END
     POPUP "A&ccount"
     BEGIN
@@ -97,18 +98,16 @@ BEGIN
             MENUITEM "Do not disturb",              ID_ONLINESTATUSPLACEHOLDER_DONOTDISTURB
             MENUITEM "Invisible",                   ID_ONLINESTATUSPLACEHOLDER_INVISIBLE
         END
-        MENUITEM "Set &Custom Status",          ID_ACCOUNT_SETCUSTOMSTATUS
+        MENUITEM "Set &Custom Status",          ID_ACCOUNT_SETCUSTOMSTATUS, GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "Switch &Accounts",            ID_ACCOUNT_SWITCHACCOUNTS
+        MENUITEM "&Unmute",                     ID_ACCOUNT_UNMUTE, GRAYED
+        MENUITEM "&Deafen",                     ID_ACCOUNT_DEAFEN, GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "&Unmute",                     ID_ACCOUNT_UNMUTE
-        MENUITEM "&Deafen",                     ID_ACCOUNT_DEAFEN
-        MENUITEM SEPARATOR
-        MENUITEM "User &Settings",              ID_ACCOUNT_USERSETTINGS
+        MENUITEM "User &Settings",              ID_ACCOUNT_USERSETTINGS, GRAYED
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "Help &Topics...",             ID_HELP_HELPTOPICS
+        MENUITEM "Help &Topics...",             ID_HELP_HELPTOPICS, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "&About Discord Messenger...", ID_HELP_ABOUTDISCORDMESSENGER
     END
@@ -762,7 +761,8 @@ IDC_ZOOMOUT             CURSOR                  "../res/cur_zoomout.cur"
 
 IDR_MAIN_ACCELS ACCELERATORS
 BEGIN
-    "K",            IDA_SEARCH,             VIRTKEY, CONTROL, NOINVERT
+    "K",            IDA_QUICKSWITCHER,      VIRTKEY, CONTROL, NOINVERT
+    "F",            IDA_SEARCH,             VIRTKEY, CONTROL, NOINVERT
 END
 
 
