@@ -416,7 +416,8 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			HBITMAP hbm = NULL;
 			HDC hdc = NULL;
-			BYTE* pBytes = NULL;
+			BYTE* pBytes = nullptr;
+			LPTSTR fileName = nullptr;
 			BITMAP bm;
 			BITMAPINFO bmi;
 			std::vector<uint8_t> data;
@@ -479,7 +480,7 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			CloseClipboard(); isClipboardClosed = true;
 
-			LPCTSTR fileName = TEXT("unknown.png");
+			fileName = TEXT("unknown.png");
 			UploadDialogShowWithFileData(data.data(), data.size(), fileName);
 
 		_fail:
