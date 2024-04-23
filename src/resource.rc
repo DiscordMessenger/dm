@@ -887,7 +887,7 @@ BEGIN
     IDS_FAILED_TO_SPEAK_MESSAGE "Failed to speak message"
     IDS_CANNOT_UPLOAD_ATTACHMENT 
                             "Can't upload attachment to this channel, do you have the permissions?"
-    IDS_FILE_TOO_BIG        "Your files are too powerful! They can't be sent out like that."
+    IDS_FILE_TOO_BIG        "Your files are too powerful!  The maximum file size is 25 MB.  Use an official Discord client if you have Nitro and wish to upload a larger file."
     IDS_FILE_EMPTY          "You can't upload an empty file.  Why would you want to do that, anyway?!"
 END
 

@@ -5,6 +5,8 @@
 #include <nlohmann/json.h>
 using Json = nlohmann::json;
 
+#define C_FILE_MAX_SIZE (25*1024*1024)
+
 struct UploadDialogData
 {
 	LPCTSTR m_lpstrFile = nullptr;
@@ -111,6 +113,9 @@ int UploadDialogTryReadFile(LPCTSTR pszFileName, DWORD& dwFileSize, BYTE*& pbFil
 
 	if (dwFileSize == 0)
 		return FailAndClose(hFile, RFE_FILEEMPTY);
+
+	if (dwFileSize > C_FILE_MAX_SIZE)
+		return FailAndClose(hFile, RFE_FILETOOBIG);
 
 	pbFileData = new(std::nothrow) BYTE[dwFileSize];
 	if (!pbFileData)
