@@ -331,6 +331,170 @@ void UpdateMainWindowTitle(HWND hWnd)
 	free(tstr);
 }
 
+BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (LOWORD(wParam))
+	{
+		case ID_FILE_PREFERENCES:
+		{
+			switch (ShowOptionsDialog())
+			{
+				case OPTIONS_RESULT_LOGOUT: {
+					PostMessage(hWnd, WM_LOGGEDOUT, 100, 0);
+					GetDiscordInstance()->SetToken("");
+					g_pChannelView->ClearChannels();
+					g_pMemberList->ClearMembers();
+					g_pMessageEditor->ClearTypers();
+					g_pMessageList->ClearMessages();
+					g_pGuildLister->ClearTooltips();
+					return TRUE;
+				}
+			}
+			break;
+		}
+		case ID_FILE_EXIT:
+		{
+			SendMessage(hWnd, WM_CLOSE, 0, 0);
+			return 0;
+		}
+		case ID_HELP_ABOUTDISCORDMESSENGER:
+		{
+			About();
+			break;
+		}
+		case ID_FILE_STOPALLSPEECH:
+		{
+			TextToSpeech::StopAll();
+			break;
+		}
+		case ID_ONLINESTATUSPLACEHOLDER_ONLINE:
+		{
+			GetDiscordInstance()->SetActivityStatus(eActiveStatus::STATUS_ONLINE);
+			break;
+		}
+		case ID_ONLINESTATUSPLACEHOLDER_IDLE:
+		{
+			GetDiscordInstance()->SetActivityStatus(eActiveStatus::STATUS_IDLE);
+			break;
+		}
+		case ID_ONLINESTATUSPLACEHOLDER_DONOTDISTURB:
+		{
+			GetDiscordInstance()->SetActivityStatus(eActiveStatus::STATUS_DND);
+			break;
+		}
+		case ID_ONLINESTATUSPLACEHOLDER_INVISIBLE:
+		{
+			GetDiscordInstance()->SetActivityStatus(eActiveStatus::STATUS_OFFLINE);
+			break;
+		}
+		case IDM_LEAVEGUILD: // Server > Leave Server
+		{
+			g_pGuildLister->AskLeave(GetDiscordInstance()->GetCurrentGuildID());
+			break;
+		}
+		// Accelerators
+		case IDA_SEARCH:
+		case ID_ACTIONS_SEARCH:
+		{
+			// TODO
+			DbgPrintW("Search!");
+			break;
+		}
+		case IDA_QUICKSWITCHER:
+		case ID_ACTIONS_QUICKSWITCHER:
+		{
+			// TODO
+			DbgPrintW("Quick switcher!");
+			break;
+		}
+		case IDA_PASTE:
+		{
+			if (!OpenClipboard(hWnd)) {
+				DbgPrintW("Error opening clipboard: %d", GetLastError());
+				break;
+			}
+
+			HBITMAP hbm = NULL;
+			HDC hdc = NULL;
+			BYTE* pBytes = NULL;
+			BITMAP bm;
+			BITMAPINFO bmi;
+			std::vector<uint8_t> data;
+			bool isClipboardClosed = false;
+
+			hbm = (HBITMAP) GetClipboardData (CF_BITMAP);
+			if (!hbm)
+			{
+				CloseClipboard();
+
+				// No bitmap, forward to the edit control if selected
+				HWND hFocus = GetFocus();
+				if (hFocus == g_pMessageEditor->m_edit_hwnd)
+					SendMessage(hFocus, WM_PASTE, 0, 0);
+
+				return FALSE;
+			}
+
+			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			if (!pChan) {
+				DbgPrintW("No channel!");
+				goto _fail;
+			}
+
+			if (!pChan->HasPermission(PERM_SEND_MESSAGES) ||
+				!pChan->HasPermission(PERM_ATTACH_FILES)) {
+				DbgPrintW("Can't attach files here!");
+				goto _fail;
+			}
+
+			// Man what the hell
+			hdc = GetDC(hWnd);
+
+			ZeroMemory(&bm, sizeof bm);
+			if (!GetObject(hbm, sizeof bm, &bm)) {
+				DbgPrintW("Cannot obtain pointer to bitmap!");
+				goto _fail;
+			}
+
+			ZeroMemory(&bmi, sizeof bmi);
+			bmi.bmiHeader.biSize = sizeof bmi.bmiHeader;
+			bmi.bmiHeader.biWidth = bm.bmWidth;
+			bmi.bmiHeader.biHeight = -bm.bmHeight;
+			bmi.bmiHeader.biPlanes = 1;
+			bmi.bmiHeader.biBitCount = bm.bmBitsPixel;
+			bmi.bmiHeader.biCompression = BI_RGB;
+			bmi.bmiHeader.biSizeImage = 0;
+
+			pBytes = new BYTE[bm.bmWidth * bm.bmHeight * (bm.bmBitsPixel / 8)];
+
+			if (!GetDIBits(hdc, hbm, 0, bm.bmHeight, pBytes, &bmi, DIB_RGB_COLORS)) {
+				DbgPrintW("Error, can't get DI bits for bitmap!");
+				goto _fail;
+			}
+
+			if (!ImageLoader::ConvertToPNG(&data, pBytes, bm.bmWidth, bm.bmHeight, bm.bmWidth * sizeof(uint32_t), 32)) {
+				DbgPrintW("Cannot convert to PNG!");
+				goto _fail;
+			}
+
+			CloseClipboard(); isClipboardClosed = true;
+
+			LPCTSTR fileName = TEXT("unknown.png");
+			UploadDialogShowWithFileData(data.data(), data.size(), fileName);
+
+		_fail:
+			data.clear();
+			if (pBytes) delete[] pBytes;
+			if (hdc) ReleaseDC(hWnd, hdc);
+			if (hbm) DeleteObject(hbm); // should I do this?
+			if (!isClipboardClosed) CloseClipboard();
+			break;
+		}
+	}
+
+	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -685,84 +849,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		case WM_COMMAND:
-		{
-			switch (LOWORD(wParam))
-			{
-				case ID_FILE_PREFERENCES:
-				{
-					switch (ShowOptionsDialog())
-					{
-						case OPTIONS_RESULT_LOGOUT: {
-							PostMessage(hWnd, WM_LOGGEDOUT, 100, 0);
-							GetDiscordInstance()->SetToken("");
-							g_pChannelView->ClearChannels();
-							g_pMemberList->ClearMembers();
-							g_pMessageEditor->ClearTypers();
-							g_pMessageList->ClearMessages();
-							g_pGuildLister->ClearTooltips();
-							return TRUE;
-						}
-					}
-					break;
-				}
-				case ID_FILE_EXIT:
-				{
-					SendMessage(hWnd, WM_CLOSE, 0, 0);
-					return 0;
-				}
-				case ID_HELP_ABOUTDISCORDMESSENGER:
-				{
-					About();
-					break;
-				}
-				case ID_FILE_STOPALLSPEECH:
-				{
-					TextToSpeech::StopAll();
-					break;
-				}
-				case ID_ONLINESTATUSPLACEHOLDER_ONLINE:
-				{
-					GetDiscordInstance()->SetActivityStatus(eActiveStatus::STATUS_ONLINE);
-					break;
-				}
-				case ID_ONLINESTATUSPLACEHOLDER_IDLE:
-				{
-					GetDiscordInstance()->SetActivityStatus(eActiveStatus::STATUS_IDLE);
-					break;
-				}
-				case ID_ONLINESTATUSPLACEHOLDER_DONOTDISTURB:
-				{
-					GetDiscordInstance()->SetActivityStatus(eActiveStatus::STATUS_DND);
-					break;
-				}
-				case ID_ONLINESTATUSPLACEHOLDER_INVISIBLE:
-				{
-					GetDiscordInstance()->SetActivityStatus(eActiveStatus::STATUS_OFFLINE);
-					break;
-				}
-				case IDM_LEAVEGUILD: // Server > Leave Server
-				{
-					g_pGuildLister->AskLeave(GetDiscordInstance()->GetCurrentGuildID());
-					break;
-				}
-				// Accelerators
-				case IDA_SEARCH:
-				case ID_ACTIONS_SEARCH:
-				{
-					// TODO
-					DbgPrintW("Search!");
-					break;
-				}
-				case IDA_QUICKSWITCHER:
-				case ID_ACTIONS_QUICKSWITCHER:
-				{
-					// TODO
-					DbgPrintW("Quick switcher!");
-					break;
-				}
-			}
-			break;
-		}
+			return HandleCommand(hWnd, uMsg, wParam, lParam);
+
 		case WM_DESTROY:
 		{
 			if (GetDiscordInstance())

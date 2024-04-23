@@ -317,13 +317,14 @@
 #define IDR_MAIN_ACCELS                 1201
 #define IDA_SEARCH                      1301
 #define IDA_QUICKSWITCHER               1302
+#define IDA_PASTE                       1303
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        10000
-#define _APS_NEXT_COMMAND_VALUE         1067
+#define _APS_NEXT_COMMAND_VALUE         1069
 #define _APS_NEXT_CONTROL_VALUE         860
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif

@@ -7,8 +7,8 @@ using Json = nlohmann::json;
 
 struct UploadDialogData
 {
-	LPTSTR m_lpstrFile = nullptr;
-	LPTSTR m_lpstrFileTitle = nullptr;
+	LPCTSTR m_lpstrFile = nullptr;
+	LPCTSTR m_lpstrFileTitle = nullptr;
 	SHFILEINFO m_sfi{};
 	TCHAR m_comment[4096] = { 0 };
 	bool m_bSpoiler = false;
@@ -98,7 +98,7 @@ static int FailDeallocAndClose(HANDLE hFile, BYTE*& pbFileData, int errorCode) {
 	return FailAndClose(hFile, errorCode);
 }
 
-int UploadDialogTryReadFile(LPTSTR pszFileName, DWORD& dwFileSize, BYTE*& pbFileData)
+int UploadDialogTryReadFile(LPCTSTR pszFileName, DWORD& dwFileSize, BYTE*& pbFileData)
 {
 	HANDLE hFile = CreateFile(pszFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile == INVALID_HANDLE_VALUE)
@@ -140,24 +140,39 @@ INT_PTR CALLBACK UploadDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 				EndDialog(hWnd, IDCANCEL);
 				return TRUE;
 			}
+			if (!pChan->HasPermission(PERM_SEND_MESSAGES) ||
+				!pChan->HasPermission(PERM_ATTACH_FILES)) {
+				EndDialog(hWnd, IDCANCEL);
+				return TRUE;
+			}
 
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)lParam);
 			pData = (UploadDialogData*)lParam;
 			pData->m_comment[0] = 0;
 
-			DbgPrintW("Reading file %S", pData->m_lpstrFile);
+			if (pData->m_lpstrFile)
+			{
+				DbgPrintW("Reading file %S", pData->m_lpstrFile);
 
-			int erc = UploadDialogTryReadFile(pData->m_lpstrFile, pData->m_fileSize, pData->m_pFileData);
-			if (erc > 0) {
-				g_FailDialogs[erc](hWnd);
-				EndDialog(hWnd, IDCANCEL);
-				return TRUE;
+				int erc = UploadDialogTryReadFile(pData->m_lpstrFile, pData->m_fileSize, pData->m_pFileData);
+				if (erc > 0) {
+					g_FailDialogs[erc](hWnd);
+					EndDialog(hWnd, IDCANCEL);
+					return TRUE;
+				}
+
+				// TODO: Win32 docs say we should do this in a background thread.
+				DbgPrintW("Getting file info for %S", pData->m_lpstrFile);
+				SHGetFileInfo(pData->m_lpstrFile, 0, &pData->m_sfi, sizeof(SHFILEINFO), SHGFI_ICON);
+				DbgPrintW("Got the file info!");
 			}
+			else
+			{
+				DbgPrintW("Using memory file to upload");
 
-			// TODO: Win32 docs say we should do this in a background thread.
-			DbgPrintW("Getting file info for %S", pData->m_lpstrFile);
-			SHGetFileInfo(pData->m_lpstrFile, 0, &pData->m_sfi, sizeof(SHFILEINFO), SHGFI_ICON);
-			DbgPrintW("Got the file info!");
+				// Load in not-shared mode, so that DestroyIcon works
+				pData->m_sfi.hIcon = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_FILE), IMAGE_ICON, 0, 0, LR_CREATEDIBSECTION);
+			}
 
 			SetDlgItemText(hWnd, IDC_FILE_NAME, pData->m_lpstrFileTitle);
 			
@@ -202,12 +217,8 @@ INT_PTR CALLBACK UploadDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	return FALSE;
 }
 
-void UploadDialogShowWithFileName(LPTSTR lpstrFileName, LPTSTR lpstrFileTitle)
+static void UploadDialogShowData(UploadDialogData* data)
 {
-	UploadDialogData* data = new UploadDialogData;
-	data->m_lpstrFile = lpstrFileName;
-	data->m_lpstrFileTitle = lpstrFileTitle;
-
 	if (DialogBoxParam(
 			g_hInstance,
 			MAKEINTRESOURCE(IDD_DIALOG_UPLOADFILES),
@@ -248,8 +259,50 @@ void UploadDialogShowWithFileName(LPTSTR lpstrFileName, LPTSTR lpstrFileTitle)
 	delete data;
 }
 
+bool UploadDialogCheckHasUploadRights()
+{
+	Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+	if (!pChan)
+		return false;
+	
+	if (!pChan->HasPermission(PERM_SEND_MESSAGES) ||
+		!pChan->HasPermission(PERM_ATTACH_FILES))
+		return false;
+
+	return true;
+}
+
+void UploadDialogShowWithFileName(LPCTSTR lpstrFileName, LPCTSTR lpstrFileTitle)
+{
+	if (!UploadDialogCheckHasUploadRights())
+		return;
+
+	UploadDialogData* data = new UploadDialogData;
+	data->m_lpstrFile = lpstrFileName;
+	data->m_lpstrFileTitle = lpstrFileTitle;
+
+	UploadDialogShowData(data);
+}
+
+void UploadDialogShowWithFileData(uint8_t* fileData, size_t fileSize, LPCTSTR lpstrFileTitle)
+{
+	if (!UploadDialogCheckHasUploadRights())
+		return;
+
+	UploadDialogData* data = new UploadDialogData;
+	data->m_lpstrFileTitle = lpstrFileTitle;
+	data->m_fileSize = fileSize;
+	data->m_pFileData = new uint8_t[fileSize];
+	memcpy(data->m_pFileData, fileData, fileSize);
+
+	UploadDialogShowData(data);
+}
+
 void UploadDialogShow2()
 {
+	if (!UploadDialogCheckHasUploadRights())
+		return;
+
 	const int MAX_FILE = 4096;
 	TCHAR buffer[MAX_FILE];
 	TCHAR buffer2[MAX_FILE];
@@ -280,5 +333,8 @@ void UploadDialogShow2()
 
 void UploadDialogShow()
 {
+	if (!UploadDialogCheckHasUploadRights())
+		return;
+
 	PostMessage(g_Hwnd, WM_SHOWUPLOADDIALOG, 0, 0);
 }
