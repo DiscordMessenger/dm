@@ -177,14 +177,15 @@ public:
 
 	Channel* GetChannel(Snowflake sf)
 	{
+		Channel* pChan;
 		Guild* pGuild = GetCurrentGuild();
-		if (!pGuild) return nullptr;
-
-		Channel* pChan = pGuild->GetChannel(sf);
-		if (pChan) return pChan;
+		if (pGuild) {
+			pChan = pGuild->GetChannel(sf);
+			if (pChan) return pChan;
+		}
 
 		for (auto& gld : m_guilds) {
-			pChan = pGuild->GetChannel(sf);
+			pChan = gld.GetChannel(sf);
 			if (pChan)
 				return pChan;
 		}

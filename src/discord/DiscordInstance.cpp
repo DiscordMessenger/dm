@@ -1524,7 +1524,7 @@ void DiscordInstance::HandleMessageInsertOrUpdate(Json& j, bool bIsUpdate)
 	if (m_CurrentChannel == channelId)
 	{
 		if (pChan->m_lastViewedMsg == oldSentMsg)
-			pChan->m_lastViewedMsg = pChan->m_lastViewedMsg;
+			pChan->m_lastViewedMsg = pChan->m_lastSentMsg;
 		else
 			GetFrontend()->UpdateChannelAcknowledge(channelId);
 	}
