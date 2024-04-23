@@ -373,7 +373,7 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_LBUTTONDOWN:
 		{
-			SetFocus(hWnd);
+			//SetFocus(hWnd);
 			break;
 		}
 		case WM_MOUSEMOVE:

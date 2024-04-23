@@ -278,6 +278,7 @@
     <ClInclude Include="..\src\windows\MemberList.hpp" />
     <ClInclude Include="..\src\windows\MessageEditor.hpp" />
     <ClInclude Include="..\src\windows\MessageList.hpp" />
+    <ClInclude Include="..\src\windows\MessageView.hpp" />
     <ClInclude Include="..\src\windows\MissingDefinitions.hpp" />
     <ClInclude Include="..\src\windows\NetworkerThread.hpp" />
     <ClInclude Include="..\src\windows\OptionsDialog.hpp" />
@@ -327,6 +328,7 @@
     <ClCompile Include="..\src\windows\MemberList.cpp" />
     <ClCompile Include="..\src\windows\MessageEditor.cpp" />
     <ClCompile Include="..\src\windows\MessageList.cpp" />
+    <ClCompile Include="..\src\windows\MessageView.cpp" />
     <ClCompile Include="..\src\windows\NetworkerThread.cpp" />
     <ClCompile Include="..\src\windows\OptionsDialog.cpp" />
     <ClCompile Include="..\src\windows\PinnedMessageViewer.cpp" />

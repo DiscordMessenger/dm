@@ -20,6 +20,7 @@
 #include "LoadingMessage.hpp"
 #include "UploadDialog.hpp"
 #include "Frontend_Win32.hpp"
+#include "MessageView.hpp"
 #include "../discord/LocalSettings.hpp"
 #include "../discord/WebsocketClient.hpp"
 
@@ -808,6 +809,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pMessageEditor = MessageEditor::Create(hWnd, &rect);
 			g_pLoadingMessage = LoadingMessage::Create(hWnd, &rcLoading);
 
+			// XXX: This is test code
+			MessageView::Initialize();
+			// XXX: This is test code
+
 			SendMessage(hWnd, WM_LOGINAGAIN, 0, 0);
 			break;
 		}
@@ -1076,6 +1081,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (wParam == VK_F8) {
 				GetQRCodeDialog()->Show();
 			}
+			if (wParam == VK_F9) {
+				MessageView::CreateView(hWnd, GetDiscordInstance()->GetCurrentChannelID());
+			}
 #endif
 
 			break;
@@ -1085,6 +1093,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			extern HWND g_ProfilePopoutHwnd;
 			if (wParam == WA_INACTIVE && (HWND)lParam != g_ProfilePopoutHwnd)
 				DismissProfilePopout();
+			break;
+		}
+		case WM_MESSAGEVIEWCLOSED:
+		{
+			Snowflake channel = *(Snowflake*) lParam;
+			MessageView::OnClosed(channel);
 			break;
 		}
 
