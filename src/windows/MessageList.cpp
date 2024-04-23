@@ -22,6 +22,16 @@ static int GetProfileBorderRenderSize()
 	return ScaleByDPI(Supports32BitIcons() ? (PROFILE_PICTURE_SIZE_DEF + 12) : 64);
 }
 
+static COLORREF GetDarkerBackgroundColor()
+{
+	COLORREF crWindow = GetSysColor(COLOR_3DFACE);
+	COLORREF crShadow = GetSysColor(COLOR_SCROLLBAR);
+	int r1 =  crWindow        & 0xFF, r2 =  crShadow        & 0xFF;
+	int g1 = (crWindow >> 8)  & 0xFF, g2 = (crShadow >> 8)  & 0xFF;
+	int b1 = (crWindow >> 16) & 0xFF, b2 = (crShadow >> 16) & 0xFF;
+	return RGB((r1 + r2) / 2, (g1 + g2) / 2, (b1 + b2) / 2);
+}
+
 WNDCLASS MessageList::g_MsgListClass, MessageList::g_MsgListParentClass;
 
 static HICON g_ReplyPieceIcon;
@@ -224,11 +234,15 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect)
 	RECT rcGradient = rc, rcLine = rc;
 	rcLine.right = rcLine.left + ScaleByDPI(4);
 	rcGradient.left += ScaleByDPI(4);
-	COLORREF oldColor = SetBkColor(hdc, GetSysColor(COLOR_SCROLLBAR));
-	if (GetLocalSettings()->GetMessageStyle() == MS_GRADIENT)
+	COLORREF oldColor = SetBkColor(hdc, GetDarkerBackgroundColor());
+	if (GetLocalSettings()->GetMessageStyle() == MS_GRADIENT) {
 		FillGradientColors(hdc, &rcGradient, GetSysColor(COLOR_WINDOWFRAME), CLR_NONE, true);
-	else
-		FillRect(hdc, &rcGradient, GetSysColorBrush(COLOR_SCROLLBAR));
+	}
+	else {
+		COLORREF oldClr = ri::SetDCBrushColor(hdc, GetDarkerBackgroundColor());
+		FillRect(hdc, &rcGradient, GetStockBrush(DC_BRUSH));
+		ri::SetDCBrushColor(hdc, oldClr);
+	}
 
 	COLORREF oldCol = ri::SetDCBrushColor(hdc, m_color);
 	FillRect(hdc, &rcLine, GetStockBrush(DC_BRUSH));
@@ -927,8 +941,8 @@ void MessageList::RefetchMessages(Snowflake gapCulprit)
 	if (m_messageSentTo)
 	{
 		// Send to the message without creating a new gap.
-		m_emphasizedMessage = m_messageSentTo;
 		m_firstShownMessage = m_messageSentTo;
+		FlashMessage(m_messageSentTo);
 		if (SendToMessage(m_messageSentTo, false))
 			m_messageSentTo = 0;
 	}
@@ -1769,13 +1783,17 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	LPCTSTR strDate = item.m_date;
 	LPCTSTR strEditDate = item.m_dateEdited;
 	int height = item.m_height, authheight = item.m_authHeight, authwidth = item.m_authWidth;
+	const eMessageStyle mStyle = GetLocalSettings()->GetMessageStyle();
+
+	bool isFlashed = (m_emphasizedMessage == item.m_msg.m_snowflake) && (m_flash_counter % 2 != 0);
+
+	COLORREF textColor = GetSysColor(COLOR_WINDOWTEXT), bkgdColor = CLR_NONE;
 
 	RECT rc = msgRect;
 	if (!m_firstShownMessage && rc.bottom > clientRect.top && !item.m_msg.IsLoadGap())
 		m_firstShownMessage = item.m_msg.m_snowflake;
 
 	const int pfpOffset = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
-	const eMessageStyle mStyle = GetLocalSettings()->GetMessageStyle();
 	const bool isChainBegin = item.m_placeInChain == 0;
 	const bool isChainCont = item.m_placeInChain != 0;
 
@@ -1833,19 +1851,42 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		ri::SetDCPenColor(hdc, oldPenClr);
 	}
 
+	if (isFlashed) {
+		bkgdColor = GetDarkerBackgroundColor();
+		COLORREF crOld = ri::SetDCBrushColor(hdc, bkgdColor);
+		FillRect(hdc, &msgRect, GetStockBrush(DC_BRUSH));
+		ri::SetDCBrushColor(hdc, crOld);
+	}
 	switch (mStyle)
 	{
-		case MS_3DFACE:
-			DrawEdge(hdc, &msgRect, BDR_RAISEDINNER | BDR_RAISEDOUTER, BF_RECT | BF_MIDDLE);
+		case MS_3DFACE: {
+			RECT rect2 = msgRect;
+			int edgeFlags = BF_LEFT | BF_RIGHT | BF_BOTTOM;
+			if (!isFlashed)   edgeFlags |= BF_MIDDLE;
+			if (isChainBegin) edgeFlags |= BF_TOP;
+			else rect2.top -= 4;
+
+			if (!isFlashed)
+				bkgdColor = GetSysColor(COLOR_3DFACE);
+
+			DrawEdge(hdc, &rect2, BDR_RAISED, edgeFlags);
 			break;
-		case MS_FLAT:
-			FillRect(hdc, &msgRect, GetSysColorBrush(COLOR_3DFACE));
+		}
+		case MS_FLAT: {
+			if (!isFlashed)
+				FillRect(hdc, &msgRect, GetSysColorBrush(COLOR_3DFACE));
 			break;
-		case MS_FLATBR:
-			FillRect(hdc, &msgRect, GetSysColorBrush(COLOR_WINDOW));
+		}
+		case MS_FLATBR: {
+			if (!isFlashed)
+				FillRect(hdc, &msgRect, GetSysColorBrush(COLOR_WINDOW));
 			break;
+		}
 		case MS_GRADIENT:
 		{
+			if (isFlashed)
+				break;
+
 			COLORREF c1, c2;
 			c1 = GetSysColor(COLOR_WINDOW); // high
 			c2 = GetSysColor(COLOR_3DFACE); // low
@@ -1855,6 +1896,8 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 				c1 = c2;
 				c2 = tmp;
 			}
+
+			bkgdColor = c2;
 
 			if (isChainCont) {
 				// Just render a flat background using the bottom color
@@ -1886,6 +1929,9 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			break;
 		}
 	}
+
+	COLORREF crOldTextColor = SetTextColor(hdc, textColor);
+	COLORREF crOldBkgdColor = SetBkColor  (hdc, bkgdColor);
 
 	RECT intersRect{};
 	bool inView = IntersectRect(&intersRect, &rc, &paintRect); //rc.bottom < clientRect.top;
@@ -2368,6 +2414,9 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		}
 	}
 
+	SetTextColor(hdc, crOldTextColor);
+	SetBkColor  (hdc, crOldBkgdColor);
+
 	free((void*) freedString);
 }
 
@@ -2386,6 +2435,27 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)strct->lpCreateParams);
 
+			break;
+		}
+		case WM_TIMER:
+		{
+			// Flash timer
+			Snowflake flashedMsg = pThis->m_emphasizedMessage;
+			if (!flashedMsg)
+				break;
+
+			pThis->m_flash_counter--;
+			if (pThis->m_flash_counter <= 0) {
+				pThis->m_emphasizedMessage = 0;
+				KillTimer(hWnd, pThis->m_flash_timer);
+				pThis->m_flash_timer = 0;
+			}
+
+			auto itMsg = pThis->FindMessage(flashedMsg);
+			if (itMsg == pThis->m_messages.end())
+				break;
+
+			InvalidateRect(hWnd, &itMsg->m_rect, TRUE);
 			break;
 		}
 		case WM_DROPFILES:
@@ -2839,8 +2909,6 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			msgRect.bottom = msgRect.top;
 
-			SetTextColor(hdc, GetSysColor(COLOR_MENUTEXT));
-
 			eMessageStyle mStyle = GetLocalSettings()->GetMessageStyle();
 
 			int oldBkMode = 0; bool oldBkModeSet = false;
@@ -3004,6 +3072,7 @@ bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded)
 		si.nPos = y;
 		SetScrollInfo(m_scroll_hwnd, SB_CTL, &si, true);
 
+		FlashMessage(mi->m_msg.m_snowflake);
 		SendMessage(m_scrollable_hwnd, WM_VSCROLL, SB_ENDSCROLL, 0);
 		return !mi->m_msg.IsLoadGap();
 	}
@@ -3155,6 +3224,54 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 		ScrollWindowEx(m_scrollable_hwnd, 0, -diffUpDown, offsetY ? &rcScroll : NULL, NULL, NULL, NULL, SW_INVALIDATE);
 		UpdateWindow(m_scrollable_hwnd);
 	}
+}
+
+void MessageList::FlashMessage(Snowflake msg)
+{
+	auto itMsg = FindMessage(msg);
+	if (itMsg == m_messages.end())
+		return;
+	
+	// If a flash process has already started, end it.
+	if (IsFlashingMessage())
+		EndFlashMessage();
+
+	// Start flashing
+	m_flash_counter = 5;
+	m_emphasizedMessage = msg;
+	m_flash_timer = SetTimer(m_scrollable_hwnd, 0, 250, NULL);
+	if (!m_flash_timer) {
+		DbgPrintW("Failed to flash message %lld", msg);
+		m_flash_counter = 0;
+		m_emphasizedMessage = 0;
+		return;
+	}
+
+	InvalidateRect(m_scrollable_hwnd, &itMsg->m_rect, FALSE);
+}
+
+bool MessageList::IsFlashingMessage() const
+{
+	return m_flash_timer != 0;
+}
+
+void MessageList::EndFlashMessage()
+{
+	// Find the message that is being flashed.
+	auto itMsg = FindMessage(m_emphasizedMessage);
+	m_emphasizedMessage = 0;
+
+	// Check if the message is rendered normally
+	bool wasFlipped = m_flash_timer % 2 != 0;
+	m_flash_timer = 0;
+	if (wasFlipped != 0) {
+		// No, so need to invalidate it.
+		if (itMsg != m_messages.end())
+			InvalidateRect(m_scrollable_hwnd, &itMsg->m_rect, FALSE);
+	}
+
+	KillTimer(m_scrollable_hwnd, m_flash_timer);
+	m_flash_timer = 0;
 }
 
 std::list<MessageItem>::iterator MessageList::FindMessage(Snowflake sf)

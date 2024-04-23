@@ -340,6 +340,9 @@ private:
 	HWND m_scrollable_hwnd = NULL;
 	HWND m_scroll_hwnd = NULL;
 
+	UINT_PTR m_flash_timer = 0;
+	int m_flash_counter = 0;
+
 	Snowflake m_guildID   = 440442961147199490;
 	Snowflake m_channelID = 1026090868303732766;
 
@@ -353,8 +356,7 @@ private:
 	Snowflake m_highlightedInteractableMessage = 0;
 
 	Snowflake m_messageSentTo = 0;
-	Snowflake m_emphasizedMessage = 0; // message emphasized by the send to procedure
-
+	Snowflake m_emphasizedMessage = 0; // flashed message
 	Snowflake m_firstShownMessage = 0;
 
 	int m_total_height = 0;
@@ -369,6 +371,10 @@ private:
 	void MessageHeightChanged(int oldHeight, int newHeight, bool toStart = false);
 	void AddMessageInternal(const Message& msg, bool toStart, bool resetAnchor = true);
 	void UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bool update = true, int offsetY = 0, bool addingMessage = false);
+
+	void FlashMessage(Snowflake msg);
+	bool IsFlashingMessage() const;
+	void EndFlashMessage();
 
 	std::list<MessageItem>::iterator FindMessage(Snowflake sf);
 
