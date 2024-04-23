@@ -27,6 +27,7 @@ public:
 	void OnGatewayConnectFailure() override;
 	void OnProtobufError(Protobuf::ErrorCode code) override;
 	void OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_t* pData, size_t nSize, const std::string& additData) override;
+	void OnAttachmentFailed(bool bIsProfilePicture, const std::string& additData) override;
 	void UpdateSelectedGuild() override;
 	void UpdateSelectedChannel() override;
 	void UpdateChannelList() override;

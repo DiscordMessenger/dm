@@ -162,6 +162,18 @@ void Frontend_Win32::OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_
 
 }
 
+void Frontend_Win32::OnAttachmentFailed(bool bIsProfilePicture, const std::string& additData)
+{
+	if (bIsProfilePicture) {
+		DbgPrintW("Could not load profile picture %s", additData);
+		return;
+	}
+
+	GetAvatarCache()->LoadedResource(additData);
+	GetAvatarCache()->SetBitmap(additData, HBITMAP_ERROR);
+	OnUpdateAvatar(additData);
+}
+
 void Frontend_Win32::UpdateSelectedGuild()
 {
 	SendMessage(g_Hwnd, WM_UPDATESELECTEDGUILD, 0, 0);

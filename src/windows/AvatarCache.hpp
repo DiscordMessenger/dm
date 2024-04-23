@@ -25,7 +25,10 @@ struct ImagePlace {
 	ImagePlace(eImagePlace t, Snowflake s, const std::string& p, const std::string& k) : type(t), sf(s), place(p), key(k) {}
 };
 
-// Kind of a misnomer as it also handles resources.
+#define HBITMAP_LOADING ((HBITMAP) 0xDDCCBBAA)
+#define HBITMAP_ERROR   ((HBITMAP) 0xDDCCBBAB)
+
+// Kind of a misnomer as it also handles attachment resources.
 class AvatarCache
 {
 public:
@@ -46,7 +49,13 @@ public:
 	// Let the avatar cache know that the resource was loaded.
 	void LoadedResource(const std::string& resource);
 
-	// Get the bitmap associated with the resource.  If it isn't loaded, request it.
+	// Get the bitmap associated with the resource.  If it isn't loaded, request it, and return special bitmap handles.
+	HBITMAP GetBitmapSpecial(const std::string& resource);
+
+	// Get the bitmap associated with the resource.  If it isn't loaded, request it, and return NULL.
+	HBITMAP GetBitmapNullable(const std::string& resource);
+
+	// Get the bitmap associated with the resource.  If it isn't loaded, request it, and return a default.
 	HBITMAP GetBitmap(const std::string& resource);
 
 	// Delete all bitmaps.

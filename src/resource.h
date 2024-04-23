@@ -64,6 +64,8 @@
 #define IDI_JUMP_2K                     60
 #define IDI_SEND_2K                     61
 #define IDI_REPLY_PIECE_2K              62
+#define IDI_WAIT                        63
+#define IDI_IMAGE_ERROR                 64
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -323,7 +325,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        10000
+#define _APS_NEXT_RESOURCE_VALUE        65
 #define _APS_NEXT_COMMAND_VALUE         1069
 #define _APS_NEXT_CONTROL_VALUE         860
 #define _APS_NEXT_SYMED_VALUE           40000

@@ -69,7 +69,7 @@ void AvatarCache::LoadedResource(const std::string& resource)
 
 extern HBITMAP GetDefaultBitmap(); // main.cpp
 
-HBITMAP AvatarCache::GetBitmap(const std::string& resource)
+HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource)
 {
 	std::string id = MakeIdentifier(resource);
 
@@ -83,8 +83,8 @@ HBITMAP AvatarCache::GetBitmap(const std::string& resource)
 	if (iterIP == m_imagePlaces.end()) {
 		// this shouldn't happen.  Just set to default
 		DbgPrintW("Could not load resource %s, no image place was registered", id.c_str());
-		SetBitmap(id, GetDefaultBitmap());
-		return GetBitmap(id);
+		SetBitmap(id, HBITMAP_LOADING);
+		return GetBitmapSpecial(id);
 	}
 
 	eImagePlace pla = iterIP->second.type;
@@ -113,16 +113,17 @@ HBITMAP AvatarCache::GetBitmap(const std::string& resource)
 
 		// just return the default...
 		DbgPrintW("Image %s could not be decoded!", id.c_str());
-		SetBitmap(id, GetDefaultBitmap());
-		return GetBitmap(id);
+
+		SetBitmap(id, HBITMAP_ERROR);
+		return GetBitmapSpecial(id);
 	}
 
 	// Could not find it in the cache, so request it from discord
-	SetBitmap(id, GetDefaultBitmap());
+	SetBitmap(id, HBITMAP_LOADING);
 
 	if (iterIP->second.place.empty()) {
 		DbgPrintW("Image %s could not be fetched!  Place is empty", id.c_str());
-		return GetBitmap(id);
+		return GetBitmapSpecial(id);
 	}
 
 	bool bIsAttachment = false;
@@ -157,7 +158,7 @@ HBITMAP AvatarCache::GetBitmap(const std::string& resource)
 
 		// if not inserted already
 		if (!m_loadingResources.insert(pfpLink).second)
-			return GetBitmap(id);
+			return GetBitmapSpecial(id);
 
 		// send a request to the networker thread to grab the profile picture
 		GetHTTPClient()->PerformRequest(
@@ -174,7 +175,27 @@ HBITMAP AvatarCache::GetBitmap(const std::string& resource)
 	else
 		DbgPrintW("Image %s could not be downloaded! Path is empty!", id.c_str());
 
-	return GetBitmap(id);
+	return GetBitmapSpecial(id);
+}
+
+HBITMAP AvatarCache::GetBitmapNullable(const std::string& resource)
+{
+	HBITMAP hbm = GetBitmapSpecial(resource);
+
+	if (hbm == HBITMAP_ERROR || hbm == HBITMAP_LOADING)
+		hbm = NULL;
+
+	return hbm;
+}
+
+HBITMAP AvatarCache::GetBitmap(const std::string& resource)
+{
+	HBITMAP hbm = GetBitmapSpecial(resource);
+
+	if (hbm == HBITMAP_ERROR || hbm == HBITMAP_LOADING || !hbm)
+		hbm = GetDefaultBitmap();
+
+	return hbm;
 }
 
 void AvatarCache::WipeBitmaps()
@@ -237,6 +258,6 @@ void AvatarCache::ClearProcessingRequests()
 
 void AvatarCache::DeleteBitmapIfNeeded(HBITMAP hbm)
 {
-	if (hbm != GetDefaultBitmap())
+	if (hbm && hbm != HBITMAP_LOADING && hbm != GetDefaultBitmap())
 		DeleteObject(hbm);
 }

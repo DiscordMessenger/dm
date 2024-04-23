@@ -182,6 +182,7 @@
     <Image Include="..\res\icon_file_2k.ico" />
     <Image Include="..\res\icon_groupdm.ico" />
     <Image Include="..\res\icon_groupdm_2k.ico" />
+    <Image Include="..\res\icon_image_error.ico" />
     <Image Include="..\res\icon_jump.ico" />
     <Image Include="..\res\icon_jump_2k.ico" />
     <Image Include="..\res\icon_marker_1.ico" />
@@ -223,6 +224,7 @@
     <Image Include="..\res\icon_user_leave.ico" />
     <Image Include="..\res\icon_voice.ico" />
     <Image Include="..\res\icon_voice_2k.ico" />
+    <Image Include="..\res\icon_wait.ico" />
     <Image Include="..\res\icon_warning.ico" />
     <Image Include="..\res\modern_app.ico" />
     <Image Include="..\res\target.bmp" />

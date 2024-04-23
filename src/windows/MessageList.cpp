@@ -32,6 +32,16 @@ static COLORREF GetDarkerBackgroundColor()
 	return RGB((r1 + r2) / 2, (g1 + g2) / 2, (b1 + b2) / 2);
 }
 
+static void DrawImageSpecial(HDC hdc, HBITMAP hbm, RECT rect)
+{
+	if (hbm == HBITMAP_LOADING)
+		DrawLoadingBox(hdc, rect);
+	else if (hbm == HBITMAP_ERROR || !hbm)
+		DrawErrorBox(hdc, rect);
+	else
+		DrawBitmap(hdc, hbm, rect.left, rect.top, NULL, CLR_NONE, rect.right - rect.left, rect.bottom - rect.top);
+}
+
 WNDCLASS MessageList::g_MsgListClass, MessageList::g_MsgListParentClass;
 
 static HICON g_ReplyPieceIcon;
@@ -307,19 +317,19 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect)
 	if (m_thumbnailSize.cy) {
 		m_thumbnailResourceID = GetAvatarCache()->MakeIdentifier(m_pEmbed->m_thumbnailUrl);
 		GetAvatarCache()->AddImagePlace(m_thumbnailResourceID, eImagePlace::ATTACHMENTS, m_pEmbed->m_thumbnailProxiedUrl);
-		HBITMAP hbm = GetAvatarCache()->GetBitmap(m_pEmbed->m_thumbnailUrl);
+		HBITMAP hbm = GetAvatarCache()->GetBitmapSpecial(m_pEmbed->m_thumbnailUrl);
 		if (sizeY) sizeY += gap;
 		m_thumbnailRect = { rc.left, rc.top + sizeY, rc.left + m_thumbnailSize.cx, rc.top + sizeY + m_thumbnailSize.cy };
-		DrawBitmap(hdc, hbm, rc.left, rc.top + sizeY, NULL, CLR_NONE, m_thumbnailSize.cx, m_thumbnailSize.cy);
+		DrawImageSpecial(hdc, hbm, m_thumbnailRect);
 		sizeY += m_thumbnailSize.cy;
 	}
 	if (m_imageSize.cy) {
 		m_imageResourceID = GetAvatarCache()->MakeIdentifier(m_pEmbed->m_imageUrl);
 		GetAvatarCache()->AddImagePlace(m_imageResourceID, eImagePlace::ATTACHMENTS, m_pEmbed->m_imageProxiedUrl);
-		HBITMAP hbm = GetAvatarCache()->GetBitmap(m_pEmbed->m_imageUrl);
+		HBITMAP hbm = GetAvatarCache()->GetBitmapSpecial(m_pEmbed->m_imageUrl);
 		if (sizeY) sizeY += gap;
 		m_imageRect = { rc.left, rc.top + sizeY, rc.left + m_imageSize.cx, rc.top + sizeY + m_imageSize.cy };
-		DrawBitmap(hdc, hbm, rc.left, rc.top + sizeY, NULL, CLR_NONE, m_imageSize.cx, m_imageSize.cy);
+		DrawImageSpecial(hdc, hbm, m_imageRect);
 		sizeY += m_imageSize.cy;
 	}
 	if (m_footerSize.cy) {
@@ -1302,8 +1312,8 @@ void MessageList::DrawImageAttachment(HDC hdc, RECT& paintRect, AttachmentItem& 
 
 	GetAvatarCache()->AddImagePlace(attachItem.m_resourceID, eImagePlace::ATTACHMENTS, url, pAttach->m_id);
 
-	HBITMAP hbm = GetAvatarCache()->GetBitmap(attachItem.m_resourceID);
-	DrawBitmap(hdc, hbm, childAttachRect.left, childAttachRect.top, &childAttachRect);
+	HBITMAP hbm = GetAvatarCache()->GetBitmapSpecial(attachItem.m_resourceID);
+	DrawImageSpecial(hdc, hbm, childAttachRect);
 }
 
 void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem& attachItem, RECT& attachRect)

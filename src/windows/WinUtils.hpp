@@ -71,6 +71,8 @@ int MapIconToOldIfNeeded(int iconID);
 void InitializeStatusIcons();
 void DrawMentionStatus(HDC hdc, int x, int y, int mentionCount);
 void DrawActivityStatus(HDC hdc, int x, int y, eActiveStatus status);
+void DrawLoadingBox(HDC hdc, RECT rect);
+void DrawErrorBox(HDC hdc, RECT rect);
 
 #ifdef _DEBUG
 void DbgPrintW(const char* fmt, ...);

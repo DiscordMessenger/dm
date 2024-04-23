@@ -334,6 +334,10 @@ IDI_TYPING_FRAME2_2K    ICON                    "../res/icon_typing_f2_2k.ico"
 
 IDI_TYPING_FRAME3_2K    ICON                    "../res/icon_typing_f3_2k.ico"
 
+IDI_WAIT                ICON                    "C:\\DiscordMessenger\\dm\\res\\icon_wait.ico"
+
+IDI_IMAGE_ERROR         ICON                    "C:\\DiscordMessenger\\dm\\res\\icon_image_error.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

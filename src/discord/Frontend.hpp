@@ -28,6 +28,7 @@ public:
 	virtual void OnDeleteMessage(Snowflake messageInCurrentChannel) = 0;
 	virtual void OnStartTyping(Snowflake userID, Snowflake guildID, Snowflake channelID, time_t startTime) = 0;
 	virtual void OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_t* pData, size_t nSize, const std::string& additData) = 0;
+	virtual void OnAttachmentFailed(bool bIsProfilePicture, const std::string& additData) = 0;
 	virtual void OnRequestDone(NetRequest* pRequest) = 0;
 	virtual void OnLoadedPins(Snowflake channel, const std::string& data) = 0;
 	virtual void OnFailedToSendMessage(Snowflake channel, Snowflake message) = 0;

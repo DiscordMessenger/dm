@@ -778,6 +778,8 @@ int MapIconToOldIfNeeded(int iconID)
 
 HICON g_MentionMarkerIcons[10];
 HICON g_ProfileStatusIcons[4];
+HICON g_WaitIcon;
+HICON g_ImgErrorIcon;
 
 void InitializeStatusIcons()
 {
@@ -787,6 +789,11 @@ void InitializeStatusIcons()
 	for (int i = 0; i < 4; i++) {
 		g_ProfileStatusIcons[i] = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_STATUS_ONLINE + i), IMAGE_ICON, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
 	}
+
+	int smcxicon   = GetSystemMetrics(SM_CXICON);
+	int smcxsmicon = GetSystemMetrics(SM_CXSMICON);
+	g_WaitIcon     = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_WAIT),        IMAGE_ICON, smcxicon,   smcxicon,   LR_CREATEDIBSECTION | LR_SHARED);
+	g_ImgErrorIcon = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_IMAGE_ERROR), IMAGE_ICON, smcxsmicon, smcxsmicon, LR_CREATEDIBSECTION | LR_SHARED);
 }
 
 void DrawIconInsideProfilePicture(HDC hdc, int xp, int yp, HICON icon)
@@ -812,4 +819,24 @@ void DrawMentionStatus(HDC hdc, int x, int y, int mentionCount)
 void DrawActivityStatus(HDC hdc, int x, int y, eActiveStatus status)
 {
 	DrawIconInsideProfilePicture(hdc, x, y, g_ProfileStatusIcons[int(status)]);
+}
+
+void DrawLoadingBox(HDC hdc, RECT rect)
+{
+	DrawEdge(hdc, &rect, BDR_SUNKEN, BF_RECT);
+
+	int smcxicon = GetSystemMetrics(SM_CXICON);
+	int x = rect.left + (rect.right - rect.left - smcxicon) / 2;
+	int y = rect.top  + (rect.bottom - rect.top - smcxicon) / 2;
+	DrawIconEx(hdc, x, y, g_WaitIcon, smcxicon, smcxicon, 0, NULL, DI_COMPAT | DI_NORMAL);
+}
+
+void DrawErrorBox(HDC hdc, RECT rect)
+{
+	DrawEdge(hdc, &rect, BDR_SUNKEN, BF_RECT);
+
+	int smcxsmicon = GetSystemMetrics(SM_CXSMICON);
+	int x = rect.left + (rect.right - rect.left - smcxsmicon) / 2;
+	int y = rect.top  + (rect.bottom - rect.top - smcxsmicon) / 2;
+	DrawIconEx(hdc, x, y, g_ImgErrorIcon, smcxsmicon, smcxsmicon, 0, NULL, DI_COMPAT | DI_NORMAL);
 }

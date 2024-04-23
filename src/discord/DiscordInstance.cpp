@@ -376,11 +376,15 @@ void DiscordInstance::HandleRequest(void* pRequestPtr)
 
 		case HTTP_NOTFOUND:
 		{
-			if (pRequest->itype == IMAGE)
+			if (pRequest->itype == IMAGE || pRequest->itype == IMAGE_ATTACHMENT) {
+				GetFrontend()->OnAttachmentFailed(pRequest->itype == IMAGE, pRequest->additional_data);
 				return;
+			}
 
-			if (pRequest->itype == PROFILE)
+			if (pRequest->itype == PROFILE) {
+				DbgPrintF("Could not load profile %lld", pRequest->key);
 				return;
+			}
 
 			str = "The following resource " + pRequest->url + " was not found.";
 			bExitAfterError = false;
