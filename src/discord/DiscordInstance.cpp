@@ -569,8 +569,7 @@ void DiscordInstance::GatewayClosed(int errorCode)
 		case CloseCode::INVALID_SEQ:
 		case CloseCode::SESSION_TIMED_OUT:
 		{
-			//SendMessage(g_Hwnd, WM_LOGINAGAIN, 0, 0);
-			StartGatewaySession();
+			GetFrontend()->OnLoginAgain();
 			break;
 		}
 		case CloseCode::AUTHENTICATION_FAILED:

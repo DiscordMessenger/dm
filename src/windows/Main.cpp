@@ -690,7 +690,19 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 				case ID_FILE_PREFERENCES:
 				{
-					ShowOptionsDialog();
+					switch (ShowOptionsDialog())
+					{
+						case OPTIONS_RESULT_LOGOUT: {
+							PostMessage(hWnd, WM_LOGGEDOUT, 100, 0);
+							GetDiscordInstance()->SetToken("");
+							g_pChannelView->ClearChannels();
+							g_pMemberList->ClearMembers();
+							g_pMessageEditor->ClearTypers();
+							g_pMessageList->ClearMessages();
+							g_pGuildLister->ClearTooltips();
+							return TRUE;
+						}
+					}
 					break;
 				}
 				case ID_FILE_EXIT:
@@ -918,12 +930,15 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_LOGGEDOUT:
 		{
-			MessageBox(
-				hWnd,
-				TmGetTString(IDS_NOTLOGGEDIN),
-				TmGetTString(IDS_PROGRAM_NAME),
-				MB_ICONERROR | MB_OK
-			);
+			if (wParam != 100)
+			{
+				MessageBox(
+					hWnd,
+					TmGetTString(IDS_NOTLOGGEDIN),
+					TmGetTString(IDS_PROGRAM_NAME),
+					MB_ICONERROR | MB_OK
+				);
+			}
 
 			if (!LogonDialogShow())
 				PostQuitMessage(0);

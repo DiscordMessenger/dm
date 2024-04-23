@@ -191,6 +191,18 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 							free((void*)lpctstr);
 							break;
 						}
+						case IDC_LOG_OUT: {
+							if (MessageBox(hWnd,
+								TEXT("Are you sure you want to log out?\n\nThis won't revoke your token, so you can log in with the same token again."),
+								TmGetTString(IDS_PROGRAM_NAME), MB_YESNO | MB_ICONQUESTION) == IDYES)
+							{
+								// Log them out!
+								EndDialog(hWnd, 0);
+								EndDialog(hwndParent, OPTIONS_RESULT_LOGOUT);
+								return TRUE;
+							}
+							break;
+						}
 						case IDC_SDM_LEVEL0:
 							GetSettingsManager()->SetExplicitFilter(FILTER_NONE);
 							GetSettingsManager()->FlushSettings();
@@ -409,7 +421,7 @@ static INT_PTR CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		case WM_CLOSE:
 		case WM_DESTROY:
 		{
-			EndDialog(hWnd, wParam);
+			EndDialog(hWnd, OPTIONS_RESULT_OK);
 			break;
 		}
 	}
@@ -417,7 +429,7 @@ static INT_PTR CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 	return 0L;
 }
 
-void ShowOptionsDialog()
+int ShowOptionsDialog()
 {
-	DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG_OPTIONS), g_Hwnd, DialogProc);
+	return DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG_OPTIONS), g_Hwnd, DialogProc);
 }
