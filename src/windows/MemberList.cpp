@@ -128,7 +128,7 @@ bool MemberList::OnNotify(LRESULT& out, WPARAM wParam, LPARAM lParam)
 	{
 		// TODO: WTF IS THIS?!  Looks like the lParam structure is a hittestinfo after the hdr.
 		// This ain't defined anywhere.  Only modern Windows seems to emit it.  I don't know why
-		case -165:
+		case ((UINT) -165):
 		{
 			LPLVHITTESTINFO hti = (LPLVHITTESTINFO)(hdr + 1);
 
