@@ -535,12 +535,17 @@ void MessageItem::Update(Snowflake guildID)
 				else
 				{
 					bool isRole = false;
+					bool hasExclam = false;
 					if (word.m_content.size() > 2) {
 						if (word.m_content[1] == '&')
 							isRole = true;
+
+						// not totally sure what this does. I only know that certain things use it
+						if (word.m_content[1] == '!')
+							hasExclam = true;
 					}
 
-					std::string mentDest = word.m_content.substr(isRole ? 2 : 1);
+					std::string mentDest = word.m_content.substr((isRole || hasExclam) ? 2 : 1);
 					Snowflake sf = (Snowflake)GetIntFromString(mentDest);
 					item.m_affected = sf;
 
@@ -1883,13 +1888,17 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			break;
 		}
 		case MS_FLAT: {
-			if (!isFlashed)
+			if (!isFlashed) {
+				bkgdColor = GetSysColor(COLOR_3DFACE);
 				FillRect(hdc, &msgRect, GetSysColorBrush(COLOR_3DFACE));
+			}
 			break;
 		}
 		case MS_FLATBR: {
-			if (!isFlashed)
+			if (!isFlashed) {
+				bkgdColor = GetSysColor(COLOR_WINDOW);
 				FillRect(hdc, &msgRect, GetSysColorBrush(COLOR_WINDOW));
+			}
 			break;
 		}
 		case MS_GRADIENT:
