@@ -336,9 +336,8 @@ class MessageList
 {
 public:
 	HWND m_hwnd = NULL;
-private:
-	HWND m_scrollable_hwnd = NULL;
 
+private:
 	UINT_PTR m_flash_timer = 0;
 	int m_flash_counter = 0;
 
@@ -456,11 +455,10 @@ public:
 	bool ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, const MessageItem& item);
 
 public:
-	static WNDCLASS g_MsgListClass, g_MsgListParentClass;
+	static WNDCLASS g_MsgListClass;
 
 
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static LRESULT CALLBACK ParentWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void InitializeClass();
 
 	static MessageList* Create (HWND hwnd, LPRECT pRect);

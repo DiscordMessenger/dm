@@ -42,7 +42,7 @@ static void DrawImageSpecial(HDC hdc, HBITMAP hbm, RECT rect)
 		DrawBitmap(hdc, hbm, rect.left, rect.top, NULL, CLR_NONE, rect.right - rect.left, rect.bottom - rect.top);
 }
 
-WNDCLASS MessageList::g_MsgListClass, MessageList::g_MsgListParentClass;
+WNDCLASS MessageList::g_MsgListClass;
 
 static HICON g_ReplyPieceIcon;
 
@@ -635,35 +635,6 @@ void MessageItem::Update(Snowflake guildID)
 	}
 }
 
-LRESULT CALLBACK MessageList::ParentWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	MessageList* pThis = (MessageList*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-
-	switch (uMsg)
-	{
-		case WM_SIZE:
-		{
-			pThis->ProperlyResizeSubWindows();
-			break;
-		}
-		case WM_NCCREATE:
-		{
-			CREATESTRUCT* strct = (CREATESTRUCT*)lParam;
-
-			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)strct->lpCreateParams);
-
-			break;
-		}
-		case WM_VSCROLL:
-		{
-			SendMessage(pThis->m_scrollable_hwnd, WM_VSCROLL, wParam, lParam);
-			break;
-		}
-	}
-
-	return DefWindowProc(hWnd, uMsg, wParam, lParam);
-}
-
 void MessageList::DeleteMessage(Snowflake sf)
 {
 	std::list<MessageItem>::reverse_iterator iter;
@@ -726,12 +697,12 @@ void MessageList::DeleteMessage(Snowflake sf)
 
 	UpdateScrollBar(-messageHeight, -messageHeight, false, false);
 
-	SendMessage(m_scrollable_hwnd, WM_MSGLIST_PULLDOWN, 0, (LPARAM)&messageRect);
+	SendMessage(m_hwnd, WM_MSGLIST_PULLDOWN, 0, (LPARAM)&messageRect);
 }
 
 void MessageList::Repaint()
 {
-	InvalidateRect(m_scrollable_hwnd, NULL, false);
+	InvalidateRect(m_hwnd, NULL, false);
 }
 
 void MessageList::ClearMessages()
@@ -743,7 +714,7 @@ void MessageList::ClearMessages()
 void MessageList::RefetchMessages(Snowflake gapCulprit)
 {
 	RECT rect;
-	GetClientRect(m_scrollable_hwnd, &rect);
+	GetClientRect(m_hwnd, &rect);
 
 	int pageHeight = rect.bottom - rect.top;
 
@@ -751,7 +722,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit)
 	scrollInfo.cbSize = sizeof scrollInfo;
 	scrollInfo.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 
-	GetScrollInfo(m_scrollable_hwnd, SB_VERT, &scrollInfo);
+	GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
 
 	// Find the position of the old message
 	int oldYMessage = 0;
@@ -948,8 +919,8 @@ void MessageList::RefetchMessages(Snowflake gapCulprit)
 
 	scrollAnyway -= scrollInfo.nPos;
 
-	SetScrollInfo(m_scrollable_hwnd, SB_VERT, &scrollInfo, true);
-	GetScrollInfo(m_scrollable_hwnd, SB_VERT, &scrollInfo);
+	SetScrollInfo(m_hwnd, SB_VERT, &scrollInfo, true);
+	GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
 
 	m_oldPos = scrollInfo.nPos;
 
@@ -964,7 +935,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit)
 	else if (!m_bManagedByOwner)
 	{
 		if (scrollAnyway)
-			WindowScroll(m_scrollable_hwnd, -scrollAnyway);
+			WindowScroll(m_hwnd, -scrollAnyway);
 
 		InvalidateRect(m_hwnd, haveUpdateRect ? &updateRect : NULL, false);
 	}
@@ -992,7 +963,7 @@ void MessageList::ProperlyResizeSubWindows()
 {
 	RECT rect, rect2;
 	GetClientRect(m_hwnd, &rect);
-	MoveWindow(m_scrollable_hwnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
+	MoveWindow(m_hwnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
 }
 
 void MessageList::HitTestAuthor(POINT pt, BOOL& hit)
@@ -1007,7 +978,7 @@ void MessageList::HitTestAuthor(POINT pt, BOOL& hit)
 			if (msg2 != m_messages.end())
 			{
 				msg2->m_authorHighlighted = false;
-				InvalidateRect(m_scrollable_hwnd, &msg2->m_authorRect, false);
+				InvalidateRect(m_hwnd, &msg2->m_authorRect, false);
 			}
 			SetCursor(LoadCursor(NULL, IDC_ARROW));
 		}
@@ -1025,7 +996,7 @@ void MessageList::HitTestAuthor(POINT pt, BOOL& hit)
 
 	m_highlightedMessage = msg->m_msg.m_snowflake;
 	msg->m_authorHighlighted = true;
-	InvalidateRect(m_scrollable_hwnd, &msg->m_authorRect, false);
+	InvalidateRect(m_hwnd, &msg->m_authorRect, false);
 	DbgPrintW("Hand!  Profile ID: %lld   Message ID: %lld", msg->m_msg.m_author_snowflake, msg->m_msg.m_snowflake);
 }
 
@@ -1046,7 +1017,7 @@ void MessageList::HitTestAttachments(POINT pt, BOOL& hit)
 						x.m_bHighlighted = false;
 
 						if (!x.m_pAttachment->IsImage())
-							InvalidateRect(m_scrollable_hwnd, &x.m_textRect, false);
+							InvalidateRect(m_hwnd, &x.m_textRect, false);
 					}
 				}
 			}
@@ -1090,7 +1061,7 @@ void MessageList::HitTestAttachments(POINT pt, BOOL& hit)
 	if (!pAttach->m_pAttachment->IsImage())
 	{
 		if (inText)
-			InvalidateRect(m_scrollable_hwnd, &pAttach->m_textRect, false);
+			InvalidateRect(m_hwnd, &pAttach->m_textRect, false);
 	}
 	DbgPrintW("Hand!  Attachment ID: %lld   Message ID: %lld", pAttach->m_pAttachment->m_id, msg->m_msg.m_snowflake);
 }
@@ -1111,7 +1082,7 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 					if (x.m_bHighlighted) {
 						x.m_bHighlighted = false;
 						if (x.ShouldInvalidateOnHover())
-							InvalidateRect(m_scrollable_hwnd, &x.m_rect, false);
+							InvalidateRect(m_hwnd, &x.m_rect, false);
 					}
 				}
 			}
@@ -1151,7 +1122,7 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 		if (pData->m_wordIndex == m_highlightedInteractable) {
 			pData->m_bHighlighted = false;
 			if (pData->ShouldInvalidateOnHover())
-				InvalidateRect(m_scrollable_hwnd, &pData->m_rect, false);
+				InvalidateRect(m_hwnd, &pData->m_rect, false);
 			break;
 		}
 	}
@@ -1160,7 +1131,7 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 	m_highlightedInteractableMessage = msg->m_msg.m_snowflake;
 	pItem->m_bHighlighted = true;
 	if (pItem->ShouldInvalidateOnHover())
-		InvalidateRect(m_scrollable_hwnd, &pItem->m_rect, false);
+		InvalidateRect(m_hwnd, &pItem->m_rect, false);
 
 	DbgPrintW("Hand!  Interactable IDX: %zu   Message ID: %lld", pItem->m_wordIndex, msg->m_msg.m_snowflake);
 }
@@ -1246,7 +1217,7 @@ void MessageList::OpenInteractable(InteractableItem* pItem)
 			switch (mentType) {
 				case '@': {
 					RECT rect;
-					GetWindowRect(m_scrollable_hwnd, &rect);
+					GetWindowRect(m_hwnd, &rect);
 					ShowProfilePopout(sf, m_guildID, rect.left + pItem->m_rect.right + 10, rect.top + pItem->m_rect.top);
 					break;
 				}
@@ -2539,11 +2510,11 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			si.cbSize = sizeof(si);
 			si.fMask = SIF_TRACKPOS | SIF_POS | SIF_RANGE;
-			GetScrollInfo(pThis->m_scrollable_hwnd, SB_VERT, &si);
+			GetScrollInfo(pThis->m_hwnd, SB_VERT, &si);
 			si.nTrackPos = si.nPos - (zDelta / 3);
 			if (si.nTrackPos < si.nMin) si.nTrackPos = si.nMin;
 			if (si.nTrackPos > si.nMax) si.nTrackPos = si.nMax;
-			SetScrollInfo(pThis->m_scrollable_hwnd, SB_VERT, &si, false);
+			SetScrollInfo(pThis->m_hwnd, SB_VERT, &si, false);
 
 			wParam = SB_THUMBTRACK;
 			goto _lbl;
@@ -2554,7 +2525,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			si.cbSize = sizeof(si);
 			si.fMask = SIF_ALL;
 
-			GetScrollInfo(pThis->m_scrollable_hwnd, SB_VERT, &si);
+			GetScrollInfo(pThis->m_hwnd, SB_VERT, &si);
 
 		_lbl:
 			;
@@ -2600,8 +2571,8 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					break;
 			}
 
-			SetScrollInfo(pThis->m_scrollable_hwnd, SB_VERT, &si, true);
-			GetScrollInfo(pThis->m_scrollable_hwnd, SB_VERT, &si);
+			SetScrollInfo(pThis->m_hwnd, SB_VERT, &si, true);
+			GetScrollInfo(pThis->m_hwnd, SB_VERT, &si);
 
 			diffUpDown = si.nPos - pThis->m_oldPos;
 			pThis->m_oldPos = si.nPos;
@@ -2908,7 +2879,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			SCROLLINFO si;
 			si.cbSize = sizeof(si);
 			si.fMask = SIF_POS | SIF_RANGE;
-			GetScrollInfo(pThis->m_scrollable_hwnd, SB_VERT, &si);
+			GetScrollInfo(pThis->m_hwnd, SB_VERT, &si);
 			ScrollHeight = si.nPos;
 
 			RECT msgRect = rect;
@@ -3016,16 +2987,6 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 void MessageList::InitializeClass()
 {
-	WNDCLASS& wc1 = g_MsgListParentClass;
-
-	wc1.lpszClassName = T_MESSAGE_LIST_PARENT_CLASS;
-	wc1.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
-	wc1.style         = 0;
-	wc1.lpfnWndProc   = MessageList::ParentWndProc;
-	wc1.hCursor       = LoadCursor(0, IDC_ARROW);
-
-	RegisterClass(&wc1);
-
 	WNDCLASS& wc = g_MsgListClass;
 
 	wc.lpszClassName = T_MESSAGE_LIST_CLASS;
@@ -3046,7 +3007,7 @@ void MessageList::UpdateBackgroundBrush()
 	if (mode == MS_FLATBR)
 		bru = COLOR_WINDOW;
 
-	SetClassLongPtr(m_scrollable_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR) GetSysColorBrush(bru));
+	SetClassLongPtr(m_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR) GetSysColorBrush(bru));
 }
 
 bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded)
@@ -3063,12 +3024,12 @@ bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded)
 
 		// centers the message
 		RECT rcClient{};
-		GetClientRect(m_scrollable_hwnd, &rcClient);
+		GetClientRect(m_hwnd, &rcClient);
 
 		SCROLLINFO si{};
 		si.cbSize = sizeof(SCROLLINFO);
 		si.fMask = SIF_RANGE;
-		GetScrollInfo(m_scrollable_hwnd, SB_VERT, &si);
+		GetScrollInfo(m_hwnd, SB_VERT, &si);
 
 		int yOffs = (rcClient.bottom - rcClient.top) / 2 - mi->m_height / 2;
 		y -= yOffs;
@@ -3081,10 +3042,10 @@ bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded)
 		// Just scroll there
 		si.fMask = SIF_POS;
 		si.nPos = y;
-		SetScrollInfo(m_scrollable_hwnd, SB_VERT, &si, true);
+		SetScrollInfo(m_hwnd, SB_VERT, &si, true);
 
 		FlashMessage(mi->m_msg.m_snowflake);
-		SendMessage(m_scrollable_hwnd, WM_VSCROLL, SB_ENDSCROLL, 0);
+		SendMessage(m_hwnd, WM_VSCROLL, SB_ENDSCROLL, 0);
 		return !mi->m_msg.IsLoadGap();
 	}
 
@@ -3186,7 +3147,7 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 	scrollInfo.cbSize = sizeof scrollInfo;
 	scrollInfo.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 
-	GetScrollInfo(m_scrollable_hwnd, SB_VERT, &scrollInfo);
+	GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
 
 	bool scroll = true;
 
@@ -3209,8 +3170,8 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 	scrollInfo.nPage = pageHeight;
 
 	int posNow = scrollInfo.nPos;
-	SetScrollInfo(m_scrollable_hwnd, SB_VERT, &scrollInfo, true);
-	GetScrollInfo(m_scrollable_hwnd, SB_VERT, &scrollInfo);
+	SetScrollInfo(m_hwnd, SB_VERT, &scrollInfo, true);
+	GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
 	m_oldPos = scrollInfo.nPos;
 
 	if (m_bManagedByOwner)
@@ -3220,7 +3181,7 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 	{
 		// ah screw it
 		// TODO: fix it so it only redraws what's needed
-		InvalidateRect(m_scrollable_hwnd, NULL, true);
+		InvalidateRect(m_hwnd, NULL, true);
 		return;
 	}
 
@@ -3232,8 +3193,8 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 			rcScroll.top -= offsetY;
 		}
 		int diffUpDown = toStart ? 0 : diffNow;
-		ScrollWindowEx(m_scrollable_hwnd, 0, -diffUpDown, offsetY ? &rcScroll : NULL, NULL, NULL, NULL, SW_INVALIDATE);
-		UpdateWindow(m_scrollable_hwnd);
+		ScrollWindowEx(m_hwnd, 0, -diffUpDown, offsetY ? &rcScroll : NULL, NULL, NULL, NULL, SW_INVALIDATE);
+		UpdateWindow(m_hwnd);
 	}
 }
 
@@ -3250,7 +3211,7 @@ void MessageList::FlashMessage(Snowflake msg)
 	// Start flashing
 	m_flash_counter = 5;
 	m_emphasizedMessage = msg;
-	m_flash_timer = SetTimer(m_scrollable_hwnd, 0, 250, NULL);
+	m_flash_timer = SetTimer(m_hwnd, 0, 250, NULL);
 	if (!m_flash_timer) {
 		DbgPrintW("Failed to flash message %lld", msg);
 		m_flash_counter = 0;
@@ -3258,7 +3219,7 @@ void MessageList::FlashMessage(Snowflake msg)
 		return;
 	}
 
-	InvalidateRect(m_scrollable_hwnd, &itMsg->m_rect, FALSE);
+	InvalidateRect(m_hwnd, &itMsg->m_rect, FALSE);
 }
 
 bool MessageList::IsFlashingMessage() const
@@ -3278,10 +3239,10 @@ void MessageList::EndFlashMessage()
 	if (wasFlipped != 0) {
 		// No, so need to invalidate it.
 		if (itMsg != m_messages.end())
-			InvalidateRect(m_scrollable_hwnd, &itMsg->m_rect, FALSE);
+			InvalidateRect(m_hwnd, &itMsg->m_rect, FALSE);
 	}
 
-	KillTimer(m_scrollable_hwnd, m_flash_timer);
+	KillTimer(m_hwnd, m_flash_timer);
 	m_flash_timer = 0;
 }
 
@@ -3429,11 +3390,11 @@ void MessageList::RecalcMessageSizes(bool update)
 	m_total_height = 0;
 
 	RECT msgRect2 = {};
-	GetClientRect(m_scrollable_hwnd, &msgRect2);
+	GetClientRect(m_hwnd, &msgRect2);
 
 	bool isCompact = IsCompact();
 
-	HDC hdc = GetDC(m_scrollable_hwnd);
+	HDC hdc = GetDC(m_hwnd);
 	time_t prevTime = 0;
 	Snowflake prevAuthor = Snowflake(-1);
 	int prevPlaceInChain = 0;
@@ -3489,7 +3450,7 @@ void MessageList::RecalcMessageSizes(bool update)
 		m_total_height += iter->m_height;
 	}
 
-	ReleaseDC(m_scrollable_hwnd, hdc);
+	ReleaseDC(m_hwnd, hdc);
 	UpdateScrollBar(0, m_total_height, false, update);
 }
 
@@ -3500,7 +3461,7 @@ void MessageList::OnUpdateAttachment(Snowflake sf)
 	{
 		for (auto& ai : msg.m_attachmentData)
 			if (ai.m_pAttachment->m_id == sf)
-				InvalidateRect(m_scrollable_hwnd, &ai.m_boxRect, false);
+				InvalidateRect(m_hwnd, &ai.m_boxRect, false);
 	}
 }
 
@@ -3512,20 +3473,20 @@ void MessageList::OnUpdateEmbed(const std::string& res)
 		for (auto& ai : msg.m_attachmentData)
 		{
 			if (ai.m_resourceID == res)
-				InvalidateRect(m_scrollable_hwnd, &ai.m_boxRect, false);
+				InvalidateRect(m_hwnd, &ai.m_boxRect, false);
 		}
 		for (auto& ai : msg.m_embedData)
 		{
 			if (ai.m_pEmbed->m_bHasThumbnail) {
 				if (ai.m_thumbnailResourceID == res) {
 					DbgPrintW("Invalidating thumbnail %s", res.c_str());
-					InvalidateRect(m_scrollable_hwnd, &ai.m_thumbnailRect, false);
+					InvalidateRect(m_hwnd, &ai.m_thumbnailRect, false);
 				}
 			}
 			else if (ai.m_pEmbed->m_bHasImage) {
 				if (ai.m_imageResourceID == res) {
 					DbgPrintW("Invalidating image %s", res.c_str());
-					InvalidateRect(m_scrollable_hwnd, &ai.m_imageRect, false);
+					InvalidateRect(m_hwnd, &ai.m_imageRect, false);
 				}
 			}
 		}
@@ -3537,7 +3498,7 @@ void MessageList::OnUpdateAvatar(Snowflake sf)
 	for (auto& msg : m_messages)
 	{
 		if (msg.m_msg.m_author_snowflake == sf && !IsCompact())
-			InvalidateRect(m_scrollable_hwnd, &msg.m_avatarRect, false);
+			InvalidateRect(m_hwnd, &msg.m_avatarRect, false);
 	}
 }
 
@@ -3564,9 +3525,9 @@ void MessageList::DetermineMessageMeasurements(MessageItem& mi, HDC _hdc, LPRECT
 {
 	HDC hdc = _hdc;
 	RECT rect;
-	if (!_hdc) hdc = GetDC(m_scrollable_hwnd);
+	if (!_hdc) hdc = GetDC(m_hwnd);
 	if (!_rect)
-		GetClientRect(m_scrollable_hwnd, &rect);
+		GetClientRect(m_hwnd, &rect);
 	else
 		rect = *_rect;
 	
@@ -3602,7 +3563,7 @@ void MessageList::DetermineMessageMeasurements(MessageItem& mi, HDC _hdc, LPRECT
 
 	AdjustHeightInfo(mi, mi.m_height, mi.m_textHeight, mi.m_authHeight, mi.m_replyHeight, mi.m_attachHeight, mi.m_embedHeight);
 
-	if (!_hdc) ReleaseDC(m_scrollable_hwnd, hdc);
+	if (!_hdc) ReleaseDC(m_hwnd, hdc);
 }
 
 void MessageList::EditMessage(const Message& newMsg)
@@ -3688,7 +3649,7 @@ void MessageList::EditMessage(const Message& newMsg)
 	m_messages.insert(insertIter, mi);
 
 	RECT rcClient{};
-	GetClientRect(m_scrollable_hwnd, &rcClient);
+	GetClientRect(m_hwnd, &rcClient);
 
 	// totally new message
 	UpdateScrollBar(mi.m_height - oldHeight, mi.m_height - oldHeight, toStart, true, bDeletedOldMsg ? (rcClient.bottom - oldMsgRect.top) : 0, true);
@@ -3721,7 +3682,7 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool rese
 
 	// measure the height
 	RECT msgRect = {};
-	GetClientRect(m_scrollable_hwnd, &msgRect);
+	GetClientRect(m_hwnd, &msgRect);
 
 	int oldHeight = 0;
 
@@ -3778,7 +3739,7 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool rese
 		m_messages.push_back(mi);
 
 	RECT rcClient{};
-	GetClientRect(m_scrollable_hwnd, &rcClient);
+	GetClientRect(m_hwnd, &rcClient);
 
 	int offsetY = 0;
 	if (bDeletedNonce) {
@@ -3808,7 +3769,7 @@ void MessageList::UpdateAllowDrop()
 	if (pChan)
 		Accept = pChan->HasPermission(PERM_SEND_MESSAGES) && pChan->HasPermission(PERM_ATTACH_FILES);
 	
-	DragAcceptFiles(m_scrollable_hwnd, Accept);
+	DragAcceptFiles(m_hwnd, Accept);
 }
 
 MessageList* MessageList::Create(HWND hwnd, LPRECT pRect)
@@ -3819,13 +3780,8 @@ MessageList* MessageList::Create(HWND hwnd, LPRECT pRect)
 	int width = pRect->right - pRect->left, height = pRect->bottom - pRect->top;
 
 	newThis->m_hwnd = CreateWindowEx(
-		WS_EX_CLIENTEDGE, T_MESSAGE_LIST_PARENT_CLASS, NULL, WS_CHILD | WS_VISIBLE,
-		pRect->left, pRect->top, width, height, hwnd, (HMENU)CID_MESSAGELIST, g_hInstance, newThis
-	);
-
-	newThis->m_scrollable_hwnd = CreateWindowEx(
-		0, T_MESSAGE_LIST_CLASS, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL,
-		0, 0, width - 4 - scrollBarWidth, height - 4, newThis->m_hwnd, (HMENU)1, g_hInstance, newThis
+		WS_EX_CLIENTEDGE, T_MESSAGE_LIST_CLASS, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL,
+		0, 0, width - scrollBarWidth, height, hwnd, (HMENU)CID_MESSAGELIST, g_hInstance, newThis
 	);
 
 	newThis->UpdateBackgroundBrush();
