@@ -289,10 +289,10 @@
       <Filter>Resource Files\Resources</Filter>
     </Image>
     <Image Include="..\res\icon_balloon.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Resources</Filter>
     </Image>
-    <Image Include="..\res\icon_balloon_block.iso.ico">
-      <Filter>Resource Files</Filter>
+    <Image Include="..\res\icon_balloon_block.ico">
+      <Filter>Resource Files\Resources</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
@@ -488,6 +488,9 @@
     <ClInclude Include="..\src\windows\StatusBar.hpp">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\windows\QuickSwitcher.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\windows\ProfileView.cpp">
@@ -617,6 +620,9 @@
       <Filter>Source Files\Deps\Md5</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\StatusBar.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\QuickSwitcher.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
   </ItemGroup>

@@ -82,6 +82,24 @@ struct Channel
 		return m_lastViewedMsg < m_lastSentMsg;
 	}
 
+	bool IsCategory() const {
+		return m_channelType == CATEGORY;
+	}
+
+	bool IsDM() const {
+		auto t = m_channelType;
+		return t == DM || t == GROUPDM;
+	}
+
+	bool IsVoice() const {
+		auto t = m_channelType;
+		return t == VOICE || t == STAGEVOICE;
+	}
+
+	bool IsText() const {
+		return !IsVoice() && !IsDM() && !IsCategory();
+	}
+
 	std::string GetTypeSymbol() const {
 		switch (m_channelType) {
 			case DM:    return "@";

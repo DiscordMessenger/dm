@@ -114,7 +114,9 @@ void DiscordInstance::OnSelectChannel(Snowflake sf, bool bSendSubscriptionUpdate
 		return;
 	}
 
+	m_channelHistory.AddToHistory(m_CurrentChannel);
 	m_CurrentChannel = sf;
+
 	GetFrontend()->UpdateSelectedChannel();
 
 	if (!GetCurrentChannel() || !GetCurrentGuild())
@@ -260,10 +262,123 @@ std::string DiscordInstance::LookupUserNameGlobally(Snowflake sf, Snowflake gld)
 	return pf->GetName(gld);
 }
 
-void DiscordInstance::OnSelectGuild(Snowflake sf)
+#define MATCH_TEXT   (1 << 0)
+#define MATCH_VOICE  (1 << 1)
+#define MATCH_DMS    (1 << 2)
+#define MATCH_GUILDS (1 << 3)
+
+void DiscordInstance::SearchSubGuild(std::vector<QuickMatch>& matches, Guild* pGuild, int matchFlags, const char* queryPtr)
+{
+	for (auto& chan : pGuild->m_channels)
+	{
+		if (chan.m_snowflake == m_CurrentChannel)
+			continue;
+
+		if (chan.IsText()) {
+			if (~matchFlags & MATCH_TEXT)
+				continue;
+		}
+		else if (chan.IsDM()) {
+			if (~matchFlags & MATCH_DMS)
+				continue;
+		}
+		else if (chan.IsVoice()) {
+			if (~matchFlags & MATCH_VOICE)
+				continue;
+		}
+		else continue;
+
+		if (!chan.HasPermission(PERM_VIEW_CHANNEL))
+			continue;
+
+		float fzc = CompareFuzzy(chan.m_name, queryPtr);
+		if (fzc != 0.0f)
+			matches.push_back(QuickMatch(true, chan.m_snowflake, fzc));
+	}
+}
+
+std::vector<QuickMatch> DiscordInstance::Search(const std::string& query)
+{
+	std::vector<QuickMatch> matches;
+
+	if (query.empty())
+	{
+		// Special mode - Show the last three channels.
+		for (int i = 0; i < C_CHANNEL_HISTORY_MAX; i++)
+		{
+			Snowflake chan = m_channelHistory.m_history[i];
+			if (!chan)
+				continue;
+
+			Channel* pChan = GetChannel(chan);
+			if (!pChan)
+				continue;
+			if (!pChan->HasPermission(PERM_VIEW_CHANNEL))
+				continue;
+
+			// Calculate a fake fuzzy factor to avoid effects of sorting.
+			float ff = float(C_CHANNEL_HISTORY_MAX - i) / float(C_CHANNEL_HISTORY_MAX);
+
+			matches.push_back(QuickMatch(true, chan, ff));
+		}
+	}
+	else
+	{
+		char firstChar = query[0];
+		int matchFlags = MATCH_TEXT | MATCH_VOICE | MATCH_DMS | MATCH_GUILDS;
+		bool cutoff = false;
+
+		switch (firstChar)
+		{
+			case '#': matchFlags = MATCH_TEXT;   cutoff = true; break;
+			case '@': matchFlags = MATCH_DMS;    cutoff = true; break;
+			case '!': matchFlags = MATCH_VOICE;  cutoff = true; break;
+			case '*': matchFlags = MATCH_GUILDS; cutoff = true; break;
+		}
+
+		const char* queryPtr = query.c_str();
+		if (cutoff) queryPtr++;
+
+		if (matchFlags & (MATCH_TEXT | MATCH_DMS | MATCH_VOICE))
+		{
+			for (auto& gld : m_guilds)
+				SearchSubGuild(matches, &gld, matchFlags, queryPtr);
+
+			SearchSubGuild(matches, &m_dmGuild, matchFlags, queryPtr);
+		}
+
+		if (matchFlags & MATCH_GUILDS)
+		{
+			for (auto& gld : m_guilds)
+			{
+				if (gld.m_snowflake == m_CurrentGuild)
+					continue;
+
+				float fzc = CompareFuzzy(gld.m_name, queryPtr);
+
+				if (fzc != 0.0f)
+					matches.push_back(QuickMatch(false, gld.m_snowflake, fzc));
+			}
+		}
+	}
+
+	// Sort the matches
+	std::sort(matches.begin(), matches.end());
+
+	return matches;
+}
+
+void DiscordInstance::OnSelectGuild(Snowflake sf, Snowflake chan)
 {
 	if (m_CurrentGuild == sf)
+	{
+		if (chan)
+			OnSelectChannel(chan);
+
 		return;
+	}
+
+	m_channelHistory.AddToHistory(m_CurrentChannel);
 
 	// select the guild
 	m_CurrentGuild = sf;
@@ -280,7 +395,7 @@ void DiscordInstance::OnSelectGuild(Snowflake sf)
 	{
 		// Determine the first channel we should load.
 		// TODO: Note, unfortunately this isn't really the right order, but it works for now.
-		if (pGuild->m_currentChannel == 0)
+		if (!chan && pGuild->m_currentChannel == 0)
 		{
 			for (auto& ch : pGuild->m_channels)
 			{
@@ -291,10 +406,13 @@ void DiscordInstance::OnSelectGuild(Snowflake sf)
 			}
 		}
 
-		OnSelectChannel(pGuild->m_currentChannel);
+		if (!chan)
+			chan = pGuild->m_currentChannel;
+
+		OnSelectChannel(chan);
 	}
 
-	UpdateSubscriptions(sf, pGuild->m_currentChannel, true, true, true);
+	UpdateSubscriptions(sf, chan, true, true, true);
 }
 
 void OnUpdateAvatar(const std::string& resid);

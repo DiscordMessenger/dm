@@ -163,7 +163,7 @@
     <Image Include="..\res\bmp_voice.bmp" />
     <Image Include="..\res\icon_add.ico" />
     <Image Include="..\res\icon_balloon.ico" />
-    <Image Include="..\res\icon_balloon_block.iso.ico" />
+    <Image Include="..\res\icon_balloon_block.ico" />
     <Image Include="..\res\icon_bot.ico" />
     <Image Include="..\res\icon_bot_2k.ico" />
     <Image Include="..\res\icon_cancel.ico" />
@@ -289,6 +289,7 @@
     <ClInclude Include="..\src\windows\ProfilePopout.hpp" />
     <ClInclude Include="..\src\windows\ProfileView.hpp" />
     <ClInclude Include="..\src\windows\QRCodeDialog.hpp" />
+    <ClInclude Include="..\src\windows\QuickSwitcher.hpp" />
     <ClInclude Include="..\src\windows\RoleList.hpp" />
     <ClInclude Include="..\src\windows\StatusBar.hpp" />
     <ClInclude Include="..\src\windows\TextInterface_Win32.hpp" />
@@ -338,6 +339,7 @@
     <ClCompile Include="..\src\windows\ProfilePopout.cpp" />
     <ClCompile Include="..\src\windows\ProfileView.cpp" />
     <ClCompile Include="..\src\windows\QRCodeDialog.cpp" />
+    <ClCompile Include="..\src\windows\QuickSwitcher.cpp" />
     <ClCompile Include="..\src\windows\RoleList.cpp" />
     <ClCompile Include="..\src\windows\StatusBar.cpp" />
     <ClCompile Include="..\src\windows\TextInterface_Win32.cpp" />

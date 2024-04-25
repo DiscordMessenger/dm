@@ -922,8 +922,16 @@ void MessageList::RefetchMessages(Snowflake gapCulprit)
 
 	scrollAnyway -= scrollInfo.nPos;
 
+	BOOL eraseWhenUpdating = FALSE;
+
 	if (haveUpdateRect)
-		updateRect.bottom += scrollAdded + repaintSize;
+	{
+		// TODO - hacky fix
+		if (m_total_height < scrollInfo.nPage)
+			updateRect.bottom = rect.bottom, updateRect.top = rect.top, scrollAnyway = 0, eraseWhenUpdating = TRUE;
+		else
+			updateRect.bottom += scrollAdded + repaintSize;
+	}
 
 	SetScrollInfo(m_hwnd, SB_VERT, &scrollInfo, true);
 	GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
@@ -943,7 +951,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit)
 		if (scrollAnyway)
 			WindowScroll(m_hwnd, -scrollAnyway);
 
-		InvalidateRect(m_hwnd, haveUpdateRect ? &updateRect : NULL, false);
+		InvalidateRect(m_hwnd, haveUpdateRect ? &updateRect : NULL, eraseWhenUpdating);
 	}
 
 	// send request to discord if needed

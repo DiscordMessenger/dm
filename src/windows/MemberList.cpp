@@ -221,7 +221,7 @@ void MemberList::Initialize()
 	LVCOLUMN col{};
 	col.mask = LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
 	col.pszText = TEXT("Name");
-	col.cx = ScaleByDPI(MEMBER_LIST_WIDTH - 10);
+	col.cx = ScaleByDPI(MEMBER_LIST_WIDTH - 25);
 	col.iSubItem = 0;
 	col.fmt = LVCFMT_LEFT;
 	ListView_InsertColumn(m_listHwnd, 0, &col);

@@ -419,6 +419,28 @@ void SplitURL(const std::string& url, std::string& domainOut, std::string& resou
 	}
 }
 
+float CompareFuzzy(const std::string& item, const char* query)
+{
+	if (*query == '\0')
+		return 0.0f;
+
+	size_t matched, idx;
+	for (idx = 0, matched = 0; idx < item.size() && query[matched] != 0; idx++)
+	{
+		if (tolower(item[idx]) == tolower(query[matched]))
+			matched++;
+	}
+
+	if (query[matched] != '\0')
+		return 0.0f;
+
+	float res = float(matched) / float(idx);
+	if (res < 0.0001f)
+		res = 0.0001f;
+
+	return res;
+}
+
 float GetAppVersion()
 {
 	return 1.00f;

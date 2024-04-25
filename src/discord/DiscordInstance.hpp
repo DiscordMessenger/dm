@@ -30,6 +30,60 @@ struct FailedMessageParams
 	Snowflake message;
 };
 
+#define C_CHANNEL_HISTORY_MAX (3)
+struct ChannelHistory
+{
+	// latest to earliest
+	Snowflake m_history[C_CHANNEL_HISTORY_MAX] = { 0 };
+
+	void AddToHistory(Snowflake sf)
+	{
+		if (sf == 0)
+			return;
+
+		for (int i = 0; i < C_CHANNEL_HISTORY_MAX; i++)
+		{
+			if (m_history[i] == sf) {
+				std::swap(m_history[0], m_history[i]);
+				return;
+			}
+		}
+
+		memmove(&m_history[1], &m_history[0], sizeof(m_history) - sizeof(Snowflake));
+
+		m_history[0] = sf;
+	}
+};
+
+class QuickMatch
+{
+public:
+	QuickMatch(bool channel, Snowflake id, float fzc) : m_isChannel(channel), m_id(id), m_fuzzy(fzc) {}
+	bool IsChannel() const { return m_isChannel; }
+	bool IsGuild() const { return !m_isChannel; }
+	Snowflake Id() const { return m_id; }
+
+	bool operator<(const QuickMatch& oth) const
+	{
+		if (m_fuzzy != oth.m_fuzzy)
+			return m_fuzzy > oth.m_fuzzy;
+
+		// Channels are prioritized.
+		if (m_isChannel && !oth.m_isChannel)
+			return true;
+
+		if (!m_isChannel && oth.m_isChannel)
+			return false;
+
+		return m_id < oth.m_id;
+	}
+
+private:
+	Snowflake m_id = 0;
+	bool m_isChannel = false;
+	float m_fuzzy = 0;
+};
+
 namespace GatewayOp
 {
 	enum eOpcode
@@ -117,6 +171,9 @@ public:
 
 	// Pending uploads
 	std::map<Snowflake, PendingUpload> m_pendingUploads;
+
+	// Channel history
+	ChannelHistory m_channelHistory;
 
 public:
 	Profile* GetProfile() {
@@ -215,8 +272,11 @@ public:
 	std::string LookupRoleNameGlobally(Snowflake sf);
 	std::string LookupUserNameGlobally(Snowflake sf, Snowflake gld);
 
+	// Search for channels using the quick switcher query format.
+	std::vector<QuickMatch> Search(const std::string& query);
+
 	// Select a guild.
-	void OnSelectGuild(Snowflake sf);
+	void OnSelectGuild(Snowflake sf, Snowflake chan = 0);
 
 	// Select a channel in the current guild.
 	void OnSelectChannel(Snowflake sf, bool bSendSubscriptionUpdate = true);
@@ -312,6 +372,7 @@ private:
 	void ParseReadStateObject(nlohmann::json& j, bool bAlternate);
 	void OnUploadAttachmentFirst(NetRequest* pReq);
 	void OnUploadAttachmentSecond(NetRequest* pReq);
+	void SearchSubGuild(std::vector<QuickMatch>& matches, Guild* pGuild, int matchFlags, const char* query);
 
 	// handle functions
 	void HandleREADY(nlohmann::json& j);

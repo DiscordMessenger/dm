@@ -96,6 +96,7 @@
 #define IDD_DIALOG_INSTANT_INVITE       408
 #define IDD_DIALOG_PINNEDMESSAGES       409
 #define IDD_DIALOG_UPLOADFILES          410
+#define IDD_DIALOG_QUICK_SWITCHER       411
 #define IDR_MAINMENU                    501
 #define IDR_MESSAGE_CONTEXT             502
 #define IDR_GUILD_CONTEXT               503
@@ -251,6 +252,9 @@
 #define IDC_PROGRAM_NAME                858
 #define IDC_SAVE_WINDOW_SIZE            859
 #define IDC_START_MAXIMIZED             860
+#define IDC_QUICK_QUERY                 861
+#define IDC_CHANNEL_LIST                862
+#define IDC_QUICK_GROUP                 863
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
 #define ID_FILE_EXIT                    1003
@@ -327,9 +331,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        67
+#define _APS_NEXT_RESOURCE_VALUE        69
 #define _APS_NEXT_COMMAND_VALUE         1069
-#define _APS_NEXT_CONTROL_VALUE         860
+#define _APS_NEXT_CONTROL_VALUE         864
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif
 #endif

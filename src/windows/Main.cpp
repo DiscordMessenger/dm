@@ -20,6 +20,7 @@
 #include "LoadingMessage.hpp"
 #include "UploadDialog.hpp"
 #include "StatusBar.hpp"
+#include "QuickSwitcher.hpp"
 #include "Frontend_Win32.hpp"
 #include "../discord/LocalSettings.hpp"
 #include "../discord/WebsocketClient.hpp"
@@ -417,8 +418,7 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case IDA_QUICKSWITCHER:
 		case ID_ACTIONS_QUICKSWITCHER:
 		{
-			// TODO
-			DbgPrintW("Quick switcher!");
+			QuickSwitcher::ShowDialog();
 			break;
 		}
 		case IDA_PASTE:
