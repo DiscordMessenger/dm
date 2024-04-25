@@ -751,7 +751,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit)
 	scrollInfo.cbSize = sizeof scrollInfo;
 	scrollInfo.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 
-	GetScrollInfo(m_scroll_hwnd, SB_CTL, &scrollInfo);
+	GetScrollInfo(m_scrollable_hwnd, SB_VERT, &scrollInfo);
 
 	// Find the position of the old message
 	int oldYMessage = 0;
@@ -948,8 +948,8 @@ void MessageList::RefetchMessages(Snowflake gapCulprit)
 
 	scrollAnyway -= scrollInfo.nPos;
 
-	SetScrollInfo(m_scroll_hwnd, SB_CTL, &scrollInfo, true);
-	GetScrollInfo(m_scroll_hwnd, SB_CTL, &scrollInfo);
+	SetScrollInfo(m_scrollable_hwnd, SB_VERT, &scrollInfo, true);
+	GetScrollInfo(m_scrollable_hwnd, SB_VERT, &scrollInfo);
 
 	m_oldPos = scrollInfo.nPos;
 
@@ -992,15 +992,7 @@ void MessageList::ProperlyResizeSubWindows()
 {
 	RECT rect, rect2;
 	GetClientRect(m_hwnd, &rect);
-	rect2 = rect;
-
-	int scrollBarWidth = GetSystemMetrics(SM_CXVSCROLL);
-	rect.right -= scrollBarWidth;
 	MoveWindow(m_scrollable_hwnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
-	rect = rect2;
-
-	rect.left = rect.right - scrollBarWidth;
-	MoveWindow(m_scroll_hwnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
 }
 
 void MessageList::HitTestAuthor(POINT pt, BOOL& hit)
@@ -2547,11 +2539,11 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			si.cbSize = sizeof(si);
 			si.fMask = SIF_TRACKPOS | SIF_POS | SIF_RANGE;
-			GetScrollInfo(pThis->m_scroll_hwnd, SB_CTL, &si);
+			GetScrollInfo(pThis->m_scrollable_hwnd, SB_VERT, &si);
 			si.nTrackPos = si.nPos - (zDelta / 3);
 			if (si.nTrackPos < si.nMin) si.nTrackPos = si.nMin;
 			if (si.nTrackPos > si.nMax) si.nTrackPos = si.nMax;
-			SetScrollInfo(pThis->m_scroll_hwnd, SB_CTL, &si, false);
+			SetScrollInfo(pThis->m_scrollable_hwnd, SB_VERT, &si, false);
 
 			wParam = SB_THUMBTRACK;
 			goto _lbl;
@@ -2562,7 +2554,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			si.cbSize = sizeof(si);
 			si.fMask = SIF_ALL;
 
-			GetScrollInfo(pThis->m_scroll_hwnd, SB_CTL, &si);
+			GetScrollInfo(pThis->m_scrollable_hwnd, SB_VERT, &si);
 
 		_lbl:
 			;
@@ -2608,8 +2600,8 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					break;
 			}
 
-			SetScrollInfo(pThis->m_scroll_hwnd, SB_CTL, &si, true);
-			GetScrollInfo(pThis->m_scroll_hwnd, SB_CTL, &si);
+			SetScrollInfo(pThis->m_scrollable_hwnd, SB_VERT, &si, true);
+			GetScrollInfo(pThis->m_scrollable_hwnd, SB_VERT, &si);
 
 			diffUpDown = si.nPos - pThis->m_oldPos;
 			pThis->m_oldPos = si.nPos;
@@ -2916,7 +2908,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			SCROLLINFO si;
 			si.cbSize = sizeof(si);
 			si.fMask = SIF_POS | SIF_RANGE;
-			GetScrollInfo(pThis->m_scroll_hwnd, SB_CTL, &si);
+			GetScrollInfo(pThis->m_scrollable_hwnd, SB_VERT, &si);
 			ScrollHeight = si.nPos;
 
 			RECT msgRect = rect;
@@ -3076,7 +3068,7 @@ bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded)
 		SCROLLINFO si{};
 		si.cbSize = sizeof(SCROLLINFO);
 		si.fMask = SIF_RANGE;
-		GetScrollInfo(m_scroll_hwnd, SB_CTL, &si);
+		GetScrollInfo(m_scrollable_hwnd, SB_VERT, &si);
 
 		int yOffs = (rcClient.bottom - rcClient.top) / 2 - mi->m_height / 2;
 		y -= yOffs;
@@ -3089,7 +3081,7 @@ bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded)
 		// Just scroll there
 		si.fMask = SIF_POS;
 		si.nPos = y;
-		SetScrollInfo(m_scroll_hwnd, SB_CTL, &si, true);
+		SetScrollInfo(m_scrollable_hwnd, SB_VERT, &si, true);
 
 		FlashMessage(mi->m_msg.m_snowflake);
 		SendMessage(m_scrollable_hwnd, WM_VSCROLL, SB_ENDSCROLL, 0);
@@ -3194,7 +3186,7 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 	scrollInfo.cbSize = sizeof scrollInfo;
 	scrollInfo.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 
-	GetScrollInfo(m_scroll_hwnd, SB_CTL, &scrollInfo);
+	GetScrollInfo(m_scrollable_hwnd, SB_VERT, &scrollInfo);
 
 	bool scroll = true;
 
@@ -3217,8 +3209,8 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 	scrollInfo.nPage = pageHeight;
 
 	int posNow = scrollInfo.nPos;
-	SetScrollInfo(m_scroll_hwnd, SB_CTL, &scrollInfo, true);
-	GetScrollInfo(m_scroll_hwnd, SB_CTL, &scrollInfo);
+	SetScrollInfo(m_scrollable_hwnd, SB_VERT, &scrollInfo, true);
+	GetScrollInfo(m_scrollable_hwnd, SB_VERT, &scrollInfo);
 	m_oldPos = scrollInfo.nPos;
 
 	if (m_bManagedByOwner)
@@ -3832,23 +3824,8 @@ MessageList* MessageList::Create(HWND hwnd, LPRECT pRect)
 	);
 
 	newThis->m_scrollable_hwnd = CreateWindowEx(
-		0, T_MESSAGE_LIST_CLASS, NULL, WS_CHILD | WS_VISIBLE,
+		0, T_MESSAGE_LIST_CLASS, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL,
 		0, 0, width - 4 - scrollBarWidth, height - 4, newThis->m_hwnd, (HMENU)1, g_hInstance, newThis
-	);
-
-	newThis->m_scroll_hwnd = CreateWindowEx(
-		0,
-		TEXT("SCROLLBAR"),
-		(PTSTR)NULL,
-		WS_CHILD | WS_VISIBLE | SBS_VERT,
-		width - 4 - scrollBarWidth,
-		0,
-		scrollBarWidth,
-		height - 4,
-		newThis->m_hwnd,
-		NULL,
-		g_hInstance,
-		NULL
 	);
 
 	newThis->UpdateBackgroundBrush();

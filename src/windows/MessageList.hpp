@@ -338,7 +338,6 @@ public:
 	HWND m_hwnd = NULL;
 private:
 	HWND m_scrollable_hwnd = NULL;
-	HWND m_scroll_hwnd = NULL;
 
 	UINT_PTR m_flash_timer = 0;
 	int m_flash_counter = 0;
