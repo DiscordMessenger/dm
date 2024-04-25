@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include <windows.h>
 #include <commctrl.h>
 
