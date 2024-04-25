@@ -26,6 +26,7 @@ private:
 	int m_mentionTextWidth = 0;
 	int m_replyToTextWidth = 0;
 	int m_mentionAreaHeight = 0;
+	int m_textLength = 0;
 	bool m_bReplying = false;
 	bool m_bEditing = false;
 	std::string m_replyName; // Or edited message contents
@@ -62,6 +63,7 @@ private:
 	void ShowOrHideEdit(bool shown);
 	void UpdateCommonButtonsShown();
 	bool IsUploadingAllowed();
+	void OnUpdateText();
 
 public:
 	static WNDCLASS g_ProfileViewClass;

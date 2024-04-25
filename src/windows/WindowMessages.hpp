@@ -50,4 +50,5 @@ enum eWmUserMsgs
 	WM_SENDMESSAGEAUX, // SendMessageAuxParams
 	WM_STARTEDITING, // Snowflake[1]
 	WM_UPDATETEXTSIZE, // used by the MessageEditor
+	WM_UPDATEMESSAGELENGTH,
 };

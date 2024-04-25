@@ -174,6 +174,19 @@ void StatusBar::OnAnimationTick()
 	InvalidateRect(m_hwnd, &m_typing_animation_rect, TRUE);
 }
 
+void StatusBar::UpdateCharacterCounter(int nChars, int nCharsMax)
+{
+	if (!nChars) {
+		SendMessage(m_hwnd, SB_SETTEXT, IDP_CHRCNT, (LPARAM) TEXT(""));
+		return;
+	}
+
+	std::string text = std::to_string(nChars) + "/" + std::to_string(nCharsMax);
+	LPTSTR tstr = ConvertCppStringToTString(text);
+	SendMessage(m_hwnd, SB_SETTEXT, IDP_CHRCNT, (LPARAM) tstr);
+	free(tstr);
+}
+
 void StatusBar::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 {
 	// this is the only owner drawn item
@@ -259,7 +272,7 @@ void StatusBar::UpdateParts(int width)
 	
     int scaled10 = ScaleByDPI(10);
     Widths[IDP_CNTRLS] = width;
-    Widths[IDP_CHRCNT] = width - g_MemberListWidth - scaled10;
+    Widths[IDP_CHRCNT] = width - g_MemberListWidth - scaled10 * 3 / 2;
     Widths[IDP_TYPING] = Widths[IDP_CHRCNT] - g_SendButtonWidth - scaled10;
     Widths[IDP_NOTIFS] = g_GuildListerWidth + g_ChannelViewListWidth + scaled10 * 3;
 

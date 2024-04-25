@@ -514,6 +514,11 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
+		case WM_UPDATEMESSAGELENGTH:
+		{
+			g_pStatusBar->UpdateCharacterCounter(int(lParam), MAX_MESSAGE_SIZE);
+			break;
+		}
 		case WM_UPDATEPROFILEAVATAR:
 		{
 			UpdateProfileParams parms = *(UpdateProfileParams*) lParam;

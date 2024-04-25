@@ -39,6 +39,7 @@ public:
 	int GetNextExpiryTime();
 	void OnExpiryTick();
 	void OnAnimationTick();
+	void UpdateCharacterCounter(int nChars, int nCharsMax);
 
 public:
 	HWND m_hwnd;

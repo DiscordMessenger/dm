@@ -273,6 +273,37 @@ void MessageEditor::StopEdit()
 	}
 }
 
+void MessageEditor::OnUpdateText()
+{
+	EditWndProc(m_edit_hwnd, WM_UPDATETEXTSIZE, 0, 0);
+
+	if (!IsWindowEnabled(m_edit_hwnd))
+		return;
+
+	/*
+	// This is a VERY loose approximate.  For every \n character there will also be a
+	// \r character in the input buffer.  If you need this to be exact, make it go through
+	// the entire text every character, or count the characters.  Use for speed.
+	int length = Edit_GetTextLength(m_edit_hwnd);
+	SendMessage(g_Hwnd, WM_UPDATEMESSAGELENGTH, 0, (LPARAM)length);
+	return;
+	*/
+
+	// How slow could this possibly be.
+	int length = Edit_GetTextLength(m_edit_hwnd);
+
+	TCHAR* tchr = new TCHAR[length + 1];
+	Edit_GetText(m_edit_hwnd, tchr, length + 1);
+
+	int actualLength = length;
+	for (int i = 0; i < length; i++) {
+		if (tchr[i] == (TCHAR)'\r')
+			actualLength--;
+	}
+
+	SendMessage(g_Hwnd, WM_UPDATEMESSAGELENGTH, 0, (LPARAM) actualLength);
+}
+
 LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	MessageEditor* pThis = (MessageEditor*) GetWindowLongPtr(GetParent(hWnd), GWLP_USERDATA);
@@ -314,6 +345,15 @@ LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			pThis->Expand(expandByTarget - pThis->m_expandedBy);
 			break;
 		}
+		case WM_PASTE:
+		case WM_CUT:
+		case WM_COPY:
+		case WM_SETTEXT:
+		{
+			LRESULT lres = m_editWndProc(hWnd, uMsg, wParam, lParam);
+			pThis->OnUpdateText();
+			return lres;
+		}
 		case WM_CHAR:
 		{
 			if (!GetDiscordInstance()->GetCurrentChannel())
@@ -330,7 +370,7 @@ LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 			// Let the edit control modify the text first.
 			LRESULT lres = m_editWndProc(hWnd, uMsg, wParam, lParam);
-			EditWndProc(hWnd, WM_UPDATETEXTSIZE, 0, 0);
+			pThis->OnUpdateText();
 			GetDiscordInstance()->Typing();
 			return lres;
 		}
