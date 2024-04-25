@@ -8,12 +8,6 @@
 
 #define T_MESSAGE_EDITOR_CLASS TEXT("DMMessageEditorClass")
 
-#define IDT_EXPIRY    (1)
-#define IDT_ANIMATION (2)
-
-#define ANIMATION_MS (200)
-#define ANIMATION_FRAMES (3)
-
 WNDPROC MessageEditor::m_editWndProc;
 bool MessageEditor::m_shiftHeld;
 
@@ -53,131 +47,6 @@ void MessageEditor::UpdateTextBox()
 	if (!mayType && !wasDisabled) {
 		SetWindowText(m_edit_hwnd, TmGetTString(IDS_CANT_SEND_MESSAGES));
 	}
-}
-
-void MessageEditor::AddTypingName(Snowflake sf, time_t startTime, const std::string& name)
-{
-	uint64_t currentTime = time(NULL) * 1000ULL;
-	uint64_t startTimeMS = (uint64_t)startTime * 1000ULL;
-	if (startTimeMS + TYPING_INTERVAL <= currentTime)
-		return;
-
-	RemoveTypingNameInternal(sf);
-	m_typingUsers.push_back({ sf, name, startTimeMS });
-	SetExpiryTimerIn(GetNextExpiryTime());
-	StartAnimation();
-	InvalidateRect(m_hwnd, &m_typing_status_rect, TRUE);
-}
-
-void MessageEditor::RemoveTypingName(Snowflake sf)
-{
-	RemoveTypingNameInternal(sf);
-	if (!m_typingUsers.empty())
-	{
-		StartAnimation();
-		SetExpiryTimerIn(GetNextExpiryTime());
-	}
-	else
-	{
-		StopAnimation();
-	}
-
-	InvalidateRect(m_hwnd, &m_typing_status_rect, TRUE);
-}
-
-void MessageEditor::ClearTypers()
-{
-	m_typingUsers.clear();
-
-	StopAnimation();
-	if (m_timerExpireEvent)
-		KillTimer(m_hwnd, m_timerExpireEvent);
-	m_timerExpireEvent = 0;
-
-	InvalidateRect(m_hwnd, &m_typing_status_rect, TRUE);
-	InvalidateRect(m_hwnd, &m_typing_animation_rect, TRUE);
-}
-
-void MessageEditor::RemoveTypingNameInternal(Snowflake sf)
-{
-	for (auto iter = m_typingUsers.begin(); iter != m_typingUsers.end(); ++iter) {
-		if (iter->m_key == sf) {
-			m_typingUsers.erase(iter);
-			break;
-		}
-	}
-}
-
-void MessageEditor::SetExpiryTimerIn(int ms)
-{
-	if (m_timerExpireEvent)
-		KillTimer(m_hwnd, m_timerExpireEvent);
-	m_timerExpireEvent = SetTimer(m_hwnd, IDT_EXPIRY, ms, NULL);
-}
-
-void MessageEditor::StartAnimation()
-{
-	StopAnimation();
-	m_timerAnimEvent = SetTimer(m_hwnd, IDT_ANIMATION, ANIMATION_MS, NULL);
-	InvalidateRect(m_hwnd, &m_typing_animation_rect, TRUE);
-}
-
-void MessageEditor::StopAnimation()
-{
-	if (m_timerAnimEvent)
-		KillTimer(m_hwnd, m_timerAnimEvent);
-	InvalidateRect(m_hwnd, &m_typing_animation_rect, TRUE);
-}
-
-int MessageEditor::GetNextExpiryTime()
-{
-	time_t t = time(NULL) * 1000LL;
-	uint64_t minExpiry = UINT64_MAX;
-
-	for (auto& tu : m_typingUsers)
-	{
-		uint64_t expiry = tu.m_startTimeMS + TYPING_INTERVAL - t;
-		if (minExpiry > expiry)
-			minExpiry = expiry;
-	}
-
-	return int(minExpiry);
-}
-
-void MessageEditor::OnExpiryTick()
-{
-	uint64_t timeMS = time(NULL) * 1000LL;
-	bool bNeedUpdate = false;
-
-	for (auto iter = m_typingUsers.begin(); iter != m_typingUsers.end(); )
-	{
-		if (iter->m_startTimeMS - 100 < timeMS) {
-			size_t dist = std::distance(m_typingUsers.begin(), iter);
-			m_typingUsers.erase(iter);
-			iter = m_typingUsers.begin() + dist;
-			bNeedUpdate = true;
-		}
-		else ++iter;
-	}
-
-	if (bNeedUpdate)
-		InvalidateRect(m_hwnd, &m_typing_status_rect, TRUE);
-
-	KillTimer(m_hwnd, m_timerExpireEvent);
-	m_timerExpireEvent = 0;
-	if (!m_typingUsers.empty()) {
-		StartAnimation();
-		SetExpiryTimerIn(GetNextExpiryTime());
-	}
-	else {
-		StopAnimation();
-	}
-}
-
-void MessageEditor::OnAnimationTick()
-{
-	m_anim_frame_number = (m_anim_frame_number + 1) % ANIMATION_FRAMES;
-	InvalidateRect(m_hwnd, &m_typing_animation_rect, TRUE);
 }
 
 void MessageEditor::ShowOrHideReply(bool shown)
@@ -551,12 +420,9 @@ void MessageEditor::Layout()
 
 	UpdateCommonButtonsShown();
 
-	int bottomSize = std::max(m_lineHeight, ScaleByDPI(16));
-
 	RECT rc = rcClient;
 	rc.right -= ScaleByDPI(10) + sendButtonWidth;
-	rc.bottom -= ScaleByDPI(5) + bottomSize;
-	int minHeight = m_lineHeight + ScaleByDPI(12);
+	int minHeight = std::max(m_lineHeight + ScaleByDPI(8), sendButtonHeight);
 	int height = rc.bottom - rc.top;
 	if (height < minHeight)
 		height = minHeight;
@@ -593,21 +459,6 @@ void MessageEditor::Layout()
 	rc.top += (rcButton.bottom - rcButton.top - sendButtonHeight) / 2;
 	rc.bottom = rc.top + sendButtonHeight;
 	MoveWindow(m_send_hwnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
-
-	int animSize = ScaleByDPI(16);
-	rc = rcClient;
-	rc.left += animSize + ScaleByDPI(2);
-	rc.top = rc.bottom - m_lineHeight;
-	rc.right -= sendButtonWidth;
-	m_typing_status_rect = rc;
-
-	height = rc.bottom - rc.top;
-	rc.left = rcClient.left;
-	rc.top += (height - animSize) / 2;
-	rc.bottom = rc.top + animSize;
-	rc.right = rc.left + animSize;
-	m_typing_animation_rect = rc;
-
 }
 
 LRESULT MessageEditor::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -622,95 +473,9 @@ LRESULT MessageEditor::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)cs->lpCreateParams);
 			break;
 		}
-		case WM_TIMER:
-		{
-			switch (wParam) {
-				case IDT_EXPIRY:
-					pThis->OnExpiryTick();
-					break;
-				case IDT_ANIMATION:
-					pThis->OnAnimationTick();
-					break;
-			}
-
-			break;
-		}
 		case WM_SIZE:
 		{
 			pThis->Layout();
-			break;
-		}
-		case WM_PAINT:
-		{
-			RECT rcClient{};
-			HDC hdc;
-			PAINTSTRUCT ps;
-			hdc = BeginPaint(hWnd, &ps);
-			GetClientRect(hWnd, &rcClient);
-
-			// Draw the typing status text.
-			int x = 0;
-			int width = rcClient.right - rcClient.left;
-			size_t sz = pThis->m_typingUsers.size();
-			HGDIOBJ gdiObjOld = SelectObject(hdc, g_TypingBoldFont);
-			COLORREF colorOld = SetBkColor(hdc, GetSysColor(COLOR_3DFACE));
-			for (size_t i = 0; i < sz; i++)
-			{
-				TypingUser& tu = pThis->m_typingUsers[i];
-				if (i != 0) {
-					LPTSTR separator;
-					if (i == sz - 1)
-						separator = TEXT(" and ");
-					else
-						separator = TEXT(", ");
-
-					HGDIOBJ gdiObj = SelectObject(hdc, g_TypingRegFont);
-					RECT rcMeasure{};
-					rcMeasure.right = width - x;
-					DrawText(hdc, separator, -1, &rcMeasure, DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE | DT_CALCRECT);
-					RECT rcText = pThis->m_typing_status_rect;
-					rcText.left += x;
-					DrawText(hdc, separator, -1, &rcText, DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE);
-					SelectObject(hdc, gdiObj);
-					x += rcMeasure.right - rcMeasure.left;
-
-					// If the width is bigger or equal to the alloted space, quit right now
-					if (rcMeasure.right - rcMeasure.left + x >= width)
-						break;
-				}
-
-				LPTSTR typerText = ConvertCppStringToTString(tu.m_name);
-				RECT rcMeasure{};
-				rcMeasure.right = width - x;
-				DrawText(hdc, typerText, -1, &rcMeasure, DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE | DT_CALCRECT);
-				RECT rcText = pThis->m_typing_status_rect;
-				rcText.left += x;
-				x += rcMeasure.right - rcMeasure.left;
-				DrawText(hdc, typerText, -1, &rcText, DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE);
-
-				if (rcMeasure.right - rcMeasure.left + x >= width)
-					break;
-			}
-			if (sz != 0)
-			{
-				SelectObject(hdc, g_TypingRegFont);
-				LPCTSTR typingEnd = sz == 1 ? TEXT(" is typing...") : TEXT(" are typing...");
-				RECT rcText = pThis->m_typing_status_rect;
-				rcText.left += x;
-				DrawText(hdc, typingEnd, -1, &rcText, DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE);
-				SetBkColor(hdc, colorOld);
-				SelectObject(hdc, gdiObjOld);
-			}
-
-			// Draw Animation Frame
-			if (sz != 0)
-			{
-				RECT rcAnim = pThis->m_typing_animation_rect;
-				HICON icon = LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_TYPING_FRAME1 + pThis->m_anim_frame_number));
-				DrawIconEx(hdc, rcAnim.left, rcAnim.top, icon, ScaleByDPI(16), ScaleByDPI(16), 0, NULL, DI_NORMAL | DI_COMPAT);
-			}
-
-			EndPaint(hWnd, &ps);
 			break;
 		}
 		case WM_COMMAND:

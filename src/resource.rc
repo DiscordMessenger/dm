@@ -338,6 +338,10 @@ IDI_WAIT                ICON                    "../res/icon_wait.ico"
 
 IDI_IMAGE_ERROR         ICON                    "../res/icon_image_error.ico"
 
+IDI_BALLOON             ICON                    "../res/icon_balloon.ico"
+
+IDI_BALLOON_OFF         ICON                    "../res/icon_balloon_block.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

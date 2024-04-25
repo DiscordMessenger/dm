@@ -3775,13 +3775,11 @@ void MessageList::UpdateAllowDrop()
 MessageList* MessageList::Create(HWND hwnd, LPRECT pRect)
 {
 	MessageList* newThis = new MessageList;
-
-	int scrollBarWidth = GetSystemMetrics(SM_CXVSCROLL);
 	int width = pRect->right - pRect->left, height = pRect->bottom - pRect->top;
 
 	newThis->m_hwnd = CreateWindowEx(
 		WS_EX_CLIENTEDGE, T_MESSAGE_LIST_CLASS, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL,
-		0, 0, width - scrollBarWidth, height, hwnd, (HMENU)CID_MESSAGELIST, g_hInstance, newThis
+		0, 0, width, height, hwnd, (HMENU)CID_MESSAGELIST, g_hInstance, newThis
 	);
 
 	newThis->UpdateBackgroundBrush();

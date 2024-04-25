@@ -162,6 +162,8 @@
     <Image Include="..\res\bmp_status_online.bmp" />
     <Image Include="..\res\bmp_voice.bmp" />
     <Image Include="..\res\icon_add.ico" />
+    <Image Include="..\res\icon_balloon.ico" />
+    <Image Include="..\res\icon_balloon_block.iso.ico" />
     <Image Include="..\res\icon_bot.ico" />
     <Image Include="..\res\icon_bot_2k.ico" />
     <Image Include="..\res\icon_cancel.ico" />
@@ -232,6 +234,7 @@
   <ItemGroup>
     <None Include="..\res\cur_zoomin.cur" />
     <None Include="..\res\cur_zoomout.cur" />
+    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\res\app.manifest" />
@@ -288,6 +291,7 @@
     <ClInclude Include="..\src\windows\ProfileView.hpp" />
     <ClInclude Include="..\src\windows\QRCodeDialog.hpp" />
     <ClInclude Include="..\src\windows\RoleList.hpp" />
+    <ClInclude Include="..\src\windows\StatusBar.hpp" />
     <ClInclude Include="..\src\windows\TextInterface_Win32.hpp" />
     <ClInclude Include="..\src\windows\TextManager.hpp" />
     <ClInclude Include="..\src\windows\TextToSpeech.hpp" />
@@ -336,6 +340,7 @@
     <ClCompile Include="..\src\windows\ProfileView.cpp" />
     <ClCompile Include="..\src\windows\QRCodeDialog.cpp" />
     <ClCompile Include="..\src\windows\RoleList.cpp" />
+    <ClCompile Include="..\src\windows\StatusBar.cpp" />
     <ClCompile Include="..\src\windows\TextInterface_Win32.cpp" />
     <ClCompile Include="..\src\windows\TextManager.cpp" />
     <ClCompile Include="..\src\windows\TextToSpeech.cpp" />

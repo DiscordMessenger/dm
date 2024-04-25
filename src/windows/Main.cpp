@@ -19,6 +19,7 @@
 #include "QRCodeDialog.hpp"
 #include "LoadingMessage.hpp"
 #include "UploadDialog.hpp"
+#include "StatusBar.hpp"
 #include "Frontend_Win32.hpp"
 #include "../discord/LocalSettings.hpp"
 #include "../discord/WebsocketClient.hpp"
@@ -37,6 +38,7 @@ int g_GuildListerWidth;
 int g_MemberListWidth;
 int g_MessageEditorHeight;
 
+StatusBar  * g_pStatusBar;
 MessageList* g_pMessageList;
 ChannelView* g_pChannelView;
 ProfileView* g_pProfileView;
@@ -187,7 +189,7 @@ bool g_bMemberListVisible = false;
 
 void ProperlySizeControls(HWND hWnd)
 {
-	RECT rect = {}, rect2 = {}, rcClient = {};
+	RECT rect = {}, rect2 = {}, rcClient = {}, rcSBar = {};
 	GetClientRect(hWnd, &rect);
 	rcClient = rect;
 
@@ -198,8 +200,6 @@ void ProperlySizeControls(HWND hWnd)
 	rect.right  -= scaled10;
 	rect.bottom -= scaled10;
 
-	rect2 = rect;
-
 	HWND hWndMsg = g_pMessageList->m_hwnd;
 	HWND hWndChv = g_pChannelView->m_hwnd;
 	HWND hWndPfv = g_pProfileView->m_hwnd;
@@ -207,7 +207,15 @@ void ProperlySizeControls(HWND hWnd)
 	HWND hWndGul = g_pGuildLister->m_hwnd;
 	HWND hWndMel = g_pMemberList->m_mainHwnd;
 	HWND hWndTin = g_pMessageEditor->m_hwnd;
-	
+	HWND hWndStb = g_pStatusBar->m_hwnd;
+
+	int statusBarHeight = 0;
+	GetChildRect(hWnd, hWndStb, &rcSBar);
+	statusBarHeight = rcSBar.bottom - rcSBar.top;
+
+	rect.bottom -= statusBarHeight;
+	rect2 = rect;
+
 	g_ProfilePictureSize   = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF);
 	g_ChannelViewListWidth = ScaleByDPI(CHANNEL_VIEW_LIST_WIDTH);
 	g_BottomBarHeight      = ScaleByDPI(BOTTOM_BAR_HEIGHT);
@@ -230,7 +238,7 @@ void ProperlySizeControls(HWND hWnd)
 
 	rect.left = rect.right + scaled10;
 	rect.right = rect.left + g_MemberListWidth;
-	rect.bottom += g_BottomBarHeight;
+	rect.bottom = rect2.bottom;
 	MoveWindow(hWndMel, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
 	rect = rect2;
 
@@ -249,7 +257,6 @@ void ProperlySizeControls(HWND hWnd)
 
 	rect.left   = g_ChannelViewListWidth + scaled10 + scaled10 + g_GuildListerWidth + scaled10;
 	rect.top    = rect.bottom - g_MessageEditorHeight - g_pMessageEditor->ExpandedBy();
-	rect.bottom += ScaleByDPI(MESSAGE_EDITOR_CHIN);
 	if (g_bMemberListVisible) rect.right -= g_MemberListWidth + scaled10;
 	int textInputHeight = rect.bottom - rect.top, textInputWidth = rect.right - rect.left;
 	MoveWindow(hWndTin, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
@@ -263,6 +270,13 @@ void ProperlySizeControls(HWND hWnd)
 	rect.right = rect.left + g_GuildListerWidth;
 	MoveWindow(hWndGul, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
 	rect = rect2;
+
+	// Forward the resize event to the status bar.
+	MoveWindow(hWndStb, 0, rcClient.bottom - statusBarHeight, rcClient.right - rcClient.left, statusBarHeight, TRUE);
+	// Erase the old rectangle
+	InvalidateRect(hWnd, &rcSBar, TRUE);
+
+	g_pStatusBar->UpdateParts(rcClient.right - rcClient.left);
 }
 
 bool g_bQuittingEarly = false;
@@ -304,7 +318,7 @@ void OnTyping(Snowflake guildID, Snowflake channelID, Snowflake userID, time_t t
 			return;
 		}
 
-		g_pMessageEditor->AddTypingName(userID, timeStamp, tu.m_name);
+		g_pStatusBar->AddTypingName(userID, timeStamp, tu.m_name);
 	}
 }
 
@@ -313,7 +327,7 @@ void OnStopTyping(Snowflake channelID, Snowflake userID)
 	g_typingInfo[channelID].m_typingUsers[userID].m_startTimeMS = 0;
 
 	if (channelID == GetDiscordInstance()->GetCurrentChannelID())
-		g_pMessageEditor->RemoveTypingName(userID);
+		g_pStatusBar->RemoveTypingName(userID);
 }
 
 void UpdateMainWindowTitle(HWND hWnd)
@@ -344,7 +358,7 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					GetDiscordInstance()->SetToken("");
 					g_pChannelView->ClearChannels();
 					g_pMemberList->ClearMembers();
-					g_pMessageEditor->ClearTypers();
+					g_pStatusBar->ClearTypers();
 					g_pMessageList->ClearMessages();
 					g_pGuildLister->ClearTooltips();
 					return TRUE;
@@ -588,11 +602,15 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pMessageEditor->UpdateTextBox();
 
 			// Update the message editor's typing indicators
-			g_pMessageEditor->ClearTypers();
+			g_pStatusBar->ClearTypers();
 
+			Snowflake myUserID = GetDiscordInstance()->GetUserID();
 			TypingInfo& ti = g_typingInfo[channID];
 			for (auto& tu : ti.m_typingUsers) {
-				g_pMessageEditor->AddTypingName(tu.second.m_key, tu.second.m_startTimeMS / 1000ULL, tu.second.m_name);
+				if (tu.second.m_key == myUserID)
+					continue;
+				
+				g_pStatusBar->AddTypingName(tu.second.m_key, tu.second.m_startTimeMS / 1000ULL, tu.second.m_name);
 			}
 
 			break;
@@ -800,6 +818,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			ClientToScreen(hWnd, &pt);
 			OffsetRect(&rcLoading, pt.x, pt.y);
 
+			g_pStatusBar   = StatusBar::Create(hWnd);
 			g_pMessageList = MessageList::Create(hWnd, &rect);
 			g_pChannelView = ChannelView::Create(hWnd, &rect);
 			g_pProfileView = ProfileView::Create(hWnd, &rect);
@@ -872,6 +891,16 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				g_pChannelView->OnNotify(wParam, lParam);
 
 			return 0;
+		}
+		case WM_DRAWITEM:
+		{
+			switch (wParam)
+			{
+				case CID_STATUSBAR:
+					g_pStatusBar->DrawItem((LPDRAWITEMSTRUCT)lParam);
+					break;
+			}
+			break;
 		}
 		case WM_INITMENUPOPUP:
 		{

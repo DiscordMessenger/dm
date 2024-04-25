@@ -282,6 +282,18 @@
     <Image Include="..\res\target.bmp">
       <Filter>Resource Files\Resources</Filter>
     </Image>
+    <Image Include="..\res\icon_image_error.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_wait.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_balloon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\icon_balloon_block.iso.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\res\cur_zoomin.cur">
@@ -290,6 +302,7 @@
     <None Include="..\res\cur_zoomout.cur">
       <Filter>Resource Files\Resources</Filter>
     </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\res\app.manifest">
@@ -473,6 +486,9 @@
     <ClInclude Include="..\src\windows\TextInterface_Win32.hpp">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\windows\StatusBar.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\windows\ProfileView.cpp">
@@ -600,6 +616,9 @@
     </ClCompile>
     <ClCompile Include="..\deps\md5\MD5.cpp">
       <Filter>Source Files\Deps\Md5</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\StatusBar.cpp">
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

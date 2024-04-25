@@ -5,18 +5,13 @@
 #include <vector>
 #include "Main.hpp"
 
-struct TypingUser
-{
-	Snowflake m_key;
-	std::string m_name;
-	uint64_t m_startTimeMS;
-};
-
 class MessageEditor
 {
 public:
 	HWND m_hwnd = NULL;
 	HWND m_edit_hwnd = NULL;
+
+private:
 	HWND m_send_hwnd = NULL;
 	HWND m_btnUpload_hwnd = NULL;
 	HWND m_mentionText_hwnd   = NULL;
@@ -25,12 +20,6 @@ public:
 	HWND m_mentionCancel_hwnd = NULL;
 	HWND m_mentionJump_hwnd   = NULL;
 	HWND m_editingMessage_hwnd = NULL;
-	RECT m_typing_status_rect;
-	RECT m_typing_animation_rect;
-	std::vector<TypingUser> m_typingUsers;
-	UINT_PTR m_timerExpireEvent;
-	UINT_PTR m_timerAnimEvent;
-	int m_anim_frame_number = 0;
 	int m_expandedBy = 0;
 	int m_lineHeight = 0;
 	int m_initialHeight = 0;
@@ -52,9 +41,6 @@ public:
 	~MessageEditor();
 
 	void UpdateTextBox();
-	void AddTypingName(Snowflake sf, time_t startTime, const std::string& name);
-	void RemoveTypingName(Snowflake sf);
-	void ClearTypers();
 	void StartReply(Snowflake messageID, Snowflake authorID);
 	void StopReply();
 	void StartEdit(Snowflake messageID);
@@ -69,13 +55,6 @@ public:
 	}
 
 private:
-	void RemoveTypingNameInternal(Snowflake sf);
-	void SetExpiryTimerIn(int ms);
-	void StartAnimation();
-	void StopAnimation();
-	int GetNextExpiryTime();
-	void OnExpiryTick();
-	void OnAnimationTick();
 	void TryToSendMessage();
 	void Expand(int Amount); // Positive amount means up, negative means down.
 	bool MentionRepliedUser();
