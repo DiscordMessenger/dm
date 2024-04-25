@@ -32,7 +32,7 @@ StatusBar* StatusBar::Create(HWND hParent)
     return pBar;
 }
 
-VOID StatusBar::TimerProc(HWND hWnd, UINT uMsg, UINT_PTR uTimerId, DWORD dwTime)
+void StatusBar::TimerProc(HWND hWnd, UINT uMsg, UINT_PTR uTimerId, DWORD dwTime)
 {
 	StatusBar* pBar = (StatusBar*) GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	assert(pBar);
@@ -186,7 +186,7 @@ void StatusBar::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 	rc2.right = rc2.left + smcxiconsm + ScaleByDPI(4);
 	rc.left = rc2.right;
 
-	HICON icon = LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_TYPING_FRAME1 + m_anim_frame_number));
+	HICON icon = LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_TYPING_FRAME1 + m_anim_frame_number)));
 	m_typing_animation_rect = rc2;
 
 	size_t sz = m_typingUsers.size();

@@ -441,7 +441,7 @@ public:
 	}
 
 	void ProperlyResizeSubWindows();
-	void RecalcMessageSizes(bool update = true);
+	int RecalcMessageSizes(bool update, int& repaintSize);
 	void FullRecalcAndRepaint();
 	void OnUpdateAttachment(Snowflake sf);
 	void OnUpdateEmbed(const std::string& res);

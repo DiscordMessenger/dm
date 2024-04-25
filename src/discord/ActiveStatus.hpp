@@ -7,6 +7,7 @@ enum eActiveStatus
 	STATUS_IDLE,
 	STATUS_DND,
 	STATUS_OFFLINE,
+	STATUS_MAX, // MUST be the last element!
 };
 
 static eActiveStatus GetStatusFromString(const std::string& str) {

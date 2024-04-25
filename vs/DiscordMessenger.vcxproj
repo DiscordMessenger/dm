@@ -234,7 +234,6 @@
   <ItemGroup>
     <None Include="..\res\cur_zoomin.cur" />
     <None Include="..\res\cur_zoomout.cur" />
-    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\res\app.manifest" />

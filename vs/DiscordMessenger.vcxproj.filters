@@ -302,7 +302,6 @@
     <None Include="..\res\cur_zoomout.cur">
       <Filter>Resource Files\Resources</Filter>
     </None>
-    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\res\app.manifest">

@@ -63,7 +63,9 @@ void SettingsManager::SetOnlineIndicator(eActiveStatus status)
 		"dnd",
 		"invisible",
 	};
-	assert(status >= 0 && status <= _countof(possibleUpdates));
+	
+	static_assert(_countof(possibleUpdates) == int(STATUS_MAX), "Update this array if you add more status states!");
+
 	std::string state(possibleUpdates[int(status)]);
 
 	if (pState->GetContent() != state)

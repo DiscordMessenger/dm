@@ -24,7 +24,7 @@ class StatusBar
 {
 public:
 	static StatusBar* Create(HWND hParent);
-	static VOID CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR uTimerId, DWORD dwTime);
+	static void CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR uTimerId, DWORD dwTime);
 
 	void UpdateParts(int width);
 	void DrawItem(LPDRAWITEMSTRUCT lpDIS);
