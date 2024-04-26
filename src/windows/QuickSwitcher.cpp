@@ -215,7 +215,7 @@ void QuickSwitcher::CreateImageList()
 	g_qsImlIdxs[ICN_VOICE]   = ImageList_AddIcon(g_qsIml, (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_VOICE)),   IMAGE_ICON, szIcon, szIcon, LR_CREATEDIBSECTION | LR_SHARED));
 	g_qsImlIdxs[ICN_GROUPDM] = ImageList_AddIcon(g_qsIml, (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM)), IMAGE_ICON, szIcon, szIcon, LR_CREATEDIBSECTION | LR_SHARED));
 	g_qsImlIdxs[ICN_DM]      = ImageList_AddIcon(g_qsIml, (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_DM)),      IMAGE_ICON, szIcon, szIcon, LR_CREATEDIBSECTION | LR_SHARED));
-	g_qsImlIdxs[ICN_GUILD]   = ImageList_AddIcon(g_qsIml, (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)),    IMAGE_ICON, szIcon, szIcon, LR_CREATEDIBSECTION | LR_SHARED));
+	g_qsImlIdxs[ICN_GUILD]   = ImageList_AddIcon(g_qsIml, (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_SERVER)),  IMAGE_ICON, szIcon, szIcon, LR_CREATEDIBSECTION | LR_SHARED));
 }
 
 void QuickSwitcher::DestroyImageList()

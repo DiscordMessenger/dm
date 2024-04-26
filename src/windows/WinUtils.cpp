@@ -763,6 +763,7 @@ int MapIconToOldIfNeeded(int iconID)
 		case IDI_CHANNEL: return IDI_CHANNEL_2K;
 		case IDI_MEMBERS: return IDI_MEMBERS_2K;
 		case IDI_GROUPDM: return IDI_GROUPDM_2K;
+		case IDI_SERVER: return IDI_SERVER_2K;
 		case IDI_VOICE: return IDI_VOICE_2K;
 		case IDI_FILE: return IDI_FILE_2K;
 		case IDI_JUMP: return IDI_JUMP_2K;

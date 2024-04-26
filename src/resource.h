@@ -68,6 +68,8 @@
 #define IDI_IMAGE_ERROR                 64
 #define IDI_BALLOON                     65
 #define IDI_BALLOON_OFF                 66
+#define IDI_SERVER                      67
+#define IDI_SERVER_2K                   68
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
