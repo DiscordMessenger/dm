@@ -33,6 +33,27 @@ MessageEditor::MessageEditor()
 
 MessageEditor::~MessageEditor()
 {
+	if (m_hwnd)
+	{
+		BOOL b = DestroyWindow(m_hwnd);
+		assert(b && "Was window destroyed?");
+		m_send_hwnd = NULL;
+		m_btnUpload_hwnd = NULL;
+		m_mentionText_hwnd = NULL;
+		m_mentionName_hwnd = NULL;
+		m_mentionCheck_hwnd = NULL;
+		m_mentionCancel_hwnd = NULL;
+		m_mentionJump_hwnd = NULL;
+		m_editingMessage_hwnd = NULL;
+	}
+
+	assert(!m_btnUpload_hwnd);
+	assert(!m_mentionText_hwnd);
+	assert(!m_mentionName_hwnd);
+	assert(!m_mentionCheck_hwnd);
+	assert(!m_mentionCancel_hwnd);
+	assert(!m_mentionJump_hwnd);
+	assert(!m_editingMessage_hwnd);
 }
 
 void MessageEditor::UpdateTextBox()
@@ -307,12 +328,21 @@ void MessageEditor::OnUpdateText()
 LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	MessageEditor* pThis = (MessageEditor*) GetWindowLongPtr(GetParent(hWnd), GWLP_USERDATA);
+	assert(pThis);
+
 	switch (uMsg)
 	{
 		case WM_NCCREATE:
 		{
 			LRESULT lrs = m_editWndProc(hWnd, uMsg, wParam, lParam);
 			return lrs;
+		}
+		case WM_DESTROY:
+		{
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) NULL);
+			SetWindowLongPtr(hWnd, GWLP_WNDPROC,  (LONG_PTR) m_editWndProc);
+			pThis->m_edit_hwnd = NULL;
+			break;
 		}
 		case WM_KEYUP:
 		{
@@ -511,6 +541,17 @@ LRESULT MessageEditor::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		{
 			CREATESTRUCT* cs = (CREATESTRUCT*)lParam;
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)cs->lpCreateParams);
+			break;
+		}
+		case WM_DESTROY:
+		{
+			pThis->m_btnUpload_hwnd = NULL;
+			pThis->m_mentionText_hwnd = NULL;
+			pThis->m_mentionName_hwnd = NULL;
+			pThis->m_mentionCheck_hwnd = NULL;
+			pThis->m_mentionCancel_hwnd = NULL;
+			pThis->m_mentionJump_hwnd = NULL;
+			pThis->m_editingMessage_hwnd = NULL;
 			break;
 		}
 		case WM_SIZE:

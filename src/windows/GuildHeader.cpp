@@ -9,7 +9,16 @@
 #define IDTB_PINS    (1001)
 
 WNDCLASS GuildHeader::g_GuildHeaderClass;
-GuildHeader::~GuildHeader() {}
+
+GuildHeader::~GuildHeader()
+{
+	if (m_hwnd)
+	{
+		BOOL b = DestroyWindow(m_hwnd);
+		assert(b && "window was already destroyed??");
+		m_hwnd = NULL;
+	}
+}
 
 GuildHeader::GuildHeader()
 {
@@ -202,9 +211,17 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			break;
 		}
+		case WM_DESTROY:
+		{
+			assert(pThis);
+			pThis->m_hwnd = NULL;
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) NULL);
+			break;
+		}
 		case WM_MOUSEMOVE:
 		case WM_MOUSELEAVE:
 		{
+			assert(pThis);
 			HDC hdc = GetDC(hWnd);
 			if (uMsg == WM_MOUSEMOVE)
 			{
@@ -241,6 +258,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_LBUTTONDOWN:
 		{
+			assert(pThis);
 			pThis->m_bLClickHeld = true;
 			POINT pt = { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) };
 			HDC hdc = GetDC(hWnd);
@@ -251,6 +269,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_LBUTTONUP:
 		{
+			assert(pThis);
 			pThis->m_bLClickHeld = false;
 			POINT pt = { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) };
 			HDC hdc = GetDC(hWnd);
@@ -282,6 +301,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_SIZE:
 		{
+			assert(pThis);
 			pThis->Layout();
 
 			int diff = GET_X_LPARAM(lParam) - pThis->m_oldWidth;
@@ -302,6 +322,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_PAINT:
 		{
+			assert(pThis);
 			PAINTSTRUCT ps = {};
 			RECT rect1 = {};
 			GetClientRect(hWnd, &rect1);
@@ -424,6 +445,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_USERCOMMAND:
 		{
+			assert(pThis);
 			switch (wParam)
 			{
 				case IDTB_PINS: {

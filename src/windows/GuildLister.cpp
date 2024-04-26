@@ -14,7 +14,16 @@
 WNDCLASS GuildLister::g_GuildListerClass;
 WNDCLASS GuildLister::g_GuildListerParentClass;
 GuildLister::GuildLister() {}
-GuildLister::~GuildLister() {}
+
+GuildLister::~GuildLister()
+{
+	if (m_hwnd)
+	{
+		BOOL b = DestroyWindow(m_hwnd);
+		assert(b && "was window already destroyed?");
+		m_hwnd = NULL;
+	}
+}
 
 static int GetProfileBorderRenderSize()
 {

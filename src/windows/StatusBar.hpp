@@ -26,12 +26,9 @@ public:
 	static StatusBar* Create(HWND hParent);
 	static void CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR uTimerId, DWORD dwTime);
 
-	void UpdateParts(int width);
-	void DrawItem(LPDRAWITEMSTRUCT lpDIS);
+	~StatusBar();
 
-	void AddTypingName(Snowflake sf, time_t startTime, const std::string& name);
-	void RemoveTypingName(Snowflake sf);
-	void ClearTypers();
+private:
 	void RemoveTypingNameInternal(Snowflake sf);
 	void SetExpiryTimerIn(int ms);
 	void StartAnimation();
@@ -39,6 +36,15 @@ public:
 	int GetNextExpiryTime();
 	void OnExpiryTick();
 	void OnAnimationTick();
+
+public:
+	// should only be called by Main.cpp
+	void DrawItem(LPDRAWITEMSTRUCT lpDIS);
+	void UpdateParts(int width);
+
+	void AddTypingName(Snowflake sf, time_t startTime, const std::string& name);
+	void RemoveTypingName(Snowflake sf);
+	void ClearTypers();
 	void UpdateCharacterCounter(int nChars, int nCharsMax);
 
 public:

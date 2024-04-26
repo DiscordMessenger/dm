@@ -882,8 +882,17 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				GetDiscordInstance()->CloseGatewaySession();
 			if (GetAvatarCache())
 				GetAvatarCache()->WipeBitmaps();
-			if (g_pLoadingMessage)
-				g_pLoadingMessage->Hide();
+
+			SAFE_DELETE(g_pChannelView);
+			SAFE_DELETE(g_pGuildHeader);
+			SAFE_DELETE(g_pGuildLister);
+			SAFE_DELETE(g_pMessageList);
+			SAFE_DELETE(g_pProfileView);
+
+			SAFE_DELETE(g_pStatusBar);
+			SAFE_DELETE(g_pMemberList);
+			SAFE_DELETE(g_pMessageEditor);
+			SAFE_DELETE(g_pLoadingMessage);
 
 			PostQuitMessage(0);
 			break;

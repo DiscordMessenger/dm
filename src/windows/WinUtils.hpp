@@ -101,4 +101,11 @@ void LaunchURL(const std::string& link);
 // COM utils
 void InitializeCOM(); // used by TTS and shell stuff
 
+#define SAFE_DELETE(x) do {	 \
+	if ((x)) {				 \
+		delete(x);			 \
+		(x) = nullptr;		 \
+	}						 \
+} while (0)
+
 #include "ri/reimpl.hpp"

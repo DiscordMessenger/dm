@@ -262,6 +262,15 @@ extern int g_ChannelViewListWidth;
 extern int g_MemberListWidth;
 extern int g_SendButtonWidth;
 
+StatusBar::~StatusBar()
+{
+	if (m_hwnd) {
+		BOOL b = DestroyWindow(m_hwnd);
+		assert(b && "StatusBar was already destroyed");
+		m_hwnd = NULL;
+	}
+}
+
 void StatusBar::UpdateParts(int width)
 {
     INT Widths[4];

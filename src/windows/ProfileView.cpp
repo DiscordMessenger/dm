@@ -12,8 +12,15 @@ static int GetProfileBorderSize()
 ProfileView::ProfileView()
 {
 }
+
 ProfileView::~ProfileView()
 {
+	if (m_hwnd)
+	{
+		BOOL b = DestroyWindow(m_hwnd);
+		assert(b && "was window deleted?");
+		m_hwnd = NULL;
+	}
 }
 
 void ProfileView::Update()
@@ -23,8 +30,22 @@ void ProfileView::Update()
 
 LRESULT CALLBACK ProfileView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	ProfileView* pThis = (ProfileView*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+
 	switch (uMsg)
 	{
+		case WM_NCCREATE:
+		{
+			CREATESTRUCT* cs = (CREATESTRUCT*)lParam;
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)cs->lpCreateParams);
+			break;
+		}
+		case WM_DESTROY:
+		{
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) NULL);
+			pThis->m_hwnd = NULL;
+			break;
+		}
 		case WM_PAINT:
 		{
 			PAINTSTRUCT ps = {};

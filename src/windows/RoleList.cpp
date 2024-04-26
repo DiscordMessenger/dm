@@ -9,8 +9,14 @@ WNDCLASS RoleList::g_RoleListClass;
 RoleList::RoleList()
 {
 }
+
 RoleList::~RoleList()
 {
+	if (m_hwnd) {
+		BOOL b = DestroyWindow(m_hwnd);
+		assert(b && "was window destroyed?");
+		m_hwnd = NULL;
+	}
 }
 
 void RoleList::Update()
@@ -203,6 +209,12 @@ LRESULT CALLBACK RoleList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		{
 			CREATESTRUCT* strct = (CREATESTRUCT*)lParam;
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)strct->lpCreateParams);
+			break;
+		}
+		case WM_DESTROY:
+		{
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) NULL);
+			pThis->m_hwnd = NULL;
 			break;
 		}
 		case WM_CREATE: {

@@ -1,23 +1,19 @@
 #include "ChannelView.hpp"
 #include <tchar.h>
 
-int g_nCategoryIcon, g_nChannelIcon, g_nForumIcon, g_nVoiceIcon, g_nDmIcon, g_nGroupDmIcon, g_nChannelDotIcon, g_nChannelRedIcon;
-
-/*
-#define MAX_HEADING_LEN (256)
-
-struct Heading
-{
-	TCHAR tchHeading[MAX_HEADING_LEN];
-	int tchLevel;
-};
-*/
-
-//Heading g_rgDocHeadings[27];
-
 #define CX_BITMAP (16)
 #define CY_BITMAP (16)
 #define NUM_BITMAPS (6)
+
+ChannelView::~ChannelView()
+{
+	if (m_hwnd)
+	{
+		BOOL b = DestroyWindow(m_hwnd);
+		assert(b && "window was already destroyed??");
+		m_hwnd = NULL;
+	}
+}
 
 // InitTreeViewImageLists - creates an image list, adds three bitmaps
 // to it, and associates the image list with a tree-view control.
@@ -32,8 +28,10 @@ struct Heading
 // IDB_OPEN_FILE, IDB_CLOSED_FILE, IDB_DOCUMENT -
 //     resource identifiers of the bitmaps.
 
-BOOL InitTreeViewImageLists(HWND hwndTV)
+bool ChannelView::InitTreeViewImageLists()
 {
+	HWND hwndTV = m_hwnd;
+
 	HIMAGELIST himl;  // handle to image list
 	HBITMAP hbmp;     // handle to bitmap
 
@@ -53,62 +51,51 @@ BOOL InitTreeViewImageLists(HWND hwndTV)
 	}
 
 	// Add the open file, closed file, and document bitmaps.
-	g_nCategoryIcon   = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CATEGORY))));
-	g_nChannelIcon    = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL))));
-	g_nForumIcon      = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM))));
-	g_nVoiceIcon      = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_VOICE))));
-	g_nDmIcon         = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_DM))));
-	g_nGroupDmIcon    = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM))));
-	g_nChannelDotIcon = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL_UNREAD))));
-	g_nChannelRedIcon = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL_MENTIONED))));
+	m_nCategoryIcon   = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CATEGORY))));
+	m_nChannelIcon    = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL))));
+	m_nForumIcon      = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM))));
+	m_nVoiceIcon      = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_VOICE))));
+	m_nDmIcon         = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_DM))));
+	m_nGroupDmIcon    = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM))));
+	m_nChannelDotIcon = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL_UNREAD))));
+	m_nChannelRedIcon = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL_MENTIONED))));
 
 	// Fail if not all of the images were added.
 	int ic = ImageList_GetImageCount(himl);
-	if (ic < 4) {
+	if (ic < 8) {
 		DbgPrintW("Cannot add all icons!");
+		ImageList_Destroy(himl);
 		return FALSE;
 	}
 
 	// Associate the image list with the tree-view control.
+	// It will be destroyed when the window is destroyed.
 	TreeView_SetImageList(hwndTV, himl, TVSIL_NORMAL);
 
 	return TRUE;
 }
 
-// Adds items to a tree-view control.
-// Returns the handle to the newly added item.
-// hwndTV - handle to the tree-view control.
-// lpszItem - text of the item to add.
-// nLevel - level at which to add the item.
-//
-// g_nClosed, and g_nDocument - global indexes of the images.
-std::map<int, HTREEITEM> g_hPrev;
-HTREEITEM g_hPrevRootItem = NULL;
-HTREEITEM g_hPrevLev2Item = NULL;
-
-static HTREEITEM GetPrevious(int parentIndex)
+HTREEITEM ChannelView::GetPrevious(int parentIndex)
 {
-	auto iter = g_hPrev.find(parentIndex);
-	if (iter == g_hPrev.end()) {
-		g_hPrev[parentIndex] = TVI_FIRST;
+	auto iter = m_hPrev.find(parentIndex);
+	if (iter == m_hPrev.end()) {
+		m_hPrev[parentIndex] = TVI_FIRST;
 		return TVI_FIRST;
 	}
 	return iter->second;
 }
 
-static void SetPrevious(int parentIndex, HTREEITEM hPrev)
+void ChannelView::SetPrevious(int parentIndex, HTREEITEM hPrev)
 {
-	g_hPrev[parentIndex] = hPrev;
+	m_hPrev[parentIndex] = hPrev;
 }
 
-void TreeReset()
+void ChannelView::ResetTree()
 {
-	g_hPrev.clear();
-	g_hPrevRootItem = NULL;
-	g_hPrevLev2Item = NULL;
+	m_hPrev.clear();
 }
 
-HTREEITEM AddItemToTree(HWND hwndTV, LPTSTR lpszItem, HTREEITEM hParent, int nIndex, int nParentIndex, int nIcon)
+HTREEITEM ChannelView::AddItemToTree(HWND hwndTV, LPTSTR lpszItem, HTREEITEM hParent, int nIndex, int nParentIndex, int nIcon)
 {
 	TVITEM tvi;
 	TVINSERTSTRUCT tvins;
@@ -154,10 +141,10 @@ void ChannelView::ClearChannels()
 {
 	m_channels.clear();
 	TreeView_DeleteAllItems(m_hwnd);
-	TreeReset();
+	ResetTree();
 }
 
-static int GetIcon(const Channel& ch)
+int ChannelView::GetIcon(const Channel& ch)
 {
 	int nIcon;
 	bool mentioned = ch.WasMentioned();
@@ -166,25 +153,25 @@ static int GetIcon(const Channel& ch)
 	switch (ch.m_channelType) {
 		default: 
 			if (mentioned)
-				nIcon = g_nChannelRedIcon;
+				nIcon = m_nChannelRedIcon;
 			else if (unread)
-				nIcon = g_nChannelDotIcon;
+				nIcon = m_nChannelDotIcon;
 			else
-				nIcon = g_nChannelIcon;
+				nIcon = m_nChannelIcon;
 			break;
 
-		case Channel::CATEGORY: nIcon = g_nCategoryIcon; break;
-		case Channel::VOICE:    nIcon = g_nVoiceIcon;    break;
-		case Channel::FORUM:    nIcon = g_nForumIcon;    break;
-		case Channel::GROUPDM:  nIcon = g_nGroupDmIcon;  break;
-		case Channel::DM:       nIcon = g_nDmIcon;       break;
+		case Channel::CATEGORY: nIcon = m_nCategoryIcon; break;
+		case Channel::VOICE:    nIcon = m_nVoiceIcon;    break;
+		case Channel::FORUM:    nIcon = m_nForumIcon;    break;
+		case Channel::GROUPDM:  nIcon = m_nGroupDmIcon;  break;
+		case Channel::DM:       nIcon = m_nDmIcon;       break;
 	}
 
 	return nIcon;
 }
 
 // why do I gotta do this bull crap
-HTREEITEM GetItemHandleByIndex(HWND hwndTree, int index)
+static HTREEITEM GetItemHandleByIndex(HWND hwndTree, int index)
 {
 	HTREEITEM hItem = TreeView_GetNextItem(hwndTree, NULL, TVGN_ROOT); // Get the root item
 
@@ -312,10 +299,9 @@ ChannelView* ChannelView::Create(HWND hwnd, LPRECT rect)
 		view
 	);
 
-	if (!InitTreeViewImageLists(view->m_hwnd))
+	if (!view->InitTreeViewImageLists())
 	{
 		DbgPrintW("InitTreeViewImageLists FAILED!");
-		DestroyWindow(view->m_hwnd);
 
 		delete view;
 		view = NULL;

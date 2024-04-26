@@ -16,6 +16,22 @@ static int GetProfileBorderSize()
 	return ScaleByDPI(Supports32BitIcons() ? (PROFILE_PICTURE_SIZE_DEF + 12) : 64);
 }
 
+MemberList::~MemberList()
+{
+	if (m_listHwnd)
+	{
+		BOOL b = DestroyWindow(m_listHwnd);
+		assert(b && "was window destroyed?");
+		m_listHwnd = NULL;
+	}
+	if (m_mainHwnd)
+	{
+		BOOL b = DestroyWindow(m_mainHwnd);
+		assert(b && "was window destroyed?");
+		m_mainHwnd = NULL;
+	}
+}
+
 void MemberList::StartUpdate()
 {
 	SendMessage(m_listHwnd, WM_SETREDRAW, false, 0);
@@ -240,10 +256,17 @@ void MemberList::InitializeImageList()
 LRESULT MemberList::ListWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	MemberList* pList = (MemberList*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-	assert(pList && pList->m_listHwnd == hWnd);
+	assert(pList->m_listHwnd == hWnd);
 
 	switch (uMsg)
 	{
+		case WM_DESTROY:
+		{
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) NULL);
+			SetWindowLongPtr(hWnd, GWLP_WNDPROC,  (LONG_PTR) pList->m_origListWndProc);
+			pList->m_listHwnd = NULL;
+			break;
+		}
 		case WM_MOUSELEAVE:
 		{
 			int oldItem = pList->m_hotItem;
@@ -268,7 +291,14 @@ LRESULT MemberList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 
+		case WM_DESTROY: {
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) NULL);
+			pList->m_mainHwnd = NULL;
+			break;
+		}
+
 		case WM_SIZE: {
+			assert(pList);
 			WORD wWidth  = LOWORD(lParam);
 			WORD wHeight = HIWORD(lParam);
 			MoveWindow(pList->m_listHwnd, 0, 0, wWidth, wHeight, TRUE);
@@ -276,6 +306,7 @@ LRESULT MemberList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 
 		case WM_NOTIFY: {
+			assert(pList);
 			LPNMHDR nmhdr = (LPNMHDR)lParam;
 
 			if (nmhdr->hwndFrom == pList->m_listHwnd)
@@ -289,12 +320,14 @@ LRESULT MemberList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 
 		case WM_MEASUREITEM: {
+			assert(pList);
 			LPMEASUREITEMSTRUCT lpmis = (LPMEASUREITEMSTRUCT)lParam;
 			lpmis->itemHeight = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 			break;
 		}
 
 		case WM_DRAWITEM: {
+			assert(pList);
 			LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
 			HDC hdc = lpdis->hDC;
 			RECT rcItem = lpdis->rcItem;

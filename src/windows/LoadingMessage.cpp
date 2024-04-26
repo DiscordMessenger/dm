@@ -7,8 +7,10 @@ WNDCLASS LoadingMessage::g_LoadingMessageClass;
 LoadingMessage::LoadingMessage()
 {
 }
+
 LoadingMessage::~LoadingMessage()
 {
+	Hide();
 }
 
 void LoadingMessage::CreateWnd()
@@ -50,8 +52,11 @@ void LoadingMessage::Show()
 
 void LoadingMessage::Hide()
 {
-	DestroyWindow(m_hwnd);
-	m_hwnd = NULL;
+	if (m_hwnd) {
+		BOOL b = DestroyWindow(m_hwnd);
+		assert(b && "was window already destroyed?");
+		m_hwnd = NULL;
+	}
 }
 
 void LoadingMessage::DrawLoading(HDC hdc)

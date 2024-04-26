@@ -1,3 +1,6 @@
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <shellapi.h>
 #include "MessageList.hpp"
 #include "TextToSpeech.hpp"
 #include "ProfilePopout.hpp"
@@ -68,8 +71,15 @@ static const int g_WelcomeTextCount = 13;
 MessageList::MessageList()
 {
 }
+
 MessageList::~MessageList()
 {
+	if (m_hwnd)
+	{
+		BOOL b = DestroyWindow(m_hwnd);
+		assert(b && "was window destroyed?");
+		m_hwnd = NULL;
+	}
 }
 
 bool MessageList::IsCompact()
@@ -2416,11 +2426,11 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	free((void*) freedString);
 }
 
-#include <ShellAPI.h>
-
 LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	MessageList* pThis = (MessageList*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+	if (!pThis && uMsg != WM_NCCREATE)
+		return DefWindowProc(hWnd, uMsg, wParam, lParam);
 
 	SCROLLINFO si;
 	switch (uMsg)
@@ -2431,6 +2441,11 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)strct->lpCreateParams);
 
+			break;
+		}
+		case WM_DESTROY:
+		{
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) NULL);
 			break;
 		}
 		case WM_TIMER:

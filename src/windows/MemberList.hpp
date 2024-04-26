@@ -30,6 +30,7 @@ public:
 	HBITMAP m_imageOnline;
 
 public:
+	~MemberList();
 	void StartUpdate();
 	void StopUpdate();
 	void ClearMembers();
