@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include "Main.hpp"
 #include "../discord/Channel.hpp"
 
@@ -59,13 +60,16 @@ private:
 	LONG m_oldWidth = 0;
 	LONG m_minRightToolbarX = 0;
 
+	std::map<int, HICON> m_hIcons;
+
 	void Layout();
 
 	HICON GetIconFromType(Channel::eChannelType);
-	static void LayoutButton(Button& button, RECT& toolbarRect);
-	static void DrawButton(HDC hdc, Button& button);
-	static void HitTestButton(HDC hdc, Button& button, POINT& pt);
-	static void CheckClickButton(HDC hdc, Button& button, POINT& pt);
-	static void CheckReleaseButton(HDC hdc, HWND hWnd, Button& button, int buttonIndex, POINT& pt);
+	HICON GetIcon(int iconID, int iconSize);
+	void LayoutButton(Button& button, RECT& toolbarRect);
+	void DrawButton(HDC hdc, Button& button);
+	void HitTestButton(HDC hdc, Button& button, POINT& pt);
+	void CheckClickButton(HDC hdc, Button& button, POINT& pt);
+	void CheckReleaseButton(HDC hdc, HWND hWnd, Button& button, int buttonIndex, POINT& pt);
 };
 

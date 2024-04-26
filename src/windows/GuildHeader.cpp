@@ -18,6 +18,12 @@ GuildHeader::~GuildHeader()
 		assert(b && "window was already destroyed??");
 		m_hwnd = NULL;
 	}
+
+	for (auto& icon : m_hIcons) {
+		DestroyIcon(icon.second);
+	}
+
+	m_hIcons.clear();
 }
 
 GuildHeader::GuildHeader()
@@ -109,6 +115,20 @@ void GuildHeader::Layout()
 	}
 }
 
+HICON GuildHeader::GetIcon(int iconID, int iconSize)
+{
+	HICON hicon = m_hIcons[iconID];
+
+	if (!hicon)
+	{
+		// Note, not shared but we do delete them in the destructor
+		m_hIcons[iconID] = hicon =
+			(HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(iconID), IMAGE_ICON, iconSize, iconSize, LR_CREATEDIBSECTION);
+	}
+
+	return hicon;
+}
+
 void GuildHeader::DrawButton(HDC hdc, Button& button)
 {
 	int iconSize = ScaleByDPI(16);
@@ -152,17 +172,7 @@ void GuildHeader::DrawButton(HDC hdc, Button& button)
 		LineTo  (hdc, exp.left - 1, exp.bottom - 1);
 	}
 
-	DrawIconEx(
-		hdc,
-		iconX,
-		iconY,
-		LoadIcon(g_hInstance, MAKEINTRESOURCE(button.m_iconID)),
-		iconSize,
-		iconSize,
-		0,
-		NULL,
-		DI_NORMAL | DI_COMPAT
-	);
+	DrawIconEx(hdc, iconX, iconY, GetIcon(button.m_iconID, iconSize), iconSize, iconSize, 0, NULL, DI_NORMAL | DI_COMPAT);
 
 	ri::SetDCPenColor(hdc, oldPen);
 	MoveToEx(hdc, oldPt.x, oldPt.y, NULL);
@@ -235,9 +245,9 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				POINT pt = { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) };
 				for (auto& button : pThis->m_buttons) {
 					if (pThis->m_bLClickHeld)
-						CheckClickButton(hdc, button, pt);
+						pThis->CheckClickButton(hdc, button, pt);
 					else
-						HitTestButton(hdc, button, pt);
+						pThis->HitTestButton(hdc, button, pt);
 				}
 			}
 			else
@@ -246,14 +256,14 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				HDC hdc = GetDC(hWnd);
 				for (auto& button : pThis->m_buttons)
 				{
-					HitTestButton(hdc, button, pt);
-					CheckClickButton(hdc, button, pt);
+					pThis->HitTestButton(hdc, button, pt);
+					pThis->CheckClickButton(hdc, button, pt);
 				}
 
 				pThis->m_bLClickHeld = false;
 			}
-			ReleaseDC(hWnd, hdc);
 
+			ReleaseDC(hWnd, hdc);
 			break;
 		}
 		case WM_LBUTTONDOWN:
@@ -263,7 +273,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			POINT pt = { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) };
 			HDC hdc = GetDC(hWnd);
 			for (auto& button : pThis->m_buttons)
-				CheckClickButton(hdc, button, pt);
+				pThis->CheckClickButton(hdc, button, pt);
 			ReleaseDC(hWnd, hdc);
 			break;
 		}
@@ -276,8 +286,8 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			for (size_t i = 0; i < pThis->m_buttons.size(); i++)
 			{
 				Button& button = pThis->m_buttons[i];
-				CheckReleaseButton(hdc, hWnd, button, int(i), pt);
-				HitTestButton(hdc, button, pt);
+				pThis->CheckReleaseButton(hdc, hWnd, button, int(i), pt);
+				pThis->HitTestButton(hdc, button, pt);
 			}
 			ReleaseDC(hWnd, hdc);
 			
@@ -315,7 +325,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			RECT rcUpdate{};
 			GetClientRect(hWnd, &rcUpdate);
-			rcUpdate.left = pThis->m_minRightToolbarX - diff;
+			rcUpdate.left = pThis->m_minRightToolbarX - diff - ScaleByDPI(60);
 
 			InvalidateRect(hWnd, &rcUpdate, FALSE);
 			break;
@@ -433,7 +443,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			// Draw the pin button
 			for (auto& btn : pThis->m_buttons)
-				DrawButton(hdc, btn);
+				pThis->DrawButton(hdc, btn);
 
 			EndPaint(hWnd, &ps);
 
@@ -508,11 +518,14 @@ GuildHeader* GuildHeader::Create(HWND hwnd, LPRECT pRect)
 
 HICON GuildHeader::GetIconFromType(Channel::eChannelType t)
 {
+	int icon = DMIC(IDI_CHANNEL);
 	switch (t) {
-		case Channel::DM:      return m_dmIcon;
-		case Channel::GROUPDM: return m_groupDmIcon;
-		case Channel::VOICE:   return m_voiceIcon;
-		default:               return m_channelIcon;
+		case Channel::DM:      icon = DMIC(IDI_DM);      break;
+		case Channel::GROUPDM: icon = DMIC(IDI_GROUPDM); break;
+		case Channel::FORUM:   icon = DMIC(IDI_GROUPDM); break;
+		case Channel::VOICE:   icon = DMIC(IDI_VOICE);   break;
 	}
+
+	return GetIcon(icon, GetSystemMetrics(SM_CXSMICON));
 }
 
