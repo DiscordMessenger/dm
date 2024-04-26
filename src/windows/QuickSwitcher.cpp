@@ -280,6 +280,9 @@ INT_PTR QuickSwitcher::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			// Go button is disabled by default, enabled when an item is selected
 			EnableWindow(GetDlgItem(hWnd, IDOK), FALSE);
 
+			// Instantly focus on the searcher
+			SetFocus(GetDlgItem(hWnd, IDC_QUICK_QUERY));
+
 			break;
 		}
 		case WM_COMMAND:
