@@ -1896,20 +1896,20 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			COLORREF c1, c2;
 			c1 = GetSysColor(COLOR_WINDOW); // high
 			c2 = GetSysColor(COLOR_3DFACE); // low
+			bool swapped = false;
 
 			if (c1 < c2) {
 				COLORREF tmp = c1;
 				c1 = c2;
 				c2 = tmp;
+				swapped = true;
 			}
 
 			bkgdColor = c2;
 
 			if (isChainCont) {
 				// Just render a flat background using the bottom color
-				COLORREF oldCol = SetDCBrushColor(hdc, c2);
-				FillRect(hdc, &msgRect, GetStockBrush(DC_BRUSH));
-				SetDCBrushColor(hdc, oldCol);
+				FillRect(hdc, &msgRect, GetSysColorBrush(swapped ? COLOR_WINDOW : COLOR_3DFACE));
 				break;
 			}
 
