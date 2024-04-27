@@ -104,6 +104,7 @@
 #define IDR_GUILD_CONTEXT               503
 #define IDR_CHANNEL_CONTEXT             505
 #define IDR_DMCHANNEL_CONTEXT           506
+#define IDR_NOTIFICATION_CONTEXT        507
 #define IDS_PROGRAM_NAME                601
 #define IDS_MY_ACCOUNT                  602
 #define IDS_WELCOME_MSG                 603
@@ -324,6 +325,8 @@
 #define IDM_BLOCK                       1065
 #define IDM_COPYID                      1066
 #define ID_ACTIONS_QUICKSWITCHER        1067
+#define ID_YO_YO                        1069
+#define ID_DUMMYPOPUP_EXITDISCORDMESSENGER 1070
 #define IDR_MAIN_ACCELS                 1201
 #define IDA_SEARCH                      1301
 #define IDA_QUICKSWITCHER               1302
@@ -334,7 +337,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        69
-#define _APS_NEXT_COMMAND_VALUE         1069
+#define _APS_NEXT_COMMAND_VALUE         1071
 #define _APS_NEXT_CONTROL_VALUE         864
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif

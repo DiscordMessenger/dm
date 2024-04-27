@@ -21,6 +21,7 @@
 #include "UploadDialog.hpp"
 #include "StatusBar.hpp"
 #include "QuickSwitcher.hpp"
+#include "NotificationManager.hpp"
 #include "Frontend_Win32.hpp"
 #include "../discord/LocalSettings.hpp"
 #include "../discord/WebsocketClient.hpp"
@@ -48,6 +49,7 @@ GuildLister* g_pGuildLister;
 MemberList * g_pMemberList;
 MessageEditor* g_pMessageEditor;
 LoadingMessage* g_pLoadingMessage;
+NotificationManager* g_pNotificationManager;
 
 int GetProfilePictureSize()
 {
@@ -514,6 +516,11 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
+		case WM_NOTIFMANAGERCALLBACK:
+		{
+			g_pNotificationManager->Callback(wParam, lParam);
+			break;
+		}
 		case WM_UPDATEMESSAGELENGTH:
 		{
 			g_pStatusBar->UpdateCharacterCounter(int(lParam), MAX_MESSAGE_SIZE);
@@ -764,6 +771,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_CREATE:
 		{
+			g_Hwnd = hWnd;
 			g_bMemberListVisible = true;
 			ForgetSystemDPI();
 			g_ProfilePictureSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF);
@@ -833,6 +841,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pMessageEditor = MessageEditor::Create(hWnd, &rect);
 			g_pLoadingMessage = LoadingMessage::Create(hWnd, &rcLoading);
 
+			g_pNotificationManager = new NotificationManager;
+			g_pNotificationManager->CreateNotification();
+
 			SendMessage(hWnd, WM_LOGINAGAIN, 0, 0);
 			break;
 		}
@@ -893,6 +904,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SAFE_DELETE(g_pMemberList);
 			SAFE_DELETE(g_pMessageEditor);
 			SAFE_DELETE(g_pLoadingMessage);
+			SAFE_DELETE(g_pNotificationManager);
 
 			PostQuitMessage(0);
 			break;

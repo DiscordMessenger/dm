@@ -211,6 +211,8 @@
     <Image Include="..\res\icon_reply_line_2k.ico" />
     <Image Include="..\res\icon_send.ico" />
     <Image Include="..\res\icon_send_2k.ico" />
+    <Image Include="..\res\icon_server.ico" />
+    <Image Include="..\res\icon_server_2k.ico" />
     <Image Include="..\res\icon_status_dnd.ico" />
     <Image Include="..\res\icon_status_idle.ico" />
     <Image Include="..\res\icon_status_offline.ico" />
@@ -284,6 +286,7 @@
     <ClInclude Include="..\src\windows\MessageList.hpp" />
     <ClInclude Include="..\src\windows\MissingDefinitions.hpp" />
     <ClInclude Include="..\src\windows\NetworkerThread.hpp" />
+    <ClInclude Include="..\src\windows\NotificationManager.hpp" />
     <ClInclude Include="..\src\windows\OptionsDialog.hpp" />
     <ClInclude Include="..\src\windows\PinnedMessageViewer.hpp" />
     <ClInclude Include="..\src\windows\ProfilePopout.hpp" />
@@ -334,6 +337,7 @@
     <ClCompile Include="..\src\windows\MessageEditor.cpp" />
     <ClCompile Include="..\src\windows\MessageList.cpp" />
     <ClCompile Include="..\src\windows\NetworkerThread.cpp" />
+    <ClCompile Include="..\src\windows\NotificationManager.cpp" />
     <ClCompile Include="..\src\windows\OptionsDialog.cpp" />
     <ClCompile Include="..\src\windows\PinnedMessageViewer.cpp" />
     <ClCompile Include="..\src\windows\ProfilePopout.cpp" />

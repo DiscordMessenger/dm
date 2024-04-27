@@ -51,4 +51,5 @@ enum eWmUserMsgs
 	WM_STARTEDITING, // Snowflake[1]
 	WM_UPDATETEXTSIZE, // used by the MessageEditor
 	WM_UPDATEMESSAGELENGTH,
+	WM_NOTIFMANAGERCALLBACK,
 };

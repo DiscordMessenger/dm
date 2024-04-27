@@ -202,6 +202,15 @@ BEGIN
     END
 END
 
+IDR_NOTIFICATION_CONTEXT MENU
+BEGIN
+    POPUP "Dummy Popup"
+    BEGIN
+        MENUITEM "Open",                        ID_YO_YO
+        MENUITEM "Exit Discord Messenger",      ID_DUMMYPOPUP_EXITDISCORDMESSENGER
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
