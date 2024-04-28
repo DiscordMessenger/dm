@@ -1,0 +1,8 @@
+name: build-test
+run-name: yay
+on: [push]
+jobs:
+  say-yo:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo yo
