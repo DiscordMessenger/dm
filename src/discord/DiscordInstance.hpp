@@ -58,7 +58,8 @@ struct ChannelHistory
 class QuickMatch
 {
 public:
-	QuickMatch(bool channel, Snowflake id, float fzc) : m_isChannel(channel), m_id(id), m_fuzzy(fzc) {}
+	QuickMatch(bool channel, Snowflake id, float fzc, const std::string& name) :
+		m_isChannel(channel), m_id(id), m_fuzzy(fzc), m_name(name) {}
 	bool IsChannel() const { return m_isChannel; }
 	bool IsGuild() const { return !m_isChannel; }
 	Snowflake Id() const { return m_id; }
@@ -75,11 +76,16 @@ public:
 		if (!m_isChannel && oth.m_isChannel)
 			return false;
 
+		int res = strcmp(m_name.c_str(), oth.m_name.c_str());
+		if (res != 0)
+			return res < 0;
+
 		return m_id < oth.m_id;
 	}
 
 private:
 	Snowflake m_id = 0;
+	std::string m_name;
 	bool m_isChannel = false;
 	float m_fuzzy = 0;
 };

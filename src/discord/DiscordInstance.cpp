@@ -293,7 +293,7 @@ void DiscordInstance::SearchSubGuild(std::vector<QuickMatch>& matches, Guild* pG
 
 		float fzc = CompareFuzzy(chan.m_name, queryPtr);
 		if (fzc != 0.0f)
-			matches.push_back(QuickMatch(true, chan.m_snowflake, fzc));
+			matches.push_back(QuickMatch(true, chan.m_snowflake, fzc, chan.m_name));
 	}
 }
 
@@ -319,7 +319,7 @@ std::vector<QuickMatch> DiscordInstance::Search(const std::string& query)
 			// Calculate a fake fuzzy factor to avoid effects of sorting.
 			float ff = float(C_CHANNEL_HISTORY_MAX - i) / float(C_CHANNEL_HISTORY_MAX);
 
-			matches.push_back(QuickMatch(true, chan, ff));
+			matches.push_back(QuickMatch(true, chan, ff, pChan->m_name));
 		}
 	}
 	else
@@ -357,7 +357,7 @@ std::vector<QuickMatch> DiscordInstance::Search(const std::string& query)
 				float fzc = CompareFuzzy(gld.m_name, queryPtr);
 
 				if (fzc != 0.0f)
-					matches.push_back(QuickMatch(false, gld.m_snowflake, fzc));
+					matches.push_back(QuickMatch(false, gld.m_snowflake, fzc, gld.m_name));
 			}
 		}
 	}

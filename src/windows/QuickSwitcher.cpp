@@ -3,6 +3,7 @@
 
 enum {
 	COL_CHANNEL_NAME,
+	COL_CATEGORY_NAME,
 	COL_GUILD_NAME,
 };
 
@@ -35,10 +36,11 @@ struct QuickSwitchItem
 	int m_iconIdx;
 	Snowflake m_guildID;
 	std::string m_name;
+	std::string m_categ;
 	std::string m_guild;
 
-	QuickSwitchItem(QuickMatch& qm, int hi, const std::string& nm, const std::string& gl, Snowflake gi):
-		m_match(qm), m_iconIdx(hi), m_name(nm), m_guild(gl), m_guildID(gi) {};
+	QuickSwitchItem(QuickMatch& qm, int hi, const std::string& nm, const std::string& ct, const std::string& gl, Snowflake gi):
+		m_match(qm), m_iconIdx(hi), m_name(nm), m_categ(ct), m_guild(gl), m_guildID(gi) {};
 };
 
 static std::vector<QuickSwitchItem> g_qsItems;
@@ -95,6 +97,7 @@ void QuickSwitcher::OnUpdateQuery(HWND hWnd, const std::string& query)
 	{
 		std::string name = "";
 		std::string guildName = "";
+		std::string categName = "";
 
 		int iconIdx = ICN_GUILD;
 		Snowflake guildID = 0;
@@ -119,6 +122,10 @@ void QuickSwitcher::OnUpdateQuery(HWND hWnd, const std::string& query)
 
 			guildName = pGuild->m_name;
 			guildID = pChan->m_parentGuild;
+
+			Channel* pCateg = pGuild->GetChannel(pChan->m_parentCateg);
+			if (pCateg && pCateg != pChan)
+				categName = pCateg->m_name;
 		}
 		else if (match.IsGuild())
 		{
@@ -134,7 +141,7 @@ void QuickSwitcher::OnUpdateQuery(HWND hWnd, const std::string& query)
 		}
 
 		int idx = int(g_qsItems.size());
-		g_qsItems.push_back(QuickSwitchItem(match, iconIdx, name, guildName, guildID));
+		g_qsItems.push_back(QuickSwitchItem(match, iconIdx, name, categName, guildName, guildID));
 
 		LVITEM lv{};
 		lv.mask = LVIF_TEXT | LVIF_IMAGE;
@@ -186,6 +193,7 @@ void QuickSwitcher::HandleGetDispInfo(NMLVDISPINFO* pInfo)
 
 	static TCHAR buffer1[4096];
 	static TCHAR buffer2[4096];
+	static TCHAR buffer3[4096];
 	switch (pInfo->item.iSubItem)
 	{
 		case COL_CHANNEL_NAME: {
@@ -193,9 +201,14 @@ void QuickSwitcher::HandleGetDispInfo(NMLVDISPINFO* pInfo)
 			pInfo->item.pszText = buffer1;
 			break;
 		}
-		case COL_GUILD_NAME: {
-			ConvertCppStringToTCharArray(item.m_guild, buffer2, _countof(buffer2));
+		case COL_CATEGORY_NAME: {
+			ConvertCppStringToTCharArray(item.m_categ, buffer2, _countof(buffer2));
 			pInfo->item.pszText = buffer2;
+			break;
+		}
+		case COL_GUILD_NAME: {
+			ConvertCppStringToTCharArray(item.m_guild, buffer3, _countof(buffer3));
+			pInfo->item.pszText = buffer3;
 			break;
 		}
 	}
@@ -229,24 +242,35 @@ LRESULT QuickSwitcher::HandleCustomDraw(HWND hWnd, NMLVCUSTOMDRAW* pInfo)
 		case CDDS_PREPAINT:
 			return CDRF_NOTIFYITEMDRAW;
 
-		case CDDS_ITEMPREPAINT: {
+		case CDDS_ITEMPREPAINT:
+			return CDRF_NOTIFYSUBITEMDRAW;
+
+		case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
 			HWND hList = GetDlgItem(hWnd, IDC_CHANNEL_LIST);
 
 			int idx = pInfo->nmcd.dwItemSpec;
 			int sta = ListView_GetItemState(hList, idx, LVIS_SELECTED);
-			
+
 			if (sta & LVIS_SELECTED) {
 				pInfo->clrTextBk = GetSysColor(COLOR_HIGHLIGHT);
 				pInfo->clrText = GetSysColor(COLOR_HIGHLIGHTTEXT);
-				SetBkColor(pInfo->nmcd.hdc, RGB(255, 0, 0));
-				return CDRF_NEWFONT;
+			}
+			else if (pInfo->iSubItem == COL_CATEGORY_NAME) {
+				pInfo->clrTextBk = GetSysColor(COLOR_WINDOW);
+				pInfo->clrText = GetSysColor(COLOR_GRAYTEXT);
+			}
+			else {
+				pInfo->clrTextBk = GetSysColor(COLOR_WINDOW);
+				pInfo->clrText = GetSysColor(COLOR_MENUTEXT);
 			}
 
-			return CDRF_DODEFAULT;
+			return CDRF_NEWFONT;
 		}
+
+		default:DbgPrintW("Unhandled draw stage %d", pInfo->nmcd.dwDrawStage);
 	}
 
-	return CDRF_SKIPDEFAULT;
+	return CDRF_DODEFAULT;
 }
 
 void QuickSwitcher::CreateImageList()
@@ -336,10 +360,15 @@ INT_PTR QuickSwitcher::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			LVCOLUMN col{};
 			col.mask = LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
 			col.pszText = TEXT("Channel");
-			col.cx = MulDiv(width, 70, 100);
+			col.cx = MulDiv(width, 50, 100);
 			col.iSubItem = 0;
 			col.fmt = LVCFMT_LEFT;
 			ListView_InsertColumn(hList, COL_CHANNEL_NAME, &col);
+
+			col.pszText = TEXT("Category");
+			col.cx = MulDiv(width, 20, 100);
+			col.fmt = LVCFMT_RIGHT;
+			ListView_InsertColumn(hList, COL_CATEGORY_NAME, &col);
 
 			col.pszText = TEXT("Server");
 			col.cx = MulDiv(width, 30, 100);
