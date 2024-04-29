@@ -211,6 +211,8 @@
     <Image Include="..\res\icon_reply_line_2k.ico" />
     <Image Include="..\res\icon_send.ico" />
     <Image Include="..\res\icon_send_2k.ico" />
+    <Image Include="..\res\icon_server.ico" />
+    <Image Include="..\res\icon_server_2k.ico" />
     <Image Include="..\res\icon_status_dnd.ico" />
     <Image Include="..\res\icon_status_idle.ico" />
     <Image Include="..\res\icon_status_offline.ico" />

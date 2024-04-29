@@ -294,6 +294,12 @@
     <Image Include="..\res\icon_balloon_block.ico">
       <Filter>Resource Files\Resources</Filter>
     </Image>
+    <Image Include="..\res\icon_server_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_server.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\res\cur_zoomin.cur">

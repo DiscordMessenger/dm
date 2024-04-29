@@ -50,6 +50,28 @@ void QuickSwitcher::ShowDialog()
 	g_qsItems.clear();
 }
 
+LRESULT QuickSwitcher::TextWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	WNDPROC oldWndProc = (WNDPROC) GetWindowLongPtr(hWnd, GWLP_USERDATA);
+
+	switch (uMsg)
+	{
+		case WM_DESTROY:
+			SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR) oldWndProc);
+			break;
+			
+		case WM_KEYDOWN:
+		case WM_KEYUP:
+		{
+			HWND hList = GetDlgItem(GetParent(hWnd), IDC_CHANNEL_LIST);
+			SendMessage(hList, uMsg, wParam, lParam);
+			break;
+		}
+	}
+
+	return oldWndProc(hWnd, uMsg, wParam, lParam);
+}
+
 void QuickSwitcher::OnUpdateQuery(HWND hWnd, const std::string& query)
 {
 	std::vector<QuickMatch> foundChannels = GetDiscordInstance()->Search(query);
@@ -121,6 +143,10 @@ void QuickSwitcher::OnUpdateQuery(HWND hWnd, const std::string& query)
 		lv.pszText = LPSTR_TEXTCALLBACK;
 		ListView_InsertItem(hList, &lv);
 	}
+
+	//SetFocus(hList);
+	ListView_SetItemState(hList, 0, LVIS_SELECTED, LVIS_SELECTED);
+	ListView_EnsureVisible(hList, 0, TRUE);
 }
 
 void QuickSwitcher::SwitchToChannelAtIndex(int idx)
@@ -196,6 +222,33 @@ void QuickSwitcher::HandleItemActivate(HWND hWnd, NMITEMACTIVATE* pInfo)
 	EndDialog(hWnd, IDOK);
 }
 
+LRESULT QuickSwitcher::HandleCustomDraw(HWND hWnd, NMLVCUSTOMDRAW* pInfo)
+{
+	switch (pInfo->nmcd.dwDrawStage)
+	{
+		case CDDS_PREPAINT:
+			return CDRF_NOTIFYITEMDRAW;
+
+		case CDDS_ITEMPREPAINT: {
+			HWND hList = GetDlgItem(hWnd, IDC_CHANNEL_LIST);
+
+			int idx = pInfo->nmcd.dwItemSpec;
+			int sta = ListView_GetItemState(hList, idx, LVIS_SELECTED);
+			
+			if (sta & LVIS_SELECTED) {
+				pInfo->clrTextBk = GetSysColor(COLOR_HIGHLIGHT);
+				pInfo->clrText = GetSysColor(COLOR_HIGHLIGHTTEXT);
+				SetBkColor(pInfo->nmcd.hdc, RGB(255, 0, 0));
+				return CDRF_NEWFONT;
+			}
+
+			return CDRF_DODEFAULT;
+		}
+	}
+
+	return CDRF_SKIPDEFAULT;
+}
+
 void QuickSwitcher::CreateImageList()
 {
 	if (g_qsIml)
@@ -224,6 +277,27 @@ void QuickSwitcher::DestroyImageList()
 
 	ImageList_Destroy(g_qsIml);
 	g_qsIml = NULL;
+}
+
+LRESULT QuickSwitcher::HijackWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	WNDPROC oldWndProc = (WNDPROC) GetWindowLongPtr(hWnd, GWLP_USERDATA);
+
+	switch (uMsg)
+	{
+		case WM_DESTROY:
+			SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR) oldWndProc);
+			break;
+			
+		case WM_NOTIFY:
+			NMHDR* phdr = (NMHDR*)lParam;
+			if (phdr->idFrom == IDC_CHANNEL_LIST && phdr->code == UINT(NM_CUSTOMDRAW))
+				return HandleCustomDraw(hWnd, (NMLVCUSTOMDRAW*) lParam);
+
+			break;
+	}
+
+	return oldWndProc(hWnd, uMsg, wParam, lParam);
 }
 
 INT_PTR QuickSwitcher::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -280,8 +354,21 @@ INT_PTR QuickSwitcher::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			// Go button is disabled by default, enabled when an item is selected
 			EnableWindow(GetDlgItem(hWnd, IDOK), FALSE);
 
+			ListView_SetExtendedListViewStyle(hList, LVS_EX_FULLROWSELECT);
 			// Instantly focus on the searcher
-			SetFocus(GetDlgItem(hWnd, IDC_QUICK_QUERY));
+			HWND hText = GetDlgItem(hWnd, IDC_QUICK_QUERY);
+			SetFocus(hText);
+
+			// Subclass the existing text box.  This allows input events to be forwarded to the list control.
+			WNDPROC oldWndProc = (WNDPROC) GetWindowLongPtr(hText, GWLP_WNDPROC);
+			SetWindowLongPtr(hText, GWLP_USERDATA, (LONG_PTR) oldWndProc);
+			SetWindowLongPtr(hText, GWLP_WNDPROC,  (LONG_PTR) &QuickSwitcher::TextWndProc);
+
+			// Hijack the window procedure of this dialog because I couldn't think of a less cluster-fucked
+			// way to return custom draw return flags without the dialog default procedure intervening.
+			oldWndProc = (WNDPROC) GetWindowLongPtr(hWnd, GWLP_WNDPROC);
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) oldWndProc);
+			SetWindowLongPtr(hWnd, GWLP_WNDPROC,  (LONG_PTR) &QuickSwitcher::HijackWndProc);
 
 			break;
 		}
@@ -324,7 +411,11 @@ INT_PTR QuickSwitcher::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		}
 		case WM_NOTIFY:
 		{
-			switch (((NMHDR*)lParam)->code)
+			NMHDR* phdr = (NMHDR*) lParam;
+			if (phdr->idFrom != IDC_CHANNEL_LIST)
+				break;
+
+			switch (phdr->code)
 			{
 				case LVN_GETDISPINFO:
 					HandleGetDispInfo((NMLVDISPINFO*) lParam);
