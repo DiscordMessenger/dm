@@ -230,7 +230,8 @@ void ChannelView::AddChannel(const Channel & ch)
 	cmem.m_snowflake = ch.m_snowflake;
 
 	const TCHAR* ptr = (const TCHAR*)ConvertCppStringToTString(ch.m_name);
-	_tcscpy(cmem.str, ptr);
+	_tcsncpy(cmem.str, ptr, _countof(cmem.str));
+	cmem.str[_countof(cmem.str) - 1] = 0; // Ensure that it is null terminated. tcsncpy doesn't.
 	free((void*)ptr);
 
 	int index = int(m_channels.size());
