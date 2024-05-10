@@ -10,32 +10,8 @@ env:
   OPENSSL_INSTALL: 'C:\OpenSSL-Win32'
 
 jobs:
-  cache-openssl:
-    runs-on: windows-2019
-    steps:
-      - name: Check if OpenSSL installer is cached
-        id: check-cache
-        uses: actions/cache@v4
-        with:
-          path: Win32OpenSSL-3_0_1.exe
-          key: '${{ runner.os }}-openssl-installer'
-
-      - name: Download and extract OpenSSL
-        if: steps.check-cache.outputs.cache-hit != 'true'
-        run: |
-          curl -o OpenSSL-Win32.zip "https://files.catbox.moe/xtfk7t.zip"
-          Expand-Archive -Path ".\OpenSSL-Win32.zip" -DestinationPath . -Force
-
-      - name: Cache OpenSSL Installer
-        if: steps.check-cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v4
-        with:
-          path: Win32OpenSSL-3_0_1.exe
-          key: '${{ runner.os }}-openssl-installer'
-
   windows-visual-studio:
     runs-on: windows-2019
-    needs: cache-openssl
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,15 +22,10 @@ jobs:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
 
-      - uses: actions/cache/restore@v4
-        with:
-          path: Win32OpenSSL-3_0_1.exe
-          key: '${{ runner.os }}-openssl-installer'
-
-      - name: Install OpenSSL
-        if: steps.cache-openssl.outputs.cache-hit != 'true'
-        shell: cmd
-        run: start /wait Win32OpenSSL-3_0_1.exe /VERYSILENT /DIR="${{ env.OPENSSL_INSTALL }}"
+      - name: Setup OpenSSL
+        run: |
+          curl -Lo "openssl-prebuilt-msvc.zip" https://github.com/DiscordMessenger/openssl/releases/download/release-1-msvc/openssl-prebuilt-msvc.zip
+          Expand-Archive -Path "openssl-prebuilt-msvc.zip" -DestinationPath "${{ env.OPENSSL_INSTALL }}" -Force
 
       - name: Get latest tag
         id: get-latest-tag
@@ -64,7 +35,7 @@ jobs:
         run: msbuild vs\DiscordMessenger.sln /p:Configuration=Release /p:Platform=x86 /p:OPENSSL_INSTALL="${{ env.OPENSSL_INSTALL }}"
 
       - name: Copy required DLLs
-        run: Copy-Item -Path "$env:OPENSSL_INSTALL\bin\libcrypto-3.dll", "$env:OPENSSL_INSTALL\bin\libssl-3.dll" -Destination "bin\Release" -Force
+        run: Copy-Item -Path "$env:OPENSSL_INSTALL\libcrypto-3.dll", "$env:OPENSSL_INSTALL\libssl-3.dll" -Destination "bin\Release" -Force
 
       - uses: actions/upload-artifact@v4
         with:
