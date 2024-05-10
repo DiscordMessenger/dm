@@ -310,6 +310,7 @@
     <ClCompile Include="..\deps\md5\MD5.cpp" />
     <ClCompile Include="..\deps\mwas\src\reimpl.cpp" />
     <ClCompile Include="..\src\discord\Channel.cpp" />
+    <ClCompile Include="..\src\discord\DiscordAPI.cpp" />
     <ClCompile Include="..\src\discord\DiscordInstance.cpp" />
     <ClCompile Include="..\src\discord\FormattedText.cpp" />
     <ClCompile Include="..\src\discord\Guild.cpp" />

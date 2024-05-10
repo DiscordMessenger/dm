@@ -143,7 +143,7 @@ void ProfileCache::RequestLoadProfile(Snowflake user)
 	GetHTTPClient()->PerformRequest(
 		true,
 		NetRequest::GET,
-		DISCORD_API "users/" + std::to_string(user) + "/profile",
+		GetDiscordAPI() + "users/" + std::to_string(user) + "/profile",
 		DiscordRequest::PROFILE,
 		user,
 		additionalData,

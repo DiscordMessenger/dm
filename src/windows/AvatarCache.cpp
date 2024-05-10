@@ -149,7 +149,7 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource)
 		if (bIsAttachment)
 			pfpLink = iterIP->second.place;
 		else
-			pfpLink = DISCORD_CDN + path + "/" + std::to_string(iterIP->second.sf) + "/" + iterIP->second.place
+			pfpLink = GetDiscordCDN() + path + "/" + std::to_string(iterIP->second.sf) + "/" + iterIP->second.place
 			#ifdef WEBP_SUP
 			+ ".webp";
 			#else

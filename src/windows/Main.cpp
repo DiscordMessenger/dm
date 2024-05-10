@@ -850,7 +850,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetHTTPClient()->PerformRequest(
 				false,
 				NetRequest::GET,
-				DISCORD_API "gateway",
+				GetDiscordAPI() + "gateway",
 				DiscordRequest::GATEWAY,
 				0,
 				"",

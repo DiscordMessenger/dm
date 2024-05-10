@@ -28,9 +28,9 @@ void Guild::RequestFetchChannels()
 	std::string url;
 
 	if (m_snowflake)
-		url = DISCORD_API "guilds/" + std::to_string(m_snowflake) + "/channels";
+		url = GetDiscordAPI() + "guilds/" + std::to_string(m_snowflake) + "/channels";
 	else
-		url = DISCORD_API "users/@me/channels";
+		url = GetDiscordAPI() + "users/@me/channels";
 
 	GetHTTPClient()->PerformRequest(
 		true,

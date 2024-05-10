@@ -59,11 +59,25 @@ public:
 	bool IsFirstStart() const {
 		return m_bIsFirstStart;
 	}
+	const std::string& GetDiscordAPI() const {
+		return m_discordApi;
+	}
+	void SetDiscordAPI(const std::string& str) {
+		m_discordApi = str;
+	}
+	const std::string& GetDiscordCDN() const {
+		return m_discordCdn;
+	}
+	void SetDiscordCDN(const std::string& str) {
+		m_discordCdn = str;
+	}
 
 private:
 	std::string m_token;
+	std::string m_discordApi;
+	std::string m_discordCdn;
 	std::set<std::string> m_trustedDomains;
-	eMessageStyle m_messageStyle = MS_3DFACE;
+	eMessageStyle m_messageStyle = MS_GRADIENT;
 	bool m_bReplyMentionDefault = true;
 	bool m_bSaveWindowSize = false;
 	bool m_bStartMaximized = false;

@@ -151,7 +151,7 @@ void DiscordInstance::RequestMessages(Snowflake sf, ScrollDir::eScrollDir dir, S
 			break;
 	}
 
-	std::string messageUrl = DISCORD_API "channels/" + std::to_string(sf) + "/messages?";
+	std::string messageUrl = GetDiscordAPI() + "channels/" + std::to_string(sf) + "/messages?";
 
 	if (source != 0)
 	{
@@ -175,7 +175,7 @@ void DiscordInstance::RequestMessages(Snowflake sf, ScrollDir::eScrollDir dir, S
 
 void DiscordInstance::RequestPinnedMessages(Snowflake channel)
 {
-	std::string messageUrl = DISCORD_API "channels/" + std::to_string(channel) + "/pins";
+	std::string messageUrl = GetDiscordAPI() + "channels/" + std::to_string(channel) + "/pins";
 
 	GetHTTPClient()->PerformRequest(
 		true,
@@ -845,7 +845,7 @@ bool DiscordInstance::EditMessageInCurrentChannel(const std::string& msg, Snowfl
 	GetHTTPClient()->PerformRequest(
 		true,
 		NetRequest::PATCH,
-		DISCORD_API "channels/" + std::to_string(pChan->m_snowflake) + "/messages/" + std::to_string(msgId),
+		GetDiscordAPI() + "channels/" + std::to_string(pChan->m_snowflake) + "/messages/" + std::to_string(msgId),
 		DiscordRequest::MESSAGE_CREATE,
 		pChan->m_snowflake,
 		j.dump(),
@@ -900,7 +900,7 @@ bool DiscordInstance::SendMessageToCurrentChannel(const std::string& msg, Snowfl
 	GetHTTPClient()->PerformRequest(
 		true,
 		NetRequest::POST_JSON,
-		DISCORD_API "channels/" + std::to_string(pChan->m_snowflake) + "/messages",
+		GetDiscordAPI() + "channels/" + std::to_string(pChan->m_snowflake) + "/messages",
 		DiscordRequest::MESSAGE_CREATE,
 		pChan->m_snowflake,
 		j.dump(),
@@ -929,7 +929,7 @@ void DiscordInstance::Typing()
 	GetHTTPClient()->PerformRequest(
 		true,
 		NetRequest::POST,
-		DISCORD_API "channels/" + std::to_string(pChan->m_snowflake) + "/typing",
+		GetDiscordAPI() + "channels/" + std::to_string(pChan->m_snowflake) + "/typing",
 		0,
 		DiscordRequest::TYPING,
 		"",
@@ -951,7 +951,7 @@ void DiscordInstance::RequestAcknowledgeChannel(Snowflake channel)
 	if (pChan->m_lastViewedNum >= 0)
 		j["last_viewed"] = pChan->m_lastViewedNum;
 
-	std::string url = DISCORD_API "channels/" + std::to_string(channel) + "/messages/" + std::to_string(pChan->m_lastSentMsg) + "/ack";
+	std::string url = GetDiscordAPI() + "channels/" + std::to_string(channel) + "/messages/" + std::to_string(pChan->m_lastSentMsg) + "/ack";
 
 	GetHTTPClient()->PerformRequest(
 		true,
@@ -991,7 +991,7 @@ void DiscordInstance::RequestAcknowledgeGuild(Snowflake guild)
 	GetHTTPClient()->PerformRequest(
 		true,
 		NetRequest::POST_JSON,
-		DISCORD_API "read-states/ack-bulk",
+		GetDiscordAPI() + "read-states/ack-bulk",
 		DiscordRequest::ACK_BULK,
 		0,
 		j.dump(),
@@ -1001,7 +1001,7 @@ void DiscordInstance::RequestAcknowledgeGuild(Snowflake guild)
 
 void DiscordInstance::RequestDeleteMessage(Snowflake chan, Snowflake msg)
 {
-	std::string url = DISCORD_API "channels/" + std::to_string(chan) + "/messages/" + std::to_string(msg);
+	std::string url = GetDiscordAPI() + "channels/" + std::to_string(chan) + "/messages/" + std::to_string(msg);
 
 	GetHTTPClient()->PerformRequest(
 		true,
@@ -1058,7 +1058,7 @@ void DiscordInstance::RequestLeaveGuild(Snowflake guild)
 	GetHTTPClient()->PerformRequest(
 		true,
 		NetRequest::DELETE_,
-		DISCORD_API "users/@me/guilds/" + std::to_string(guild),
+		GetDiscordAPI() + "users/@me/guilds/" + std::to_string(guild),
 		DiscordRequest::LEAVE_GUILD,
 		guild,
 		j.dump(),
@@ -1161,7 +1161,7 @@ void DiscordInstance::SendSettingsProto(const std::vector<uint8_t>& data)
 	GetHTTPClient()->PerformRequest(
 		true,
 		NetRequest::PATCH,
-		DISCORD_API "users/@me/settings-proto/1",
+		GetDiscordAPI() + "users/@me/settings-proto/1",
 		0,
 		0,
 		j.dump(),
@@ -2162,7 +2162,7 @@ void DiscordInstance::OnUploadAttachmentSecond(NetRequest* pReq)
 	GetHTTPClient()->PerformRequest(
 		true,
 		NetRequest::POST_JSON,
-		DISCORD_API "channels/" + std::to_string(up.m_channelSF) + "/messages",
+		GetDiscordAPI() + "channels/" + std::to_string(up.m_channelSF) + "/messages",
 		DiscordRequest::MESSAGE_CREATE,
 		up.m_channelSF,
 		j.dump(),
@@ -2210,7 +2210,7 @@ bool DiscordInstance::SendMessageAndAttachmentToCurrentChannel(
 	GetHTTPClient()->PerformRequest(
 		true,
 		NetRequest::POST_JSON,
-		DISCORD_API "channels/" + std::to_string(m_CurrentChannel) + "/attachments",
+		GetDiscordAPI() + "channels/" + std::to_string(m_CurrentChannel) + "/attachments",
 		DiscordRequest::UPLOAD_ATTACHMENT,
 		m_nextAttachmentID,
 		j.dump(),
