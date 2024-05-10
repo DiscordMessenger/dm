@@ -1,0 +1,75 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  OPENSSL_INSTALL: 'C:\OpenSSL-Win32'
+
+jobs:
+  cache-openssl:
+    runs-on: windows-2019
+    steps:
+      - name: Check if OpenSSL installer is cached
+        id: check-cache
+        uses: actions/cache@v4
+        with:
+          path: Win32OpenSSL-3_0_1.exe
+          key: '${{ runner.os }}-openssl-installer'
+
+      - name: Download and extract OpenSSL
+        if: steps.check-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -o OpenSSL-Win32.zip "https://files.catbox.moe/xtfk7t.zip"
+          Expand-Archive -Path ".\OpenSSL-Win32.zip" -DestinationPath . -Force
+
+      - name: Cache OpenSSL Installer
+        if: steps.check-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        with:
+          path: Win32OpenSSL-3_0_1.exe
+          key: '${{ runner.os }}-openssl-installer'
+
+  windows-visual-studio:
+    runs-on: windows-2019
+    needs: cache-openssl
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: Win32OpenSSL-3_0_1.exe
+          key: '${{ runner.os }}-openssl-installer'
+
+      - name: Install OpenSSL
+        if: steps.cache-openssl.outputs.cache-hit != 'true'
+        shell: cmd
+        run: start /wait Win32OpenSSL-3_0_1.exe /VERYSILENT /DIR="${{ env.OPENSSL_INSTALL }}"
+
+      - name: Get latest tag
+        id: get-latest-tag
+        run: Write-Output "TAG=$(git describe --abbrev=0 --tags)" >> $Env:GITHUB_OUTPUT
+
+      - name: Build with Visual Studio
+        run: msbuild vs\DiscordMessenger.sln /p:Configuration=Release /p:Platform=x86 /p:OPENSSL_INSTALL="${{ env.OPENSSL_INSTALL }}"
+
+      - name: Copy required DLLs
+        run: Copy-Item -Path "$env:OPENSSL_INSTALL\bin\libcrypto-3.dll", "$env:OPENSSL_INSTALL\bin\libssl-3.dll" -Destination "bin\Release" -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 'DiscordMessenger-${{ steps.get-latest-tag.outputs.TAG }}-MSVC'
+          path: |
+            bin\Release\DiscordMessenger.exe
+            bin\Release\*.dll
+            bin\Release\*.pdb
