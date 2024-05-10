@@ -8,7 +8,15 @@ Its motto: *It's time to ditch MSN and Yahoo.*
 
 **NOTE**: This is beta software, so there may be issues which need to be fixed!
 
-Licensed under the MIT license.
+The project is licensed under the MIT license.
+
+## Disclaimer
+
+Using third party clients is against Discord's TOS! Although the risk to get banned is low, the
+risk is there! The author of this software is not responsible for the status of your Discord
+account.
+
+See https://twitter.com/discord/status/1229357198918197248.
 
 ## Screenshots
 
