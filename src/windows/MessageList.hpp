@@ -452,7 +452,7 @@ public:
 	bool SendToMessage(Snowflake sf, bool addGapIfNeeded = true);
 	void UpdateAllowDrop();
 	bool ShouldBeDateGap(time_t oldTime, time_t newTime);
-	bool ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, const MessageItem& item);
+	bool ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, MessageType::eType prevType, const MessageItem& item);
 
 public:
 	static WNDCLASS g_MsgListClass;

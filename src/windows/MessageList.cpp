@@ -676,15 +676,17 @@ void MessageList::DeleteMessage(Snowflake sf)
 		Snowflake sf = Snowflake(-1);
 		time_t tm = 0;
 		int pl = 0;
+		MessageType::eType et = MessageType::DEFAULT;
 		if (beforeiter != m_messages.begin()) {
 			--beforeiter;
 			sf = beforeiter->m_msg.m_author_snowflake;
 			tm = beforeiter->m_msg.m_dateTime;
+			et = beforeiter->m_msg.m_type;
 			pl = beforeiter->m_placeInChain;
 		}
 
 		bool shouldRecalc = false;
-		if (ShouldStartNewChain(sf, tm, pl, *afteriter)) {
+		if (ShouldStartNewChain(sf, tm, pl, et, *afteriter)) {
 			afteriter->m_placeInChain = 0; // don't care about the rest to be honest
 			shouldRecalc = true;
 		}
@@ -3406,7 +3408,7 @@ bool MessageList::ShouldBeDateGap(time_t oldTime, time_t newTime)
 	return !m_bManagedByOwner && (oldTime / 86400 != newTime / 86400);
 }
 
-bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, const MessageItem& item)
+bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, MessageType::eType prevType, const MessageItem& item)
 {
 	return m_bManagedByOwner || (
 		prevAuthor != item.m_msg.m_author_snowflake ||
@@ -3415,6 +3417,7 @@ bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int
 		item.m_msg.IsLoadGap() ||
 		item.m_msg.m_bHaveReferencedMessage ||
 		item.m_msg.m_type == MessageType::REPLY ||
+		IsActionMessage(prevType) ||
 		IsActionMessage(item.m_msg.m_type)
 	);
 }
@@ -3432,6 +3435,7 @@ int MessageList::RecalcMessageSizes(bool update, int& repaintSize)
 	HDC hdc = GetDC(m_hwnd);
 	time_t prevTime = 0;
 	Snowflake prevAuthor = Snowflake(-1);
+	MessageType::eType prevType = MessageType::DEFAULT;
 	int prevPlaceInChain = 0;
 	int subScroll = 0;
 
@@ -3450,7 +3454,7 @@ int MessageList::RecalcMessageSizes(bool update, int& repaintSize)
 		}
 		
 		bool bIsDateGap = ShouldBeDateGap(prevTime, iter->m_msg.m_dateTime);
-		bool startNewChain = ShouldStartNewChain(prevAuthor, prevTime, prevPlaceInChain, *iter);
+		bool startNewChain = ShouldStartNewChain(prevAuthor, prevTime, prevPlaceInChain, prevType, *iter);
 
 		bool msgOldIsDateGap = iter->m_bIsDateGap;
 		bool msgOldWasChainBeg = iter->m_placeInChain == 0;
@@ -3501,6 +3505,7 @@ int MessageList::RecalcMessageSizes(bool update, int& repaintSize)
 		prevPlaceInChain = iter->m_placeInChain;
 		prevAuthor = iter->m_msg.m_author_snowflake;
 		prevTime = iter->m_msg.m_dateTime;
+		prevType = iter->m_msg.m_type;
 
 		m_total_height += iter->m_height;
 	}
@@ -3761,6 +3766,7 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool rese
 	Snowflake prevAuthor = Snowflake(-1);
 	time_t prevDate = 0;
 	int prevPlaceInChain = -1;
+	MessageType::eType prevType = MessageType::DEFAULT;
 	if (!m_messages.empty())
 	{
 		MessageItem* item = nullptr;
@@ -3772,6 +3778,7 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool rese
 		if (item) {
 			prevAuthor = item->m_msg.m_author_snowflake;
 			prevDate = item->m_msg.m_dateTime;
+			prevType = item->m_msg.m_type;
 			prevPlaceInChain = item->m_placeInChain;
 		}
 	}
@@ -3779,7 +3786,7 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool rese
 	if (ShouldBeDateGap(prevDate, mi.m_msg.m_dateTime))
 		mi.m_bIsDateGap = true;
 
-	if (prevPlaceInChain < 0 || ShouldStartNewChain(prevAuthor, prevDate, prevPlaceInChain, mi))
+	if (prevPlaceInChain < 0 || ShouldStartNewChain(prevAuthor, prevDate, prevPlaceInChain, prevType, mi))
 		mi.m_placeInChain = 0;
 	else
 		mi.m_placeInChain = prevPlaceInChain + 1;

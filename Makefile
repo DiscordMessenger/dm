@@ -21,8 +21,8 @@ SRC_DIR = src
 TARGET = $(BIN_DIR)/DiscordMessenger.exe
 
 # Location of certain utilities.  Because Win32 takes over if you don't
-MKDIR = $(MSYS_PATH)\bin\mkdir.exe
-FIND  = $(MSYS_PATH)\bin\find.exe
+MKDIR = $(MSYS_PATH)/bin/mkdir.exe
+FIND  = $(MSYS_PATH)/bin/find.exe
 WR = windres
 
 INC_DIRS = \
