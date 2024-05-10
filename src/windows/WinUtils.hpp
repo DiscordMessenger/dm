@@ -1,8 +1,8 @@
 #pragma once
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <WindowsX.h>
-#include <Commctrl.h>
+#include <windows.h>
+#include <windowsx.h>
+#include <commctrl.h>
 
 #include <string>
 #include <tchar.h>

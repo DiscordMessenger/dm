@@ -1,5 +1,5 @@
 #pragma once
-#include <WinUser.h>
+#include <winuser.h>
 
 enum eWmUserMsgs
 {

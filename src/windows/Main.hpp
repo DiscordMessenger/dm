@@ -4,13 +4,13 @@
 
 #define WIN32_LEAN_AND_MEAN
 
-#include <Windows.h>
-#include <WindowsX.h>
-#include <Userenv.h>
-#include <Shlobj.h>
-#include <Commctrl.h>
+#include <windows.h>
+#include <windowsx.h>
+#include <userenv.h>
+#include <shlobj.h>
+#include <commctrl.h>
 #ifdef NEW_WINDOWS
-#include <Shlwapi.h>
+#include <shlwapi.h>
 #endif
 
 #include <sstream>

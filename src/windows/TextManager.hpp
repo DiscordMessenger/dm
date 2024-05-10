@@ -2,7 +2,7 @@
 
 #include <map>
 #include <string>
-#include <Windows.h>
+#include <windows.h>
 #include "../resource.h"
 
 class TextManager

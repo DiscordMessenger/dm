@@ -1,6 +1,6 @@
 #pragma once
 
-#include <CommCtrl.h>
+#include <commctrl.h>
 
 #ifndef LVN_HOTTRACK
 #define LVN_HOTTRACK (LVN_FIRST - 21)

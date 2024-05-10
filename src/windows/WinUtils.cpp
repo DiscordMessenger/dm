@@ -1,10 +1,10 @@
 #define WIN32_LEAN_AND_MEAN
 #define FKG_FORCED_USAGE
 #include <algorithm>
-#include <Windows.h>
-#include <Commctrl.h>
-#include <Commdlg.h>
-#include <Shellapi.h>
+#include <windows.h>
+#include <commctrl.h>
+#include <commdlg.h>
+#include <shellapi.h>
 #include "WinUtils.hpp"
 
 #include "../resource.h"
@@ -15,7 +15,7 @@
 #include "TextManager.hpp"
 
 #ifndef OLD_WINDOWS
-#include <Shlwapi.h>
+#include <shlwapi.h>
 #include "../discord/Util.hpp"
 #endif
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Windows.h>
-#include <CommCtrl.h>
+#include <windows.h>
+#include <commctrl.h>
 #include "../discord/TextInterface.hpp"
 #include "../discord/FormattedText.hpp"
 

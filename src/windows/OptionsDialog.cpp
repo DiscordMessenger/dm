@@ -3,7 +3,7 @@
 #include "../discord/LocalSettings.hpp"
 
 #ifdef NEW_WINDOWS
-#include <Uxtheme.h>
+#include <uxtheme.h>
 #endif
 
 #define C_PAGES (3)

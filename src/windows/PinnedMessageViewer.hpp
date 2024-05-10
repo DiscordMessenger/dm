@@ -1,7 +1,7 @@
 #pragma once
 #define WIN32_LEAN_AND_MEAN
 #include <string>
-#include <Windows.h>
+#include <windows.h>
 #include "../discord/Snowflake.hpp"
 
 // GET Request: discordapi/channels/$CHANNEL_ID/pins

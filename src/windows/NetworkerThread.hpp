@@ -4,8 +4,8 @@
 #ifndef _WINDOWS_
 
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <WinUser.h>
+#include <windows.h>
+#include <winuser.h>
 #undef  WIN32_LEAN_AND_MEAN
 
 #endif

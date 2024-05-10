@@ -1,7 +1,7 @@
 #include "UploadDialog.hpp"
 #include "Main.hpp"
-#include <CommDlg.h>
-#include <ShellAPI.h>
+#include <commdlg.h>
+#include <shellapi.h>
 #include <nlohmann/json.h>
 using Json = nlohmann::json;
 
