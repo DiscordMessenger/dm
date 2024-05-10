@@ -1,0 +1,46 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  OPENSSL_INSTALL: 'C:\OpenSSL-Win32'
+
+jobs:
+  windows-visual-studio:
+    runs-on: windows-2019
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup OpenSSL
+        run: |
+          curl -Lo "openssl-prebuilt-msvc.zip" https://github.com/DiscordMessenger/openssl/releases/download/release-1-msvc/openssl-prebuilt-msvc.zip
+          Expand-Archive -Path "openssl-prebuilt-msvc.zip" -DestinationPath "${{ env.OPENSSL_INSTALL }}" -Force
+
+      - name: Get latest tag
+        id: get-latest-tag
+        run: Write-Output "TAG=$(git describe --abbrev=0 --tags)" >> $Env:GITHUB_OUTPUT
+
+      - name: Build with Visual Studio
+        run: msbuild vs\DiscordMessenger.sln /p:Configuration=Release /p:Platform=x86 /p:OPENSSL_INSTALL="${{ env.OPENSSL_INSTALL }}"
+
+      - name: Copy required DLLs
+        run: Copy-Item -Path "$env:OPENSSL_INSTALL\libcrypto-3.dll", "$env:OPENSSL_INSTALL\libssl-3.dll" -Destination "bin\Release" -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 'DiscordMessenger-${{ steps.get-latest-tag.outputs.TAG }}-MSVC'
+          path: |
+            bin\Release\DiscordMessenger.exe
+            bin\Release\*.dll
+            bin\Release\*.pdb
