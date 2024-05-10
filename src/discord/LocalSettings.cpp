@@ -5,9 +5,6 @@
 #include "DiscordAPI.hpp"
 using nlohmann::json;
 
-#define DISCORD_API "https://discord.com/api/v" DISCORD_API_VERSION "/"
-#define DISCORD_CDN "https://cdn.discordapp.com/"
-
 static LocalSettings* g_pInstance;
 
 LocalSettings* GetLocalSettings()
@@ -30,8 +27,8 @@ LocalSettings::LocalSettings()
 	m_trustedDomains.insert("cdn.discordapp.com");
 	m_trustedDomains.insert("media.discordapp.net");
 
-	m_discordApi = DISCORD_API;
-	m_discordCdn = DISCORD_CDN;
+	m_discordApi = OFFICIAL_DISCORD_API;
+	m_discordCdn = OFFICIAL_DISCORD_CDN;
 }
 
 bool LocalSettings::Load()

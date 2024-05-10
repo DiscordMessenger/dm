@@ -527,6 +527,23 @@ BEGIN
     GROUPBOX        "Search Results",IDC_QUICK_GROUP,7,38,294,99
 END
 
+IDD_DIALOG_CONNECTION DIALOGEX 0, 0, 260, 200
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    GROUPBOX        "Discord API && CDN",IDC_STATIC,6,7,245,133
+    LTEXT           "Discord API URL:",IDC_STATIC,12,20,55,8
+    LTEXT           "Discord CDN URL:",IDC_STATIC,12,35,58,8
+    EDITTEXT        IDC_EDIT_DISCORDAPI,72,17,174,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DISCORDCDN,72,33,174,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Revert to official Discord backend",IDC_REVERTTODEFAULT,11,120,118,14
+    PUSHBUTTON      "Update",IDC_UPDATE,197,120,50,14
+    ICON            IDI_WARNING_IC,IDC_ICON_WARN_CONNECT,11,55,21,20,SS_REALSIZEIMAGE
+    LTEXT           "For security reasons, when you update the URLs that Discord Messenger uses to interface with Discord's backend, you will be logged out. (your token is forgotten but not revoked)",IDC_STATIC,30,54,214,31
+    ICON            IDI_WARNING_IC,IDC_ICON_WARN_WEBSOCKETSTUFF,12,87,21,20,SS_REALSIZEIMAGE
+    LTEXT           "Wondering where the websocket gateway URL is located? Well, Discord Messenger issues a request to API_URL/gateway, which tells it the websocket URL to use.",IDC_STATIC,30,87,214,31
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -620,6 +637,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 185
     END
+
+    IDD_DIALOG_CONNECTION, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 251
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 192
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -696,6 +721,11 @@ BEGIN
 END
 
 IDD_DIALOG_QUICK_SWITCHER AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_CONNECTION AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -935,6 +965,11 @@ BEGIN
     IDS_FILE_OUT_OF_MEMORY  "Not enough memory to begin the upload process.  Try closing some programs."
     IDS_FILE_NO_OPEN        "Error, can't open the attached file.  Try again."
     IDS_FILE_NO_READ        "Error, can't read from the attached file.  Do you have the required permission from Windows?"
+    IDS_CONNECTION          "Connection"
+    IDS_URL_EMPTY           "You need to put in a URL in one of the fields!"
+    IDS_CONFIRM_SET_URLS    "You are about to be logged out. Are you sure you want to override the backend URLs, routing traffic through a service potentially other than Discord?"
+    IDS_CONFIRM_OFFICIAL_URLS 
+                            "You are about to be logged out. Are you sure you want to revert to the official Discord backend URLs?"
 END
 
 #endif    // English (United States) resources

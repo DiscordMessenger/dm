@@ -6,12 +6,13 @@
 #include <Uxtheme.h>
 #endif
 
-#define C_PAGES (2)
+#define C_PAGES (3)
 
 enum ePage
 {
 	PG_ACCOUNT_AND_PRIVACY,
 	PG_APPEARANCE,
+	PG_CONNECTION,
 };
 
 #pragma pack(push, 1)
@@ -164,6 +165,19 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 
 			break;
 		}
+		case PG_CONNECTION:
+		{
+			LPTSTR tstrAPI = ConvertCppStringToTString(GetDiscordAPI());
+			LPTSTR tstrCDN = ConvertCppStringToTString(GetDiscordCDN());
+
+			SetDlgItemText(hwndDlg, IDC_EDIT_DISCORDAPI, tstrAPI);
+			SetDlgItemText(hwndDlg, IDC_EDIT_DISCORDCDN, tstrCDN);
+
+			free(tstrAPI);
+			free(tstrCDN);
+
+			break;
+		}
 	}
 
 	return;
@@ -281,6 +295,57 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 					}
 					break;
 				}
+				case PG_CONNECTION:
+				{
+					switch (wParam)
+					{
+						case IDC_REVERTTODEFAULT:
+						case IDC_UPDATE:
+						{
+							std::string api, cdn;
+
+							if (wParam == IDC_REVERTTODEFAULT)
+							{
+								api = OFFICIAL_DISCORD_API;
+								cdn = OFFICIAL_DISCORD_CDN;
+							}
+							else
+							{
+								TCHAR tchrAPI[512], tchrCDN[512];
+								if (!GetDlgItemText(hWnd, IDC_EDIT_DISCORDAPI, tchrAPI, _countof(tchrAPI)) ||
+									!GetDlgItemText(hWnd, IDC_EDIT_DISCORDCDN, tchrCDN, _countof(tchrCDN))) {
+									MessageBox(hWnd, TmGetTString(IDS_URL_EMPTY), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
+									break;
+								}
+
+								api = MakeStringFromTString(tchrAPI);
+								cdn = MakeStringFromTString(tchrCDN);
+							}
+
+							if (api.empty() || cdn.empty()) {
+								MessageBox(hWnd, TmGetTString(IDS_URL_EMPTY), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
+								break;
+							}
+
+							if (api[api.size() - 1] != '/') api += '/';
+							if (cdn[cdn.size() - 1] != '/') cdn += '/';
+
+							if (MessageBox(hWnd, TmGetTString(wParam == IDC_UPDATE ? IDS_CONFIRM_SET_URLS : IDS_CONFIRM_OFFICIAL_URLS),
+								TmGetTString(IDS_PROGRAM_NAME), MB_ICONQUESTION | MB_YESNO) != IDYES)
+								break;
+							
+							// Ok!... your choice.
+							GetLocalSettings()->SetToken("");
+							GetLocalSettings()->SetDiscordAPI(api);
+							GetLocalSettings()->SetDiscordCDN(cdn);
+							EndDialog(hWnd, 0);
+							EndDialog(hwndParent, OPTIONS_RESULT_LOGOUT);
+
+							break;
+						}
+					}
+					break;
+				}
 			}
 			break;
 		}
@@ -346,10 +411,12 @@ HRESULT OnPreferenceDialogInit(HWND hWnd)
 
 	AddTab(hwndTab, tie, PG_ACCOUNT_AND_PRIVACY, (LPTSTR)TmGetTString(IDS_ACCOUNT_PRIVACY));
 	AddTab(hwndTab, tie, PG_APPEARANCE,          (LPTSTR)TmGetTString(IDS_APPEARANCE));
+	AddTab(hwndTab, tie, PG_CONNECTION,          (LPTSTR)TmGetTString(IDS_CONNECTION));
 
 	// Lock the resources for the three child dialog boxes.
 	pHeader->apRes[PG_ACCOUNT_AND_PRIVACY] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_MY_ACCOUNT));
-	pHeader->apRes[    PG_APPEARANCE     ] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_APPEARANCE));
+	pHeader->apRes[     PG_APPEARANCE    ] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_APPEARANCE));
+	pHeader->apRes[     PG_CONNECTION    ] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_CONNECTION));
 
 	RECT rcTab;
 	SetRectEmpty(&rcTab);

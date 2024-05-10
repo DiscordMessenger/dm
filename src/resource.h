@@ -99,6 +99,7 @@
 #define IDD_DIALOG_PINNEDMESSAGES       409
 #define IDD_DIALOG_UPLOADFILES          410
 #define IDD_DIALOG_QUICK_SWITCHER       411
+#define IDD_DIALOG_CONNECTION           412
 #define IDR_MAINMENU                    501
 #define IDR_MESSAGE_CONTEXT             502
 #define IDR_GUILD_CONTEXT               503
@@ -194,6 +195,10 @@
 #define IDS_FILE_OUT_OF_MEMORY          688
 #define IDS_FILE_NO_OPEN                689
 #define IDS_FILE_NO_READ                690
+#define IDS_CONNECTION                  691
+#define IDS_URL_EMPTY                   692
+#define IDS_CONFIRM_SET_URLS            693
+#define IDS_CONFIRM_OFFICIAL_URLS       694
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803
@@ -257,6 +262,13 @@
 #define IDC_QUICK_QUERY                 861
 #define IDC_CHANNEL_LIST                862
 #define IDC_QUICK_GROUP                 863
+#define IDC_EDIT_DISCORDAPI             864
+#define IDC_EDIT_DISCORDCDN             865
+#define IDC_REVERTTODEFAULT             866
+#define IDC_UPDATE                      867
+#define IDC_ICON_WARN_CONNECT           868
+#define IDC_ICON_WARN_CONNECT2          869
+#define IDC_ICON_WARN_WEBSOCKETSTUFF    869
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
 #define ID_FILE_EXIT                    1003
@@ -333,9 +345,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        69
+#define _APS_NEXT_RESOURCE_VALUE        70
 #define _APS_NEXT_COMMAND_VALUE         1069
-#define _APS_NEXT_CONTROL_VALUE         864
+#define _APS_NEXT_CONTROL_VALUE         869
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif
 #endif

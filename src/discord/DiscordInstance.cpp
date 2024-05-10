@@ -776,6 +776,11 @@ void DiscordInstance::HandleGatewayMessage(const std::string& payload)
 		}
 		case DISPATCH:
 		{
+			if (!j.contains("t")) {
+				DbgPrintF("Error, dispatch opcode doesn't contain type");
+				break;
+			}
+
 			std::string dispatchCode = j["t"];
 			m_heartbeatSequenceId = j["s"];
 
