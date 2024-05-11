@@ -186,11 +186,12 @@ bool ImageLoader::ConvertToPNG(std::vector<uint8_t>* outData, void* pBits, int w
 			for (int y = 0; y < height; y++) {
 				uint8_t* read_ptr = (uint8_t*)(bits_b + widthBytes * y);
 				for (int x = 0; x < width; x++) {
-					uint32_t rd = 255 << 16; // full alpha
+					uint32_t rd = 255 << 24; // full alpha
 					rd |= read_ptr[2];
 					rd |= read_ptr[1] << 8;
 					rd |= read_ptr[0] << 16;
 					*(write_ptr++) = rd;
+					read_ptr += 3;
 				}
 			}
 			break;
