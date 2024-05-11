@@ -297,6 +297,13 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 				SetClassLongPtr(hWnd, GCLP_HCURSOR, (LONG_PTR)g_curZoomIn);
 			else
 				SetClassLongPtr(hWnd, GCLP_HCURSOR, (LONG_PTR)LoadCursor(NULL, IDC_ARROW));
+
+			break;
+		}
+		case WM_GESTURE:
+		{
+			HandleGestureMessage(hWnd, uMsg, wParam, lParam, 3.0f);
+			break;
 		}
 	}
 

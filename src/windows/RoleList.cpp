@@ -202,6 +202,8 @@ void RoleList::DrawShinyRoleColor(HDC hdc, const LPRECT pRect, COLORREF base)
 LRESULT CALLBACK RoleList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	RoleList* pThis = (RoleList*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+	int yPos = 0;
+	bool useYPos = false;
 
 	switch (uMsg)
 	{
@@ -251,32 +253,46 @@ LRESULT CALLBACK RoleList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			}
 			break;
 		}
+		case WM_MOUSEWHEEL: {
+			SCROLLINFO si{};
+			si.cbSize = sizeof(SCROLLINFO);
+			si.fMask = SIF_ALL;
+			GetScrollInfo(hWnd, SB_VERT, &si);
+			short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+			yPos = si.nTrackPos = si.nPos - zDelta;
+			SetScrollInfo(hWnd, SB_VERT, &si, false);
+			useYPos = true;
+			goto label_scroll;
+		}
 		case WM_VSCROLL: {
-			SCROLLINFO si = { sizeof(SCROLLINFO) };
+		label_scroll:
+			SCROLLINFO si{};
 			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask = SIF_ALL;
 			GetScrollInfo(hWnd, SB_VERT, &si);
 			RECT rcClient = {};
 			GetClientRect(hWnd, &rcClient);
 
-			int yPos = si.nPos;
+			if (!useYPos) {
+				yPos = si.nPos;
 
-			switch (LOWORD(wParam)) {
-				case SB_LINEUP:
-					yPos -= 10;
-					break;
-				case SB_LINEDOWN:
-					yPos += 10;
-					break;
-				case SB_PAGEUP:
-					yPos -= si.nPage;
-					break;
-				case SB_PAGEDOWN:
-					yPos += si.nPage;
-					break;
-				case SB_THUMBTRACK:
-					yPos = HIWORD(wParam);
-					break;
+				switch (LOWORD(wParam)) {
+					case SB_LINEUP:
+						yPos -= 10;
+						break;
+					case SB_LINEDOWN:
+						yPos += 10;
+						break;
+					case SB_PAGEUP:
+						yPos -= si.nPage;
+						break;
+					case SB_PAGEDOWN:
+						yPos += si.nPage;
+						break;
+					case SB_THUMBTRACK:
+						yPos = HIWORD(wParam);
+						break;
+				}
 			}
 
 			// Ensure yPos is within the scroll range
@@ -306,6 +322,11 @@ LRESULT CALLBACK RoleList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			InvalidateRect(hWnd, &rcInvalidate, false);
 			break;
 		}
+		case WM_LBUTTONUP:
+		{
+			SetFocus(hWnd);
+			break;
+		}
 		case WM_PAINT:
 		{
 			PAINTSTRUCT ps = {};
@@ -319,6 +340,11 @@ LRESULT CALLBACK RoleList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			}
 
 			EndPaint(hWnd, &ps);
+			break;
+		}
+		case WM_GESTURE:
+		{
+			HandleGestureMessage(hWnd, uMsg, wParam, lParam);
 			break;
 		}
 	}

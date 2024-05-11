@@ -2564,6 +2564,11 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			goto _lbl;
 			break;
 		}
+		case WM_GESTURE:
+		{
+			HandleGestureMessage(hWnd, uMsg, wParam, lParam, 3.0f);
+			break;
+		}
 		case WM_VSCROLL:
 		{
 			si.cbSize = sizeof(si);

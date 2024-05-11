@@ -617,6 +617,11 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			EndPaint(hWnd, &ps);
 			break;
 		}
+		case WM_GESTURE:
+		{
+			HandleGestureMessage(hWnd, uMsg, wParam, lParam, 3.0f);
+			break;
+		}
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);

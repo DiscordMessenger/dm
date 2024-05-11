@@ -877,3 +877,43 @@ bool GetDataFromBitmap(HDC hdc, HBITMAP hbm, BYTE*& pBytes, int& width, int& hei
 
 	return true;
 }
+
+int HandleGestureMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, float mulDeltas)
+{
+	// N.B.  If WINVER is less than Windows 7, then MWAS will take pn winuser's duties
+	// of defining the structs and constants used.
+	GESTUREINFO gi = { 0 };
+	gi.cbSize = sizeof(GESTUREINFO);
+	if (!ri::GetGestureInfo((HGESTUREINFO)lParam, &gi))
+		return DefWindowProc(hWnd, uMsg, wParam, lParam);
+
+	static SHORT S_lastX = 0;
+	static SHORT S_lastY = 0;
+	static bool S_beginSent = true;
+	switch (gi.dwID)
+	{
+		case GID_BEGIN:
+		case GID_END: {
+			S_beginSent = gi.dwID == GID_BEGIN;
+			S_lastX = gi.ptsLocation.x;
+			S_lastY = gi.ptsLocation.y;
+			return 0;
+		}
+
+		case GID_PAN: {
+			assert(S_beginSent);
+			short xDelta = short((gi.ptsLocation.x - S_lastX) * mulDeltas);
+			short yDelta = short((gi.ptsLocation.y - S_lastY) * mulDeltas);
+
+			SendMessage(hWnd, WM_MOUSEWHEEL, MAKEWPARAM(0, yDelta), 0);
+			SendMessage(hWnd, WM_MOUSEHWHEEL, MAKEWPARAM(0, -xDelta), 0);
+
+			S_lastX = gi.ptsLocation.x;
+			S_lastY = gi.ptsLocation.y;
+			return 0;
+		}
+	}
+
+	(void)mulDeltas;
+	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
