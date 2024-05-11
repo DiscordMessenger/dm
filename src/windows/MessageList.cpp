@@ -671,6 +671,8 @@ void MessageList::DeleteMessage(Snowflake sf)
 	std::list<MessageItem>::iterator niter = --(iter.base()), afteriter = niter, beforeiter = niter;
 	++afteriter;
 
+	bool wasFirstMessage = niter == m_messages.begin();
+
 	if (afteriter != m_messages.end())
 	{
 		Snowflake sf = Snowflake(-1);
@@ -710,6 +712,14 @@ void MessageList::DeleteMessage(Snowflake sf)
 	UpdateScrollBar(-messageHeight, -messageHeight, false, false);
 
 	SendMessage(m_hwnd, WM_MSGLIST_PULLDOWN, 0, (LPARAM)&messageRect);
+
+	// HACKHACK: expand the refresh rect a bit if you delete the first message.
+	// This should really be fixed properly
+	if (wasFirstMessage) {
+		messageRect.top -= 50;
+		messageRect.bottom += 50;
+		InvalidateRect(m_hwnd, &messageRect, FALSE);
+	}
 }
 
 void MessageList::Repaint()
