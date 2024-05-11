@@ -841,3 +841,39 @@ void DrawErrorBox(HDC hdc, RECT rect)
 	int y = rect.top  + (rect.bottom - rect.top - smcxsmicon) / 2;
 	DrawIconEx(hdc, x, y, g_ImgErrorIcon, smcxsmicon, smcxsmicon, 0, NULL, DI_COMPAT | DI_NORMAL);
 }
+
+bool GetDataFromBitmap(HDC hdc, HBITMAP hbm, BYTE*& pBytes, int& width, int& height, int& bpp)
+{	
+	// Man what the hell
+	BITMAP bm;
+	BITMAPINFO bmi;
+
+	ZeroMemory(&bm, sizeof bm);
+	if (!GetObject(hbm, sizeof bm, &bm)) {
+		DbgPrintW("Cannot obtain pointer to bitmap!");
+		return false;
+	}
+
+	width = bm.bmWidth;
+	height = bm.bmHeight;
+	bpp = bm.bmBitsPixel;
+
+	ZeroMemory(&bmi, sizeof bmi);
+	bmi.bmiHeader.biSize = sizeof bmi.bmiHeader;
+	bmi.bmiHeader.biWidth = bm.bmWidth;
+	bmi.bmiHeader.biHeight = -bm.bmHeight;
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = bm.bmBitsPixel;
+	bmi.bmiHeader.biCompression = BI_RGB;
+	bmi.bmiHeader.biSizeImage = 0;
+
+	pBytes = new BYTE[bm.bmWidth * bm.bmHeight * (bm.bmBitsPixel / 8)];
+
+	if (!GetDIBits(hdc, hbm, 0, bm.bmHeight, pBytes, &bmi, DIB_RGB_COLORS)) {
+		DbgPrintW("Error, can't get DI bits for bitmap!");
+		delete[] pBytes;
+		return false;
+	}
+
+	return true;
+}

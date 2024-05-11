@@ -4,6 +4,10 @@
 #include <nlohmann/json.h>
 #include "Snowflake.hpp"
 
+#ifdef _DEBUG
+#define USE_DEBUG_PRINTS
+#endif
+
 std::string GetBasePath();
 std::string GetCachePath();
 void SetBasePath(const std::string& appDataPath);
@@ -40,7 +44,7 @@ float CompareFuzzy(const std::string& item, const char* query); // returns a "cl
 float GetAppVersion();
 std::string GetAppVersionString();
 
-#ifdef _DEBUG
+#ifdef USE_DEBUG_PRINTS
 void DbgPrintF(const char* fmt, ...);
 #else
 #define DbgPrintF(...)

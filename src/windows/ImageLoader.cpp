@@ -154,10 +154,13 @@ static void ConvertToPNGWriteFunc(void* context, void* data, int size)
 	memcpy(vec->data() + old_size, data, size);
 }
 
-bool ImageLoader::ConvertToPNG(std::vector<uint8_t>* outData, void* pBits, int width, int height, int widthBytes, int bpp)
+bool ImageLoader::ConvertToPNG(std::vector<uint8_t>* outData, void* pBits, int width, int height, int widthBytes, int bpp, bool forceOpaque, bool flipVerticallyWhenSaving)
 {
 	uint32_t* interm_data = new uint32_t[width * height];
 	uint8_t* bits_b = (uint8_t*) pBits;
+	uint32_t auxBits = 0;
+	if (forceOpaque)
+		auxBits = 255U << 24;
 
 	switch (bpp) {
 		case 32: {
@@ -175,7 +178,7 @@ bool ImageLoader::ConvertToPNG(std::vector<uint8_t>* outData, void* pBits, int w
 					uint8_t tmp = u.b[0];
 					u.b[0] = u.b[2];
 					u.b[2] = tmp;
-					*(write_ptr++) = u.x;
+					*(write_ptr++) = u.x | auxBits;
 				}
 			}
 			break;
@@ -186,7 +189,7 @@ bool ImageLoader::ConvertToPNG(std::vector<uint8_t>* outData, void* pBits, int w
 			for (int y = 0; y < height; y++) {
 				uint8_t* read_ptr = (uint8_t*)(bits_b + widthBytes * y);
 				for (int x = 0; x < width; x++) {
-					uint32_t rd = 255 << 24; // full alpha
+					uint32_t rd = 255U << 24; // full alpha
 					rd |= read_ptr[2];
 					rd |= read_ptr[1] << 8;
 					rd |= read_ptr[0] << 16;
@@ -202,6 +205,8 @@ bool ImageLoader::ConvertToPNG(std::vector<uint8_t>* outData, void* pBits, int w
 			delete[] interm_data;
 			return false;
 	}
+
+	stbi_flip_vertically_on_write(flipVerticallyWhenSaving);
 
 	if (!stbi_write_png_to_func(ConvertToPNGWriteFunc, (void*) outData, width, height, 4, (const void*) interm_data, width * sizeof(uint32_t))) {
 		delete[] interm_data;

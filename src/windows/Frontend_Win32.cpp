@@ -297,7 +297,7 @@ void Frontend_Win32::GetIdentifyProperties(nlohmann::json& j)
 	j["system_locale"] = "en-US";
 }
 
-#ifdef _DEBUG
+#ifdef USE_DEBUG_PRINTS
 
 void DbgPrintWV(const char* fmt, va_list vl)
 {

@@ -432,22 +432,55 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			HDC hdc = NULL;
 			BYTE* pBytes = nullptr;
 			LPTSTR fileName = nullptr;
-			BITMAP bm;
-			BITMAPINFO bmi;
 			std::vector<uint8_t> data;
 			bool isClipboardClosed = false;
+			bool hadToUseLegacyBitmap = false;
+			int width = 0, height = 0, stride = 0, bpp = 0;
 
-			hbm = (HBITMAP) GetClipboardData (CF_BITMAP);
-			if (!hbm)
+			HANDLE hbmi = GetClipboardData(CF_DIB);
+			if (hbmi)
 			{
-				CloseClipboard();
+				DbgPrintW("Using CF_DIB to fetch image from clipboard");
+				PBITMAPINFO bmi = (PBITMAPINFO) GlobalLock(hbmi);
 
-				// No bitmap, forward to the edit control if selected
-				HWND hFocus = GetFocus();
-				if (hFocus == g_pMessageEditor->m_edit_hwnd)
-					SendMessage(hFocus, WM_PASTE, 0, 0);
+				width = bmi->bmiHeader.biWidth;
+				height = bmi->bmiHeader.biHeight;
+				bpp = bmi->bmiHeader.biBitCount;
+				stride = ((((width * bpp) + 31) & ~31) >> 3);
 
-				return FALSE;
+				int sz = stride * height;
+				pBytes = new BYTE[sz];
+				memcpy(pBytes, bmi + 1, sz);
+
+				GlobalUnlock(hbmi);
+			}
+			else
+			{
+				// try legacy CF_BITMAP
+				DbgPrintW("Using legacy CF_BITMAP");
+				HBITMAP hbm = (HBITMAP) GetClipboardData(CF_BITMAP);
+				hadToUseLegacyBitmap = true;
+
+				if (!hbm)
+				{
+					CloseClipboard();
+
+					// No bitmap, forward to the edit control if selected
+					HWND hFocus = GetFocus();
+					if (hFocus == g_pMessageEditor->m_edit_hwnd)
+						SendMessage(hFocus, WM_PASTE, 0, 0);
+
+					return FALSE;
+				}
+
+				HDC hdc = GetDC(hWnd);
+				bool res = GetDataFromBitmap(hdc, hbm, pBytes, width, height, bpp);
+				ReleaseDC(hWnd, hdc);
+
+				if (!res)
+					goto _fail;
+
+				stride = ((((width * bpp) + 31) & ~31) >> 3);
 			}
 
 			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
@@ -462,32 +495,12 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				goto _fail;
 			}
 
-			// Man what the hell
-			hdc = GetDC(hWnd);
+			// TODO: Don't always force alpha when pasting from CF_DIB or CF_BITMAP.
+			// I know this sucks, but I've tried a lot of things...
 
-			ZeroMemory(&bm, sizeof bm);
-			if (!GetObject(hbm, sizeof bm, &bm)) {
-				DbgPrintW("Cannot obtain pointer to bitmap!");
-				goto _fail;
-			}
-
-			ZeroMemory(&bmi, sizeof bmi);
-			bmi.bmiHeader.biSize = sizeof bmi.bmiHeader;
-			bmi.bmiHeader.biWidth = bm.bmWidth;
-			bmi.bmiHeader.biHeight = -bm.bmHeight;
-			bmi.bmiHeader.biPlanes = 1;
-			bmi.bmiHeader.biBitCount = bm.bmBitsPixel;
-			bmi.bmiHeader.biCompression = BI_RGB;
-			bmi.bmiHeader.biSizeImage = 0;
-
-			pBytes = new BYTE[bm.bmWidth * bm.bmHeight * (bm.bmBitsPixel / 8)];
-
-			if (!GetDIBits(hdc, hbm, 0, bm.bmHeight, pBytes, &bmi, DIB_RGB_COLORS)) {
-				DbgPrintW("Error, can't get DI bits for bitmap!");
-				goto _fail;
-			}
-
-			if (!ImageLoader::ConvertToPNG(&data, pBytes, bm.bmWidth, bm.bmHeight, bm.bmWidth * sizeof(uint32_t), 32)) {
+			// have to force alpha always
+			// have to flip vertically if !hadToUseLegacyBitmap
+			if (!ImageLoader::ConvertToPNG(&data, pBytes, width, height, stride, 32, true, !hadToUseLegacyBitmap)) {
 				DbgPrintW("Cannot convert to PNG!");
 				goto _fail;
 			}

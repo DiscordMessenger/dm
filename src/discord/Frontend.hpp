@@ -92,7 +92,7 @@ public:
 	virtual std::string GetFormatTimeShorterText() = 0;
 
 	// Debugging
-#ifdef _DEBUG
+#ifdef USE_DEBUG_PRINTS
 	virtual void DebugPrint(const char* fmt, va_list vl) = 0;
 #endif
 };

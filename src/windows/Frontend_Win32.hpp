@@ -63,7 +63,7 @@ public:
 	std::string GetFormatTimeShortText() override;
 	std::string GetFormatTimeShorterText() override;
 
-#ifdef _DEBUG
+#ifdef USE_DEBUG_PRINTS
 	void DebugPrint(const char* fmt, va_list vl) override;
 #endif
 };

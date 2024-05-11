@@ -73,8 +73,9 @@ void DrawMentionStatus(HDC hdc, int x, int y, int mentionCount);
 void DrawActivityStatus(HDC hdc, int x, int y, eActiveStatus status);
 void DrawLoadingBox(HDC hdc, RECT rect);
 void DrawErrorBox(HDC hdc, RECT rect);
+bool GetDataFromBitmap(HDC hdc, HBITMAP hbm, BYTE*& pBytes, int& width, int& height, int& bpp);
 
-#ifdef _DEBUG
+#ifdef USE_DEBUG_PRINTS
 void DbgPrintW(const char* fmt, ...);
 #else
 #define DbgPrintW(...)

@@ -451,7 +451,7 @@ std::string GetAppVersionString()
 	return "V1.01";
 }
 
-#ifdef _DEBUG
+#ifdef USE_DEBUG_PRINTS
 void DbgPrintF(const char* fmt, ...)
 {
 	va_list vl;
