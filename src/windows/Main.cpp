@@ -714,6 +714,15 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				OnStopTyping(pParms->channel, pParms->msg.m_author_snowflake);
 			}
 
+			Channel* pChan = GetDiscordInstance()->GetChannel(pParms->channel);
+			if (!pChan)
+				break;
+
+			if (pChan->IsDM()) {
+				if (GetDiscordInstance()->ResortChannels(pChan->m_parentGuild))
+					SendMessage(g_Hwnd, WM_UPDATECHANLIST, 0, 0);
+			}
+
 			break;
 		}
 		case WM_UPDATEMESSAGE:

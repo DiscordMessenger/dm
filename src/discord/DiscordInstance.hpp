@@ -363,6 +363,8 @@ public:
 
 	void LoadUserSettings(const std::string& userSettings);
 
+	bool ResortChannels(Snowflake guild);
+
 public:
 	// returns user's id. The user parameter is used only if j["user"] doesn't exist
 	Snowflake ParseGuildMember(Snowflake guild, nlohmann::json& j, Snowflake user = 0);

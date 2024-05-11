@@ -1191,6 +1191,20 @@ void DiscordInstance::LoadUserSettings(const std::string& userSettings)
 		GetFrontend()->RepaintProfile();
 }
 
+bool DiscordInstance::ResortChannels(Snowflake guild)
+{
+	Guild* pGld = GetGuild(guild);
+	if (!pGld)
+		return false;
+
+	// check if sorted
+	if (std::is_sorted(pGld->m_channels.begin(), pGld->m_channels.end()))
+		return false;
+	
+	pGld->m_channels.sort();
+	return true;
+}
+
 // Update relevant information after receiving it from the server
 void DiscordInstance::UpdateSettingsInfo()
 {

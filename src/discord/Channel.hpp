@@ -49,10 +49,21 @@ struct Channel
 	bool operator<(const Channel& b) const
 	{
 		// TODO: this is a mess, fix it.
+		bool isDm = m_channelType == DM || m_channelType == GROUPDM;
+		bool isOthDm = b.m_channelType == DM || b.m_channelType == GROUPDM;
+
+		if (IsDM() && !b.IsDM()) return true;
+		if (!IsDM() && b.IsDM()) return false;
+
 		if (m_channelType == CATEGORY && b.m_channelType != CATEGORY) return true;
 		if (m_channelType != CATEGORY && b.m_channelType == CATEGORY) return false;
 
 		if (m_channelType == CATEGORY) {
+			if (m_pos != b.m_pos)                 return m_pos < b.m_pos;
+			if (m_parentCateg != b.m_parentCateg) return m_parentCateg < b.m_parentCateg;
+		}
+		else if (IsDM()) {
+			if (m_lastSentMsg != b.m_lastSentMsg) return m_lastSentMsg > b.m_lastSentMsg;
 			if (m_pos != b.m_pos)                 return m_pos < b.m_pos;
 			if (m_parentCateg != b.m_parentCateg) return m_parentCateg < b.m_parentCateg;
 		}
