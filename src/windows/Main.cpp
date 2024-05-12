@@ -24,6 +24,7 @@
 #include "Frontend_Win32.hpp"
 #include "../discord/LocalSettings.hpp"
 #include "../discord/WebsocketClient.hpp"
+#include "../discord/UpdateChecker.hpp"
 
 #include <system_error>
 
@@ -802,7 +803,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (GetLocalSettings()->IsFirstStart())
 			{
 				MessageBox(
-					NULL,
+					hWnd,
 					TmGetTString(IDS_WELCOME_MSG),
 					TmGetTString(IDS_PROGRAM_NAME),
 					MB_ICONINFORMATION | MB_OK
@@ -813,6 +814,23 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					g_bQuittingEarly = true;
 					break;
 				}
+			}
+
+			if (GetLocalSettings()->AskToCheckUpdates())
+			{
+				bool check = MessageBox(
+					hWnd,
+					TmGetTString(IDS_CHECK_UPDATES),
+					TmGetTString(IDS_PROGRAM_NAME),
+					MB_ICONQUESTION | MB_YESNO
+				) == IDYES;
+
+				GetLocalSettings()->SetCheckUpdates(check);
+			}
+
+			if (GetLocalSettings()->CheckUpdates())
+			{
+				UpdateChecker::StartCheckingForUpdates();
 			}
 
 			if (g_SendIcon)     DeleteObject(g_SendIcon);

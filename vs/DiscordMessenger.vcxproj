@@ -265,6 +265,7 @@
     <ClInclude Include="..\src\discord\SettingsManager.hpp" />
     <ClInclude Include="..\src\discord\Snowflake.hpp" />
     <ClInclude Include="..\src\discord\TextInterface.hpp" />
+    <ClInclude Include="..\src\discord\UpdateChecker.hpp" />
     <ClInclude Include="..\src\discord\Util.hpp" />
     <ClInclude Include="..\src\discord\WebsocketClient.hpp" />
     <ClInclude Include="..\src\resource.h" />
@@ -320,6 +321,7 @@
     <ClCompile Include="..\src\discord\MessageCache.cpp" />
     <ClCompile Include="..\src\discord\ProfileCache.cpp" />
     <ClCompile Include="..\src\discord\SettingsManager.cpp" />
+    <ClCompile Include="..\src\discord\UpdateChecker.cpp" />
     <ClCompile Include="..\src\discord\Util.cpp" />
     <ClCompile Include="..\src\discord\WebsocketClient.cpp" />
     <ClCompile Include="..\src\windows\AboutDialog.cpp" />

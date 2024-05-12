@@ -199,6 +199,10 @@
 #define IDS_URL_EMPTY                   692
 #define IDS_CONFIRM_SET_URLS            693
 #define IDS_CONFIRM_OFFICIAL_URLS       694
+#define IDS_CHECK_UPDATES               695
+#define IDS_NEW_VERSION_AVAILABLE       696
+#define IDS_FAILED_UPDATE_CHECK         697
+#define IDS_FAILED_TO_UPLOAD            698
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803
@@ -267,7 +271,6 @@
 #define IDC_REVERTTODEFAULT             866
 #define IDC_UPDATE                      867
 #define IDC_ICON_WARN_CONNECT           868
-#define IDC_ICON_WARN_CONNECT2          869
 #define IDC_ICON_WARN_WEBSOCKETSTUFF    869
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
@@ -345,7 +348,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        70
+#define _APS_NEXT_RESOURCE_VALUE        71
 #define _APS_NEXT_COMMAND_VALUE         1069
 #define _APS_NEXT_CONTROL_VALUE         869
 #define _APS_NEXT_SYMED_VALUE           40000

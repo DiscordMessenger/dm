@@ -115,6 +115,7 @@ LRESULT CALLBACK LoadingMessage::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 			break;
 		}
 		case WM_DESTROY: {
+			pThis->m_hwnd = NULL;
 			if (pThis->m_timer_id)
 				KillTimer(hWnd, pThis->m_timer_id);
 			pThis->m_timer_id = 0;

@@ -19,8 +19,10 @@ public:
 	void OnStartTyping(Snowflake userID, Snowflake guildID, Snowflake channelID, time_t startTime) override;
 	void OnRequestDone(NetRequest* pRequest) override;
 	void OnLoadedPins(Snowflake channel, const std::string& data) override;
+	void OnUpdateAvailable(const std::string& url, const std::string& version) override;
 	void OnFailedToSendMessage(Snowflake channel, Snowflake message) override;
 	void OnFailedToUploadFile(const std::string& file, int error) override;
+	void OnFailedToCheckForUpdates(int result, const std::string& response) override;
 	void OnGenericError(const std::string& message) override;
 	void OnJsonException(const std::string& message) override;
 	void OnCantViewChannel(const std::string& channelName) override;

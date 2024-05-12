@@ -497,6 +497,9 @@
     <ClInclude Include="..\src\windows\QuickSwitcher.hpp">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\discord\UpdateChecker.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\windows\ProfileView.cpp">
@@ -633,6 +636,9 @@
     </ClCompile>
     <ClCompile Include="..\src\discord\DiscordAPI.cpp">
       <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\UpdateChecker.cpp">
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

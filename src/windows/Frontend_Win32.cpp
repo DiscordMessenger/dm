@@ -5,6 +5,8 @@
 #include "ProfilePopout.hpp"
 #include "QRCodeDialog.hpp"
 #include "PinnedMessageViewer.hpp"
+#include "../discord/UpdateChecker.hpp"
+#include "../discord/LocalSettings.hpp"
 
 const std::string g_UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.284 Chrome/120.0.6099.283 Electron/28.2.3 Safari/537.36";
 
@@ -122,6 +124,21 @@ void Frontend_Win32::OnLoadedPins(Snowflake channel, const std::string& data)
 		PmvOnLoadedPins(channel, data);
 }
 
+void Frontend_Win32::OnUpdateAvailable(const std::string& url, const std::string& version)
+{
+	TCHAR buff[2048];
+	LPTSTR tstr1 = ConvertCppStringToTString(GetAppVersionString());
+	LPTSTR tstr2 = ConvertCppStringToTString(version);
+	WAsnprintf(buff, _countof(buff), TmGetTString(IDS_NEW_VERSION_AVAILABLE), tstr1, tstr2);
+	free(tstr1);
+	free(tstr2);
+
+	if (MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONINFORMATION | MB_YESNO) == IDYES)
+		UpdateChecker::DownloadUpdate(url);
+
+	GetLocalSettings()->StopUpdateCheckTemporarily();
+}
+
 void Frontend_Win32::OnFailedToSendMessage(Snowflake channel, Snowflake message)
 {
 	FailedMessageParams parms;
@@ -133,8 +150,20 @@ void Frontend_Win32::OnFailedToSendMessage(Snowflake channel, Snowflake message)
 void Frontend_Win32::OnFailedToUploadFile(const std::string& file, int error)
 {
 	TCHAR buff[4096];
-	WAsnprintf(buff, _countof(buff), TEXT("Cannot upload file " ASCIIZ_STR_FMT ", error %d"), file.c_str(), error);
-	MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_OK);
+	LPTSTR tstr = ConvertCppStringToTString(file);
+	WAsnprintf(buff, _countof(buff), TmGetTString(IDS_FAILED_TO_UPLOAD), tstr, error);
+	free(tstr);
+	MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
+}
+
+void Frontend_Win32::OnFailedToCheckForUpdates(int result, const std::string& response)
+{
+	TCHAR buff[2048];
+	LPTSTR tstr = ConvertCppStringToTString(response);
+	WAsnprintf(buff, _countof(buff), TmGetTString(IDS_FAILED_UPDATE_CHECK), result, tstr);
+	free(tstr);
+
+	MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
 }
 
 void Frontend_Win32::OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_t* pData, size_t nSize, const std::string& additData)

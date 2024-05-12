@@ -2,6 +2,7 @@
 
 #include <string>
 #include <set>
+#include <ctime>
 
 enum eMessageStyle
 {
@@ -71,6 +72,20 @@ public:
 	void SetDiscordCDN(const std::string& str) {
 		m_discordCdn = str;
 	}
+	void SetCheckUpdates(bool b) {
+		m_bCheckUpdates = true;
+		m_bAskToCheckUpdates = false;
+	}
+	bool CheckUpdates() const {
+		if (!m_bCheckUpdates)
+			return false;
+
+		return time(NULL) >= m_remindUpdatesOn;
+	}
+	bool AskToCheckUpdates() const {
+		return m_bAskToCheckUpdates;
+	}
+	void StopUpdateCheckTemporarily();
 
 private:
 	std::string m_token;
@@ -82,6 +97,9 @@ private:
 	bool m_bSaveWindowSize = false;
 	bool m_bStartMaximized = false;
 	bool m_bIsFirstStart = false;
+	bool m_bCheckUpdates = false;
+	bool m_bAskToCheckUpdates = false;
+	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
 	int m_height = 700;
 };

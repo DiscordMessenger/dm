@@ -84,6 +84,14 @@ bool LocalSettings::Load()
 		if (m_height < 600)
 			m_height = 600;
 	}
+
+	if (j.contains("CheckUpdates"))
+		m_bCheckUpdates = j["CheckUpdates"];
+	else
+		m_bAskToCheckUpdates = true;
+
+	if (j.contains("RemindUpdateCheckOn"))
+		m_remindUpdatesOn = (time_t) (long long) j["RemindUpdateCheckOn"];
 	
 	return true;
 }
@@ -103,6 +111,8 @@ bool LocalSettings::Save()
 	j["ReplyMentionDefault"] = m_bReplyMentionDefault;
 	j["StartMaximized"] = m_bStartMaximized;
 	j["SaveWindowSize"] = m_bSaveWindowSize;
+	j["CheckUpdates"] = m_bCheckUpdates;
+	j["RemindUpdateCheckOn"] = (long long)(m_remindUpdatesOn);
 	if (m_bSaveWindowSize) {
 		j["WindowWidth"] = m_width;
 		j["WindowHeight"] = m_height;
@@ -127,4 +137,10 @@ bool LocalSettings::CheckTrustedDomain(const std::string& url)
 	std::string domain, resource;
 	SplitURL(url, domain, resource);
 	return m_trustedDomains.find(domain) != m_trustedDomains.end();
+}
+
+void LocalSettings::StopUpdateCheckTemporarily()
+{
+	// TODO:
+	// m_remindUpdatesOn = time(NULL) + time_t(72LL * 60 * 60);
 }
