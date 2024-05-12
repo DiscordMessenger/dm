@@ -289,7 +289,7 @@ ChannelView* ChannelView::Create(HWND hwnd, LPRECT rect)
 		0,
 		WC_TREEVIEW,
 		TEXT("Tree View"),
-		WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES | TVS_HASBUTTONS,
+		WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES | TVS_HASBUTTONS | TVS_TRACKSELECT,
 		rect->left,
 		rect->top,
 		rect->right - rect->left,
@@ -317,9 +317,11 @@ void ChannelView::OnNotify(WPARAM wParam, LPARAM lParam)
 
 	switch (nmhdr->code)
 	{
-		case NM_DBLCLK:
+		case TVN_SELCHANGED:
 		{
-			HTREEITEM hSelectedItem = TreeView_GetSelection(m_hwnd);
+			NMTREEVIEW* nmtv = (NMTREEVIEW*) lParam;
+
+			HTREEITEM hSelectedItem = nmtv->itemNew.hItem;
 			if (!hSelectedItem) break;
 
 			TCHAR buffer[128];
