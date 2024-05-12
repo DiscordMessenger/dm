@@ -203,6 +203,7 @@
 #define IDS_NEW_VERSION_AVAILABLE       696
 #define IDS_FAILED_UPDATE_CHECK         697
 #define IDS_FAILED_TO_UPLOAD            698
+#define IDS_SAVED_UPDATE                699
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803

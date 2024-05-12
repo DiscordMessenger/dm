@@ -110,6 +110,9 @@ void NetworkerThread::FulfillRequest(NetRequest& req)
 	// for now.....
 	client.enable_server_certificate_verification(false);
 
+	// Follow redirects.  Used by GitHub auto-update service
+	client.set_follow_location(true);
+
 	Headers headers;
 	headers.insert(std::make_pair("User-Agent", GetFrontend()->GetUserAgent()));
 

@@ -626,6 +626,7 @@ LPCTSTR GetFilter(const std::string& fileName)
 		EndsWith(fileName, ".jpeg")) return TEXT("JPG file\0*.jpg\0JPEG file\0*.jpeg\0\0");
 	if (EndsWith(fileName, ".gif"))  return TEXT("GIF file\0*.webp\0\0");
 	if (EndsWith(fileName, ".webp")) return TEXT("WEBP file\0*.webp\0\0");
+	if (EndsWith(fileName, ".zip"))  return TEXT("ZIP file\0*.zip\0\0");
 	return TEXT("All files\0*.*\0\0");
 }
 
@@ -636,9 +637,10 @@ void DownloadFileDialog(HWND hWnd, const std::string& url, const std::string& fi
 	LPTSTR fileTitle2 = ConvertCppStringToTString(fileName);
 
 	LPTSTR buff = (LPTSTR) new TCHAR[MAX_FILE];
-	_tcscpy(buff, fileTitle2);
-	free(fileTitle2);
+	buff[MAX_FILE - 1] = 0;
 	buff[0] = 0;
+	_tcsncpy(buff, fileTitle2, MAX_FILE);
+	free(fileTitle2);
 
 	OPENFILENAME ofn{};
 	ofn.lStructSize = sizeof(ofn);

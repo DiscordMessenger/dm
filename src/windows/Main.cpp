@@ -1178,6 +1178,17 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				DismissProfilePopout();
 			break;
 		}
+		case WM_IMAGESAVED:
+		{
+			// TODO: Probably should automatically extract and install it or something
+			MessageBox(
+				hWnd,
+				TmGetTString(IDS_SAVED_UPDATE),
+				TmGetTString(IDS_PROGRAM_NAME),
+				MB_ICONINFORMATION | MB_OK
+			);
+			break;
+		}
 
 		case WM_MOVE:
 			DismissProfilePopout();

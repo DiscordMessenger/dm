@@ -134,7 +134,15 @@ void Frontend_Win32::OnUpdateAvailable(const std::string& url, const std::string
 	free(tstr2);
 
 	if (MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONINFORMATION | MB_YESNO) == IDYES)
-		UpdateChecker::DownloadUpdate(url);
+	{
+		size_t idx = 0, idxsave = 0;
+		for (; idx != url.size(); idx++) {
+			if (url[idx] == '/')
+				idxsave = idx + 1;
+		}
+
+		DownloadFileDialog(g_Hwnd, url, url.substr(idxsave));
+	}
 
 	GetLocalSettings()->StopUpdateCheckTemporarily();
 }

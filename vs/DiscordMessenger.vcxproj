@@ -241,6 +241,7 @@
     <Manifest Include="..\res\app.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\deps\httplib\httplib.h" />
     <ClInclude Include="..\src\discord\ActiveStatus.hpp" />
     <ClInclude Include="..\src\discord\Attachment.hpp" />
     <ClInclude Include="..\src\discord\Channel.hpp" />

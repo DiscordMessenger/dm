@@ -12,11 +12,6 @@ void UpdateChecker::StartCheckingForUpdates()
 	GetHTTPClient()->PerformRequest(true, NetRequest::GET, GetUpdateAPIURL(), 0, 0, "", "", "", OnRequestDone);
 }
 
-void UpdateChecker::DownloadUpdate(const std::string& url)
-{
-	DbgPrintF("Downloading update: %s", url.c_str());
-}
-
 #ifdef _MSC_VER
 #define IS_MINGW false
 #else
