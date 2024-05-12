@@ -443,6 +443,13 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				DbgPrintW("Using CF_DIB to fetch image from clipboard");
 				PBITMAPINFO bmi = (PBITMAPINFO) GlobalLock(hbmi);
 
+				// WHAT THE HELL: Windows seems to add 12 extra bytes after the header
+				// representing the colors: [RED] [GREEN] [BLUE]. I don't know why we
+				// have to do this or how to un-hardcode it.  Yes, in this case, the
+				// biClrUsed member is zero.
+				// Does it happen to include only part of the BITMAPV4HEADER???
+				const int HACK_OFFSET = 12;
+
 				width = bmi->bmiHeader.biWidth;
 				height = bmi->bmiHeader.biHeight;
 				bpp = bmi->bmiHeader.biBitCount;
@@ -450,7 +457,7 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				int sz = stride * height;
 				pBytes = new BYTE[sz];
-				memcpy(pBytes, bmi + 1, sz);
+				memcpy(pBytes, (char*) bmi + bmi->bmiHeader.biSize + HACK_OFFSET, sz);
 
 				GlobalUnlock(hbmi);
 			}
