@@ -437,6 +437,7 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			bool isClipboardClosed = false;
 			bool hadToUseLegacyBitmap = false;
 			int width = 0, height = 0, stride = 0, bpp = 0;
+			Channel* pChan = nullptr;
 
 			HANDLE hbmi = GetClipboardData(CF_DIB);
 			if (hbmi)
@@ -491,7 +492,7 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				stride = ((((width * bpp) + 31) & ~31) >> 3);
 			}
 
-			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			pChan = GetDiscordInstance()->GetCurrentChannel();
 			if (!pChan) {
 				DbgPrintW("No channel!");
 				goto _fail;
