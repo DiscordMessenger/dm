@@ -25,7 +25,7 @@ void UpdateChecker::OnRequestDone(NetRequest* pReq)
 		return;
 	}
 
-	nlohmann::json& j = nlohmann::json::parse(pReq->response);
+	nlohmann::json j = nlohmann::json::parse(pReq->response);
 
 	// This is specific to the GitHub API.  If moving away from GitHub, redo this:
 	std::string tagName = j["tag_name"];

@@ -500,11 +500,11 @@
     <ClInclude Include="..\src\windows\QuickSwitcher.hpp">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\discord\UpdateChecker.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
     <ClInclude Include="..\deps\httplib\httplib.h">
       <Filter>Source Files\Deps\Httplib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\UpdateChecker.hpp">
+      <Filter>Header Files\Discord</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -644,7 +644,7 @@
       <Filter>Source Files\Discord</Filter>
     </ClCompile>
     <ClCompile Include="..\src\discord\UpdateChecker.cpp">
-      <Filter>Source Files\Windows</Filter>
+      <Filter>Source Files\Discord</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
