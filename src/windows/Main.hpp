@@ -101,6 +101,7 @@ enum eComboIDs
 	CID_MESSAGEUPLOAD,
 	CID_MESSAGEEDITINGLBL,
 	CID_STATUSBAR,
+	CID_TOOLBAR,
 };
 
 struct UpdateProfileParams

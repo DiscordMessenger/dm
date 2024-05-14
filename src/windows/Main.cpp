@@ -20,6 +20,7 @@
 #include "LoadingMessage.hpp"
 #include "UploadDialog.hpp"
 #include "StatusBar.hpp"
+#include "ToolBar.hpp"
 #include "QuickSwitcher.hpp"
 #include "Frontend_Win32.hpp"
 #include "../discord/LocalSettings.hpp"
@@ -40,6 +41,7 @@ int g_GuildListerWidth;
 int g_MemberListWidth;
 int g_MessageEditorHeight;
 
+ToolBar    * g_pToolBar;
 StatusBar  * g_pStatusBar;
 MessageList* g_pMessageList;
 ChannelView* g_pChannelView;
@@ -195,7 +197,7 @@ bool g_bChannelListVisible = false;
 
 void ProperlySizeControls(HWND hWnd)
 {
-	RECT rect = {}, rect2 = {}, rcClient = {}, rcSBar = {};
+	RECT rect = {}, rect2 = {}, rcClient = {}, rcSBar = {}, rcTBar = {};
 	GetClientRect(hWnd, &rect);
 	rcClient = rect;
 
@@ -214,11 +216,19 @@ void ProperlySizeControls(HWND hWnd)
 	HWND hWndMel = g_pMemberList->m_mainHwnd;
 	HWND hWndTin = g_pMessageEditor->m_hwnd;
 	HWND hWndStb = g_pStatusBar->m_hwnd;
+	HWND hWndTlb = g_pToolBar->m_hwnd;
 
 	int statusBarHeight = 0;
 	GetChildRect(hWnd, hWndStb, &rcSBar);
 	statusBarHeight = rcSBar.bottom - rcSBar.top;
 
+	int toolBarHeight = 0;
+	GetChildRect(hWnd, hWndTlb, &rcTBar);
+	toolBarHeight = rcTBar.bottom - rcTBar.top;
+
+	static int lastToolBarHeight = 0;
+
+	rect.top += toolBarHeight;
 	rect.bottom -= statusBarHeight;
 	rect2 = rect;
 
@@ -282,10 +292,20 @@ void ProperlySizeControls(HWND hWnd)
 
 	// Forward the resize event to the status bar.
 	MoveWindow(hWndStb, 0, rcClient.bottom - statusBarHeight, rcClient.right - rcClient.left, statusBarHeight, TRUE);
-	// Erase the old rectangle
+
+	// Forward the resize event to the tool bar.
+	MoveWindow(hWndTlb, 0, 0, rcClient.right - rcClient.left, toolBarHeight, TRUE);
+
+	// Erase the old rectangles
 	InvalidateRect(hWnd, &rcSBar, TRUE);
+	InvalidateRect(hWnd, &rcTBar, TRUE);
 
 	g_pStatusBar->UpdateParts(rcClient.right - rcClient.left);
+
+	if (lastToolBarHeight != toolBarHeight) {
+		lastToolBarHeight = toolBarHeight;
+		InvalidateRect(hWnd, NULL, TRUE);
+	}
 }
 
 bool g_bQuittingEarly = false;
@@ -388,6 +408,7 @@ int OnSSLError(const std::string& url)
 
 BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	DbgPrintW("Command: %d", wParam);
 	switch (LOWORD(wParam))
 	{
 		case ID_FILE_PREFERENCES:
@@ -1013,6 +1034,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			ClientToScreen(hWnd, &pt);
 			OffsetRect(&rcLoading, pt.x, pt.y);
 
+			g_pToolBar     = ToolBar::Create(hWnd);
 			g_pStatusBar   = StatusBar::Create(hWnd);
 			g_pMessageList = MessageList::Create(hWnd, &rect);
 			g_pChannelView = ChannelView::Create(hWnd, &rect);
@@ -1095,6 +1117,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SAFE_DELETE(g_pMessageList);
 			SAFE_DELETE(g_pProfileView);
 
+			SAFE_DELETE(g_pToolBar);
 			SAFE_DELETE(g_pStatusBar);
 			SAFE_DELETE(g_pMemberList);
 			SAFE_DELETE(g_pMessageEditor);

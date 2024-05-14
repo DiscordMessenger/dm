@@ -560,6 +560,9 @@
     <ClInclude Include="..\src\discord\UpdateChecker.hpp">
       <Filter>Header Files\Discord</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\windows\ToolBar.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\windows\ProfileView.cpp">
@@ -699,6 +702,9 @@
     </ClCompile>
     <ClCompile Include="..\src\discord\UpdateChecker.cpp">
       <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\ToolBar.cpp">
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
