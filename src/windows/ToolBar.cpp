@@ -8,7 +8,7 @@ ToolBar* ToolBar::Create(HWND hParent)
         0,
         TOOLBARCLASSNAME,
         NULL,
-        WS_CHILD | TBSTYLE_WRAPABLE | TBSTYLE_LIST,
+        WS_CHILD | TBSTYLE_WRAPABLE | TBSTYLE_LIST | TBSTYLE_FLAT,
         0, 0, 0, 0,
         hParent,
         (HMENU)CID_TOOLBAR,
@@ -23,6 +23,8 @@ ToolBar* ToolBar::Create(HWND hParent)
         16, 16
     );
 
+    SendMessage(pBar->m_hwnd, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_MIXEDBUTTONS);
+
     pBar->m_iconPinned  = ImageList_AddIcon(pBar->m_imageList, (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_PIN)),     IMAGE_ICON, smcxicon, smcxicon, LR_CREATEDIBSECTION | LR_SHARED));
     pBar->m_iconMembers = ImageList_AddIcon(pBar->m_imageList, (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_MEMBERS)), IMAGE_ICON, smcxicon, smcxicon, LR_CREATEDIBSECTION | LR_SHARED));
 
@@ -34,13 +36,18 @@ ToolBar* ToolBar::Create(HWND hParent)
     const int IDM_NEW  = 42;
     const int IDM_OPEN = 43;
     const int IDM_SAVE = 44;
-    const int numButtons = 2;
-    const int buttonStyles = BTNS_BUTTON;
+    const int numButtons = 6;
+    const int buttonStyles = BTNS_SHOWTEXT | TBSTYLE_AUTOSIZE;
 
     TBBUTTON tbButtons[numButtons] =
     {
         { MAKELONG(pBar->m_iconPinned,  0), IDM_NEW,  TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR) TEXT("Pinned") },
+
+        { MAKELONG(pBar->m_iconPinned,  0), IDM_NEW,  TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR) TEXT("Pinned") },
         { MAKELONG(pBar->m_iconMembers, 0), IDM_OPEN, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR) TEXT("Show Members") },
+        { 0, 0, TBSTATE_ENABLED, TBSTYLE_SEP, {0}, 0, (INT_PTR) 0 },
+        { 100, 0, TBSTATE_ENABLED, TBSTYLE_SEP, {0}, 0, (INT_PTR) -1 },
+        { 0, 0, TBSTATE_ENABLED, TBSTYLE_SEP, {0}, 0, (INT_PTR) 0 },
     };
 
     // Add buttons.
