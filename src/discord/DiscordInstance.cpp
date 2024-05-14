@@ -1294,6 +1294,14 @@ void DiscordInstance::ParseChannel(Channel& c, nlohmann::json& chan, int& num)
 
 			// look through the recipients then
 			std::string name = "";
+			for (auto& rec : chan["recipients"])
+			{
+				if (!name.empty())
+					name += ", ";
+
+				name += GetGlobalName(rec);
+			}
+
 			for (auto& rec : chan["recipient_ids"])
 			{
 				Snowflake userID = GetIntFromString(rec);
