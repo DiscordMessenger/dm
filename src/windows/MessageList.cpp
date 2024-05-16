@@ -869,10 +869,6 @@ void MessageList::RefetchMessages(Snowflake gapCulprit)
 			bNeedInsertNew = true;
 		}
 
-		if (msg.m_snowflake == 869674762446729297 || msg.m_snowflake == 869674843224829964) {
-			DbgPrintW("xyz");
-		}
-
 		if (bNeedInsertNew)
 		{
 			MessageItem mi;
@@ -3430,7 +3426,8 @@ bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int
 		item.m_msg.m_bHaveReferencedMessage ||
 		item.m_msg.m_type == MessageType::REPLY ||
 		IsActionMessage(prevType) ||
-		IsActionMessage(item.m_msg.m_type)
+		IsActionMessage(item.m_msg.m_type) ||
+		ShouldBeDateGap(prevTime, item.m_msg.m_dateTime)
 	);
 }
 
