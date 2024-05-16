@@ -79,6 +79,7 @@ LDFLAGS = \
 	-lgdi32     \
 	-luser32    \
 	-lole32     \
+	-lcrypt32   \
 	-lcrypto    \
 	-lssl
 
