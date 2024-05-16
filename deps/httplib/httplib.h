@@ -8,6 +8,8 @@
 #ifndef CPPHTTPLIB_HTTPLIB_H
 #define CPPHTTPLIB_HTTPLIB_H
 
+extern int g_latestSSLError; // HACK - To debug an "SSL connection failed" issue.
+
 #ifdef MINGW_SPECIFIC_HACKS // iProgramInCpp
 #define _REMOVE_IPV6
 #define HCRYPTPROV_LEGACY HCRYPTPROV
@@ -7535,6 +7537,8 @@ bool ssl_connect_or_accept_nonblocking(socket_t sock, SSL *ssl,
 	  break;
 	default: break;
 	}
+	// To debug an issue, setting a global:
+	g_latestSSLError = err;
 	return false;
   }
   return true;
