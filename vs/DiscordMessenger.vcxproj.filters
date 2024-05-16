@@ -303,6 +303,12 @@
     <Image Include="..\res\icon_server.ico">
       <Filter>Resource Files\Resources</Filter>
     </Image>
+    <Image Include="..\res\icon_category_collapse.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\icon_category_expand.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\res\cur_zoomin.cur">

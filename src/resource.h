@@ -70,6 +70,9 @@
 #define IDI_BALLOON_OFF                 66
 #define IDI_SERVER                      67
 #define IDI_SERVER_2K                   68
+#define IDI_CATEGORY_COLLAPSE           71
+#define IDI_ICON2                       72
+#define IDI_CATEGORY_EXPAND             72
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -276,7 +279,6 @@
 #define IDC_ICON_WARN_WEBSOCKETSTUFF2   870
 #define IDC_CHECK1                      871
 #define IDC_ENABLE_TLS_CHECKS           871
-#define IDC_CHECK2                      872
 #define IDC_CHECK_UPDATES               872
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
@@ -354,7 +356,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        71
+#define _APS_NEXT_RESOURCE_VALUE        73
 #define _APS_NEXT_COMMAND_VALUE         1069
 #define _APS_NEXT_CONTROL_VALUE         873
 #define _APS_NEXT_SYMED_VALUE           40000

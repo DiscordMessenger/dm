@@ -25,7 +25,8 @@ private:
 
 	HWND m_hwndParent;
 
-	int m_nCategoryIcon,
+	int m_nCategoryExpandIcon,
+		m_nCategoryCollapseIcon,
 		m_nChannelIcon,
 		m_nForumIcon,
 		m_nVoiceIcon,
@@ -44,9 +45,10 @@ public:
 	void AddChannel(const Channel& ch);
 	void RemoveCategoryIfNeeded(const Channel& ch);
 	void OnNotify(WPARAM wParam, LPARAM lParam);
+	void SetItemIcon(HTREEITEM hItem, int icon);
 
 private:
-	int GetIcon(const Channel& ch);
+	int GetIcon(const Channel& ch, bool bIsExpanded);
 	void ResetTree();
 	void SetPrevious(int parentIndex, HTREEITEM hPrev);
 	bool InitTreeViewImageLists();

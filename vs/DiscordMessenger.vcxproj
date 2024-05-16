@@ -169,6 +169,8 @@
     <Image Include="..\res\icon_cancel.ico" />
     <Image Include="..\res\icon_category.ico" />
     <Image Include="..\res\icon_category_2k.ico" />
+    <Image Include="..\res\icon_category_collapse.ico" />
+    <Image Include="..\res\icon_category_expand.ico" />
     <Image Include="..\res\icon_channel.ico" />
     <Image Include="..\res\icon_channel_2k.ico" />
     <Image Include="..\res\icon_channel_mentioned.ico" />

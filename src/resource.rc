@@ -346,6 +346,10 @@ IDI_SERVER              ICON                    "../res/icon_server.ico"
 
 IDI_SERVER_2K           ICON                    "../res/icon_server_2k.ico"
 
+IDI_CATEGORY_COLLAPSE   ICON                    "../res/icon_category_collapse.ico"
+
+IDI_CATEGORY_EXPAND     ICON                    "../res/icon_category_expand.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

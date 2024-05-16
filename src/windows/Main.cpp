@@ -738,7 +738,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (!pGuild) break;
 
 			pChan = pGuild->GetChannel(sf);
-			if (pChan)
+			if (!pChan)
 				break;
 
 			g_pChannelView->UpdateAcknowledgement(sf);

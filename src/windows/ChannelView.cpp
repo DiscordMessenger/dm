@@ -38,9 +38,9 @@ bool ChannelView::InitTreeViewImageLists()
 	// Create the image list.
 	int flag = 0;
 	if (Supports32BitIcons())
-		flag = ILC_COLOR32;
+		flag = ILC_COLOR32 | ILC_MASK;
 	else
-		flag = ILC_COLOR4;
+		flag = ILC_COLOR4 | ILC_MASK;
 
 	if ((himl = ImageList_Create(ScaleByDPI(CX_BITMAP),
 		                         ScaleByDPI(CY_BITMAP),
@@ -51,7 +51,8 @@ bool ChannelView::InitTreeViewImageLists()
 	}
 
 	// Add the open file, closed file, and document bitmaps.
-	m_nCategoryIcon   = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CATEGORY))));
+	m_nCategoryExpandIcon   = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CATEGORY_EXPAND))));
+	m_nCategoryCollapseIcon = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CATEGORY_COLLAPSE))));
 	m_nChannelIcon    = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL))));
 	m_nForumIcon      = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM))));
 	m_nVoiceIcon      = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_VOICE))));
@@ -93,6 +94,18 @@ void ChannelView::SetPrevious(int parentIndex, HTREEITEM hPrev)
 void ChannelView::ResetTree()
 {
 	m_hPrev.clear();
+}
+
+void ChannelView::SetItemIcon(HTREEITEM hItem, int icon)
+{
+	TVITEM item{};
+	ZeroMemory(&item, sizeof(TVITEM)); // Ensure the structure is zero-initialized
+
+	item.hItem = hItem;
+	item.mask = TVIF_HANDLE | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+	item.iImage = icon;
+	item.iSelectedImage = icon;
+	int res = TreeView_SetItem(m_hwnd, &item);
 }
 
 HTREEITEM ChannelView::AddItemToTree(HWND hwndTV, LPTSTR lpszItem, HTREEITEM hParent, int nIndex, int nParentIndex, int nIcon)
@@ -144,7 +157,7 @@ void ChannelView::ClearChannels()
 	ResetTree();
 }
 
-int ChannelView::GetIcon(const Channel& ch)
+int ChannelView::GetIcon(const Channel& ch, bool bIsExpanded)
 {
 	int nIcon;
 	bool mentioned = ch.WasMentioned();
@@ -160,7 +173,7 @@ int ChannelView::GetIcon(const Channel& ch)
 				nIcon = m_nChannelIcon;
 			break;
 
-		case Channel::CATEGORY: nIcon = m_nCategoryIcon; break;
+		case Channel::CATEGORY: nIcon = bIsExpanded ? m_nCategoryCollapseIcon : m_nCategoryExpandIcon; break;
 		case Channel::VOICE:    nIcon = m_nVoiceIcon;    break;
 		case Channel::FORUM:    nIcon = m_nForumIcon;    break;
 		case Channel::GROUPDM:  nIcon = m_nGroupDmIcon;  break;
@@ -176,9 +189,7 @@ static HTREEITEM GetItemHandleByIndex(HWND hwndTree, int index)
 	HTREEITEM hItem = TreeView_GetNextItem(hwndTree, NULL, TVGN_ROOT); // Get the root item
 
 	for (int i = 0; i < index && hItem; ++i)
-	{
 		hItem = TreeView_GetNextItem(hwndTree, hItem, TVGN_NEXT); // Get the next item
-	}
 
 	return hItem;
 }
@@ -197,17 +208,9 @@ void ChannelView::UpdateAcknowledgement(Snowflake sf)
 		return;
 	}
 
-	TVITEM item{};
-	ZeroMemory(&item, sizeof(TVITEM)); // Ensure the structure is zero-initialized
-
-	item.hItem = (HTREEITEM) m_channels[index].m_hItem;
-	item.mask = TVIF_IMAGE;
-	item.iImage = 0;
-	TreeView_GetItem(m_hwnd, &item);
-
 	Channel* pChan = GetDiscordInstance()->GetChannel(sf);
-	item.iImage = GetIcon(*pChan);
-	TreeView_SetItem(m_hwnd, &item);
+	HTREEITEM item = m_channels[index].m_hItem;
+	SetItemIcon(item, GetIcon(*pChan, false)); // note: assume it's false because, like, categories don't get acknowledged
 }
 
 bool IsChannelASubThread(Channel::eChannelType x)
@@ -253,7 +256,7 @@ void ChannelView::AddChannel(const Channel & ch)
 		m_level = 3;
 	}
 
-	cmem.m_hItem = AddItemToTree(m_hwnd, cmem.str, hParent, index, parentIndex, GetIcon(ch));
+	cmem.m_hItem = AddItemToTree(m_hwnd, cmem.str, hParent, index, parentIndex, GetIcon(ch, true)); // categories are expanded by default
 	m_channels.push_back(cmem);
 	m_idToIdx[cmem.m_snowflake] = index;
 
@@ -289,7 +292,7 @@ ChannelView* ChannelView::Create(HWND hwnd, LPRECT rect)
 		0,
 		WC_TREEVIEW,
 		TEXT("Tree View"),
-		WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES | TVS_HASBUTTONS | TVS_TRACKSELECT,
+		WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASBUTTONS | TVS_TRACKSELECT,
 		rect->left,
 		rect->top,
 		rect->right - rect->left,
@@ -317,6 +320,16 @@ void ChannelView::OnNotify(WPARAM wParam, LPARAM lParam)
 
 	switch (nmhdr->code)
 	{
+		case TVN_ITEMEXPANDED:
+		{
+			NMTREEVIEW* nmtv = (NMTREEVIEW*)lParam;
+
+			HTREEITEM hItem = nmtv->itemNew.hItem;
+			if (!hItem) break;
+
+			SetItemIcon(hItem, nmtv->action == TVE_EXPAND ? m_nCategoryCollapseIcon : m_nCategoryExpandIcon);
+			break;
+		}
 		case TVN_SELCHANGED:
 		{
 			NMTREEVIEW* nmtv = (NMTREEVIEW*) lParam;
