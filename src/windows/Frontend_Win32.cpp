@@ -296,7 +296,7 @@ void Frontend_Win32::OnWebsocketMessage(int gatewayID, const std::string& payloa
 	SendMessage(g_Hwnd, WM_WEBSOCKETMESSAGE, 0, (LPARAM) pParm);
 }
 
-void Frontend_Win32::OnWebsocketClose(int gatewayID, int errorCode)
+void Frontend_Win32::OnWebsocketClose(int gatewayID, int errorCode, const std::string& message)
 {
 	if (GetDiscordInstance()->GetGatewayID() == gatewayID)
 		GetDiscordInstance()->GatewayClosed(errorCode);
@@ -306,9 +306,41 @@ void Frontend_Win32::OnWebsocketClose(int gatewayID, int errorCode)
 		DbgPrintW("Unknown gateway connection %d closed: %d", gatewayID, errorCode);
 }
 
-void Frontend_Win32::OnWebsocketFail(int gatewayID, int errorCode)
+void Frontend_Win32::OnWebsocketFail(int gatewayID, int errorCode, const std::string& message, bool isTLSError)
 {
-	DbgPrintW("TODO: Frontend_Win32::OnWebsocketFail: GatewayID %d  ErrorCode %d", gatewayID, errorCode);
+	static TCHAR buffer[8192];
+	LPTSTR msg = ConvertCppStringToTString(message);
+	WAsnprintf(
+		buffer,
+		_countof(buffer),
+		TEXT("ERROR: Could not connect to the websocket gateway.\nConnection was closed with code: %d\n\nMessage: %s"),
+		errorCode,
+		msg
+	);
+
+	if (isTLSError) {
+		_tcscat(
+			buffer,
+			TEXT("WARNING: Your connection may not be private\n\nDiscord Messenger could not verify that it is connecting to a Websocket service ")
+			TEXT("required to use Discord Messenger in real time.")
+			TEXT("\n\nThis could be because:")
+			TEXT("\no   Your computer does not trust the certificate that the gateway has declared because it is wrong,")
+			TEXT("\no   Your computer does not trust the certificate that the gateway has declared because it doesn't trust the root certificate,")
+			TEXT("\no   Your computer does not trust the certificate that the gateway has declared because your date and time are incorrect,")
+			TEXT("\no   The website reported a protocol which the client is outdated for and cannot handle, or")
+			TEXT("\no   SOMEONE IS EAVESDROPPING ON YOU RIGHT NOW! (man-in-the-middle attack)")
+			TEXT("\n\nIt is not recommended to proceed if you see this error. Please ensure you can connect to Discord using a ")
+			TEXT("capable device on the same network as this one.  If you are able to connect, export the root certificate from ")
+			TEXT("discord.com on that device and import it into Windows, if the OS supports it.")
+			TEXT("\n\nYou may also disable SSL server verification, and then restart the application. However, you have to ")
+			TEXT("take into account the risks that this entails.")
+		);
+	}
+
+	free(msg);
+
+	MessageBox(g_Hwnd, buffer, TmGetTString(IDS_PROGRAM_NAME), (isTLSError ? MB_ICONWARNING : MB_ICONERROR) | MB_OK);
+	SendMessage(g_Hwnd, WM_CONNECTERROR, 0, 0);
 }
 
 void Frontend_Win32::RequestQuit()

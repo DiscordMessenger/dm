@@ -71,6 +71,9 @@ bool LocalSettings::Load()
 	if (j.contains("StartMaximized"))
 		m_bStartMaximized = j["StartMaximized"];
 
+	if (j.contains("EnableTLSVerification"))
+		m_bEnableTLSVerification = j["EnableTLSVerification"];
+
 	if (m_bSaveWindowSize)
 	{
 		if (j.contains("WindowWidth"))
@@ -112,6 +115,7 @@ bool LocalSettings::Save()
 	j["StartMaximized"] = m_bStartMaximized;
 	j["SaveWindowSize"] = m_bSaveWindowSize;
 	j["CheckUpdates"] = m_bCheckUpdates;
+	j["EnableTLSVerification"] = m_bEnableTLSVerification;
 	j["RemindUpdateCheckOn"] = (long long)(m_remindUpdatesOn);
 	if (m_bSaveWindowSize) {
 		j["WindowWidth"] = m_width;

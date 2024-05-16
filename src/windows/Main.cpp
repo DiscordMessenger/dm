@@ -347,6 +347,38 @@ void UpdateMainWindowTitle(HWND hWnd)
 	free(tstr);
 }
 
+int OnSSLError(const std::string& url)
+{
+	LPTSTR urlt = ConvertCppStringToTString(url);
+	static TCHAR buffer[8192];
+	_tcscpy(buffer, TEXT("WARNING:  Your connection may not be private\n\nDiscord Messenger could not verify that it is connecting to the following URL: "));
+	_tcscat(buffer, urlt);
+	_tcscat(buffer,
+		TEXT("\n\nThis could be because:")
+		TEXT("\no   Your computer does not trust the certificate that the service has declared because it is wrong,")
+		TEXT("\no   Your computer does not trust the certificate that the service has declared because it doesn't trust the root certificate,")
+		TEXT("\no   Your computer does not trust the certificate that the service has declared because your date and time are incorrect,")
+		TEXT("\no   The website reported a protocol which the client is outdated for and cannot handle, or")
+		TEXT("\no   SOMEONE IS EAVESDROPPING ON YOU RIGHT NOW! (man-in-the-middle attack)")
+		TEXT("\n\nIt is not recommended to proceed if you see this error. Please ensure you can connect to the URL using a ")
+		TEXT("capable device on the same network as this one.  If you are able to connect, export the root certificate from ")
+		TEXT("that device and import it into Windows, so that you won't get this error again.")
+		TEXT("\n\nYou may also disable SSL server verification, and then restart the application. However, you have to ")
+		TEXT("take into account the risks that this entails.")
+		TEXT("\n\nUse one of the following buttons to determine how to proceed:")
+		TEXT("\no   ABORT: Declare this HTTP request a failure.")
+		TEXT("\no   RETRY: Retry this HTTP request.  Keep in mind that you will need to restart the app if you have installed a new certificate.")
+		TEXT("\no   IGNORE: This error and future SSL errors will be ignored.  This option is RISKY because it could expose you to man-in-the-middle attacks. ")
+		TEXT("If you wish to enable SSL server verification again after clicking Ignore, you can go to the File > Preferences menu, Connection tab, and check ")
+		TEXT("the relevant checkbox.")
+	);
+	free(urlt);
+
+	size_t l = _tcslen(buffer);
+
+	return MessageBox(g_Hwnd, buffer, TEXT("Discord Messenger - SECURITY ALERT"), MB_ABORTRETRYIGNORE | MB_ICONWARNING);
+}
+
 BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (LOWORD(wParam))
@@ -536,6 +568,18 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
+		case WM_SSLERROR:
+		{
+			return OnSSLError(CutOutURLPath(std::string((const char*)lParam)));
+		}
+		case WM_FORCERESTART:
+		{
+			MessageBox(hWnd, TEXT("The application will now restart due to a change in the configuration."), TEXT("Setting Modification"), MB_OK | MB_ICONINFORMATION);
+			if (InSendMessage())
+				ReplyMessage(0);
+			SendMessage(hWnd, WM_DESTROY, 0, 0);
+			return 0;
+		}
 		case WM_UPDATEMESSAGELENGTH:
 		{
 			g_pStatusBar->UpdateCharacterCounter(int(lParam), MAX_MESSAGE_SIZE);
@@ -884,6 +928,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SendMessage(hWnd, WM_LOGINAGAIN, 0, 0);
 			break;
 		}
+		case WM_CONNECTERROR:
 		case WM_CONNECTED: {
 			g_pLoadingMessage->Hide();
 			break;

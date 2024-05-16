@@ -32,20 +32,20 @@ struct NetworkResponse
 class NetworkerThread
 {
 public:
-private:
 #ifdef MINGW_SPECIFIC_HACKS
 	using nmutex = iprog::mutex;
 #else
 	using nmutex = std::mutex;
 #endif
 
+private:
 	std::priority_queue<NetRequest> m_requests;
 	nmutex m_requestLock;
 
 	HANDLE m_ThreadHandle;
 	DWORD  m_ThreadID;
 
-	void ProcessResult(NetRequest& req, const httplib::Result& res);
+	bool ProcessResult(NetRequest& req, const httplib::Result& res);
 
 	void IdleWait();
 	

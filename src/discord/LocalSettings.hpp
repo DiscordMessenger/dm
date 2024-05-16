@@ -85,6 +85,12 @@ public:
 	bool AskToCheckUpdates() const {
 		return m_bAskToCheckUpdates;
 	}
+	bool EnableTLSVerification() const {
+		return m_bEnableTLSVerification;
+	}
+	void SetEnableTLSVerification(bool b) {
+		m_bEnableTLSVerification = b;
+	}
 	void StopUpdateCheckTemporarily();
 
 private:
@@ -99,6 +105,7 @@ private:
 	bool m_bIsFirstStart = false;
 	bool m_bCheckUpdates = false;
 	bool m_bAskToCheckUpdates = false;
+	bool m_bEnableTLSVerification = true;
 	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
 	int m_height = 700;

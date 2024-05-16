@@ -1,9 +1,9 @@
 #include "NetworkerThread.hpp"
 #include "WinUtils.hpp"
+#include "WindowMessages.hpp"
 #include "../discord/DiscordRequest.hpp"
+#include "../discord/LocalSettings.hpp"
 #include "../discord/Frontend.hpp"
-
-#define CPPHTTPLIB_OPENSSL_SUPPORT
 
 #ifndef __MINGW32__
 #define __MINGW32__ // so that it doesn't use inet_pton
@@ -12,6 +12,9 @@
 #include <httplib/httplib.h>
 
 extern HWND g_Hwnd;
+
+static NetworkerThread::nmutex g_sslErrorMutex;
+static bool g_bQuittingFromSSLError;
 
 int NetRequest::Priority() const
 {
@@ -55,11 +58,47 @@ int NetRequest::Priority() const
 	return prio;
 }
 
-void NetworkerThread::ProcessResult(NetRequest& req, const httplib::Result& res)
+bool NetworkerThread::ProcessResult(NetRequest& req, const httplib::Result& res)
 {
 	using namespace httplib;
 
-	if (!res)
+	if (res.error() == Error::SSLServerVerification)
+	{
+		g_sslErrorMutex.lock();
+		if (g_bQuittingFromSSLError) {
+			// we're actually quitting. Ignore
+			g_sslErrorMutex.unlock();
+			return false;
+		}
+
+		int result = (int) SendMessage(g_Hwnd, WM_SSLERROR, 0, (LPARAM)req.url.c_str());
+
+		if (result == IDABORT)
+		{
+			// Declare it a failure
+			req.result = -1;
+			req.response = to_string(res.error());
+
+			g_sslErrorMutex.unlock();
+		}
+		else if (result == IDIGNORE)
+		{
+			GetLocalSettings()->SetEnableTLSVerification(false);
+			PrepareQuit();
+			SendMessage(g_Hwnd, WM_FORCERESTART, 0, 0);
+
+			g_bQuittingFromSSLError = true;
+			g_sslErrorMutex.unlock();
+			return false;
+		}
+		// return true to retry
+		else
+		{
+			g_sslErrorMutex.unlock();
+			return true;
+		}
+	}
+	else if (!res)
 	{
 		req.result = -1;
 		req.response = to_string(res.error());
@@ -76,6 +115,9 @@ void NetworkerThread::ProcessResult(NetRequest& req, const httplib::Result& res)
 	// Call the handler function.
 	// N.B.  Don't return unless you're absolutely done with the request!
 	req.pFunc(&req);
+
+	// Return false to let the runner know that it shouldn't retry.
+	return false;
 }
 
 void NetworkerThread::IdleWait()
@@ -108,7 +150,7 @@ void NetworkerThread::FulfillRequest(NetRequest& req)
 	// Probably outdated certs. I mean, this would allow attackers to host
 	// a self-instance of Discord to intercept packets, but this is fine
 	// for now.....
-	client.enable_server_certificate_verification(false);
+	client.enable_server_certificate_verification(GetLocalSettings()->EnableTLSVerification());
 
 	// Follow redirects.  Used by GitHub auto-update service
 	client.set_follow_location(true);
@@ -121,55 +163,60 @@ void NetworkerThread::FulfillRequest(NetRequest& req)
 		headers.insert(std::make_pair("Authorization", req.authorization));
 	}
 
-	switch (req.type)
+	bool retry = false;
+	do
 	{
-		// no default constructor for httplib::Result?? this SUCKS!
-		case NetRequest::POST:
+		switch (req.type)
 		{
-			const Result res = client.Post(path, headers, req.params, "application/x-www-form-urlencoded");
-			ProcessResult(req, res);
-			break;
+			// no default constructor for httplib::Result?? this SUCKS!
+			case NetRequest::POST:
+			{
+				const Result res = client.Post(path, headers, req.params, "application/x-www-form-urlencoded");
+				retry = ProcessResult(req, res);
+				break;
+			}
+			case NetRequest::POST_JSON:
+			{
+				const Result res = client.Post(path, headers, req.params, "application/json");
+				retry = ProcessResult(req, res);
+				break;
+			}
+			case NetRequest::PUT:
+			{
+				const Result res = client.Put(path, headers, req.params, "application/x-www-form-urlencoded");
+				retry = ProcessResult(req, res);
+				break;
+			}
+			case NetRequest::PUT_OCTETS:
+			{
+				const Result res = client.Put(path, headers, (const char*) req.params_bytes.data(), req.params_bytes.size(), "application/octet-stream");
+				retry = ProcessResult(req, res);
+				break;
+			}
+			case NetRequest::GET:
+			{
+				const Result res = client.Get(path, headers);
+				retry = ProcessResult(req, res);
+				break;
+			}
+			case NetRequest::PATCH:
+			{
+				const Result res = client.Patch(path, headers, req.params, "application/json");
+				retry = ProcessResult(req, res);
+				break;
+			}
+			case NetRequest::DELETE_:
+			{
+				const Result res = client.Delete(path, headers, req.params, "application/json");
+				retry = ProcessResult(req, res);
+				break;
+			}
+			default:
+				assert(!"Don't know how to handle that type of request!");
+				break;
 		}
-		case NetRequest::POST_JSON:
-		{
-			const Result res = client.Post(path, headers, req.params, "application/json");
-			ProcessResult(req, res);
-			break;
-		}
-		case NetRequest::PUT:
-		{
-			const Result res = client.Put(path, headers, req.params, "application/x-www-form-urlencoded");
-			ProcessResult(req, res);
-			break;
-		}
-		case NetRequest::PUT_OCTETS:
-		{
-			const Result res = client.Put(path, headers, (const char*) req.params_bytes.data(), req.params_bytes.size(), "application/octet-stream");
-			ProcessResult(req, res);
-			break;
-		}
-		case NetRequest::GET:
-		{
-			const Result res = client.Get(path, headers);
-			ProcessResult(req, res);
-			break;
-		}
-		case NetRequest::PATCH:
-		{
-			const Result res = client.Patch(path, headers, req.params, "application/json");
-			ProcessResult(req, res);
-			break;
-		}
-		case NetRequest::DELETE_:
-		{
-			const Result res = client.Delete(path, headers, req.params, "application/json");
-			ProcessResult(req, res);
-			break;
-		}
-		default:
-			assert(!"Don't know how to handle that type of request!");
-			break;
 	}
+	while (retry);
 }
 
 void NetworkerThread::Run()
@@ -243,8 +290,7 @@ void NetworkerThread::PrepareQuit()
 	while (!m_requests.empty())
 		m_requests.pop();
 
-	NetRequest rq(0, 0, 0, NetRequest::QUIT);
-	m_requests.push(rq);
+	m_requests.push(NetRequest(0, 0, 0, NetRequest::QUIT));
 
 	m_requestLock.unlock();
 }

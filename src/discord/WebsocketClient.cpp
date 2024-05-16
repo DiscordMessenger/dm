@@ -1,8 +1,14 @@
 #include "WebsocketClient.hpp"
 #include "Frontend.hpp"
 #include "Util.hpp"
+#include "LocalSettings.hpp"
+
+#include <asio/ssl/context.hpp>
 
 static WebsocketClient g_WSCSingleton;
+
+// Doing the same thing as cpp-httplib
+void LoadSystemCertsOnWindows(asio::ssl::context& ctx);
 
 WebsocketClient* GetWebsocketClient()
 {
@@ -25,8 +31,30 @@ void WSConnectionMetadata::OnFail(WSClient* c, websocketpp::connection_hdl hdl)
 	m_server = pConn->get_response_header("Server");
 	m_errorReason = pConn->get_ec().message();
 
-	DbgPrintF("Failed to connect: %s (server %s)\n", m_errorReason.c_str(), m_server.c_str());
-	GetFrontend()->OnWebsocketFail(m_id, pConn->get_remote_close_code());
+	auto xportEc = pConn->get_transport_ec();
+
+	DbgPrintF("Failed to connect: %s (server '%s').  Transport error code 0x%x, message %s\n",
+		m_errorReason.c_str(), m_server.c_str(), xportEc.value(), xportEc.message().c_str());
+
+	std::string guiMessage = m_errorReason;
+	if (!m_server.empty())
+		guiMessage += " (server: " + m_server + ")";
+	if (xportEc)
+		guiMessage += " (transport error " + xportEc.message() + ")";
+
+	namespace SocketErrors = websocketpp::transport::asio::socket::error;
+	bool isTLSError = false;
+	switch (pConn->get_ec().value()) {
+		case SocketErrors::missing_tls_init_handler:
+		case SocketErrors::tls_failed_sni_hostname:
+		case SocketErrors::tls_handshake_timeout:
+		case SocketErrors::tls_handshake_failed:
+		case SocketErrors::invalid_tls_context:
+		case SocketErrors::security:
+			isTLSError = true;
+	}
+
+	GetFrontend()->OnWebsocketFail(m_id, pConn->get_ec().value(), guiMessage, isTLSError);
 }
 
 void WSConnectionMetadata::OnClose(WSClient* c, websocketpp::connection_hdl hdl)
@@ -43,7 +71,7 @@ void WSConnectionMetadata::OnClose(WSClient* c, websocketpp::connection_hdl hdl)
 
 	m_errorReason = s.str();
 	
-	GetFrontend()->OnWebsocketClose(m_id, pConn->get_remote_close_code());
+	GetFrontend()->OnWebsocketClose(m_id, pConn->get_remote_close_code(), s.str());
 }
 
 void WSConnectionMetadata::OnMessage(websocketpp::connection_hdl hdl, WSClient::message_ptr msg)
@@ -72,16 +100,22 @@ WebsocketClient::~WebsocketClient()
 AsioSslContextSharedPtr WebsocketClient::HandleTLSInit(websocketpp::connection_hdl hdl)
 {
 	// establishes a SSL connection
-	AsioSslContextSharedPtr ctx = std::make_shared<AsioSslContext>(AsioSslContext::sslv23);
+	AsioSslContextSharedPtr ctx = std::make_shared<AsioSslContext>(AsioSslContext::tls);
 
 	try
 	{
 		ctx->set_options(
 			websocketpp::lib::asio::ssl::context::default_workarounds |
-			websocketpp::lib::asio::ssl::context::no_sslv2 |
-			websocketpp::lib::asio::ssl::context::no_sslv3 |
 			websocketpp::lib::asio::ssl::context::single_dh_use
 		);
+
+		if (GetLocalSettings()->EnableTLSVerification())
+		{
+			ctx->set_default_verify_paths();
+#ifdef _WIN32
+			LoadSystemCertsOnWindows(*ctx);
+#endif
+		}
 	}
 	catch (std::exception& e)
 	{
@@ -89,6 +123,20 @@ AsioSslContextSharedPtr WebsocketClient::HandleTLSInit(websocketpp::connection_h
 	}
 
 	return ctx;
+}
+
+void WebsocketClient::HandleSocketInit(websocketpp::connection_hdl hdl, AsioSocketType& socket)
+{
+	WSClient::connection_ptr pConn = m_endpoint.get_con_from_hdl(hdl);
+
+	if (GetLocalSettings()->EnableTLSVerification())
+	{
+		socket.set_verify_mode(websocketpp::lib::asio::ssl::verify_peer);
+
+		if (!SSL_set_tlsext_host_name(reinterpret_cast<SSL*>(socket.native_handle()), "gateway.discord.gg")) {
+			DbgPrintF("Failed to set SNI host name... this might go awry");
+		}
+	}
 }
 
 void WebsocketClient::Init()
@@ -101,6 +149,12 @@ void WebsocketClient::Init()
 		&WebsocketClient::HandleTLSInit,
 		this,
 		websocketpp::lib::placeholders::_1
+	));
+	m_endpoint.set_socket_init_handler(websocketpp::lib::bind(
+		&WebsocketClient::HandleSocketInit,
+		this,
+		websocketpp::lib::placeholders::_1,
+		websocketpp::lib::placeholders::_2
 	));
 	m_thread.reset(new websocketpp::lib::thread(&WSClient::run, &m_endpoint));
 	m_bKilled = false;

@@ -64,8 +64,8 @@ public:
 
 	// Called by WebSocketClient, dispatches to relevant places including DiscordInstance
 	virtual void OnWebsocketMessage(int gatewayID, const std::string& payload) = 0;
-	virtual void OnWebsocketClose(int gatewayID, int errorCode) = 0;
-	virtual void OnWebsocketFail(int gatewayID, int errorCode) = 0;
+	virtual void OnWebsocketClose(int gatewayID, int errorCode, const std::string& message) = 0;
+	virtual void OnWebsocketFail(int gatewayID, int errorCode, const std::string& message, bool isTLSError) = 0;
 
 	// Heartbeat interval
 	virtual void SetHeartbeatInterval(int timeMs) = 0;

@@ -398,7 +398,7 @@ BEGIN
     CONTROL         "",IDC_STATIC_PROFILE_IMAGE,"Static",SS_BITMAP | SS_CENTERIMAGE,12,18,24,22
 END
 
-IDD_DIALOG_APPEARANCE DIALOGEX 0, 0, 260, 200
+IDD_DIALOG_APPEARANCE DIALOGEX 0, 0, 260, 242
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
@@ -527,21 +527,30 @@ BEGIN
     GROUPBOX        "Search Results",IDC_QUICK_GROUP,7,38,294,99
 END
 
-IDD_DIALOG_CONNECTION DIALOGEX 0, 0, 260, 200
+IDD_DIALOG_CONNECTION DIALOGEX 0, 0, 260, 242
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    GROUPBOX        "Discord API && CDN",IDC_STATIC,6,7,245,133
+    GROUPBOX        "Discord API && CDN",IDC_STATIC,6,7,245,128
     LTEXT           "Discord API URL:",IDC_STATIC,12,20,55,8
     LTEXT           "Discord CDN URL:",IDC_STATIC,12,35,58,8
     EDITTEXT        IDC_EDIT_DISCORDAPI,72,17,174,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_DISCORDCDN,72,33,174,14,ES_AUTOHSCROLL
-    PUSHBUTTON      "Revert to official Discord backend",IDC_REVERTTODEFAULT,11,120,118,14
-    PUSHBUTTON      "Update",IDC_UPDATE,197,120,50,14
-    ICON            IDI_WARNING_IC,IDC_ICON_WARN_CONNECT,11,55,21,20,SS_REALSIZEIMAGE
+    PUSHBUTTON      "Revert to official Discord backend",IDC_REVERTTODEFAULT,11,116,118,14
+    PUSHBUTTON      "Update",IDC_UPDATE,197,116,50,14
+    ICON            IDI_WARNING_IC,IDC_ICON_WARN_CONNECT,11,55,20,20,SS_REALSIZEIMAGE
     LTEXT           "For security reasons, when you update the URLs that Discord Messenger uses to interface with Discord's backend, you will be logged out. (your token is forgotten but not revoked)",IDC_STATIC,30,54,214,31
-    ICON            IDI_WARNING_IC,IDC_ICON_WARN_WEBSOCKETSTUFF,12,87,21,20,SS_REALSIZEIMAGE
-    LTEXT           "Wondering where the websocket gateway URL is located? Well, Discord Messenger issues a request to API_URL/gateway, which tells it the websocket URL to use.",IDC_STATIC,30,87,214,31
+    ICON            IDI_WARNING_IC,IDC_ICON_WARN_WEBSOCKETSTUFF,12,87,20,20,SS_REALSIZEIMAGE
+    LTEXT           "Wondering where the websocket gateway URL is located? Well, Discord Messenger issues a request to API_URL/gateway, which tells it the websocket URL to use.",IDC_STATIC,30,87,214,29
+    GROUPBOX        "Security Settings",IDC_STATIC,6,139,245,48
+    ICON            IDI_WARNING_IC,IDC_ICON_WARN_WEBSOCKETSTUFF2,12,166,20,20,SS_REALSIZEIMAGE
+    LTEXT           "WARNING: Disabling TLS certificate verification could expose you to MITM (man-in-the-middle) attacks via certificate spoofing!",IDC_STATIC,30,165,214,19
+    CONTROL         "Enable TLS certificate verification",IDC_ENABLE_TLS_CHECKS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,151,230,10
+    GROUPBOX        "Check for Updates",IDC_STATIC,6,194,245,40
+    CONTROL         "Check for updates using the GitHub API",IDC_CHECK_UPDATES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,204,232,10
+    LTEXT           "iProgramInCpp cannot see your IP address via the update service.",IDC_STATIC,12,219,231,10
 END
 
 
@@ -643,7 +652,7 @@ BEGIN
         LEFTMARGIN, 6
         RIGHTMARGIN, 251
         TOPMARGIN, 7
-        BOTTOMMARGIN, 192
+        BOTTOMMARGIN, 234
     END
 END
 #endif    // APSTUDIO_INVOKED

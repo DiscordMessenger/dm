@@ -19,6 +19,8 @@
 #include "../discord/Util.hpp"
 #endif
 
+#include "../discord/WebsocketClient.hpp"
+
 #define DEFAULT_DPI (96)
 
 extern HWND g_Hwnd; // main.hpp
@@ -880,9 +882,41 @@ bool GetDataFromBitmap(HDC hdc, HBITMAP hbm, BYTE*& pBytes, int& width, int& hei
 	return true;
 }
 
+std::string CutOutURLPath(const std::string& url)
+{
+	const char* pData = url.c_str();
+
+	// All this is to cut out the part after the URL. (so https://discord.com/test -> https://discord.com)
+	int slashesToSkip = 1;
+
+	const char* startLookUp = strstr(pData, "://");
+	if (startLookUp)
+		slashesToSkip = 3;
+	else
+		startLookUp = pData;
+
+	size_t i = 0;
+	for (; startLookUp[i] != '\0'; i++) {
+		if (startLookUp[i] == '/')
+			slashesToSkip--;
+		if (!slashesToSkip)
+			break;
+	}
+
+	std::string actualUrl;
+	if (slashesToSkip != 0) {
+		actualUrl = std::string(pData);
+	}
+	else {
+		actualUrl = std::string(pData, i + (startLookUp - pData));
+	}
+
+	return actualUrl;
+}
+
 int HandleGestureMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, float mulDeltas)
 {
-	// N.B.  If WINVER is less than Windows 7, then MWAS will take pn winuser's duties
+	// N.B.  If WINVER is less than Windows 7, then MWAS will take on winuser's duties
 	// of defining the structs and constants used.
 	GESTUREINFO gi = { 0 };
 	gi.cbSize = sizeof(GESTUREINFO);
@@ -918,4 +952,16 @@ int HandleGestureMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, flo
 
 	(void)mulDeltas;
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+#include <httplib/httplib.h>
+
+void LoadSystemCertsOnWindows(asio::ssl::context& ctx)
+{
+	X509_STORE* store = X509_STORE_new();
+
+	// cpp-httplib
+	httplib::detail::load_system_certs_on_windows(store);
+
+	SSL_CTX_set_cert_store(ctx.native_handle(), store);
 }

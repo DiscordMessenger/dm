@@ -173,6 +173,9 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 			SetDlgItemText(hwndDlg, IDC_EDIT_DISCORDAPI, tstrAPI);
 			SetDlgItemText(hwndDlg, IDC_EDIT_DISCORDCDN, tstrCDN);
 
+			CheckDlgButton(hwndDlg, IDC_ENABLE_TLS_CHECKS, GetLocalSettings()->EnableTLSVerification() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_CHECK_UPDATES, GetLocalSettings()->CheckUpdates() ? BST_CHECKED : BST_UNCHECKED);
+
 			free(tstrAPI);
 			free(tstrCDN);
 
@@ -299,6 +302,34 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 				{
 					switch (wParam)
 					{
+						case IDC_ENABLE_TLS_CHECKS:
+						{
+							bool state = IsDlgButtonChecked(hWnd, IDC_ENABLE_TLS_CHECKS);
+							if (!state) {
+								if (MessageBox(
+										hWnd,
+										TEXT("WARNING:\n\nYou are about to change the TLS certificate verification setting. This may expose you to MITM (man-in-the-middle) ")
+										TEXT("attacks. It is recommended you instead import the required certificates into Windows.\n\nAre you sure you want to do this? ")
+										TEXT("(you can re-enable it anytime in the preferences menu)"),
+										TmGetTString(IDS_PROGRAM_NAME),
+										MB_ICONWARNING | MB_YESNO
+									) != IDYES)
+								{
+									CheckDlgButton(hWnd, IDC_ENABLE_TLS_CHECKS, BST_CHECKED);
+									break;
+								}
+							}
+
+							GetLocalSettings()->SetEnableTLSVerification(state);
+							break;
+						}
+
+						case IDC_CHECK_UPDATES:
+						{
+							GetLocalSettings()->SetCheckUpdates(IsDlgButtonChecked(hWnd, IDC_CHECK_UPDATES));
+							break;
+						}
+
 						case IDC_REVERTTODEFAULT:
 						case IDC_UPDATE:
 						{

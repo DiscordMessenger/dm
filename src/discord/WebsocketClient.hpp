@@ -28,6 +28,7 @@ typedef websocketpp::client<websocketpp::config::asio_tls_client> WSClient;
 typedef websocketpp::lib::shared_ptr<websocketpp::lib::thread> WSThreadSharedPtr;
 typedef websocketpp::lib::asio::ssl::context AsioSslContext;
 typedef websocketpp::lib::shared_ptr<AsioSslContext> AsioSslContextSharedPtr;
+typedef websocketpp::transport::asio::tls_socket::connection::socket_type AsioSocketType;
 
 class WSConnectionMetadata
 {
@@ -54,7 +55,7 @@ public:
 	void OnFail(WSClient* c, websocketpp::connection_hdl hdl);
 	void OnClose(WSClient* c, websocketpp::connection_hdl hdl);
 	void OnMessage(websocketpp::connection_hdl hdl, WSClient::message_ptr msg);
- 
+
 	websocketpp::connection_hdl GetHDL() const
 	{
 		return m_hdl;
@@ -118,6 +119,9 @@ private:
 
 	// Handle TLS initialization.
 	AsioSslContextSharedPtr HandleTLSInit(websocketpp::connection_hdl hdl);
+
+	// Handle socket initialization.
+	void HandleSocketInit(websocketpp::connection_hdl hdl, AsioSocketType& socketType);
 };
 
 WebsocketClient* GetWebsocketClient();
