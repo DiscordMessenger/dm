@@ -262,7 +262,9 @@ void DrawBitmap(HDC hdc, HBITMAP bitmap, int x, int y, LPRECT clip, COLORREF tra
 	BITMAP bm = {};
 	HGDIOBJ objOld = SelectObject(hdcMem, bitmap);
 	GetObject(bitmap, sizeof bm, &bm);
-	SelectClipRgn(hdc, hrgn);
+
+	if (hrgn)
+		SelectClipRgn(hdc, hrgn);
 
 	int scaledW = bm.bmWidth;
 	int scaledH = bm.bmHeight;
@@ -303,6 +305,8 @@ void DrawBitmap(HDC hdc, HBITMAP bitmap, int x, int y, LPRECT clip, COLORREF tra
 
 	if (clip) {
 		SelectClipRgn(hdc, NULL);
+	}
+	if (hrgn) {
 		DeleteObject(hrgn);
 	}
 }

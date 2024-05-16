@@ -23,6 +23,9 @@ struct ImagePlace {
 	
 	ImagePlace() {}
 	ImagePlace(eImagePlace t, Snowflake s, const std::string& p, const std::string& k) : type(t), sf(s), place(p), key(k) {}
+
+	bool IsAttachment() const { return type == eImagePlace::ATTACHMENTS; }
+	std::string GetURL() const;
 };
 
 #define HBITMAP_LOADING ((HBITMAP) 0xDDCCBBAA)
@@ -70,6 +73,9 @@ public:
 
 	// Trim X bitmap slots.  This makes room for others.
 	int  TrimBitmaps(int num = 1);
+
+	// Age all loaded bitmaps.  This is used to determine which ones are least frequent and ripe to purge.
+	void AgeBitmaps();
 
 	// Clear the processing requests set.  These requests will never be fulfilled.
 	void ClearProcessingRequests();

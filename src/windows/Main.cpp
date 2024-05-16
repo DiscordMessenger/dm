@@ -564,8 +564,16 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
+int g_agerCounter = 0;
+
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	g_agerCounter++;
+	if (g_agerCounter >= 50) {
+		g_agerCounter = 0;
+		GetAvatarCache()->AgeBitmaps();
+	}
+
 	switch (uMsg)
 	{
 		case WM_SSLERROR:
@@ -1413,9 +1421,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	wc.hIcon         = g_Icon = LoadIcon(hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)));
 	wc.lpszMenuName  = MAKEINTRESOURCE(IDR_MAINMENU);
 
-	g_DefaultProfilePicture = LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_DEFAULT));
-	g_ProfileBorderIcon     = (HICON) LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER)),      IMAGE_ICON, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
-	g_ProfileBorderIconGold = (HICON) LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER_GOLD)), IMAGE_ICON, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+	g_DefaultProfilePicture = (HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_DEFAULT),                   IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+	g_ProfileBorderIcon     = (HICON)  LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER)),      IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+	g_ProfileBorderIconGold = (HICON)  LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER_GOLD)), IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
 
 	InitializeStatusIcons();
 

@@ -600,13 +600,16 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				
 				HBITMAP hbm;
 				std::string textOver = "";
+				bool loadedByLoadBitmap = false;
 
 				if (pGuild->m_snowflake == 0)
 				{
+					loadedByLoadBitmap = true;
 					hbm = LoadBitmap(g_hInstance, MAKEINTRESOURCE(IDB_DEFAULT));
 				}
 				else if (pGuild->m_avatarlnk.empty())
 				{
+					loadedByLoadBitmap = true;
 					hbm = LoadBitmap(g_hInstance, MAKEINTRESOURCE(IDB_EMPTY));
 					textOver = MakeIconStringFromName(pGuild->m_name);
 				}
@@ -618,6 +621,11 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				int oldY = y;
 				pThis->DrawServerIcon(hdc, hbm, y, rect, sf, textOver);
 				DrawMentionStatus(hdc, rect.left + BORDER_SIZE + ScaleByDPI(6), rect.top + BORDER_SIZE + ScaleByDPI(4) + oldY, mentionCount);
+
+				if (loadedByLoadBitmap)
+				{
+					DeleteObject(hbm);
+				}
 			}
 
 			RECT finalRect = rect;

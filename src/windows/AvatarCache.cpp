@@ -3,6 +3,8 @@
 #include "WinUtils.hpp"
 #include "ImageLoader.hpp"
 
+#define MAX_BITMAPS_KEEP_LOADED (256)
+
 static AvatarCache s_AvatarCacheSingleton;
 AvatarCache* GetAvatarCache() {
 	return &s_AvatarCacheSingleton;
@@ -37,6 +39,13 @@ void AvatarCache::AddImagePlace(const std::string& resource, eImagePlace ip, con
 void AvatarCache::SetBitmap(const std::string& resource, HBITMAP hbm)
 {
 	std::string id = MakeIdentifier(resource);
+
+	// Remove the least recently used bitmap until the maximum amount is loaded.
+	while (m_profileToBitmap.size() > MAX_BITMAPS_KEEP_LOADED)
+	{
+		if (!TrimBitmap())
+			break;
+	}
 
 	auto iter = m_profileToBitmap.find(id);
 	if (iter != m_profileToBitmap.end())
@@ -93,6 +102,7 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource)
 	std::string final_path = GetCachePath() + "\\" + id;
 	if (FileExists(final_path))
 	{
+		DbgPrintW("Loading image %s", final_path.c_str());
 		// load that instead.
 		FILE* f = fopen(final_path.c_str(), "rb");
 		fseek(f, 0, SEEK_END);
@@ -126,46 +136,20 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource)
 		return GetBitmapSpecial(id);
 	}
 
-	bool bIsAttachment = false;
-	std::string path = "";
-	switch (iterIP->second.type)
+	std::string url = iterIP->second.GetURL();
+
+	if (!url.empty())
 	{
-		case eImagePlace::AVATARS:
-			path = "avatars";
-			break;
-		case eImagePlace::ICONS:
-			path = "icons";
-			break;
-		case eImagePlace::ATTACHMENTS:
-			path = "z";
-			bIsAttachment = true;
-			break;
-	}
-
-	if (!path.empty())
-	{
-		std::string pfpLink;
-
-		if (bIsAttachment)
-			pfpLink = iterIP->second.place;
-		else
-			pfpLink = GetDiscordCDN() + path + "/" + std::to_string(iterIP->second.sf) + "/" + iterIP->second.place
-			#ifdef WEBP_SUP
-			+ ".webp";
-			#else
-			+ ".png";
-			#endif // WEBP_SUB
-
 		// if not inserted already
-		if (!m_loadingResources.insert(pfpLink).second)
+		if (!m_loadingResources.insert(url).second)
 			return GetBitmapSpecial(id);
 
 		// send a request to the networker thread to grab the profile picture
 		GetHTTPClient()->PerformRequest(
 			false,
 			NetRequest::GET,
-			pfpLink,
-			bIsAttachment ? DiscordRequest::IMAGE_ATTACHMENT : DiscordRequest::IMAGE,
+			url,
+			iterIP->second.IsAttachment() ? DiscordRequest::IMAGE_ATTACHMENT : DiscordRequest::IMAGE,
 			uint64_t(iterIP->second.sf),
 			"",
 			GetDiscordToken(),
@@ -173,7 +157,9 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource)
 		);
 	}
 	else
-		DbgPrintW("Image %s could not be downloaded! Path is empty!", id.c_str());
+	{
+		DbgPrintW("Image %s could not be downloaded! URL is empty!", id.c_str());
+	}
 
 	return GetBitmapSpecial(id);
 }
@@ -222,8 +208,11 @@ bool AvatarCache::TrimBitmap()
 	int maxAge = 0;
 	std::string rid = "";
 
-	for (auto b : m_profileToBitmap) {
-		if (maxAge < b.second.second) {
+	for (auto &b : m_profileToBitmap) {
+		if (maxAge < b.second.second &&
+			b.second.first != GetDefaultBitmap() &&
+			b.second.first != HBITMAP_ERROR &&
+			b.second.first != HBITMAP_LOADING) {
 			maxAge = b.second.second;
 			rid    = b.first;
 		}
@@ -234,6 +223,12 @@ bool AvatarCache::TrimBitmap()
 	auto iter = m_profileToBitmap.find(rid);
 	assert(iter != m_profileToBitmap.end());
 
+	auto iter2 = m_loadingResources.find(m_imagePlaces[iter->first].GetURL());
+
+	if (iter2 != m_loadingResources.end())
+		m_loadingResources.erase(iter2);
+
+	DbgPrintW("Deleting bitmap %s", rid.c_str());
 	DeleteBitmapIfNeeded(iter->second.first);
 	m_profileToBitmap.erase(iter);
 
@@ -251,6 +246,13 @@ int AvatarCache::TrimBitmaps(int count)
 	return trimCount;
 }
 
+void AvatarCache::AgeBitmaps()
+{
+	for (auto &b : m_profileToBitmap) {
+		b.second.second++;
+	}
+}
+
 void AvatarCache::ClearProcessingRequests()
 {
 	m_loadingResources.clear();
@@ -258,6 +260,43 @@ void AvatarCache::ClearProcessingRequests()
 
 void AvatarCache::DeleteBitmapIfNeeded(HBITMAP hbm)
 {
-	if (hbm && hbm != HBITMAP_LOADING && hbm != GetDefaultBitmap())
-		DeleteObject(hbm);
+	if (hbm && hbm != HBITMAP_LOADING && hbm != HBITMAP_ERROR && hbm != GetDefaultBitmap())
+	{
+		BOOL result = DeleteObject(hbm);
+		assert(result);
+	}
+}
+
+std::string ImagePlace::GetURL() const
+{
+	bool bIsAttachment = false;
+	std::string path = "";
+	switch (type)
+	{
+		case eImagePlace::AVATARS:
+			path = "avatars";
+			break;
+		case eImagePlace::ICONS:
+			path = "icons";
+			break;
+		case eImagePlace::ATTACHMENTS:
+			path = "z";
+			bIsAttachment = true;
+			break;
+	}
+
+	if (path.empty()) {
+		DbgPrintW("Image %s could not be downloaded! Path is empty!", key.c_str());
+		return "";
+	}
+
+	if (bIsAttachment)
+		return place;
+
+	return GetDiscordCDN() + path + "/" + std::to_string(sf) + "/" + place
+#ifdef WEBP_SUP
+		+ ".webp";
+#else
+		+ ".png";
+#endif // WEBP_SUB
 }

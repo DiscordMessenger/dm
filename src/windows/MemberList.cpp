@@ -247,10 +247,10 @@ void MemberList::Initialize()
 
 void MemberList::InitializeImageList()
 {
-	m_imageOffline = (HBITMAP) LoadBitmap(g_hInstance, MAKEINTRESOURCE(IDB_STATUS_OFFLINE));
-	m_imageDnd     = (HBITMAP) LoadBitmap(g_hInstance, MAKEINTRESOURCE(IDB_STATUS_DND));
-	m_imageIdle    = (HBITMAP) LoadBitmap(g_hInstance, MAKEINTRESOURCE(IDB_STATUS_IDLE));
-	m_imageOnline  = (HBITMAP) LoadBitmap(g_hInstance, MAKEINTRESOURCE(IDB_STATUS_ONLINE));
+	m_imageOffline = (HBITMAP) LoadImage(g_hInstance, MAKEINTRESOURCE(IDB_STATUS_OFFLINE), IMAGE_BITMAP, 0, 0, LR_SHARED | LR_CREATEDIBSECTION);
+	m_imageDnd     = (HBITMAP) LoadImage(g_hInstance, MAKEINTRESOURCE(IDB_STATUS_DND),     IMAGE_BITMAP, 0, 0, LR_SHARED | LR_CREATEDIBSECTION);
+	m_imageIdle    = (HBITMAP) LoadImage(g_hInstance, MAKEINTRESOURCE(IDB_STATUS_IDLE),    IMAGE_BITMAP, 0, 0, LR_SHARED | LR_CREATEDIBSECTION);
+	m_imageOnline  = (HBITMAP) LoadImage(g_hInstance, MAKEINTRESOURCE(IDB_STATUS_ONLINE),  IMAGE_BITMAP, 0, 0, LR_SHARED | LR_CREATEDIBSECTION);
 }
 
 LRESULT MemberList::ListWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
