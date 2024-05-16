@@ -765,16 +765,13 @@ void MessageList::RefetchMessages(Snowflake gapCulprit)
 	std::set<Snowflake> usersToLoad;
 
 	uint64_t ts = GetTimeUs();
-	if (gapCulprit)
+	for (auto iter = m_messages.begin(); iter != m_messages.end(); ++iter)
 	{
-		for (auto iter = m_messages.begin(); iter != m_messages.end(); ++iter)
+		if (gapCulprit == iter->m_msg.m_snowflake)
 		{
-			if (gapCulprit == iter->m_msg.m_snowflake)
-			{
-				updateRect = iter->m_rect;
-				haveUpdateRect = true;
-				break;
-			}
+			updateRect = iter->m_rect;
+			haveUpdateRect = true;
+			break;
 		}
 	}
 

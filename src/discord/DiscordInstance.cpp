@@ -117,6 +117,8 @@ void DiscordInstance::OnSelectChannel(Snowflake sf, bool bSendSubscriptionUpdate
 	m_channelHistory.AddToHistory(m_CurrentChannel);
 	m_CurrentChannel = sf;
 
+	pGuild->m_currentChannel = m_CurrentChannel;
+
 	GetFrontend()->UpdateSelectedChannel();
 
 	if (!GetCurrentChannel() || !GetCurrentGuild())
