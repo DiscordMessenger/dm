@@ -673,6 +673,9 @@ void MessageList::DeleteMessage(Snowflake sf)
 
 	bool wasFirstMessage = niter == m_messages.begin();
 
+	int afterMessageInitialHeight = 0;
+	int afterMessageNowHeight = 0;
+
 	if (afteriter != m_messages.end())
 	{
 		Snowflake sf = Snowflake(-1);
@@ -687,6 +690,8 @@ void MessageList::DeleteMessage(Snowflake sf)
 			pl = beforeiter->m_placeInChain;
 		}
 
+		afterMessageInitialHeight = afteriter->m_height;
+
 		bool shouldRecalc = false;
 		if (ShouldStartNewChain(sf, tm, pl, et, *afteriter)) {
 			afteriter->m_placeInChain = 0; // don't care about the rest to be honest
@@ -698,28 +703,26 @@ void MessageList::DeleteMessage(Snowflake sf)
 		}
 
 		if (shouldRecalc) {
-			// recalculate
-			int oldHeight = afteriter->m_height;
 			DetermineMessageMeasurements(*afteriter);
-			int diff = afteriter->m_height - oldHeight;
-			messageHeight -= diff;
-			// TODO: invalidatelater crap
 		}
+
+		afterMessageNowHeight = afteriter->m_height;
 	}
 
 	m_messages.erase(niter); // still stupid that I have to do this decrement crap
 
-	UpdateScrollBar(-messageHeight, -messageHeight, false, false);
+	int deltaMessageAfter = afterMessageNowHeight - afterMessageInitialHeight;
+	int pullDownAmount = messageHeight - deltaMessageAfter;
+	messageRect.bottom -= deltaMessageAfter;
+
+	UpdateScrollBar(-pullDownAmount, -pullDownAmount, false, false);
 
 	SendMessage(m_hwnd, WM_MSGLIST_PULLDOWN, 0, (LPARAM)&messageRect);
 
-	// HACKHACK: expand the refresh rect a bit if you delete the first message.
-	// This should really be fixed properly
-	if (wasFirstMessage) {
-		messageRect.top -= 50;
-		messageRect.bottom += 50;
-		InvalidateRect(m_hwnd, &messageRect, FALSE);
-	}
+	RECT invalRect = messageRect;
+	invalRect.top = invalRect.bottom;
+	invalRect.bottom += afterMessageNowHeight;
+	InvalidateRect(m_hwnd, &invalRect, FALSE);
 }
 
 void MessageList::Repaint()

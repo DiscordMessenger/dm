@@ -1667,26 +1667,24 @@ void DiscordInstance::HandleMessageInsertOrUpdate(Json& j, bool bIsUpdate)
 
 	if (!bIsUpdate)
 	{
-		if (msg.CheckWasMentioned(m_mySnowflake, guildId))
+		if (msg.CheckWasMentioned(m_mySnowflake, guildId) && m_CurrentChannel != channelId)
 			pChan->m_mentionCount++;
 	}
 
-	if (m_CurrentChannel == channelId)
-	{
-		if (pChan->m_lastViewedMsg == oldSentMsg)
-			pChan->m_lastViewedMsg = pChan->m_lastSentMsg;
-		else
-			GetFrontend()->UpdateChannelAcknowledge(channelId);
-	}
+	bool updateAck = false;
+
+	if (m_CurrentChannel == channelId && pChan->m_lastViewedMsg == oldSentMsg)
+		pChan->m_lastViewedMsg = pChan->m_lastSentMsg;
 	else
-	{
-		GetFrontend()->UpdateChannelAcknowledge(channelId);
-	}
+		updateAck = true;
 
 	if (bIsUpdate)
 		GetFrontend()->OnUpdateMessage(channelId, msg);
 	else
 		GetFrontend()->OnAddMessage(channelId, msg);
+
+	if (updateAck)
+		GetFrontend()->UpdateChannelAcknowledge(channelId);
 }
 
 void DiscordInstance::HandleMESSAGE_CREATE(Json& j)

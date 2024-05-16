@@ -243,6 +243,11 @@ void GuildLister::AskLeave(Snowflake guild)
 	}
 }
 
+void GuildLister::RedrawIconForGuild(Snowflake guild)
+{
+	InvalidateRect(m_hwnd, &m_iconRects[guild], TRUE);
+}
+
 LRESULT CALLBACK GuildLister::ParentWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	GuildLister* pThis = (GuildLister*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
@@ -266,12 +271,14 @@ LRESULT CALLBACK GuildLister::ParentWndProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-void DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, const std::string& textOver)
+void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, const std::string& textOver)
 {
 	int height = 0;
 	int pfpSize = GetProfilePictureSize();
 	int pfpBorderSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 	bool isCurrent = GetDiscordInstance()->GetCurrentGuildID() == id;
+
+	SetRectEmpty(&m_iconRects[id]);
 
 	if (hdc && hicon)
 	{
@@ -288,6 +295,8 @@ void DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, co
 			rect.top  + y + pfpBorderSize + BORDER_SIZE * 2
 		};
 
+		m_iconRects[id] = rcProfile;
+
 		int pfpBorderSize2 = GetProfileBorderRenderSize();
 
 		FillRect(hdc, &rcProfile, GetSysColorBrush(GUILD_LISTER_COLOR));
@@ -299,9 +308,16 @@ void DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, co
 	else if (hicon)
 	{
 		height = pfpBorderSize;
+
+		RECT rcProfile = {
+			rect.left + BORDER_SIZE,
+			rect.top + y,
+			rect.left + pfpBorderSize + BORDER_SIZE * 2,
+			rect.top + y + pfpBorderSize + BORDER_SIZE * 2
+		};
 	}
 
-	if (!textOver.empty())
+	if (hdc && !textOver.empty())
 	{
 		int mod = SetBkMode(hdc, TRANSPARENT);
 		COLORREF clr = SetTextColor(hdc, RGB(255, 255, 255));
@@ -600,7 +616,7 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 
 				int oldY = y;
-				DrawServerIcon(hdc, hbm, y, rect, sf, textOver);
+				pThis->DrawServerIcon(hdc, hbm, y, rect, sf, textOver);
 				DrawMentionStatus(hdc, rect.left + BORDER_SIZE + ScaleByDPI(6), rect.top + BORDER_SIZE + ScaleByDPI(4) + oldY, mentionCount);
 			}
 

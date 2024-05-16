@@ -25,6 +25,8 @@ public:
 
 	Snowflake m_rightClickedGuild = 0;
 
+	std::map<Snowflake, RECT> m_iconRects;
+
 public:
 	GuildLister();
 	~GuildLister();
@@ -37,6 +39,10 @@ public:
 	void OnScroll();
 	void ShowMenu(Snowflake guild, POINT pt);
 	void AskLeave(Snowflake guild);
+	void RedrawIconForGuild(Snowflake guild);
+
+private:
+	void DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, const std::string& textOver);
 
 public:
 	static WNDCLASS g_GuildListerParentClass;

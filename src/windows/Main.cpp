@@ -726,14 +726,22 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			Snowflake sf = *((Snowflake*)lParam);
 			auto inst = GetDiscordInstance();
+
+			Channel* pChan = GetDiscordInstance()->GetChannelGlobally(sf);
+
+			// Update the icon for the specific guild
+			g_pGuildLister->RedrawIconForGuild(pChan->m_parentGuild);
+
+			// Get the channel as is in the current guild; if found,
+			// update the channel view's ack status
 			Guild* pGuild = inst->GetGuild(inst->m_CurrentGuild);
 			if (!pGuild) break;
 
-			Channel* pChan = pGuild->GetChannel(sf);
-			if (!pChan) break;
+			pChan = pGuild->GetChannel(sf);
+			if (pChan)
+				break;
 
 			g_pChannelView->UpdateAcknowledgement(sf);
-
 			break;
 		}
 		case WM_UPDATECHANLIST:
