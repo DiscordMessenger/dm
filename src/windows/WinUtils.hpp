@@ -16,8 +16,6 @@
 #define WAsnprintf _snprintf
 #endif
 
-#define CPPHTTPLIB_OPENSSL_SUPPORT
-
 struct NetRequest;
 
 #if _WIN32_WINNT < 0x0600

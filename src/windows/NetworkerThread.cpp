@@ -5,11 +5,20 @@
 #include "../discord/LocalSettings.hpp"
 #include "../discord/Frontend.hpp"
 
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+
 #ifndef __MINGW32__
 #define __MINGW32__ // so that it doesn't use inet_pton
 #endif
 
 #include <httplib/httplib.h>
+
+void LoadSystemCertsOnWindows(SSL_CTX* ctx)
+{
+	X509_STORE* store = X509_STORE_new();
+	httplib::detail::load_system_certs_on_windows(store);
+	SSL_CTX_set_cert_store(ctx, store);
+}
 
 extern HWND g_Hwnd;
 

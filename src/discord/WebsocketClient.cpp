@@ -7,8 +7,9 @@
 
 static WebsocketClient g_WSCSingleton;
 
-// Doing the same thing as cpp-httplib
-void LoadSystemCertsOnWindows(asio::ssl::context& ctx);
+#ifdef _WIN32
+void LoadSystemCertsOnWindows(SSL_CTX* ctx);
+#endif
 
 WebsocketClient* GetWebsocketClient()
 {
@@ -113,7 +114,7 @@ AsioSslContextSharedPtr WebsocketClient::HandleTLSInit(websocketpp::connection_h
 		{
 			ctx->set_default_verify_paths();
 #ifdef _WIN32
-			LoadSystemCertsOnWindows(*ctx);
+			LoadSystemCertsOnWindows(ctx->native_handle());
 #endif
 		}
 	}

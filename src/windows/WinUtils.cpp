@@ -19,8 +19,6 @@
 #include "../discord/Util.hpp"
 #endif
 
-#include "../discord/WebsocketClient.hpp"
-
 #define DEFAULT_DPI (96)
 
 extern HWND g_Hwnd; // main.hpp
@@ -952,16 +950,4 @@ int HandleGestureMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, flo
 
 	(void)mulDeltas;
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
-}
-
-#include <httplib/httplib.h>
-
-void LoadSystemCertsOnWindows(asio::ssl::context& ctx)
-{
-	X509_STORE* store = X509_STORE_new();
-
-	// cpp-httplib
-	httplib::detail::load_system_certs_on_windows(store);
-
-	SSL_CTX_set_cert_store(ctx.native_handle(), store);
 }
