@@ -384,7 +384,6 @@ void DiscordInstance::OnSelectGuild(Snowflake sf, Snowflake chan)
 
 	// select the guild
 	m_CurrentGuild = sf;
-	m_CurrentChannel = 0;
 
 	// check if there are any channels and select the first (for now)
 	Guild* pGuild = GetGuild(sf);
@@ -412,6 +411,10 @@ void DiscordInstance::OnSelectGuild(Snowflake sf, Snowflake chan)
 			chan = pGuild->m_currentChannel;
 
 		OnSelectChannel(chan);
+	}
+	else
+	{
+		OnSelectChannel(0);
 	}
 
 	UpdateSubscriptions(sf, chan, true, true, true);
@@ -2063,7 +2066,8 @@ void DiscordInstance::HandleGuildMemberListUpdate_Insert(Snowflake guild, nlohma
 	Snowflake sf = ParseGuildMemberOrGroup(guild, item);
 
 	if (index < 0 || index >= pGld->m_members.size() + 1) {
-		assert(!"huh");
+		//assert(!"huh");
+		// TODO: Treat this case somehow
 		return;
 	}
 
@@ -2078,7 +2082,8 @@ void DiscordInstance::HandleGuildMemberListUpdate_Delete(Snowflake guild, nlohma
 	int index = j["index"];
 
 	if (index < 0 || index >= pGld->m_members.size()) {
-		assert(!"huh");
+		//assert(!"huh");
+		// TODO: Treat this case somehow
 		return;
 	}
 	
@@ -2101,7 +2106,8 @@ void DiscordInstance::HandleGuildMemberListUpdate_Update(Snowflake guild, nlohma
 	int index = j["index"];
 
 	if (index < 0 || index >= pGld->m_members.size()) {
-		assert(!"huh");
+		//assert(!"huh");
+		// TODO: Treat this case somehow
 		return;
 	}
 

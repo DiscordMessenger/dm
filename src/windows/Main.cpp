@@ -659,8 +659,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			if (!GetDiscordInstance()->GetCurrentChannel())
 			{
-				InvalidateRect(g_pMessageList->m_hwnd, NULL, false);
-				InvalidateRect(g_pGuildHeader->m_hwnd, NULL, false);
+				InvalidateRect(g_pMessageList->m_hwnd, NULL, TRUE);
+				InvalidateRect(g_pGuildHeader->m_hwnd, NULL, FALSE);
 				break;
 			}
 
@@ -668,7 +668,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			g_pMessageList->RefetchMessages();
 
-			InvalidateRect(g_pMessageList->m_hwnd, NULL, false);
+			InvalidateRect(g_pMessageList->m_hwnd, NULL, TRUE);
 			g_pGuildHeader->Update();
 			g_pMessageEditor->UpdateTextBox();
 

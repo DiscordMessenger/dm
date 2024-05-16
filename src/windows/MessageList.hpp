@@ -441,7 +441,7 @@ public:
 	}
 
 	void ProperlyResizeSubWindows();
-	int RecalcMessageSizes(bool update, int& repaintSize);
+	int RecalcMessageSizes(bool update, int& repaintSize, Snowflake addedMessagesBeforeThisID);
 	void FullRecalcAndRepaint();
 	void OnUpdateAttachment(Snowflake sf);
 	void OnUpdateEmbed(const std::string& res);
@@ -452,7 +452,7 @@ public:
 	bool SendToMessage(Snowflake sf, bool addGapIfNeeded = true);
 	void UpdateAllowDrop();
 	bool ShouldBeDateGap(time_t oldTime, time_t newTime);
-	bool ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, MessageType::eType prevType, const MessageItem& item);
+	bool ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, MessageType::eType prevType, const MessageItem& item, bool ifChainTooLongToo);
 
 public:
 	static WNDCLASS g_MsgListClass;

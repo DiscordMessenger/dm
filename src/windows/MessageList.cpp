@@ -693,7 +693,7 @@ void MessageList::DeleteMessage(Snowflake sf)
 		afterMessageInitialHeight = afteriter->m_height;
 
 		bool shouldRecalc = false;
-		if (ShouldStartNewChain(sf, tm, pl, et, *afteriter)) {
+		if (ShouldStartNewChain(sf, tm, pl, et, *afteriter, false)) {
 			afteriter->m_placeInChain = 0; // don't care about the rest to be honest
 			shouldRecalc = true;
 		}
@@ -734,6 +734,7 @@ void MessageList::ClearMessages()
 {
 	m_messages.clear();
 	m_total_height = 0;
+	UpdateScrollBar(0, 0, false);
 }
 
 void MessageList::RefetchMessages(Snowflake gapCulprit)
@@ -853,6 +854,8 @@ void MessageList::RefetchMessages(Snowflake gapCulprit)
 		++end;
 	*/
 
+	Snowflake insertAfter = UINT64_MAX;
+
 	for (auto iter = start; iter != end; ++iter)
 	{
 		auto& msg = *iter;
@@ -891,6 +894,8 @@ void MessageList::RefetchMessages(Snowflake gapCulprit)
 			}
 		}
 		else {
+			insertAfter = std::min(insertAfter, oldMsg->m_msg.m_snowflake);
+
 			MessageItem item = std::move(*oldMsg);
 			// we will, however, need to clear some things
 			item.m_messageRect = {};
@@ -910,9 +915,13 @@ void MessageList::RefetchMessages(Snowflake gapCulprit)
 
 	oldMessages.clear();
 
+	if (insertAfter == UINT64_MAX) {
+		insertAfter = 0;
+	}
+
 	ts = GetTimeUs();
 	int repaintSize = 0;
-	int scrollAdded = RecalcMessageSizes(gapCulprit == 0, repaintSize);
+	int scrollAdded = RecalcMessageSizes(gapCulprit == 0, repaintSize, insertAfter);
 	te = GetTimeUs();
 	DbgPrintW("Recalculation process took %lld us", te - ts);
 
@@ -2534,7 +2543,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			{
 				int rpsUnused = 0;
 				if (oldWidth != GET_X_LPARAM(lParam))
-					pThis->RecalcMessageSizes(true, rpsUnused);
+					pThis->RecalcMessageSizes(true, rpsUnused, 0);
 				else
 					pThis->UpdateScrollBar(0, oldHeight - newHeight, false, true);
 
@@ -3333,7 +3342,7 @@ void MessageList::FullRecalcAndRepaint()
 	}
 
 	int repaintSizeUnused = 0;
-	RecalcMessageSizes(true, repaintSizeUnused);
+	RecalcMessageSizes(true, repaintSizeUnused, 0);
 }
 
 void MessageList::AdjustHeightInfo(const MessageItem& msg, int& height, int& textheight, int& authheight, int& replyheight, int& attachheight, int& embedheight)
@@ -3419,12 +3428,12 @@ bool MessageList::ShouldBeDateGap(time_t oldTime, time_t newTime)
 	return !m_bManagedByOwner && (oldTime / 86400 != newTime / 86400);
 }
 
-bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, MessageType::eType prevType, const MessageItem& item)
+bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, MessageType::eType prevType, const MessageItem& item, bool ifChainTooLongToo)
 {
 	return m_bManagedByOwner || (
+		(prevPlaceInChain >= 10 && ifChainTooLongToo) ||
 		prevAuthor != item.m_msg.m_author_snowflake ||
 		prevTime + 15 * 60 < item.m_msg.m_dateTime ||
-		prevPlaceInChain >= 10 ||
 		item.m_msg.IsLoadGap() ||
 		item.m_msg.m_bHaveReferencedMessage ||
 		item.m_msg.m_type == MessageType::REPLY ||
@@ -3434,7 +3443,7 @@ bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int
 	);
 }
 
-int MessageList::RecalcMessageSizes(bool update, int& repaintSize)
+int MessageList::RecalcMessageSizes(bool update, int& repaintSize, Snowflake addedMessagesBeforeThisID)
 {
 	repaintSize = 0;
 	m_total_height = 0;
@@ -3461,21 +3470,29 @@ int MessageList::RecalcMessageSizes(bool update, int& repaintSize)
 
 		if (iter->m_message.Empty())
 		{
-			iter->m_bKeepHeightRecalc = false;
-			iter->Update(m_guildID);
+			// HACK
+			if (iter->m_msg.m_snowflake < addedMessagesBeforeThisID || addedMessagesBeforeThisID == 0) {
+				iter->m_bKeepHeightRecalc = false;
+				iter->Update(m_guildID);
+			}
 		}
-		
+
+		bool modifyChainOrder = addedMessagesBeforeThisID == 0 || iter->m_msg.m_snowflake <= addedMessagesBeforeThisID;
+
 		bool bIsDateGap = ShouldBeDateGap(prevTime, iter->m_msg.m_dateTime);
-		bool startNewChain = ShouldStartNewChain(prevAuthor, prevTime, prevPlaceInChain, prevType, *iter);
+		bool startNewChain = ShouldStartNewChain(prevAuthor, prevTime, prevPlaceInChain, prevType, *iter, modifyChainOrder);
 
 		bool msgOldIsDateGap = iter->m_bIsDateGap;
 		bool msgOldWasChainBeg = iter->m_placeInChain == 0;
 
 		iter->m_bIsDateGap = bIsDateGap;
-		iter->m_placeInChain = startNewChain ? 0 : 1 + prevPlaceInChain;
 
-		if (iter->m_msg.m_snowflake == 869674762446729297 || iter->m_msg.m_snowflake == 869674843224829964)
-			DbgPrintW("OK");
+		if (modifyChainOrder) {
+			iter->m_placeInChain = startNewChain ? 0 : 1 + prevPlaceInChain;
+		}
+		else {
+			startNewChain = msgOldWasChainBeg;
+		}
 
 		if (iter->m_bKeepHeightRecalc)
 		{
@@ -3486,8 +3503,8 @@ int MessageList::RecalcMessageSizes(bool update, int& repaintSize)
 			if (!startNewChain && msgOldWasChainBeg)
 				iter->m_height -= newChainHeight;
 
-			if (startNewChain && iter->m_placeInChain != 0) {
-				assert(!"Can this condition even be reached??");
+			if (startNewChain && !msgOldWasChainBeg) {
+				assert(!"This condition shouldn't even be reached");
 				iter->m_height += newChainHeight;
 			}
 
@@ -3798,7 +3815,7 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool rese
 	if (ShouldBeDateGap(prevDate, mi.m_msg.m_dateTime))
 		mi.m_bIsDateGap = true;
 
-	if (prevPlaceInChain < 0 || ShouldStartNewChain(prevAuthor, prevDate, prevPlaceInChain, prevType, mi))
+	if (prevPlaceInChain < 0 || ShouldStartNewChain(prevAuthor, prevDate, prevPlaceInChain, prevType, mi, true))
 		mi.m_placeInChain = 0;
 	else
 		mi.m_placeInChain = prevPlaceInChain + 1;
