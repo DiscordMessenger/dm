@@ -371,7 +371,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			RECT nameRect = pThis->m_rectLeft;
 			nameRect.left += ScaleByDPI(8);
-			DrawText(hdc, ctstrName, -1, &nameRect, DT_CALCRECT | DT_NOPREFIX | DT_WORD_ELLIPSIS);
+			DrawText(hdc, ctstrName, -1, &nameRect, DT_SINGLELINE | DT_CALCRECT | DT_NOPREFIX | DT_WORD_ELLIPSIS);
 			int nameHeight = nameRect.bottom - nameRect.top;
 
 			nameRect = pThis->m_rectLeft;
@@ -386,12 +386,12 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			nameRect.bottom = nameRect.top + nameHeight;
 
 			// draw the name text.
-			DrawText(hdc, ctstrName, -1, &nameRect, DT_NOPREFIX | DT_WORD_ELLIPSIS);
+			DrawText(hdc, ctstrName, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | DT_WORD_ELLIPSIS);
 			// also draw the subtitle text
 			SelectObject(hdc, g_GuildSubtitleFont);
 			nameRect.top += nameHeight;
 			nameRect.bottom += nameHeight;
-			DrawText(hdc, ctstrSubt, -1, &nameRect, DT_NOPREFIX | DT_WORD_ELLIPSIS);
+			DrawText(hdc, ctstrSubt, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | DT_WORD_ELLIPSIS);
 
 			// Measure the channel name.
 			SelectObject(hdc, g_GuildCaptionFont);
@@ -433,7 +433,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			nameRect = pThis->m_rectMid;
 			nameRect.left  += ScaleByDPI(20) + nameWidth;
 			nameRect.top   += (rectHeight - nameHeight) / 2;
-			DrawText(hdc, ctstrChIn, -1, &nameRect, DT_NOPREFIX | DT_WORD_ELLIPSIS);
+			DrawText(hdc, ctstrChIn, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | DT_WORD_ELLIPSIS);
 
 			SelectObject(hdc, objOld);
 
