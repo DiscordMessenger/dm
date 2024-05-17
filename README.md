@@ -35,6 +35,13 @@ See https://twitter.com/discord/status/1229357198918197248.
 
 ## Building
 
+Before you can start the build process, after cloning the project (You should NOT download it as
+ZIP, unless you know that you should also download the submodules individually and unzip them in
+the correct locations), check out the submodules with the command:
+`git submodule update --init`.
+
+Then you can start the build process.
+
 You can build this project in two ways.
 
 ### 1. Visual Studio
