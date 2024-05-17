@@ -2211,8 +2211,10 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 		RECT rcMsg = rc;
 		rcMsg.bottom -= item.m_attachHeight + item.m_embedHeight;
+		if (item.m_attachHeight)
+			rcMsg.bottom -= ATTACHMENT_GAP;
 		item.m_message.Layout(&mddc, Rect(W32RECT(rcMsg)), bIsCompact ? (item.m_authWidth + item.m_dateWidth + ScaleByDPI(10)) : 0);
-						
+		
 		Rect ext = item.m_message.GetExtent();
 		int height = std::max(item.m_authHeight, ext.Height());
 		int offsetY = ((rcMsg.bottom - rcMsg.top) - ext.Height()) / 2;
@@ -2335,6 +2337,8 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 	embedRect.right = msgRect.right - ScaleByDPI(10);
 	embedRect.top = embedRect.bottom;
+
+	if (bIsCompact) embedRect.left = rc.left;
 
 	for (size_t i = 0; i < sz; i++)
 	{
@@ -2890,7 +2894,15 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				SRCCOPY
 			);
 			ReleaseDC(hWnd, hdc);
-			InvalidateRect(hWnd, &refreshRect, false);
+
+			SCROLLINFO si;
+			ZeroMemory(&si, sizeof(SCROLLINFO));
+			si.cbSize = sizeof(SCROLLINFO);
+			si.fMask = SIF_PAGE;
+			GetScrollInfo(hWnd, SB_VERT, &si);
+
+			InvalidateRect(hWnd, &refreshRect, si.nPage > pThis->m_total_height);
+
 			break;
 		}
 		case WM_MOUSEMOVE:
@@ -3480,7 +3492,7 @@ int MessageList::RecalcMessageSizes(bool update, int& repaintSize, Snowflake add
 		bool modifyChainOrder = addedMessagesBeforeThisID == 0 || iter->m_msg.m_snowflake <= addedMessagesBeforeThisID;
 
 		bool bIsDateGap = ShouldBeDateGap(prevTime, iter->m_msg.m_dateTime);
-		bool startNewChain = ShouldStartNewChain(prevAuthor, prevTime, prevPlaceInChain, prevType, *iter, modifyChainOrder);
+		bool startNewChain = isCompact || ShouldStartNewChain(prevAuthor, prevTime, prevPlaceInChain, prevType, *iter, modifyChainOrder);
 
 		bool msgOldIsDateGap = iter->m_bIsDateGap;
 		bool msgOldWasChainBeg = iter->m_placeInChain == 0;

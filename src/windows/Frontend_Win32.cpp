@@ -331,7 +331,7 @@ void Frontend_Win32::OnWebsocketFail(int gatewayID, int errorCode, const std::st
 	if (isTLSError) {
 		_tcscat(
 			buffer,
-			TEXT("WARNING: Your connection may not be private\n\nDiscord Messenger could not verify that it is connecting to a Websocket service ")
+			TEXT("\n\nWARNING: Your connection may not be private\n\nDiscord Messenger could not verify that it is connecting to a Websocket service ")
 			TEXT("required to use Discord Messenger in real time.")
 			TEXT("\n\nThis could be because:")
 			TEXT("\no   Your computer does not trust the certificate that the gateway has declared because it is wrong,")
