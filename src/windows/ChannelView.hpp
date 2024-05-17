@@ -23,6 +23,8 @@ private:
 	std::map<Snowflake, int> m_idToIdx;
 	std::vector<ChannelMember> m_channels;
 
+	Snowflake m_currentChannel = 0;
+
 	HWND m_hwndParent;
 
 	int m_nCategoryExpandIcon,
@@ -46,6 +48,7 @@ public:
 	void RemoveCategoryIfNeeded(const Channel& ch);
 	void OnNotify(WPARAM wParam, LPARAM lParam);
 	void SetItemIcon(HTREEITEM hItem, int icon);
+	void OnUpdateSelectedChannel(Snowflake newCh);
 
 private:
 	int GetIcon(const Channel& ch, bool bIsExpanded);

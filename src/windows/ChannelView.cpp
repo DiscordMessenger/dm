@@ -150,6 +150,26 @@ HTREEITEM ChannelView::AddItemToTree(HWND hwndTV, LPTSTR lpszItem, HTREEITEM hPa
 	return prev;
 }
 
+void ChannelView::OnUpdateSelectedChannel(Snowflake newCh)
+{
+	if (m_currentChannel == newCh)
+		return;
+
+	m_currentChannel = newCh;
+
+	if (m_channels.empty())
+		return;
+
+	ChannelMember& member = m_channels[m_idToIdx[newCh]];
+	if (member.m_snowflake != newCh)
+		return;
+
+	if (!member.m_hItem)
+		return;
+
+	TreeView_SelectItem(m_hwnd, member.m_hItem);
+}
+
 void ChannelView::ClearChannels()
 {
 	m_channels.clear();
@@ -292,7 +312,7 @@ ChannelView* ChannelView::Create(HWND hwnd, LPRECT rect)
 		0,
 		WC_TREEVIEW,
 		TEXT("Tree View"),
-		WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASBUTTONS | TVS_TRACKSELECT,
+		WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASBUTTONS | TVS_TRACKSELECT | TVS_SHOWSELALWAYS,
 		rect->left,
 		rect->top,
 		rect->right - rect->left,
@@ -350,8 +370,10 @@ void ChannelView::OnNotify(WPARAM wParam, LPARAM lParam)
 
 			Snowflake sf = m_channels[item.lParam].m_snowflake;
 
-			if (sf)
+			if (sf) {
+				m_currentChannel = sf;
 				GetDiscordInstance()->OnSelectChannel(sf);
+			}
 
 			break;
 		}

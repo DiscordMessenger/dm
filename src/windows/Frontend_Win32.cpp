@@ -73,7 +73,7 @@ void Frontend_Win32::OnGenericError(const std::string& message)
 	std::string newMsg = message;
 	if (g_latestSSLError) {
 		char buff[128];
-		snprintf(buff, sizeof buff, "\n\nAdditionally, an SSL error code of 0x%x was provided.  Consider sending this to iProgramInCpp!");
+		snprintf(buff, sizeof buff, "\n\nAdditionally, an SSL error code of 0x%x was provided.  Consider sending this to iProgramInCpp!", g_latestSSLError);
 		newMsg += std::string(buff);
 		g_latestSSLError = 0;
 	}
@@ -212,7 +212,7 @@ void Frontend_Win32::OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_
 void Frontend_Win32::OnAttachmentFailed(bool bIsProfilePicture, const std::string& additData)
 {
 	if (bIsProfilePicture) {
-		DbgPrintW("Could not load profile picture %s", additData);
+		DbgPrintW("Could not load profile picture %s", additData.c_str());
 		return;
 	}
 

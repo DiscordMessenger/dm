@@ -5,6 +5,8 @@
 
 #define MAX_BITMAPS_KEEP_LOADED (256)
 
+//#define DISABLE_AVATAR_LOADING_FOR_DEBUGGING
+
 static AvatarCache s_AvatarCacheSingleton;
 AvatarCache* GetAvatarCache() {
 	return &s_AvatarCacheSingleton;
@@ -102,6 +104,7 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource)
 	std::string final_path = GetCachePath() + "\\" + id;
 	if (FileExists(final_path))
 	{
+#ifndef DISABLE_AVATAR_LOADING_FOR_DEBUGGING
 		DbgPrintW("Loading image %s", final_path.c_str());
 		// load that instead.
 		FILE* f = fopen(final_path.c_str(), "rb");
@@ -123,7 +126,7 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource)
 
 		// just return the default...
 		DbgPrintW("Image %s could not be decoded!", id.c_str());
-
+#endif
 		SetBitmap(id, HBITMAP_ERROR);
 		return GetBitmapSpecial(id);
 	}
@@ -144,6 +147,9 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource)
 		if (!m_loadingResources.insert(url).second)
 			return GetBitmapSpecial(id);
 
+#ifdef DISABLE_AVATAR_LOADING_FOR_DEBUGGING
+		GetFrontend()->OnAttachmentFailed(!iterIP->second.IsAttachment(), id);
+#else
 		// send a request to the networker thread to grab the profile picture
 		GetHTTPClient()->PerformRequest(
 			false,
@@ -155,6 +161,7 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource)
 			GetDiscordToken(),
 			id
 		);
+#endif
 	}
 	else
 	{

@@ -656,6 +656,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			Snowflake guildID = GetDiscordInstance()->GetCurrentGuildID();
 			Snowflake channID = GetDiscordInstance()->GetCurrentChannelID();
 
+			g_pChannelView->OnUpdateSelectedChannel(channID);
+
 			// repaint the message view
 			g_pMessageList->ClearMessages();
 			g_pMessageList->SetGuild(guildID);
@@ -1421,6 +1423,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	wc.hIcon         = g_Icon = LoadIcon(hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)));
 	wc.lpszMenuName  = MAKEINTRESOURCE(IDR_MAINMENU);
 
+	// NOTE: Despite that we pass LR_SHARED, if this "isn't a standard size" (whatever Microsoft means), we must still delete it!!
 	g_DefaultProfilePicture = (HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_DEFAULT),                   IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
 	g_ProfileBorderIcon     = (HICON)  LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER)),      IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
 	g_ProfileBorderIconGold = (HICON)  LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER_GOLD)), IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);

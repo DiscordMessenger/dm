@@ -24,10 +24,6 @@ public:
 	std::map<Snowflake, int> m_grpToGrpIdx;
 	std::map<Snowflake, int> m_usrToUsrIdx;
 	int m_hotItem = -1;
-	HBITMAP m_imageOffline;
-	HBITMAP m_imageDnd;
-	HBITMAP m_imageIdle;
-	HBITMAP m_imageOnline;
 
 public:
 	~MemberList();

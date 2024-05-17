@@ -51,7 +51,6 @@ void MemberList::ClearMembers()
 	m_usrToUsrIdx.clear();
 	m_grpToGrpIdx.clear();
 	m_imageIDs.clear();
-	InitializeImageList();
 	ListView_DeleteAllItems(m_listHwnd);
 	ListView_RemoveAllGroups(m_listHwnd);
 	ListView_EnableGroupView(m_listHwnd, true);
@@ -115,7 +114,7 @@ void MemberList::Update()
 			continue;
 
 		LVITEM lvi{};
-		lvi.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_STATE | LVIF_COLUMNS | LVIF_GROUPID;
+		lvi.mask = LVIF_TEXT | LVIF_STATE | LVIF_COLUMNS | LVIF_GROUPID;
 		lvi.stateMask = LVIS_OVERLAYMASK;
 		lvi.pszText = TEXT("");
 		lvi.iItem = m_nextItem;
@@ -247,10 +246,6 @@ void MemberList::Initialize()
 
 void MemberList::InitializeImageList()
 {
-	m_imageOffline = (HBITMAP) LoadImage(g_hInstance, MAKEINTRESOURCE(IDB_STATUS_OFFLINE), IMAGE_BITMAP, 0, 0, LR_SHARED | LR_CREATEDIBSECTION);
-	m_imageDnd     = (HBITMAP) LoadImage(g_hInstance, MAKEINTRESOURCE(IDB_STATUS_DND),     IMAGE_BITMAP, 0, 0, LR_SHARED | LR_CREATEDIBSECTION);
-	m_imageIdle    = (HBITMAP) LoadImage(g_hInstance, MAKEINTRESOURCE(IDB_STATUS_IDLE),    IMAGE_BITMAP, 0, 0, LR_SHARED | LR_CREATEDIBSECTION);
-	m_imageOnline  = (HBITMAP) LoadImage(g_hInstance, MAKEINTRESOURCE(IDB_STATUS_ONLINE),  IMAGE_BITMAP, 0, 0, LR_SHARED | LR_CREATEDIBSECTION);
 }
 
 LRESULT MemberList::ListWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
