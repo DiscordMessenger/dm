@@ -115,6 +115,7 @@ struct Channel
 		switch (m_channelType) {
 			case DM:    return "@";
 			case VOICE:
+			case NEWS:
 			case TEXT:  return "#";
 			default:    return "";
 		}
