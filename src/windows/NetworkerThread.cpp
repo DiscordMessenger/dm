@@ -25,7 +25,7 @@ extern HWND g_Hwnd;
 static NetworkerThread::nmutex g_sslErrorMutex;
 static bool g_bQuittingFromSSLError;
 
-int g_latestSSLError = 1; // HACK - used by httplib.h, to debug some weird issue
+int g_latestSSLError = 0; // HACK - used by httplib.h, to debug some weird issue
 
 int NetRequest::Priority() const
 {
