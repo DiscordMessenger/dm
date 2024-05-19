@@ -104,7 +104,7 @@ private:
 	bool m_bStartMaximized = false;
 	bool m_bIsFirstStart = false;
 	bool m_bCheckUpdates = false;
-	bool m_bAskToCheckUpdates = false;
+	bool m_bAskToCheckUpdates = true;
 	bool m_bEnableTLSVerification = true;
 	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
