@@ -108,7 +108,8 @@ void DiscordInstance::OnSelectChannel(Snowflake sf, bool bSendSubscriptionUpdate
 		return;
 
 	// Check if we have permission to view the channel.
-	if (pChan && !pChan->HasPermission(PERM_VIEW_CHANNEL))
+	if (m_channelDenyList.find(sf) != m_channelDenyList.end() ||
+		(pChan && !pChan->HasPermission(PERM_VIEW_CHANNEL)))
 	{
 		GetFrontend()->OnCantViewChannel(pChan->m_name);
 		return;
@@ -458,11 +459,25 @@ void DiscordInstance::HandleRequest(void* pRequestPtr)
 					return; // no mutual guilds
 
 				case MESSAGES:
-					str = "Sorry, you're not allowed to view that channel.";
-					OnSelectChannel(0);
+				{
+					Channel* pChan = GetChannelGlobally(pRequest->key);
+					std::string name;
+					if (pChan)
+						name = "#" + pChan->m_name;
+					else
+						name = "Unknown Channel " + std::to_string(pRequest->key);
+
+					str = "Sorry, you're not allowed to view the channel " + name + ".";
+
+					if (m_CurrentChannel == pRequest->key)
+						OnSelectChannel(0);
+
+					m_channelDenyList.insert(pRequest->key);
+
 					bShowMessageBox = true;
 					bExitAfterError = false;
 					break;
+				}
 
 				case MESSAGE_CREATE:
 				{

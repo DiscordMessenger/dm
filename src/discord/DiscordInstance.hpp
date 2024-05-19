@@ -181,6 +181,10 @@ public:
 	// Channel history
 	ChannelHistory m_channelHistory;
 
+	// List of channels user cannot view because an HTTPS request related
+	// to them returned a 403.  Frankly this shouldn't be usable, but oh well.
+	std::set<Snowflake> m_channelDenyList;
+
 public:
 	Profile* GetProfile() {
 		return GetProfileCache()->LookupProfile(m_mySnowflake, "", "", "", false);
