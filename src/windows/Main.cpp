@@ -1245,10 +1245,14 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_IMAGESAVED:
 		{
+			TCHAR buff[4096];
+			WAsnprintf(buff, _countof(buff), TmGetTString(IDS_SAVED_UPDATE), (LPCTSTR) lParam);
+			buff[_countof(buff) - 1] = 0;
+
 			// TODO: Probably should automatically extract and install it or something
 			MessageBox(
 				hWnd,
-				TmGetTString(IDS_SAVED_UPDATE),
+				buff,
 				TmGetTString(IDS_PROGRAM_NAME),
 				MB_ICONINFORMATION | MB_OK
 			);

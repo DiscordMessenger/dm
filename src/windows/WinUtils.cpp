@@ -604,8 +604,8 @@ void DownloadFileResponse(NetRequest* pRequest)
 
 	// yay!
 	DbgPrintW("File saved: %s", pRequest->additional_data.c_str());
+	SendMessage(hWnd, WM_IMAGESAVED, 0, (LPARAM)fileName);
 	free(fileName);
-	SendMessage(hWnd, WM_IMAGESAVED, 0, 0);
 	return;
 
 _error:

@@ -988,7 +988,7 @@ BEGIN
                             "Discord Messenger has had a new update!\n\nYour version: %s\nLatest version: %s\n\nWould you like to download the new version?\n\nNote: No web browser window will be opened, the app itself will download the files into a location you choose.\nNote: You won't be bugged again for 3 days."
     IDS_FAILED_UPDATE_CHECK "Failed to check for updates! (error %d, message '%s').\n\nTrying again when the app restarts."
     IDS_FAILED_TO_UPLOAD    "Error! Can't upload file %s, got error %d."
-    IDS_SAVED_UPDATE        "Downloaded update successfully.  Go extract it and enjoy!"
+    IDS_SAVED_UPDATE        "Your downloaded file was saved at the following path: %s."
     IDS_MAY_CONTAIN_TOKEN   "This message may contain a Discord authentication token, which may grant an attacker access to your account. Are you sure you want to send it?"
 END
 
