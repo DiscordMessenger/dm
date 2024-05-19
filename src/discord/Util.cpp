@@ -443,12 +443,12 @@ float CompareFuzzy(const std::string& item, const char* query)
 
 float GetAppVersion()
 {
-	return 1.01f;
+	return 1.02f;
 }
 
 std::string GetAppVersionString()
 {
-	return "V1.01";
+	return "V1.02";
 }
 
 #ifdef USE_DEBUG_PRINTS
