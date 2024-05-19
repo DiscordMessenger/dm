@@ -1446,9 +1446,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	// Create some fonts.
 	InitializeFonts();
 
-	int flags = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+	int flags = WS_OVERLAPPEDWINDOW;
 	if (startMaximized) {
-		//nShowCmd = SW_SHOWMAXIMIZED;
 		flags |= WS_MAXIMIZE;
 	}
 
@@ -1479,6 +1478,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 		// Run the message loop.
 		extern HWND g_ProfilePopoutHwnd;
+
+		ShowWindow (g_Hwnd, startMaximized ? SW_SHOWMAXIMIZED : nShowCmd);
 
 		while (GetMessage(&msg, NULL, 0, 0) > 0)
 		{
