@@ -1609,7 +1609,7 @@ void MessageList::ConfirmOpenLink(const std::string& link)
 		WAsnprintf(buffer, _countof(buffer), TmGetTString(IDS_LINK_CONFIRM), tstr);
 		free(tstr);
 
-		if (MessageBox(g_Hwnd, buffer, TmGetTString(IDS_LINK_CONFIRM_TITLE), MB_ICONWARNING | MB_OKCANCEL) != IDOK)
+		if (MessageBox(g_Hwnd, buffer, TmGetTString(IDS_HOLD_UP_CONFIRM), MB_ICONWARNING | MB_OKCANCEL) != IDOK)
 			return;
 	}
 

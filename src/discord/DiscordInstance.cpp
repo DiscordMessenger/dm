@@ -692,6 +692,7 @@ void DiscordInstance::GatewayClosed(int errorCode)
 		case websocketpp::close::status::abnormal_close:
 		case websocketpp::close::status::going_away:
 		case websocketpp::close::status::service_restart:
+		case websocketpp::close::status::normal:
 		case CloseCode::LOG_ON_AGAIN:
 		case CloseCode::INVALID_SEQ:
 		case CloseCode::SESSION_TIMED_OUT:
@@ -1506,7 +1507,10 @@ void DiscordInstance::HandleREADY(Json& j)
 	// ==== reload user
 	Json& user = data["user"];
 
+	Snowflake oldSnowflake = m_mySnowflake;
 	m_mySnowflake = GetSnowflake(user, "id");
+
+	bool firstReadyOnThisUser = m_mySnowflake != oldSnowflake;
 
 	GetProfileCache()->LoadProfile(m_mySnowflake, user);
 	Profile* pf = GetProfile();
@@ -1530,8 +1534,6 @@ void DiscordInstance::HandleREADY(Json& j)
 		ParseAndAddGuild(elem);
 
 	SortGuilds();
-
-	m_CurrentChannel = 0;
 
 	// ==== find session object
 	Json sesh;
@@ -1627,13 +1629,25 @@ void DiscordInstance::HandleREADY(Json& j)
 	// ==== load resume_gateway_url
 	// ==== load user_guild_settings
 
-
+	
 	// select the first guild, if possible
 	Snowflake guildsf = 0;
-	if (m_guilds.size() > 0)
-		guildsf = m_guilds.front().m_snowflake;
+
+	if (firstReadyOnThisUser) {
+		m_CurrentChannel = 0;
+
+		if (m_guilds.size() > 0)
+			guildsf = m_guilds.front().m_snowflake;
+	}
+	else {
+		guildsf = m_CurrentGuild;
+	}
 
 	OnSelectGuild(guildsf);
+
+	// Doing this because the contents of all channels might be outdated.
+	GetMessageCache()->ClearAllChannels();
+	GetFrontend()->UpdateSelectedChannel();
 }
 
 void DiscordInstance::HandleMessageInsertOrUpdate(Json& j, bool bIsUpdate)

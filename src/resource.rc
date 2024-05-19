@@ -958,7 +958,7 @@ BEGIN
     IDS_CONFIRM_PIN_TITLE   "Discord Messenger - Pin It. Pin It Good."
     IDS_DIRECT_MESSAGES     "Direct Messages"
     IDS_LINK_CONFIRM        "Links are spoopy.  This link goes to %s. Are you sure you want to go there?"
-    IDS_LINK_CONFIRM_TITLE  "Discord Messenger - Hold Up"
+    IDS_HOLD_UP_CONFIRM     "Discord Messenger - Hold Up"
     IDS_LOADING_PINNED_MESSAGES "Loading pinned messages..."
     IDS_NO_PINNED_MESSAGES  "This channel doesn't have any pinned messages... yet."
     IDS_PINNED_MESSAGES_IN  "Pinned Messages In #%s"
@@ -989,6 +989,7 @@ BEGIN
     IDS_FAILED_UPDATE_CHECK "Failed to check for updates! (error %d, message '%s').\n\nTrying again when the app restarts."
     IDS_FAILED_TO_UPLOAD    "Error! Can't upload file %s, got error %d."
     IDS_SAVED_UPDATE        "Downloaded update successfully.  Go extract it and enjoy!"
+    IDS_MAY_CONTAIN_TOKEN   "This message may contain a Discord authentication token, which may grant an attacker access to your account. Are you sure you want to send it?"
 END
 
 #endif    // English (United States) resources

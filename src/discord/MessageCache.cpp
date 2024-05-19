@@ -40,6 +40,16 @@ void MessageCache::DeleteMessage(Snowflake channel, Snowflake msg)
 	m_mapMessages[channel].DeleteMessage(msg);
 }
 
+void MessageCache::ClearAllChannels()
+{
+	m_mapMessages.clear();
+}
+
+Message* MessageCache::GetLoadedMessage(Snowflake channel, Snowflake message)
+{
+	return m_mapMessages[channel].GetLoadedMessage(message);
+}
+
 MessageCache* GetMessageCache()
 {
 	return &g_MCSingleton;
@@ -149,9 +159,4 @@ Message* MessageChunkList::GetLoadedMessage(Snowflake message)
 		return nullptr;
 
 	return &iter->second;
-}
-
-Message* MessageCache::GetLoadedMessage(Snowflake channel, Snowflake message)
-{
-	return m_mapMessages[channel].GetLoadedMessage(message);
 }

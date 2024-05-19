@@ -27,6 +27,40 @@ static BOOL IsJustWhiteSpace(TCHAR* str)
 	return TRUE;
 }
 
+static BOOL ContainsAuthenticationToken(TCHAR* str)
+{
+	const DWORD LengthToken = 58;
+	const DWORD PlaceFirstSep = 23;
+	const DWORD PlaceSecondSep = 30;
+	DWORD Length = 0;
+	for (; str[Length] != 0; Length++);
+
+	if (Length < LengthToken) return FALSE;
+
+	for (DWORD i = 0; i <= Length - LengthToken; i++)
+	{
+		if (str[i + PlaceFirstSep] != L'.' || str[i + PlaceSecondSep] != L'.')
+			continue;
+
+		bool fake = false;
+		for (DWORD j = 0; j < LengthToken; j++)
+		{
+			if (j == PlaceFirstSep || j == PlaceSecondSep)
+				continue;
+
+			if (strchr("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_", (char)str[i + j]) == NULL) {
+				fake = true;
+				break;
+			}
+		}
+
+		if (!fake)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
 MessageEditor::MessageEditor()
 {
 }
@@ -166,28 +200,38 @@ void MessageEditor::TryToSendMessage()
 
 	GetWindowText(m_edit_hwnd, data, length + 1);
 
-	if (!IsJustWhiteSpace(data))
+	if (IsJustWhiteSpace(data))
 	{
-		SendMessageParams parms;
-		parms.m_rawMessage = data;
-		parms.m_replyTo = ReplyingTo();
-		parms.m_bEdit = m_bEditing;
-		parms.m_bReply = m_bReplying;
-		parms.m_bMention = MentionRepliedUser();
+		delete[] data;
+		return;
+	}
 
-		// send it as a message to the main window
-		if (!SendMessage(g_Hwnd, WM_SENDMESSAGE, 0, (LPARAM) &parms))
-		{
-			// Message was sent, so clear the box
-			SetWindowText(m_edit_hwnd, TEXT(""));
-			m_bReplying = false;
-			m_bEditing = false;
-			m_replyMessage = 0;
-			m_replyName = "";
-			Expand(-m_expandedBy);
+	if (ContainsAuthenticationToken(data))
+	{
+		if (MessageBox(g_Hwnd, TmGetTString(IDS_MAY_CONTAIN_TOKEN), TmGetTString(IDS_HOLD_UP_CONFIRM), MB_YESNO | MB_ICONQUESTION) != IDYES) {
+			delete[] data;
+			return;
 		}
 	}
 
+	SendMessageParams parms;
+	parms.m_rawMessage = data;
+	parms.m_replyTo = ReplyingTo();
+	parms.m_bEdit = m_bEditing;
+	parms.m_bReply = m_bReplying;
+	parms.m_bMention = MentionRepliedUser();
+
+	// send it as a message to the main window
+	if (!SendMessage(g_Hwnd, WM_SENDMESSAGE, 0, (LPARAM) &parms))
+	{
+		// Message was sent, so clear the box
+		SetWindowText(m_edit_hwnd, TEXT(""));
+		m_bReplying = false;
+		m_bEditing = false;
+		m_replyMessage = 0;
+		m_replyName = "";
+		Expand(-m_expandedBy);
+	}
 	delete[] data;
 }
 

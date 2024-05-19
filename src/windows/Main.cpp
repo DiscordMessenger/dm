@@ -445,6 +445,7 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case ID_ACTIONS_SEARCH:
 		{
 			// TODO
+			//GetWebsocketClient()->Close(GetDiscordInstance()->GetGatewayID(), websocketpp::close::status::normal);
 			DbgPrintW("Search!");
 			break;
 		}

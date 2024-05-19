@@ -184,7 +184,7 @@
 #define IDS_CONFIRM_PIN_TITLE           674
 #define IDS_DIRECT_MESSAGES             675
 #define IDS_LINK_CONFIRM                676
-#define IDS_LINK_CONFIRM_TITLE          677
+#define IDS_HOLD_UP_CONFIRM             677
 #define IDS_LOADING_PINNED_MESSAGES     678
 #define IDS_NO_PINNED_MESSAGES          679
 #define IDS_PINNED_MESSAGES_IN          680
@@ -207,6 +207,7 @@
 #define IDS_FAILED_UPDATE_CHECK         697
 #define IDS_FAILED_TO_UPLOAD            698
 #define IDS_SAVED_UPDATE                699
+#define IDS_MAY_CONTAIN_TOKEN           700
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803

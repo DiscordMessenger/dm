@@ -37,6 +37,8 @@ public:
 	void EditMessage(Snowflake channel, const Message& msg);
 	void DeleteMessage(Snowflake channel, Snowflake message);
 
+	void ClearAllChannels();
+
 	// NOTE: Returned message pointer is invalidated when the specific channel is updated. So fetch
 	// as fast as possible!
 	Message* GetLoadedMessage(Snowflake channel, Snowflake message);
