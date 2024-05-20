@@ -106,9 +106,13 @@ namespace GatewayOp
 		HELLO,
 		HEARTBACK,
 
+		SUBSCRIBE_DM = 13,
+		SUBSCRIBE_GUILD,
+
 		UPDATE_SUBSCRIPTIONS = 37, // guess - update channels subscribed to
 		// payload:
 		// example payload: {'d': {'subscriptions': {'GUILDIDHERE': {'channels': {'CHANNELID1': [[0, 99]], 'CHANNELID2': [[0, 99]]}}}}, 'op': 37}
+		// note: dropped in favour of opcode 14
 	};
 };
 

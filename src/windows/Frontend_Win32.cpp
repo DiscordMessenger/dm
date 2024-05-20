@@ -432,6 +432,11 @@ void Frontend_Win32::RegisterAttachment(Snowflake sf, const std::string& avatarl
 	GetAvatarCache()->AddImagePlace(avatarlnk, eImagePlace::ATTACHMENTS, avatarlnk, sf);
 }
 
+void Frontend_Win32::RegisterChannelIcon(Snowflake sf, const std::string& avatarlnk)
+{
+	GetAvatarCache()->AddImagePlace(avatarlnk, eImagePlace::CHANNEL_ICONS, avatarlnk, sf);
+}
+
 std::string Frontend_Win32::GetDirectMessagesText()
 {
 	return TmGetString(IDS_DIRECT_MESSAGES);

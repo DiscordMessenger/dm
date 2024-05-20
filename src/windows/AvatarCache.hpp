@@ -10,9 +10,10 @@
 enum class eImagePlace
 {
 	NONE,
-	AVATARS,     // profile avatars
-	ICONS,       // server icons
-	ATTACHMENTS, // attachments
+	AVATARS,       // profile avatars
+	ICONS,         // server icons
+	ATTACHMENTS,   // attachments
+	CHANNEL_ICONS, // channel icons
 };
 
 struct ImagePlace {

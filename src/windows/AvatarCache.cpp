@@ -286,6 +286,9 @@ std::string ImagePlace::GetURL() const
 		case eImagePlace::ICONS:
 			path = "icons";
 			break;
+		case eImagePlace::CHANNEL_ICONS:
+			path = "channel-icons";
+			break;
 		case eImagePlace::ATTACHMENTS:
 			path = "z";
 			bIsAttachment = true;

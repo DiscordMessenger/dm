@@ -74,6 +74,7 @@ public:
 	virtual void RegisterIcon(Snowflake sf, const std::string& avatarlnk) = 0;
 	virtual void RegisterAvatar(Snowflake sf, const std::string& avatarlnk) = 0;
 	virtual void RegisterAttachment(Snowflake sf, const std::string& avatarlnk) = 0;
+	virtual void RegisterChannelIcon(Snowflake sf, const std::string& avatarlnk) = 0;
 
 	// Quit
 	virtual void RequestQuit() = 0;

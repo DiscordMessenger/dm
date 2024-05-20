@@ -765,6 +765,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			Guild* pGuild = inst->GetGuild(inst->m_CurrentGuild);
 			if (!pGuild) break;
 
+			g_pChannelView->SetMode(pGuild->m_snowflake == 0);
+
 			// if the channels haven't been fetched yet
 			if (!pGuild->m_bChannelsLoaded)
 			{
@@ -912,6 +914,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_DownloadIcon = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_DOWNLOAD)), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 
 			MessageList::InitializeClass();
+			ChannelView::InitializeClass();
 			ProfileView::InitializeClass();
 			GuildHeader::InitializeClass();
 			GuildLister::InitializeClass();
@@ -1008,15 +1011,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			PostQuitMessage(0);
 			break;
-		}
-		case WM_NOTIFY:
-		{
-			LPNMHDR nmhdr = (LPNMHDR)lParam;
-
-			if (g_pChannelView && nmhdr->hwndFrom == g_pChannelView->m_hwnd)
-				g_pChannelView->OnNotify(wParam, lParam);
-
-			return 0;
 		}
 		case WM_DRAWITEM:
 		{

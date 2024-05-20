@@ -240,12 +240,6 @@ void MemberList::Initialize()
 	col.iSubItem = 0;
 	col.fmt = LVCFMT_LEFT;
 	ListView_InsertColumn(m_listHwnd, 0, &col);
-
-	InitializeImageList();
-}
-
-void MemberList::InitializeImageList()
-{
 }
 
 LRESULT MemberList::ListWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

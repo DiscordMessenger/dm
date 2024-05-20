@@ -88,10 +88,13 @@ bool LocalSettings::Load()
 			m_height = 600;
 	}
 
-	if (j.contains("CheckUpdates"))
+	if (j.contains("CheckUpdates")) {
 		m_bCheckUpdates = j["CheckUpdates"];
-	else
+		m_bAskToCheckUpdates = false;
+	}
+	else {
 		m_bAskToCheckUpdates = true;
+	}
 
 	if (j.contains("RemindUpdateCheckOn"))
 		m_remindUpdatesOn = (time_t) (long long) j["RemindUpdateCheckOn"];

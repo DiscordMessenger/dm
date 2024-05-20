@@ -5,8 +5,32 @@
 #define CY_BITMAP (16)
 #define NUM_BITMAPS (6)
 
+WNDCLASS ChannelView::g_ChannelViewClass;
+
+static int GetProfileBorderSize()
+{
+	return ScaleByDPI(Supports32BitIcons() ? (PROFILE_PICTURE_SIZE_DEF + 12) : 64);
+}
+
+enum {
+	CID_CHANNELVIEWTREE = 1,
+	CID_CHANNELVIEWLIST,
+};
+
 ChannelView::~ChannelView()
 {
+	if (m_treeHwnd)
+	{
+		BOOL b = DestroyWindow(m_treeHwnd);
+		assert(b && "window was already destroyed??");
+		m_treeHwnd = NULL;
+	}
+	if (m_listHwnd)
+	{
+		BOOL b = DestroyWindow(m_listHwnd);
+		assert(b && "window was already destroyed??");
+		m_listHwnd = NULL;
+	}
 	if (m_hwnd)
 	{
 		BOOL b = DestroyWindow(m_hwnd);
@@ -15,22 +39,9 @@ ChannelView::~ChannelView()
 	}
 }
 
-// InitTreeViewImageLists - creates an image list, adds three bitmaps
-// to it, and associates the image list with a tree-view control.
-// Returns TRUE if successful, or FALSE otherwise.
-// hwndTV - handle to the tree-view control.
-//
-// Global variables and constants:
-// g_hInst - the global instance handle.
-// g_nOpen, g_nClosed, and g_nDocument - global indexes of the images.
-// CX_BITMAP and CY_BITMAP - width and height of an icon.
-// NUM_BITMAPS - number of bitmaps to add to the image list.
-// IDB_OPEN_FILE, IDB_CLOSED_FILE, IDB_DOCUMENT -
-//     resource identifiers of the bitmaps.
-
-bool ChannelView::InitTreeViewImageLists()
+bool ChannelView::InitTreeView()
 {
-	HWND hwndTV = m_hwnd;
+	HWND hwndTV = m_treeHwnd;
 
 	HIMAGELIST himl;  // handle to image list
 	HBITMAP hbmp;     // handle to bitmap
@@ -76,8 +87,31 @@ bool ChannelView::InitTreeViewImageLists()
 	return TRUE;
 }
 
+bool ChannelView::InitListView()
+{
+	m_origListWndProc = (WNDPROC) GetWindowLongPtr(m_listHwnd, GWLP_WNDPROC);
+	SetWindowLongPtr(m_listHwnd, GWLP_USERDATA, (LONG_PTR) this);
+	SetWindowLongPtr(m_listHwnd, GWLP_WNDPROC,  (LONG_PTR) ListWndProc);
+
+#ifdef NEW_WINDOWS
+	ListView_SetExtendedListViewStyleEx(m_listHwnd, LVS_EX_DOUBLEBUFFER, LVS_EX_DOUBLEBUFFER);
+#endif
+
+	LVCOLUMN col{};
+	col.mask = LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
+	col.pszText = TEXT("Name");
+	col.cx = ScaleByDPI(MEMBER_LIST_WIDTH - 25);
+	col.iSubItem = 0;
+	col.fmt = LVCFMT_LEFT;
+	ListView_InsertColumn(m_listHwnd, 0, &col);
+
+	return TRUE;
+}
+
 HTREEITEM ChannelView::GetPrevious(int parentIndex)
 {
+	assert(TreeMode());
+
 	auto iter = m_hPrev.find(parentIndex);
 	if (iter == m_hPrev.end()) {
 		m_hPrev[parentIndex] = TVI_FIRST;
@@ -88,16 +122,23 @@ HTREEITEM ChannelView::GetPrevious(int parentIndex)
 
 void ChannelView::SetPrevious(int parentIndex, HTREEITEM hPrev)
 {
+	assert(TreeMode());
+
 	m_hPrev[parentIndex] = hPrev;
 }
 
 void ChannelView::ResetTree()
 {
+	assert(TreeMode());
+
 	m_hPrev.clear();
 }
 
 void ChannelView::SetItemIcon(HTREEITEM hItem, int icon)
 {
+	if (!TreeMode())
+		return;
+
 	TVITEM item{};
 	ZeroMemory(&item, sizeof(TVITEM)); // Ensure the structure is zero-initialized
 
@@ -105,11 +146,13 @@ void ChannelView::SetItemIcon(HTREEITEM hItem, int icon)
 	item.mask = TVIF_HANDLE | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 	item.iImage = icon;
 	item.iSelectedImage = icon;
-	int res = TreeView_SetItem(m_hwnd, &item);
+	int res = TreeView_SetItem(m_treeHwnd, &item);
 }
 
 HTREEITEM ChannelView::AddItemToTree(HWND hwndTV, LPTSTR lpszItem, HTREEITEM hParent, int nIndex, int nParentIndex, int nIcon)
 {
+	assert(TreeMode());
+
 	TVITEM tvi;
 	TVINSERTSTRUCT tvins;
 	HTREEITEM hti;
@@ -164,17 +207,37 @@ void ChannelView::OnUpdateSelectedChannel(Snowflake newCh)
 	if (member.m_snowflake != newCh)
 		return;
 
-	if (!member.m_hItem)
-		return;
+	if (TreeMode()) {
+		if (member.m_hItem)
+			TreeView_SelectItem(m_treeHwnd, member.m_hItem);
+	}
+	else {
+		ListView_SetItemState(m_listHwnd, m_idToIdx[newCh], LVIS_SELECTED, LVIS_SELECTED);
+	}
+}
 
-	TreeView_SelectItem(m_hwnd, member.m_hItem);
+void ChannelView::SetMode(bool listMode)
+{
+	m_bListMode = listMode;
+
+	int swL = listMode ? SW_SHOWNORMAL : SW_HIDE;
+	int swT = listMode ? SW_HIDE : SW_SHOWNORMAL;
+
+	ShowWindow(m_listHwnd, swL);
+	ShowWindow(m_treeHwnd, swT);
 }
 
 void ChannelView::ClearChannels()
 {
 	m_channels.clear();
-	TreeView_DeleteAllItems(m_hwnd);
-	ResetTree();
+
+	if (TreeMode()) {
+		TreeView_DeleteAllItems(m_treeHwnd);
+		ResetTree();
+	}
+	else {
+		ListView_DeleteAllItems(m_listHwnd);
+	}
 }
 
 int ChannelView::GetIcon(const Channel& ch, bool bIsExpanded)
@@ -229,14 +292,22 @@ void ChannelView::UpdateAcknowledgement(Snowflake sf)
 	}
 
 	Channel* pChan = GetDiscordInstance()->GetChannel(sf);
-	HTREEITEM item = m_channels[index].m_hItem;
-	SetItemIcon(item, GetIcon(*pChan, false)); // note: assume it's false because, like, categories don't get acknowledged
+
+	if (TreeMode()) {
+		HTREEITEM item = m_channels[index].m_hItem;
+		SetItemIcon(item, GetIcon(*pChan, false)); // note: assume it's false because, like, categories don't get acknowledged
+	}
+	else {
+		// TODO
+	}
 }
 
 bool IsChannelASubThread(Channel::eChannelType x)
 {
 	return x >= Channel::NEWSTHREAD && x < Channel::FORUM;
 }
+
+static UINT g_columnIndices[] = { 1 };
 
 void ChannelView::AddChannel(const Channel & ch)
 {
@@ -258,35 +329,58 @@ void ChannelView::AddChannel(const Channel & ch)
 	free((void*)ptr);
 
 	int index = int(m_channels.size());
-	int parentIndex = -1;
-	HTREEITEM hParent = TVI_ROOT;
-	if (ch.m_channelType == Channel::CATEGORY) {
-		parentIndex = -2;
-	}
-	else if (ch.m_parentCateg != 0) {
-		parentIndex = m_idToIdx[ch.m_parentCateg];
-		hParent = m_channels[parentIndex].m_hItem;
-		m_channels[parentIndex].m_childCount++;
-	}
+	int old_level = -1;
 
-	int old_level = m_level;
-	if (ch.m_channelType == Channel::CATEGORY) m_level = 1;
-	if (IsChannelASubThread(ch.m_channelType)) {
+	if (TreeMode())
+	{
+		int parentIndex = -1;
+		HTREEITEM hParent = TVI_ROOT;
+		if (ch.m_channelType == Channel::CATEGORY) {
+			parentIndex = -2;
+		}
+		else if (ch.m_parentCateg != 0) {
+			parentIndex = m_idToIdx[ch.m_parentCateg];
+			hParent = m_channels[parentIndex].m_hItem;
+			m_channels[parentIndex].m_childCount++;
+		}
+
 		old_level = m_level;
-		m_level = 3;
+		if (ch.m_channelType == Channel::CATEGORY) m_level = 1;
+		if (IsChannelASubThread(ch.m_channelType)) {
+			old_level = m_level;
+			m_level = 3;
+		}
+
+		cmem.m_hItem = AddItemToTree(m_treeHwnd, cmem.str, hParent, index, parentIndex, GetIcon(ch, true)); // categories are expanded by default
+	}
+	else
+	{
+		LVITEM lvi{};
+		lvi.mask = LVIF_COLUMNS;
+		lvi.stateMask = LVIS_OVERLAYMASK;
+		lvi.iItem = index;
+		lvi.iSubItem = 0;
+		lvi.cColumns = _countof(g_columnIndices);
+		lvi.puColumns = g_columnIndices;
+		ListView_InsertItem(m_listHwnd, &lvi);
 	}
 
-	cmem.m_hItem = AddItemToTree(m_hwnd, cmem.str, hParent, index, parentIndex, GetIcon(ch, true)); // categories are expanded by default
 	m_channels.push_back(cmem);
 	m_idToIdx[cmem.m_snowflake] = index;
 
-	if (ch.m_channelType == Channel::CATEGORY)
-		m_level = 2;
-	if (IsChannelASubThread(ch.m_channelType)) m_level = old_level;
+	if (TreeMode())
+	{
+		if (ch.m_channelType == Channel::CATEGORY)
+			m_level = 2;
+		if (IsChannelASubThread(ch.m_channelType)) m_level = old_level;
+	}
 }
 
 void ChannelView::RemoveCategoryIfNeeded(const Channel& ch)
 {
+	if (!TreeMode())
+		return;
+
 	if (ch.m_channelType != Channel::CATEGORY)
 		return;
 
@@ -299,7 +393,7 @@ void ChannelView::RemoveCategoryIfNeeded(const Channel& ch)
 	if (mem.m_childCount > 0)
 		return;
 
-	TreeView_DeleteItem(m_hwnd, mem.m_hItem);
+	TreeView_DeleteItem(m_treeHwnd, mem.m_hItem);
 	mem.m_hItem = NULL;
 }
 
@@ -309,10 +403,10 @@ ChannelView* ChannelView::Create(HWND hwnd, LPRECT rect)
 	view->m_hwndParent = hwnd;
 
 	view->m_hwnd = CreateWindowEx(
-		0,
-		WC_TREEVIEW,
-		TEXT("Tree View"),
-		WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASBUTTONS | TVS_TRACKSELECT | TVS_SHOWSELALWAYS,
+		WS_EX_CLIENTEDGE,
+		T_CHANNEL_VIEW_CONTAINER_CLASS,
+		NULL,
+		WS_CHILD | WS_VISIBLE,
 		rect->left,
 		rect->top,
 		rect->right - rect->left,
@@ -323,9 +417,56 @@ ChannelView* ChannelView::Create(HWND hwnd, LPRECT rect)
 		view
 	);
 
-	if (!view->InitTreeViewImageLists())
+	assert(view->m_hwnd);
+	if (!view->m_hwnd) {
+		DbgPrintW("ChannelView::Create: Could not create main window!");
+		delete view;
+		return NULL;
+	}
+
+	view->m_treeHwnd = CreateWindowEx(
+		0,
+		WC_TREEVIEW,
+		NULL,
+		WS_CHILD | TVS_HASBUTTONS | TVS_TRACKSELECT | TVS_SHOWSELALWAYS,
+		rect->left,
+		rect->top,
+		rect->right - rect->left,
+		rect->bottom - rect->top,
+		view->m_hwnd,
+		(HMENU)(CID_CHANNELVIEWTREE),
+		g_hInstance,
+		view
+	);
+	if (!view->m_treeHwnd) {
+		DbgPrintW("ChannelView::Create: Could not create tree sub-window!");
+		delete view;
+		return NULL;
+	}
+	
+	view->m_listHwnd = CreateWindowEx(
+		0,
+		WC_LISTVIEW,
+		NULL,
+		WS_CHILD | LVS_REPORT | LVS_SINGLESEL | LVS_OWNERDRAWFIXED | LVS_NOCOLUMNHEADER,
+		rect->left,
+		rect->top,
+		rect->right - rect->left,
+		rect->bottom - rect->top,
+		view->m_hwnd,
+		(HMENU)(CID_CHANNELVIEWLIST),
+		g_hInstance,
+		view
+	);
+	if (!view->m_listHwnd) {
+		DbgPrintW("ChannelView::Create: Could not create tree sub-window!");
+		delete view;
+		return NULL;
+	}
+
+	if (!view->InitTreeView() || !view->InitListView())
 	{
-		DbgPrintW("InitTreeViewImageLists FAILED!");
+		DbgPrintW("ChannelView::Create: InitTreeView or InitListView FAILED!");
 
 		delete view;
 		view = NULL;
@@ -334,7 +475,27 @@ ChannelView* ChannelView::Create(HWND hwnd, LPRECT rect)
 	return view;
 }
 
-void ChannelView::OnNotify(WPARAM wParam, LPARAM lParam)
+void ChannelView::InitializeClass()
+{
+#ifndef MINGW_SPECIFIC_HACKS
+	INITCOMMONCONTROLSEX icc;
+	icc.dwSize = sizeof icc;
+	icc.dwICC = ICC_LISTVIEW_CLASSES | ICC_TREEVIEW_CLASSES;
+	InitCommonControlsEx(&icc);
+#endif
+
+	WNDCLASS& wc = g_ChannelViewClass;
+
+	wc.lpszClassName = T_CHANNEL_VIEW_CONTAINER_CLASS;
+	wc.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
+	wc.style = 0;
+	wc.hCursor = LoadCursor(0, IDC_ARROW);
+	wc.lpfnWndProc = &ChannelView::WndProc;
+
+	RegisterClass(&wc);
+}
+
+bool ChannelView::OnNotifyTree(LRESULT& out, WPARAM wParam, LPARAM lParam)
 {
 	LPNMHDR nmhdr = (LPNMHDR)lParam;
 
@@ -361,7 +522,7 @@ void ChannelView::OnNotify(WPARAM wParam, LPARAM lParam)
 			TVITEM item;
 			item.hItem = hSelectedItem;
 			item.mask = TVIF_PARAM;
-			if (!TreeView_GetItem(m_hwnd, &item)) break;
+			if (!TreeView_GetItem(m_treeHwnd, &item)) break;
 
 			// look for a channel with that name
 			int idx = int(item.lParam);
@@ -378,4 +539,252 @@ void ChannelView::OnNotify(WPARAM wParam, LPARAM lParam)
 			break;
 		}
 	}
+
+	return false;
+}
+
+bool ChannelView::OnNotifyList(LRESULT& out, WPARAM wParam, LPARAM lParam)
+{
+	NMHDR* hdr = (NMHDR*)lParam;
+
+	switch (hdr->code)
+	{
+		// TODO: WTF IS THIS?!  Looks like the lParam structure is a hittestinfo after the hdr.
+		// This ain't defined anywhere.  Only modern Windows seems to emit it.  I don't know why
+		case ((UINT) -165):
+		{
+			LPLVHITTESTINFO hti = (LPLVHITTESTINFO)(hdr + 1);
+
+			// hack for now, store the hot item ourself
+			int oldItem = m_hotItem;
+			m_hotItem = hti->iItem;
+			//ListView_SetHotItem(m_listHwnd, m_hotItem);
+			if (oldItem != m_hotItem) {
+				ListView_RedrawItems(m_listHwnd, oldItem,   oldItem);
+				ListView_RedrawItems(m_listHwnd, m_hotItem, m_hotItem);
+			}
+
+			TRACKMOUSEEVENT tme;
+			tme.cbSize = sizeof tme;
+			tme.dwFlags = TME_LEAVE;
+			tme.hwndTrack = m_listHwnd;
+			tme.dwHoverTime = 1;
+			_TrackMouseEvent(&tme);
+
+			out = TRUE;
+			return true;
+		}
+
+		case LVN_HOTTRACK:
+			out = TRUE;
+			return true;
+
+		case LVN_ITEMCHANGED:
+		{
+			LPNMLISTVIEW lplv = (LPNMLISTVIEW)lParam;
+			if (lplv->uNewState & LVIS_SELECTED)
+			{
+				int itemID = lplv->iItem;
+
+				// TODO: Select the channel
+				//DbgPrintW("Selected item ID %d", itemID);
+				if (itemID < 0 || itemID >= int(m_channels.size()))
+					return false;
+
+				ChannelMember* pMember = &m_channels[itemID];
+				GetDiscordInstance()->OnSelectChannel(pMember->m_snowflake);
+			}
+			break;
+		}
+	}
+
+	return false;
+}
+
+LRESULT ChannelView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	ChannelView* pView = (ChannelView*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+
+	switch (uMsg)
+	{
+		case WM_NCCREATE: {
+			CREATESTRUCT* strct = (CREATESTRUCT*)lParam;
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)strct->lpCreateParams);
+			break;
+		}
+
+		case WM_DESTROY: {
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) NULL);
+			pView->m_hwnd = NULL;
+			break;
+		}
+
+		case WM_SIZE: {
+			assert(pView);
+			WORD wWidth  = LOWORD(lParam);
+			WORD wHeight = HIWORD(lParam);
+			MoveWindow(pView->m_treeHwnd, 0, 0, wWidth, wHeight, TRUE);
+			MoveWindow(pView->m_listHwnd, 0, 0, wWidth, wHeight, TRUE);
+			break;
+		}
+
+		case WM_NOTIFY: {
+			assert(pView);
+			LPNMHDR nmhdr = (LPNMHDR)lParam;
+
+			if (nmhdr->hwndFrom == pView->m_treeHwnd)
+			{
+				LRESULT lres = 0;
+				if (pView->OnNotifyTree(lres, wParam, lParam))
+					return lres;
+			}
+			else if (nmhdr->hwndFrom == pView->m_listHwnd)
+			{
+				LRESULT lres = 0;
+				if (pView->OnNotifyList(lres, wParam, lParam))
+					return lres;
+			}
+
+			break;
+		}
+
+		case WM_MEASUREITEM: {
+			assert(pView);
+			LPMEASUREITEMSTRUCT lpmis = (LPMEASUREITEMSTRUCT)lParam;
+			lpmis->itemHeight = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
+			break;
+		}
+
+		case WM_DRAWITEM: {
+			LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
+			assert(pView);
+			assert(lpdis->hwndItem == pView->m_listHwnd);
+
+			HDC hdc = lpdis->hDC;
+			RECT rcItem = lpdis->rcItem;
+
+			if (lpdis->itemID < 0 || lpdis->itemID >= int(pView->m_channels.size()))
+				break;
+
+			ChannelMember* pMember = &pView->m_channels[lpdis->itemID];
+			Channel* pChan = GetDiscordInstance()->GetChannel(pMember->m_snowflake);
+
+			COLORREF nameTextColor = GetSysColor(COLOR_WINDOWTEXT);
+			COLORREF statusTextColor = GetSysColor(COLOR_GRAYTEXT);
+			COLORREF backgdColor = GetSysColor(COLOR_WINDOW);
+			
+			if (pView->m_hotItem == lpdis->itemID)
+			{
+				FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrush(COLOR_MENUBAR));
+				backgdColor = GetSysColor(COLOR_MENUBAR);
+			}
+			else
+			{
+				// Windows 2000 doesn't do automatic clearing
+				FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrush(COLOR_WINDOW));
+			}
+			
+			if (lpdis->itemState & ODS_SELECTED)
+			{
+				FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
+				backgdColor     = GetSysColor(COLOR_HIGHLIGHT);
+				nameTextColor   = GetSysColor(COLOR_HIGHLIGHTTEXT);
+				statusTextColor = GetSysColor(COLOR_HIGHLIGHTTEXT);
+			}
+
+			// draw profile picture frame
+			int sz = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
+			int szDraw = GetProfileBorderSize();
+			DrawIconEx(hdc, rcItem.left, rcItem.top, g_ProfileBorderIcon, szDraw, szDraw, 0, NULL, DI_NORMAL | DI_COMPAT);
+			
+			// draw profile picture
+			HBITMAP hbm = GetAvatarCache()->GetBitmap(pChan->m_avatarLnk), hbmmask = NULL;
+			DrawBitmap(hdc, hbm, rcItem.left + ScaleByDPI(6), rcItem.top + ScaleByDPI(4), NULL, CLR_NONE, GetProfilePictureSize());
+
+			// draw status indicator
+			std::string statusText = "";
+			if (pChan->m_channelType == Channel::DM)
+			{
+				Profile* pf = GetProfileCache()->LookupProfile(pChan->m_recipient, "", "", "", false);
+				//DrawActivityStatus(hdc, rcItem.left + ScaleByDPI(6), rcItem.top + ScaleByDPI(4), pf->m_activeStatus);
+				//statusText = pf->m_status;
+
+				// ^^^^^ NOTE: Status and activestatus are inaccurate right now because I don't support certain status updates.
+			}
+			else
+			{
+				assert(pChan->m_channelType == Channel::GROUPDM);
+
+				statusText = std::to_string(pChan->m_recipientCount) + " members";
+			}
+			
+			// compute data necessary to draw the text
+			RECT rcText = rcItem;
+			rcText.left += sz;
+			// note, off center from the rectangle because the profile picture is off-center too
+			rcText.bottom = rcText.top + sz - 4;
+
+			std::string nameText = pChan->m_name;	
+
+			LPTSTR nameTstr = ConvertCppStringToTString(nameText);
+			LPTSTR statTstr = ConvertCppStringToTString(statusText);
+
+			COLORREF oldTextColor = SetTextColor(hdc, nameTextColor);
+			COLORREF oldBkColor   = SetBkColor  (hdc, backgdColor);
+
+			HGDIOBJ oldObj = SelectObject(hdc, g_AuthorTextFont);
+
+			if (statusText.empty()) {
+				DrawText(hdc, nameTstr, -1, &rcText, DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE);
+			}
+			else {
+				int top = rcText.top, bottom = rcText.bottom;
+				rcText.bottom = (top + bottom) / 2;
+				DrawText(hdc, nameTstr, -1, &rcText, DT_NOPREFIX | DT_BOTTOM | DT_SINGLELINE);
+				SetTextColor(hdc, statusTextColor);
+
+				SelectObject(hdc, g_DateTextFont);
+				rcText.top = (top + bottom) / 2;
+				rcText.bottom = bottom;
+				DrawText(hdc, statTstr, -1, &rcText, DT_NOPREFIX | DT_TOP | DT_SINGLELINE);
+			}
+
+			SelectObject(hdc, oldObj);
+
+			SetTextColor(hdc, oldTextColor);
+			SetBkColor(hdc, oldBkColor);
+
+			free(nameTstr);
+			free(statTstr);
+			break;
+		}
+	}
+
+	return DefWindowProc( hWnd, uMsg, wParam, lParam );
+}
+
+LRESULT ChannelView::ListWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	ChannelView* pView = (ChannelView*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+	assert(pView->m_listHwnd == hWnd);
+
+	switch (uMsg)
+	{
+	case WM_DESTROY:
+	{
+		SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)NULL);
+		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)pView->m_origListWndProc);
+		pView->m_listHwnd = NULL;
+		break;
+	}
+	case WM_MOUSELEAVE:
+	{
+		int oldItem = pView->m_hotItem;
+		pView->m_hotItem = -1;
+		ListView_RedrawItems(hWnd, oldItem, oldItem);
+		break;
+	}
+	}
+
+	return pView->m_origListWndProc(hWnd, uMsg, wParam, lParam);
 }

@@ -52,6 +52,7 @@ public:
 	void RegisterIcon(Snowflake sf, const std::string& avatarlnk) override;
 	void RegisterAvatar(Snowflake sf, const std::string& avatarlnk) override;
 	void RegisterAttachment(Snowflake sf, const std::string& avatarlnk) override;
+	void RegisterChannelIcon(Snowflake sf, const std::string& avatarlnk) override;
 	void RequestQuit() override;
 	void GetIdentifyProperties(nlohmann::json& j) override;
 	std::string GetUserAgent() override;

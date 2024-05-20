@@ -41,7 +41,6 @@ public:
 
 private:
 	void Initialize();
-	void InitializeImageList();
 	bool OnNotify(LRESULT& out, WPARAM wParam, LPARAM lParam);
 
 	static LRESULT CALLBACK ListWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

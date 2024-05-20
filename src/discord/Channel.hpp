@@ -34,9 +34,12 @@ struct Channel
 	Snowflake m_lastViewedMsg = 0; // The last message that was read in this channel.
 	Snowflake m_parentCateg = 0;
 	Snowflake m_parentGuild = 0;
+	Snowflake m_recipient = 0; // valid only for DM channels
 	std::string m_name = "";
 	std::string m_topic = "";
+	std::string m_avatarLnk = ""; // valid only for DM channels
 	int m_pos = 0;
+	int m_recipientCount = 0; // valid only for GROUPDM channels
 	std::map<Snowflake, Overwrite> m_overwrites;
 	uint64_t m_currentUserPerms = 0;
 	bool m_bCurrentUserPermsCalculated = false;

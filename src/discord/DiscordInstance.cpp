@@ -127,9 +127,7 @@ void DiscordInstance::OnSelectChannel(Snowflake sf, bool bSendSubscriptionUpdate
 
 	// send an update subscriptions message
 	if (bSendSubscriptionUpdate) {
-		if (m_CurrentGuild != 0) {
-			UpdateSubscriptions(m_CurrentGuild, sf, false, false, false);
-		}
+		UpdateSubscriptions(m_CurrentGuild, sf, false, false, false);
 	}
 }
 
@@ -1042,35 +1040,42 @@ void DiscordInstance::RequestDeleteMessage(Snowflake chan, Snowflake msg)
 
 void DiscordInstance::UpdateSubscriptions(Snowflake guildId, Snowflake channelId, bool typing, bool activities, bool threads, int rangeMembers)
 {
-	if (guildId == 0) {
+	Json j, data;
+
+	if (guildId == 0)
+	{
 		// TODO - Subscriptions for DMs and groups.
-		return;
+		j["op"] = GatewayOp::SUBSCRIBE_DM;
+
+		data["channel_id"] = channelId;
+	}
+	else
+	{
+		j["op"] = GatewayOp::SUBSCRIBE_GUILD;
+
+		Json subs, guild, channels, rangeParent, rangeChildren[1];
+
+		// Amount of users loaded
+		int arr[2] = { 0, rangeMembers };
+		rangeChildren[0] = arr;
+		rangeParent = rangeChildren;
+
+		if (channelId != 0)
+			channels[std::to_string(channelId)] = rangeParent;
+
+		data["guild_id"] = std::to_string(guildId);
+
+		if (typing)
+			data["typing"] = true;
+		if (activities)
+			data["activities"] = true;
+		if (threads)
+			data["threads"] = true;
+
+		data["channels"] = channels;
 	}
 
-	Json j, data, subs, guild, channels, rangeParent, rangeChildren[1];
-
-	// Amount of users loaded
-	int arr[2] = { 0, rangeMembers };
-	rangeChildren[0] = arr;
-	rangeParent = rangeChildren;
-
-	if (channelId != 0)
-		channels[std::to_string(channelId)] = rangeParent;
-
-	guild["channels"] = channels;
-	if (typing)
-		guild["typing"] = true;
-	if (activities)
-		guild["activities"] = true;
-	if (threads)
-		guild["threads"] = true;
-
-	subs[std::to_string(guildId)] = guild;
-	
-	data["subscriptions"] = subs;
-
 	j["d"] = data;
-	j["op"] = GatewayOp::UPDATE_SUBSCRIPTIONS;
 
 	DbgPrintF("Would be: %s", j.dump().c_str());
 	GetWebsocketClient()->SendMsg(m_gatewayConnId, j.dump());
@@ -1304,6 +1309,54 @@ void DiscordInstance::ParseChannel(Channel& c, nlohmann::json& chan, int& num)
 		case Channel::DM:
 		case Channel::GROUPDM:
 		{
+			c.m_name.clear();
+
+			if (c.m_channelType == Channel::DM)
+			{
+				std::string avatar = "";
+				if (chan["recipient_ids"].is_array())
+				{
+					assert(chan["recipient_ids"].size() > 0);
+					if (chan["recipient_ids"].size() > 0)
+					{
+						c.m_recipient = GetSnowflakeFromJsonObject(chan["recipient_ids"][0]);
+
+						Profile* pf = GetProfileCache()->LookupProfile(c.m_recipient, "", "", "", false);
+						avatar = pf->m_avatarlnk;
+					}
+				}
+				else if (chan["recipients"].is_array())
+				{
+					assert(chan["recipients"].size() > 0);
+					if (chan["recipients"].size() > 0)
+					{
+						Json& rec = chan["recipients"][0];
+						c.m_recipient = GetSnowflake(rec, "id");
+						avatar = GetFieldSafe(rec, "avatar");
+					}
+				}
+
+				c.m_avatarLnk = avatar;
+			}
+			else
+			{
+				assert(c.m_channelType == Channel::GROUPDM);
+
+				int recCount = 0;
+				if (chan["recipient_ids"].is_array())
+					recCount += chan["recipient_ids"].size();
+				if (chan["recipients"].is_array())
+					recCount += chan["recipients"].size();
+
+				assert(recCount != 0);
+				c.m_recipientCount = recCount;
+
+				c.m_avatarLnk = GetFieldSafe(chan, "icon");
+
+				if (!c.m_avatarLnk.empty())
+					GetFrontend()->RegisterChannelIcon(c.m_snowflake, c.m_avatarLnk);
+			}
+
 			if (chan.contains("name"))
 			{
 				// cool, that shall be the name then
@@ -1313,7 +1366,7 @@ void DiscordInstance::ParseChannel(Channel& c, nlohmann::json& chan, int& num)
 					break;
 			}
 
-			// look through the recipients then
+			// look through the recipients anyway
 			std::string name = "";
 			for (auto& rec : chan["recipients"])
 			{
@@ -1334,7 +1387,6 @@ void DiscordInstance::ParseChannel(Channel& c, nlohmann::json& chan, int& num)
 			}
 
 			c.m_name = name;
-
 			break;
 		}
 	}
