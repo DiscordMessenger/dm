@@ -392,6 +392,7 @@ private:
 
 	// handle functions
 	void HandleREADY(nlohmann::json& j);
+	void HandleREADY_SUPPLEMENTAL(nlohmann::json& j);
 	void HandleMESSAGE_CREATE(nlohmann::json& j);
 	void HandleMESSAGE_DELETE(nlohmann::json& j);
 	void HandleMESSAGE_UPDATE(nlohmann::json& j);

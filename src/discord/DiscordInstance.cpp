@@ -1542,6 +1542,7 @@ void DiscordInstance::InitDispatchFunctions()
 {
 	g_dispatchFunctions.clear();
 	DECL(READY);
+	DECL(READY_SUPPLEMENTAL);
 	DECL(MESSAGE_CREATE);
 	DECL(MESSAGE_UPDATE);
 	DECL(MESSAGE_DELETE);
@@ -1560,6 +1561,72 @@ void DiscordInstance::InitDispatchFunctions()
 }
 
 #undef DECL
+
+static std::string GetStatusFromActivities(Json& activities)
+{
+	if (!activities.is_array() || activities.empty())
+		return "";
+
+	for (auto& activity : activities)
+	{
+		if (GetFieldSafe(activity, "name") == "Custom Status")
+			// prioritize custom status
+			return GetStatusStringFromGameJsonObject(activity);
+	}
+
+	return GetStatusStringFromGameJsonObject(activities[0]);
+}
+
+void DiscordInstance::HandleREADY_SUPPLEMENTAL(Json& j)
+{
+	std::string str = j.dump();
+	Json& data = j["d"];
+
+	std::vector<Snowflake> guildsVec;
+
+	Json& guilds = data["guilds"];
+	for (int i = 0; i < int(guilds.size()); i++)
+		guildsVec.push_back(GetSnowflake(guilds[i], "id"));
+
+	Json& mergedPresences = data["merged_presences"];
+
+	Json& merPreFriends = mergedPresences["friends"];
+	Json& merPreGuilds  = mergedPresences["guilds"];
+	assert(merPreGuilds.size() == guildsVec.size());
+
+	size_t ms = std::min(merPreGuilds.size(), guilds.size());
+	for (int i = 0; i < int(ms); i++)
+	{
+		Json& guildPres = merPreGuilds[i];
+
+		for (auto& memPres : guildPres) {
+			Snowflake userID = GetSnowflake(memPres, "user_id");
+			std::string status = GetFieldSafe(memPres, "status");
+			if (status.empty()) status = "offline";
+
+			Profile* pf = GetProfileCache()->LookupProfile(userID, "", "", "", false);
+			pf->m_activeStatus = GetStatusFromString(status);
+
+			// Look for any activities -- TODO: Server specific activities
+			if (guildPres.contains("activities") && !memPres["activities"].is_null())
+				pf->m_status = GetStatusFromActivities(memPres["activities"]);
+		}
+	}
+
+	for (auto& friendPres : merPreFriends)
+	{
+		Snowflake userID = GetSnowflake(friendPres, "user_id");
+		std::string status = GetFieldSafe(friendPres, "status");
+		if (status.empty()) status = "offline";
+
+		Profile* pf = GetProfileCache()->LookupProfile(userID, "", "", "", false);
+		pf->m_activeStatus = GetStatusFromString(status);
+
+		// Look for any activities
+		if (friendPres.contains("activities") && !friendPres["activities"].is_null())
+			pf->m_status = GetStatusFromActivities(friendPres["activities"]);
+	}
+}
 
 void DiscordInstance::HandleREADY(Json& j)
 {
@@ -2004,10 +2071,7 @@ Snowflake DiscordInstance::ParseGuildMember(Snowflake guild, nlohmann::json& mem
 			pf->m_status = GetStatusStringFromGameJsonObject(pres["game"]);
 		}
 		if (pres.contains("activities") && !pres["activities"].is_null()) {
-			Json& activities = pres["activities"];
-			if (activities.size() != 0) {
-				pf->m_status = GetStatusStringFromGameJsonObject(activities[0]);
-			}
+			pf->m_status = GetStatusFromActivities(pres["activities"]);
 		}
 	}
 	else {

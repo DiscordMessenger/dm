@@ -43,6 +43,7 @@ Profile* ProfileCache::LookupProfile(Snowflake user, const std::string& username
 
 Profile* ProfileCache::LoadProfile(Snowflake user, nlohmann::json& jx)
 {
+	std::string str = jx.dump();
 	Profile* pf = LookupProfile(user, "", "", "", false);
 
 	auto iter = m_processingRequests.find(user);

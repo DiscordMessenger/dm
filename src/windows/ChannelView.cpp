@@ -706,8 +706,8 @@ LRESULT ChannelView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (pChan->m_channelType == Channel::DM)
 			{
 				Profile* pf = GetProfileCache()->LookupProfile(pChan->m_recipient, "", "", "", false);
-				//DrawActivityStatus(hdc, rcItem.left + ScaleByDPI(6), rcItem.top + ScaleByDPI(4), pf->m_activeStatus);
-				//statusText = pf->m_status;
+				DrawActivityStatus(hdc, rcItem.left + ScaleByDPI(6), rcItem.top + ScaleByDPI(4), pf->m_activeStatus);
+				statusText = pf->m_status;
 
 				// ^^^^^ NOTE: Status and activestatus are inaccurate right now because I don't support certain status updates.
 			}
