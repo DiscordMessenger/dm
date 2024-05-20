@@ -168,8 +168,8 @@ void OnUpdateAvatar(const std::string& resid)
 			if (GetProfilePopoutUser() == ip.sf)
 				SendMessage(g_Hwnd, WM_UPDATEPROFILEPOPOUT, 0, 0);
 
-			g_pMessageList->OnUpdateAvatar(ip.sf);
-			g_pMemberList->OnUpdateAvatar(ip.sf);
+			Snowflake sf = ip.sf;
+			SendMessage(g_Hwnd, WM_UPDATEUSER, 0, (LPARAM) &sf);
 			break;
 		}
 		case eImagePlace::ICONS:
@@ -577,6 +577,17 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	switch (uMsg)
 	{
+		case WM_UPDATEUSER:
+		{
+			Snowflake sf = *(Snowflake*) lParam;
+			g_pMessageList->OnUpdateAvatar(sf);
+			g_pMemberList->OnUpdateAvatar(sf);
+			g_pChannelView->OnUpdateAvatar(sf);
+
+			if (GetProfilePopoutUser() == sf)
+				UpdateProfilePopout();
+			break;
+		}
 		case WM_SSLERROR:
 		{
 			return OnSSLError(CutOutURLPath(std::string((const char*)lParam)));

@@ -51,6 +51,7 @@ public:
 	virtual void UpdateChannelAcknowledge(Snowflake channelID) = 0;
 	virtual void UpdateProfileAvatar(Snowflake userID, const std::string& resid) = 0;
 	virtual void UpdateProfilePopout(Snowflake userID) = 0; // <-- Updates if userID is the ID of the profile currently open
+	virtual void UpdateUserData(Snowflake userID) = 0;
 	virtual void UpdateAttachment(Snowflake attID) = 0;
 	virtual void RepaintGuildList() = 0;
 	virtual void RepaintProfile() = 0;

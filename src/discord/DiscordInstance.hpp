@@ -405,6 +405,7 @@ private:
 	void HandleGUILD_MEMBER_LIST_UPDATE(nlohmann::json& j);
 	void HandleGUILD_MEMBERS_CHUNK(nlohmann::json& j);
 	void HandleTYPING_START(nlohmann::json& j);
+	void HandlePRESENCE_UPDATE(nlohmann::json& j);
 	void HandlePASSIVE_UPDATE_V1(nlohmann::json& j);
 
 private:

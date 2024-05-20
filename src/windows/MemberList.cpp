@@ -200,6 +200,8 @@ void MemberList::OnUpdateAvatar(Snowflake user, bool bAlsoUpdateText)
 		return;
 
 	int idx = m_usrToUsrIdx[user];
+	if (idx < 0 || idx >= int(m_items.size()))
+		return;
 
 	// request refresh of the image
 	LVITEM lv;

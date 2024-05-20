@@ -260,6 +260,11 @@ void Frontend_Win32::UpdateProfilePopout(Snowflake userID)
 		::UpdateProfilePopout();
 }
 
+void Frontend_Win32::UpdateUserData(Snowflake userID)
+{
+	SendMessage(g_Hwnd, WM_UPDATEUSER, 0, (LPARAM) &userID);
+}
+
 void Frontend_Win32::UpdateAttachment(Snowflake attID)
 {
 	SendMessage(g_Hwnd, WM_UPDATEATTACHMENT, 0, (LPARAM) &attID);

@@ -54,4 +54,5 @@ enum eWmUserMsgs
 	WM_SSLERROR,
 	WM_FORCERESTART,
 	WM_CONNECTERROR,
+	WM_UPDATEUSER, // Snowflake[1]
 };

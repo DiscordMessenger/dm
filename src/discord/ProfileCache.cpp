@@ -46,6 +46,12 @@ Profile* ProfileCache::LoadProfile(Snowflake user, nlohmann::json& jx)
 	std::string str = jx.dump();
 	Profile* pf = LookupProfile(user, "", "", "", false);
 
+	bool anythingChanged = false;
+	std::string oldName   = pf->m_name;
+	std::string oldGName  = pf->m_globalName;
+	std::string oldAvatar = pf->m_avatarlnk;
+	bool oldIsBot = pf->m_bIsBot;
+
 	auto iter = m_processingRequests.find(user);
 	if (iter != m_processingRequests.end())
 		m_processingRequests.erase(iter);
@@ -68,16 +74,14 @@ Profile* ProfileCache::LoadProfile(Snowflake user, nlohmann::json& jx)
 	// Avatar links formatted as https://cdn.discordapp.com/avatars/<userid>/<avatarlnk>
 	if (userData["avatar"].is_string()) {
 		pf->m_avatarlnk = userData["avatar"];
-
 		GetFrontend()->RegisterAvatar(pf->m_snowflake, pf->m_avatarlnk);
-		GetFrontend()->UpdateProfileAvatar(pf->m_snowflake, pf->m_avatarlnk);
 	}
 	else {
 		pf->m_avatarlnk = "";
 	}
 
+	GetFrontend()->UpdateUserData(pf->m_snowflake);
 	GetFrontend()->RepaintProfileWithUserID(pf->m_snowflake);
-	GetFrontend()->UpdateProfilePopout(pf->m_snowflake);
 
 	return pf;
 }

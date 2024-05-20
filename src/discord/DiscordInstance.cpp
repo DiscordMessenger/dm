@@ -1555,6 +1555,7 @@ void DiscordInstance::InitDispatchFunctions()
 	DECL(GUILD_MEMBER_LIST_UPDATE);
 	DECL(GUILD_MEMBERS_CHUNK);
 	DECL(TYPING_START);
+	DECL(PRESENCE_UPDATE);
 	DECL(PASSIVE_UPDATE_V1);
 
 	m_dmGuild.m_name = GetFrontend()->GetDirectMessagesText();
@@ -1608,8 +1609,12 @@ void DiscordInstance::HandleREADY_SUPPLEMENTAL(Json& j)
 			pf->m_activeStatus = GetStatusFromString(status);
 
 			// Look for any activities -- TODO: Server specific activities
-			if (guildPres.contains("activities") && !memPres["activities"].is_null())
+			if (guildPres.contains("game") && !guildPres["game"].is_null())
+				pf->m_status = GetStatusStringFromGameJsonObject(guildPres["game"]);
+			else if (guildPres.contains("activities") && !memPres["activities"].is_null())
 				pf->m_status = GetStatusFromActivities(memPres["activities"]);
+			else
+				pf->m_status = "";
 		}
 	}
 
@@ -1623,8 +1628,12 @@ void DiscordInstance::HandleREADY_SUPPLEMENTAL(Json& j)
 		pf->m_activeStatus = GetStatusFromString(status);
 
 		// Look for any activities
-		if (friendPres.contains("activities") && !friendPres["activities"].is_null())
+		if (friendPres.contains("game") && !friendPres["game"].is_null())
+			pf->m_status = GetStatusStringFromGameJsonObject(friendPres["game"]);
+		else if (friendPres.contains("activities") && !friendPres["activities"].is_null())
 			pf->m_status = GetStatusFromActivities(friendPres["activities"]);
+		else
+			pf->m_status = "";
 	}
 }
 
@@ -2070,8 +2079,11 @@ Snowflake DiscordInstance::ParseGuildMember(Snowflake guild, nlohmann::json& mem
 		if (pres.contains("game") && !pres["game"].is_null()) {
 			pf->m_status = GetStatusStringFromGameJsonObject(pres["game"]);
 		}
-		if (pres.contains("activities") && !pres["activities"].is_null()) {
+		else if (pres.contains("activities") && !pres["activities"].is_null()) {
 			pf->m_status = GetStatusFromActivities(pres["activities"]);
+		}
+		else {
+			pf->m_status = "";
 		}
 	}
 	else {
@@ -2083,6 +2095,32 @@ Snowflake DiscordInstance::ParseGuildMember(Snowflake guild, nlohmann::json& mem
 		gm.m_roles.push_back(GetSnowflakeFromJsonObject(it));
 
 	return userID;
+}
+
+void DiscordInstance::HandlePRESENCE_UPDATE(nlohmann::json& j)
+{
+	Json& data = j["d"];
+
+	Json& user = data["user"];
+	Snowflake userID = GetSnowflake(user, "id");
+
+	Profile* pf = GetProfileCache()->LookupProfile(userID, "", "", "", false);
+
+	// Note: Updating these first because maybe LoadProfile triggers a refresh
+	pf->m_activeStatus = GetStatusFromString(GetFieldSafe(data, "status"));
+
+	// Look for any activities -- TODO: Server specific activities
+	if (data.contains("game") && !data["game"].is_null())
+		pf->m_status = GetStatusStringFromGameJsonObject(data["game"]);
+	else if (data.contains("activities") && !data["activities"].is_null())
+		pf->m_status = GetStatusFromActivities(data["activities"]);
+	else
+		pf->m_status = "";
+
+	if (user.contains("global_name")) // the full user object is provided
+		GetProfileCache()->LoadProfile(userID, user);
+	else
+		GetFrontend()->UpdateUserData(userID);
 }
 
 void DiscordInstance::HandlePASSIVE_UPDATE_V1(nlohmann::json& j)

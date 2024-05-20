@@ -227,6 +227,26 @@ void ChannelView::SetMode(bool listMode)
 	ShowWindow(m_treeHwnd, swT);
 }
 
+void ChannelView::OnUpdateAvatar(Snowflake user)
+{
+	if (m_idToIdx.find(user) == m_idToIdx.end())
+		return;
+
+	int idx = m_idToIdx[user];
+	if (idx < 0 || idx >= int(m_channels.size()))
+		return;
+
+	// request refresh of the image
+	if (m_bListMode) {
+		LVITEM lv;
+		lv.mask = LVIF_IMAGE;
+		lv.iImage = 0;
+		lv.iItem = idx;
+		ListView_SetItem(m_listHwnd, &lv);
+		ListView_Update(m_listHwnd, idx);
+	}
+}
+
 void ChannelView::ClearChannels()
 {
 	m_channels.clear();
@@ -367,6 +387,9 @@ void ChannelView::AddChannel(const Channel & ch)
 
 	m_channels.push_back(cmem);
 	m_idToIdx[cmem.m_snowflake] = index;
+
+	if (ch.m_channelType == Channel::DM)
+		m_idToIdx[ch.m_recipient] = index;
 
 	if (TreeMode())
 	{

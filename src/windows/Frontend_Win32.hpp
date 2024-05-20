@@ -37,6 +37,7 @@ public:
 	void UpdateChannelAcknowledge(Snowflake channelID) override;
 	void UpdateProfileAvatar(Snowflake userID, const std::string& resid) override;
 	void UpdateProfilePopout(Snowflake userID) override;
+	void UpdateUserData(Snowflake userID) override;
 	void UpdateAttachment(Snowflake attID) override;
 	void RepaintGuildList() override;
 	void RepaintProfile() override;

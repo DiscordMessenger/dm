@@ -60,6 +60,7 @@ public:
 	void SetItemIcon(HTREEITEM hItem, int icon);
 	void OnUpdateSelectedChannel(Snowflake newCh);
 	void SetMode(bool listMode);
+	void OnUpdateAvatar(Snowflake sf);
 
 private:
 	int GetIcon(const Channel& ch, bool bIsExpanded);
