@@ -4,7 +4,7 @@
 #include <algorithm>
 #include "RectAndPoint.hpp"
 
-// #define USE_STL_REGEX -- way slower than Boost Regex
+#define USE_STL_REGEX //-- way slower than Boost Regex
 
 #ifdef USE_STL_REGEX
 #include <regex>
@@ -37,6 +37,8 @@
 #define CHAR_NOOP       (char(0x12)) // will be ignored in the final output
 #define CHAR_EVERYONE   (char(0x13))
 #define CHAR_HERE       (char(0x14))
+#define CHAR_ESCAPE_UNDERSCORE (char(0x15))
+#define CHAR_ESCAPE_ASTERISK   (char(0x16))
 
 int g_tokenTypeTable[] = {
 	0,
@@ -63,7 +65,7 @@ int g_tokenTypeTable[] = {
 static REN::regex g_StrongMatch("(\\*){2}[^\\*\\r\\n].*?(\\*){2}");
 static REN::regex g_ItalicMatch("\\*[^\\*\\r\\n].*?\\*");
 static REN::regex g_UnderlMatch("(_){2}[^_\\r\\n].*?(_){2}");
-static REN::regex g_ItalieMatch("_[^\\_\\r\\n].*?_");
+static REN::regex g_ItalieMatch("(?=[ \\_\\r\\n])_.*?_(?=[ \\_\\r\\n])");
 static REN::regex g_QuoteMatch("^> .*?(\n|$)");
 
 // Basic Markdown syntax:
@@ -137,6 +139,14 @@ void FormattedText::Tokenize(const std::string& msg, const std::string& oldmsg)
 
 		switch (chr)
 		{
+			case CHAR_ESCAPE_UNDERSCORE:
+				chr = '_';
+				i++;
+				break;
+			case CHAR_ESCAPE_ASTERISK:
+				chr = '*';
+				i++;
+				break;
 			case CHAR_NOOP:
 				i++;
 				break;
@@ -234,7 +244,7 @@ void FormattedText::Tokenize(const std::string& msg, const std::string& oldmsg)
 				size_t beginningIdx = i;
 				i++;
 
-				if (i == msgSize || (msg[i] != '@' && msg[i] != '#' && msg[i] != 't')) {
+				if (i == msgSize || (msg[i] != '@' && msg[i] != '#' && msg[i] != 't' && msg[i] != ':')) {
 					i = beginningIdx;
 					goto _def;
 				}
@@ -257,10 +267,20 @@ void FormattedText::Tokenize(const std::string& msg, const std::string& oldmsg)
 				}
 
 				current = msg.substr(beginningIdx + 1, foundEnd - 1 - beginningIdx);
-				AddAndClearToken(tokens, current, type == 't' ? Token::TIMESTAMP : Token::MENTION);
 
+				int tokType = Token::MENTION;
+
+				switch (type) {
+					case 't':
+						tokType = Token::TIMESTAMP;
+						break;
+					case ':':
+						tokType = Token::CUSTOM_EMOJI;
+						break;
+				}
+
+				AddAndClearToken(tokens, current, tokType);
 				i = foundEnd + 1;
-
 				break;
 			}
 			case 'h': // http:// and https://
@@ -401,10 +421,11 @@ void FormattedText::ParseText()
 			default: {
 				int specificStyle = 0;
 				switch (tk.m_type) {
-					case Token::LINK:      specificStyle |= WORD_LINK;      break;
-					case Token::MENTION:   specificStyle |= WORD_MENTION;   break;
-					case Token::TIMESTAMP: specificStyle |= WORD_TIMESTAMP; break;
-					case Token::CODE:      specificStyle |= WORD_MLCODE;    break;
+					case Token::LINK:         specificStyle |= WORD_LINK;      break;
+					case Token::MENTION:      specificStyle |= WORD_MENTION;   break;
+					case Token::TIMESTAMP:    specificStyle |= WORD_TIMESTAMP; break;
+					case Token::CODE:         specificStyle |= WORD_MLCODE;    break;
+					case Token::CUSTOM_EMOJI: specificStyle |= WORD_CEMOJI;    break;
 				}
 				AddWord(Word(style | specificStyle, tk.m_text));
 				break;

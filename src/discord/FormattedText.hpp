@@ -31,6 +31,7 @@ struct Token
 		LIST_ITEM,
 		EVERYONE,
 		HERE,
+		CUSTOM_EMOJI,
 	};
 
 	int m_type = TEXT;
@@ -59,6 +60,8 @@ struct Token
 #define WORD_AFNEWLINE (1 << 14) // word had a new line or word wrap cutoff preceding it.
 #define WORD_EVERYONE  (1 << 15) // @everyone and @here
 #define WORD_WRAPPED   (1 << 16) // word was wrapped.  Ignored for anything that doesn't have the WORD_MLCODE on
+#define WORD_EMOJI     (1 << 17) // Unicode emoji.  Unsupported as of yet.
+#define WORD_CEMOJI    (1 << 18) // Custom emoji.
 
 struct Word
 {

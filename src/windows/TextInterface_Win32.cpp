@@ -122,6 +122,10 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 		oldColor = SetTextColor(context->m_hdc, COLOR_LINK);
 		setColor = true;
 	}
+	if (styleFlags & WORD_CEMOJI) {
+		oldColor = SetTextColor(context->m_hdc, RGB(255, 0, 0));
+		setColor = true;
+	}
 	if (styleFlags & (WORD_MENTION | WORD_EVERYONE)) {
 		oldColor = SetTextColor(context->m_hdc, COLOR_MENT);
 		setColor = true;
