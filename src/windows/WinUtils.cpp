@@ -794,7 +794,7 @@ void InitializeStatusIcons()
 		g_MentionMarkerIcons[i] = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_MENTION_MARKER_1 + i), IMAGE_ICON, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
 	}
 	for (int i = 0; i < 4; i++) {
-		g_ProfileStatusIcons[i] = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_STATUS_ONLINE + i), IMAGE_ICON, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+		g_ProfileStatusIcons[i] = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_STATUS_OFFLINE + i), IMAGE_ICON, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
 	}
 
 	int smcxicon   = GetSystemMetrics(SM_CXICON);

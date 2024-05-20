@@ -55,10 +55,10 @@
 #define IDI_CHANNEL_UNREAD_2K           51
 #define IDI_FILE_2K                     52
 #define IDI_BOT_2K                      53
-#define IDI_STATUS_ONLINE               54
-#define IDI_STATUS_IDLE                 55
-#define IDI_STATUS_DND                  56
-#define IDI_STATUS_OFFLINE              57
+#define IDI_STATUS_OFFLINE              54
+#define IDI_STATUS_ONLINE               55
+#define IDI_STATUS_IDLE                 56
+#define IDI_STATUS_DND                  57
 #define IDI_PROFILE_BORDER_GOLD         58
 #define IDI_PROFILE_BORDER_GOLD_2K      59
 #define IDI_JUMP_2K                     60

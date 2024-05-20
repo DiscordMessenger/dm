@@ -16,7 +16,7 @@ struct Profile
 	std::string m_bio = "";
 	std::string m_status = "";// "(i) User is suspected to be COOL as SHIT. Please report any COOL activity to Discord staff.";
 	std::string m_avatarlnk = "";
-	eActiveStatus m_activeStatus = STATUS_ONLINE;
+	eActiveStatus m_activeStatus = STATUS_OFFLINE;
 	bool m_bUsingDefaultData = true;
 	bool m_bIsBot = false;
 
