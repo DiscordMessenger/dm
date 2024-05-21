@@ -37,8 +37,13 @@
 #define CHAR_NOOP       (char(0x12)) // will be ignored in the final output
 #define CHAR_EVERYONE   (char(0x13))
 #define CHAR_HERE       (char(0x14))
-#define CHAR_ESCAPE_UNDERSCORE (char(0x15))
-#define CHAR_ESCAPE_ASTERISK   (char(0x16))
+#define CHAR_ESCAPE_UNDERSCORE (char(0x15)) // _
+#define CHAR_ESCAPE_ASTERISK   (char(0x16)) // *
+#define CHAR_ESCAPE_BACKSLASH  (char(0x17)) // \.
+#define CHAR_ESCAPE_BACKTICK   (char(0x18)) // `
+#define CHAR_ESCAPE_POUND      (char(0x19)) // #
+#define CHAR_ESCAPE_MINUS      (char(0x1A)) // -
+#define CHAR_ESCAPE_PLUS       (char(0x1B)) // +
 
 int g_tokenTypeTable[] = {
 	0,
@@ -139,17 +144,14 @@ void FormattedText::Tokenize(const std::string& msg, const std::string& oldmsg)
 
 		switch (chr)
 		{
-			case CHAR_ESCAPE_UNDERSCORE:
-				chr = '_';
-				i++;
-				break;
-			case CHAR_ESCAPE_ASTERISK:
-				chr = '*';
-				i++;
-				break;
-			case CHAR_NOOP:
-				i++;
-				break;
+			case CHAR_ESCAPE_UNDERSCORE: chr = '_'; goto _def;
+			case CHAR_ESCAPE_ASTERISK:   chr = '*'; goto _def;
+			case CHAR_ESCAPE_BACKSLASH:  chr ='\\'; goto _def;
+			case CHAR_ESCAPE_BACKTICK:   chr = '`'; goto _def;
+			case CHAR_ESCAPE_POUND:      chr = '#'; goto _def;
+			case CHAR_ESCAPE_MINUS:      chr = '-'; goto _def;
+			case CHAR_ESCAPE_PLUS:       chr = '+'; goto _def;
+			case CHAR_NOOP: i++; break;
 			case CHAR_BEG_STRONG:
 			case CHAR_END_STRONG:
 			case CHAR_BEG_ITALIC:
@@ -654,6 +656,7 @@ void FormattedText::UseRegex(std::string& str)
 	const int HAS_EMPHAS = (1 << 1);
 	const int HAS_QUOTE  = (1 << 2);
 	const int HAS_AT     = (1 << 3);
+	const int HAS_BSLASH = (1 << 4);
 	int flags = 0;
 
 	for (size_t i = 0; i < str.size(); i++) {
@@ -661,24 +664,36 @@ void FormattedText::UseRegex(std::string& str)
 		if (str[i] == '_') flags |= HAS_EMPHAS;
 		if (str[i] == '>') flags |= HAS_QUOTE;
 		if (str[i] == '@') flags |= HAS_AT;
+		if (str[i] == '\\') flags |= HAS_BSLASH;
 
-		if (flags == (HAS_STRONG | HAS_EMPHAS | HAS_QUOTE | HAS_AT))
+		if (flags == (HAS_STRONG | HAS_EMPHAS | HAS_QUOTE | HAS_AT | HAS_BSLASH))
 			break;
 	}
 
-	// Expensive!  But I couldn't really figure out another way.
-	if (flags & HAS_STRONG)
-	{
-		RegexReplace(str, g_StrongMatch, 2, 2, CHAR_BEG_STRONG, CHAR_END_STRONG);
-		RegexReplace(str, g_ItalicMatch, 1, 1, CHAR_BEG_ITALIC, CHAR_END_ITALIC);
-	}
-	if (flags & HAS_EMPHAS)
-	{
-		RegexReplace(str, g_UnderlMatch, 2, 2, CHAR_BEG_UNDERL, CHAR_END_UNDERL);
-		RegexReplace(str, g_ItalieMatch, 1, 1, CHAR_BEG_ITALIE, CHAR_END_ITALIE);
-	}
-
 	// Not too expensive I hope!
+	if (flags & HAS_BSLASH)
+	{
+		for (size_t i = 0; i < str.size() - 1; i++) {
+			if (str[i] != '\\')
+				continue;
+			
+			char& thisChar = str[i];
+			char& nextChar = str[i + 1];
+
+			thisChar = CHAR_NOOP;
+			switch (nextChar) {
+				case '_': nextChar = CHAR_ESCAPE_UNDERSCORE; break;
+				case '*': nextChar = CHAR_ESCAPE_ASTERISK;   break;
+				case'\\': nextChar = CHAR_ESCAPE_BACKSLASH;  break;
+				case '#': nextChar = CHAR_ESCAPE_POUND;      break;
+				case '-': nextChar = CHAR_ESCAPE_MINUS;      break;
+				case '+': nextChar = CHAR_ESCAPE_PLUS;       break;
+				case '`': nextChar = CHAR_ESCAPE_BACKTICK;   break;  // NOTE: Processing backtick escapes earlier to disable escapes within code blocks
+				case '!': case '|': case '.': break;
+				default: thisChar = '\\'; break; // just replace it back with backslash
+			}
+		}
+	}
 	if (flags & HAS_QUOTE)
 	{
 		for (size_t i = 0; i < str.size() - 2; i++) {
@@ -703,6 +718,18 @@ void FormattedText::UseRegex(std::string& str)
 				str[i + j] = CHAR_NOOP;
 		}
 	}
+
+	// Expensive!  But I couldn't really figure out another way.
+	if (flags & HAS_STRONG)
+	{
+		RegexReplace(str, g_StrongMatch, 2, 2, CHAR_BEG_STRONG, CHAR_END_STRONG);
+		RegexReplace(str, g_ItalicMatch, 1, 1, CHAR_BEG_ITALIC, CHAR_END_ITALIC);
+	}
+	if (flags & HAS_EMPHAS)
+	{
+		RegexReplace(str, g_UnderlMatch, 2, 2, CHAR_BEG_UNDERL, CHAR_END_UNDERL);
+		RegexReplace(str, g_ItalieMatch, 1, 1, CHAR_BEG_ITALIE, CHAR_END_ITALIE);
+	}
 }
 
 void FormattedText::RegexNecessary()
@@ -719,6 +746,29 @@ void FormattedText::RegexNecessary()
 	}
 }
 
+std::string FormattedText::EscapeChars(const std::string& str)
+{
+	std::string outstr;
+	outstr.reserve(str.size());
+
+	for (size_t i = 0; i < str.size(); i++)
+	{
+		switch (str[i]) {
+			case CHAR_NOOP: break;
+			case CHAR_ESCAPE_UNDERSCORE: outstr += '_'; break;
+			case CHAR_ESCAPE_ASTERISK:   outstr += '*'; break;
+			case CHAR_ESCAPE_BACKSLASH:  outstr +='\\'; break;
+			case CHAR_ESCAPE_BACKTICK:   outstr += '`'; break;
+			case CHAR_ESCAPE_POUND:      outstr += '#'; break;
+			case CHAR_ESCAPE_MINUS:      outstr += '-'; break;
+			case CHAR_ESCAPE_PLUS:       outstr += '+'; break;
+			default: outstr += str[i]; break;
+		}
+	}
+
+	return outstr;
+}
+
 void FormattedText::TokenizeAll()
 {
 	for (size_t i = 0; i < m_blocks.size(); i++)
@@ -726,7 +776,7 @@ void FormattedText::TokenizeAll()
 		if (i & 1)
 		{
 			assert(m_blocks[i].size() == 1);
-			m_tokens.push_back(Token(Token::CODE, m_blocks[i][0].first));
+			m_tokens.push_back(Token(Token::CODE, EscapeChars(m_blocks[i][0].first)));
 		}
 		else
 		{
@@ -734,13 +784,14 @@ void FormattedText::TokenizeAll()
 			auto& vec = m_blocks[i];
 			for (size_t j = 0; j < vec.size(); j++) {
 				if (j & 1)
-					m_tokens.push_back(Token(Token::SMALLCODE, m_blocks[i][j].first));
+					m_tokens.push_back(Token(Token::SMALLCODE, EscapeChars(m_blocks[i][j].first)));
 				else
 					Tokenize(m_blocks[i][j].first, m_blocks[i][j].second);
 			}
 		}
 	}
 }
+
 
 void FormattedText::SetMessage(const std::string& msg)
 {
@@ -754,4 +805,7 @@ void FormattedText::SetMessage(const std::string& msg)
 	RegexNecessary();
 	TokenizeAll();
 	ParseText();
+
+	m_blocks.clear();
+	m_tokens.clear();
 }
