@@ -721,8 +721,9 @@ LRESULT ChannelView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			DrawIconEx(hdc, rcItem.left, rcItem.top, g_ProfileBorderIcon, szDraw, szDraw, 0, NULL, DI_NORMAL | DI_COMPAT);
 			
 			// draw profile picture
-			HBITMAP hbm = GetAvatarCache()->GetBitmap(pChan->m_avatarLnk), hbmmask = NULL;
-			DrawBitmap(hdc, hbm, rcItem.left + ScaleByDPI(6), rcItem.top + ScaleByDPI(4), NULL, CLR_NONE, GetProfilePictureSize());
+			bool hasAlpha = false;
+			HBITMAP hbm = GetAvatarCache()->GetBitmap(pChan->m_avatarLnk, hasAlpha), hbmmask = NULL;
+			DrawBitmap(hdc, hbm, rcItem.left + ScaleByDPI(6), rcItem.top + ScaleByDPI(4), NULL, CLR_NONE, GetProfilePictureSize(), 0, hasAlpha);
 
 			// draw status indicator
 			std::string statusText = "";

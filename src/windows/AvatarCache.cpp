@@ -7,6 +7,18 @@
 
 //#define DISABLE_AVATAR_LOADING_FOR_DEBUGGING
 
+static int NearestPowerOfTwo(int x) {
+	if (x > (1 << 30))
+		return 1 << 30;
+
+	if (x < 2)
+		return 2;
+
+	int i;
+	for (i = 1; i < x; i <<= 1);
+	return i;
+}
+
 static AvatarCache s_AvatarCacheSingleton;
 AvatarCache* GetAvatarCache() {
 	return &s_AvatarCacheSingleton;
@@ -33,12 +45,14 @@ std::string AvatarCache::MakeIdentifier(const std::string& resource)
 	return m_resourceNameToID[resource];
 }
 
-void AvatarCache::AddImagePlace(const std::string& resource, eImagePlace ip, const std::string& place, Snowflake sf)
+std::string AvatarCache::AddImagePlace(const std::string& resource, eImagePlace ip, const std::string& place, Snowflake sf, int sizeOverride)
 {
-	m_imagePlaces[MakeIdentifier(resource)] = { ip, sf, place, MakeIdentifier(resource) };
+	std::string id = MakeIdentifier(resource);
+	m_imagePlaces[id] = { ip, sf, place, id, sizeOverride };
+	return id;
 }
 
-void AvatarCache::SetBitmap(const std::string& resource, HBITMAP hbm)
+void AvatarCache::SetBitmap(const std::string& resource, HBITMAP hbm, bool hasAlpha)
 {
 	std::string id = MakeIdentifier(resource);
 
@@ -52,13 +66,14 @@ void AvatarCache::SetBitmap(const std::string& resource, HBITMAP hbm)
 	auto iter = m_profileToBitmap.find(id);
 	if (iter != m_profileToBitmap.end())
 	{
-		DeleteBitmapIfNeeded(iter->second.first);
-		iter->second.first = hbm;
-		iter->second.second = 0;
+		DeleteBitmapIfNeeded(iter->second.m_bitmap);
+		iter->second.m_bitmap = hbm;
+		iter->second.m_age = 0;
+		iter->second.m_bHasAlpha = hasAlpha;
 		return;
 	}
 
-	m_profileToBitmap[id] = std::make_pair(hbm, 0);
+	m_profileToBitmap[id] = BitmapObject(hbm, 0, hasAlpha);
 }
 
 ImagePlace AvatarCache::GetPlace(const std::string& resource)
@@ -80,22 +95,23 @@ void AvatarCache::LoadedResource(const std::string& resource)
 
 extern HBITMAP GetDefaultBitmap(); // main.cpp
 
-HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource)
+HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource, bool& hasAlphaOut)
 {
 	std::string id = MakeIdentifier(resource);
 
 	auto iter = m_profileToBitmap.find(id);
 	if (iter != m_profileToBitmap.end()) {
-		iter->second.second = 0;
-		return iter->second.first;
+		iter->second.m_age = 0;
+		hasAlphaOut = iter->second.m_bHasAlpha;
+		return iter->second.m_bitmap;
 	}
 
 	auto iterIP = m_imagePlaces.find(id);
 	if (iterIP == m_imagePlaces.end()) {
 		// this shouldn't happen.  Just set to default
 		DbgPrintW("Could not load resource %s, no image place was registered", id.c_str());
-		SetBitmap(id, HBITMAP_LOADING);
-		return GetBitmapSpecial(id);
+		SetBitmap(id, HBITMAP_LOADING, false);
+		return GetBitmapSpecial(id, hasAlphaOut);
 	}
 
 	eImagePlace pla = iterIP->second.type;
@@ -118,25 +134,27 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource)
 		fclose(f);
 
 		int nsz = pla == eImagePlace::ATTACHMENTS ? 0 : -1;
-		HBITMAP hbmp = ImageLoader::ConvertToBitmap(pData, size_t(sz), nsz, nsz);
+		bool hasAlpha = false;
+		HBITMAP hbmp = ImageLoader::ConvertToBitmap(pData, size_t(sz), hasAlpha, nsz, nsz);
 		if (hbmp) {
-			SetBitmap(id, hbmp);
+			SetBitmap(id, hbmp, hasAlpha);
+			hasAlphaOut = hasAlpha;
 			return hbmp;
 		}
 
 		// just return the default...
 		DbgPrintW("Image %s could not be decoded!", id.c_str());
 #endif
-		SetBitmap(id, HBITMAP_ERROR);
-		return GetBitmapSpecial(id);
+		SetBitmap(id, HBITMAP_ERROR, false);
+		return GetBitmapSpecial(id, hasAlphaOut);
 	}
 
 	// Could not find it in the cache, so request it from discord
-	SetBitmap(id, HBITMAP_LOADING);
+	SetBitmap(id, HBITMAP_LOADING, false);
 
 	if (iterIP->second.place.empty()) {
 		DbgPrintW("Image %s could not be fetched!  Place is empty", id.c_str());
-		return GetBitmapSpecial(id);
+		return GetBitmapSpecial(id, hasAlphaOut);
 	}
 
 	std::string url = iterIP->second.GetURL();
@@ -145,7 +163,7 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource)
 	{
 		// if not inserted already
 		if (!m_loadingResources.insert(url).second)
-			return GetBitmapSpecial(id);
+			return GetBitmapSpecial(id, hasAlphaOut);
 
 #ifdef DISABLE_AVATAR_LOADING_FOR_DEBUGGING
 		GetFrontend()->OnAttachmentFailed(!iterIP->second.IsAttachment(), id);
@@ -168,12 +186,12 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource)
 		DbgPrintW("Image %s could not be downloaded! URL is empty!", id.c_str());
 	}
 
-	return GetBitmapSpecial(id);
+	return GetBitmapSpecial(id, hasAlphaOut);
 }
 
-HBITMAP AvatarCache::GetBitmapNullable(const std::string& resource)
+HBITMAP AvatarCache::GetBitmapNullable(const std::string& resource, bool& hasAlphaOut)
 {
-	HBITMAP hbm = GetBitmapSpecial(resource);
+	HBITMAP hbm = GetBitmapSpecial(resource, hasAlphaOut);
 
 	if (hbm == HBITMAP_ERROR || hbm == HBITMAP_LOADING)
 		hbm = NULL;
@@ -181,9 +199,10 @@ HBITMAP AvatarCache::GetBitmapNullable(const std::string& resource)
 	return hbm;
 }
 
-HBITMAP AvatarCache::GetBitmap(const std::string& resource)
+HBITMAP AvatarCache::GetBitmap(const std::string& resource, bool& hasAlphaOut)
 {
-	HBITMAP hbm = GetBitmapSpecial(resource);
+	hasAlphaOut = false;
+	HBITMAP hbm = GetBitmapSpecial(resource, hasAlphaOut);
 
 	if (hbm == HBITMAP_ERROR || hbm == HBITMAP_LOADING || !hbm)
 		hbm = GetDefaultBitmap();
@@ -194,7 +213,7 @@ HBITMAP AvatarCache::GetBitmap(const std::string& resource)
 void AvatarCache::WipeBitmaps()
 {
 	for (auto b : m_profileToBitmap)
-		DeleteBitmapIfNeeded(b.second.first);
+		DeleteBitmapIfNeeded(b.second.m_bitmap);
 
 	m_profileToBitmap.clear();
 	m_imagePlaces.clear();
@@ -206,7 +225,7 @@ void AvatarCache::EraseBitmap(const std::string& resource)
 	if (iter == m_profileToBitmap.end())
 		return;
 
-	DeleteBitmapIfNeeded(iter->second.first);
+	DeleteBitmapIfNeeded(iter->second.m_bitmap);
 	m_profileToBitmap.erase(iter);
 }
 
@@ -216,11 +235,11 @@ bool AvatarCache::TrimBitmap()
 	std::string rid = "";
 
 	for (auto &b : m_profileToBitmap) {
-		if (maxAge < b.second.second &&
-			b.second.first != GetDefaultBitmap() &&
-			b.second.first != HBITMAP_ERROR &&
-			b.second.first != HBITMAP_LOADING) {
-			maxAge = b.second.second;
+		if (maxAge < b.second.m_age &&
+			b.second.m_bitmap != GetDefaultBitmap() &&
+			b.second.m_bitmap != HBITMAP_ERROR &&
+			b.second.m_bitmap != HBITMAP_LOADING) {
+			maxAge = b.second.m_age;
 			rid    = b.first;
 		}
 	}
@@ -236,7 +255,7 @@ bool AvatarCache::TrimBitmap()
 		m_loadingResources.erase(iter2);
 
 	DbgPrintW("Deleting bitmap %s", rid.c_str());
-	DeleteBitmapIfNeeded(iter->second.first);
+	DeleteBitmapIfNeeded(iter->second.m_bitmap);
 	m_profileToBitmap.erase(iter);
 
 	return true;
@@ -256,7 +275,7 @@ int AvatarCache::TrimBitmaps(int count)
 void AvatarCache::AgeBitmaps()
 {
 	for (auto &b : m_profileToBitmap) {
-		b.second.second++;
+		b.second.m_age++;
 	}
 }
 
@@ -277,6 +296,8 @@ void AvatarCache::DeleteBitmapIfNeeded(HBITMAP hbm)
 std::string ImagePlace::GetURL() const
 {
 	bool bIsAttachment = false;
+	bool useOnlySnowflake = false;
+	bool dontAppendSize = false;
 	std::string path = "";
 	switch (type)
 	{
@@ -289,9 +310,14 @@ std::string ImagePlace::GetURL() const
 		case eImagePlace::CHANNEL_ICONS:
 			path = "channel-icons";
 			break;
+		case eImagePlace::EMOJIS:
+			path = "emojis";
+			useOnlySnowflake = true;
+			break;
 		case eImagePlace::ATTACHMENTS:
 			path = "z";
 			bIsAttachment = true;
+			dontAppendSize = true;
 			break;
 	}
 
@@ -303,10 +329,29 @@ std::string ImagePlace::GetURL() const
 	if (bIsAttachment)
 		return place;
 
-	return GetDiscordCDN() + path + "/" + std::to_string(sf) + "/" + place
+	std::string url = GetDiscordCDN() + path + "/" + std::to_string(sf);
+
+	if (!useOnlySnowflake)
+		url += "/" + place;
+
+	// Add in the webp / png at the end.
+	url += 
 #ifdef WEBP_SUP
-		+ ".webp";
+		".webp";
 #else
-		+ ".png";
+		".png";
 #endif // WEBP_SUB
+
+	// Also the size should reflect the active profile picture size.
+	if (!dontAppendSize)
+	{
+		int size = NearestPowerOfTwo(sizeOverride ? sizeOverride : GetProfilePictureSize());
+		// actually increase it a bit to increase quality
+		if (size < 128)
+			size = 128;
+
+		url += "?size=" + std::to_string(size);
+	}
+
+	return url;
 }

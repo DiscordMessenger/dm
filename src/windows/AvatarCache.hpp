@@ -14,6 +14,7 @@ enum class eImagePlace
 	ICONS,         // server icons
 	ATTACHMENTS,   // attachments
 	CHANNEL_ICONS, // channel icons
+	EMOJIS,        // emojis
 };
 
 struct ImagePlace {
@@ -21,10 +22,13 @@ struct ImagePlace {
 	Snowflake sf = 0;
 	std::string place;
 	std::string key;
+	int sizeOverride = 0;
 	
 	ImagePlace() {}
-	ImagePlace(eImagePlace t, Snowflake s, const std::string& p, const std::string& k) : type(t), sf(s), place(p), key(k) {}
+	ImagePlace(eImagePlace t, Snowflake s, const std::string& p, const std::string& k, int so):
+		type(t), sf(s), place(p), key(k), sizeOverride(so) {}
 
+	void SetSizeOverride(int so) { sizeOverride = so; }
 	bool IsAttachment() const { return type == eImagePlace::ATTACHMENTS; }
 	std::string GetURL() const;
 };
@@ -35,17 +39,35 @@ struct ImagePlace {
 // Kind of a misnomer as it also handles attachment resources.
 class AvatarCache
 {
+private:
+	struct BitmapObject
+	{
+		HBITMAP m_bitmap = NULL;
+		int m_age = 0;
+		bool m_bHasAlpha = false;
+
+		BitmapObject() {}
+		BitmapObject(HBITMAP hbm, int age, bool hasAlpha) : m_bitmap(hbm), m_age(age), m_bHasAlpha(hasAlpha) {}
+
+		~BitmapObject() {
+		}
+	};
+
+protected:
+	friend class Frontend_Win32;
+
+	// Set the bitmap associated with the resource ID.
+	// Note, after this, hbm is owned by the profile bitmap handler, so you shouldn't delete it
+	void SetBitmap(const std::string& resource, HBITMAP hbm, bool hasAlpha);
+
 public:
 	// Create a 32-character identifier based on the resource name.  If a 32 character
 	// GUID was provided, return it, otherwise perform the MD5 hash of the string.
 	std::string MakeIdentifier(const std::string& resource);
 
 	// Let the avatar cache know where resource with the specified ID is located.
-	void AddImagePlace(const std::string& resource, eImagePlace ip, const std::string& place, Snowflake sf = 0);
-
-	// Set the bitmap associated with the resource ID.
-	// Note, after this, hbm is owned by the profile bitmap handler, so you shouldn't delete it
-	void SetBitmap(const std::string& resource, HBITMAP hbm);
+	// Returns the resource ID to avoid further md5 hashes on the same content.
+	std::string AddImagePlace(const std::string& resource, eImagePlace ip, const std::string& place, Snowflake sf = 0, int sizeOverride = 0);
 
 	// Get the type of the resource with the specified ID.
 	ImagePlace GetPlace(const std::string& resource);
@@ -54,13 +76,13 @@ public:
 	void LoadedResource(const std::string& resource);
 
 	// Get the bitmap associated with the resource.  If it isn't loaded, request it, and return special bitmap handles.
-	HBITMAP GetBitmapSpecial(const std::string& resource);
+	HBITMAP GetBitmapSpecial(const std::string& resource, bool& hasAlphaOut);
 
 	// Get the bitmap associated with the resource.  If it isn't loaded, request it, and return NULL.
-	HBITMAP GetBitmapNullable(const std::string& resource);
+	HBITMAP GetBitmapNullable(const std::string& resource, bool& hasAlphaOut);
 
 	// Get the bitmap associated with the resource.  If it isn't loaded, request it, and return a default.
-	HBITMAP GetBitmap(const std::string& resource);
+	HBITMAP GetBitmap(const std::string& resource, bool& hasAlphaOut);
 
 	// Delete all bitmaps.
 	void WipeBitmaps();
@@ -87,7 +109,7 @@ private:
 
 	// The value has two items: the bitmap itself and an 'age'. From time to time,
 	// bitmaps are 'aged'; GetBitmap resets the age of the specific bitmap to zero.
-	std::unordered_map<std::string, std::pair<HBITMAP, int>> m_profileToBitmap;
+	std::unordered_map<std::string, BitmapObject> m_profileToBitmap;
 
 	// The place where the resource with the specified ID can be found.
 	std::unordered_map<std::string, ImagePlace> m_imagePlaces;
@@ -96,7 +118,7 @@ private:
 	std::set<std::string> m_loadingResources;
 
 	// Delete the bitmap if it isn't the default one.
-	void DeleteBitmapIfNeeded(HBITMAP hbm);
+	static void DeleteBitmapIfNeeded(HBITMAP hbm);
 };
 
 AvatarCache* GetAvatarCache();

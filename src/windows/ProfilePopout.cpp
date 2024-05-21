@@ -104,8 +104,9 @@ bool ProfileViewerSetProfileData(HWND hWnd)
 	}
 	g_pRoleList->Update();
 
+	bool unusedHasAlpha = false;
 	item = GetDlgItem(hWnd, IDC_STATIC_PROFILE_IMAGE);
-	SendMessage(item, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)GetAvatarCache()->GetBitmap(pProf->m_avatarlnk));
+	SendMessage(item, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)GetAvatarCache()->GetBitmap(pProf->m_avatarlnk, unusedHasAlpha));
 
 	item = GetDlgItem(hWnd, IDC_GUILD_JOIN_DATE);
 	if (gm) {

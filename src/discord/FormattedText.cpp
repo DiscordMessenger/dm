@@ -444,6 +444,22 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 	
 	Point wordPos = { int(rect.left) + offsetX, int(rect.top) };
 
+	bool containsJustEmoji = true;
+	for (auto& word : m_words) {
+		// If a word isn't any one of these:
+		if ((word.m_flags & ~(WORD_SPACE | WORD_NEWLINE | WORD_CEMOJI | WORD_EMOJI | WORD_HEADER1)) || word.m_flags == 0) {
+			containsJustEmoji = false;
+			break;
+		}
+	}
+
+	if (containsJustEmoji) {
+		for (auto& word : m_words) {
+			if (word.m_flags & (WORD_CEMOJI | WORD_EMOJI))
+				word.m_flags |= WORD_HEADER1;
+		}
+	}
+
 	// first convert to interface string
 	for (auto& word : m_words) {
 		word.UpdateIfContent();

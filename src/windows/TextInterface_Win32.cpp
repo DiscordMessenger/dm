@@ -1,5 +1,6 @@
 #include "TextInterface_Win32.hpp"
 #include "WinUtils.hpp"
+#include "AvatarCache.hpp"
 
 void String::Set(const std::string& text)
 {
@@ -39,36 +40,50 @@ Point MdMeasureString(DrawingContext* context, const String& word, int styleFlag
 	HFONT font = MdDetermineFont(styleFlags);
 	HGDIOBJ old = SelectObject(hdc, font);
 
-	if (maxWidth > 0) {
+	if (styleFlags & WORD_CEMOJI)
+	{
+		// Is an emoji.  Therefore, render it as a square and go off.
+		int height = MdLineHeight(context, styleFlags);
 		rect.left = rect.top = 0;
-		rect.right = maxWidth;
-		rect.bottom = 10000000;
-		DrawText(hdc, word.GetWrapped(), -1, &rect, DT_CALCRECT | DT_WORDBREAK);
+		rect.right = rect.bottom = height;
 	}
-	else {
-		DrawText(hdc, word.GetWrapped(), -1, &rect, DT_CALCRECT);
-	}
+	else
+	{
+		if (maxWidth > 0) {
+			rect.left = rect.top = 0;
+			rect.right = maxWidth;
+			rect.bottom = 10000000;
+			DrawText(hdc, word.GetWrapped(), -1, &rect, DT_CALCRECT | DT_WORDBREAK);
+		}
+		else {
+			DrawText(hdc, word.GetWrapped(), -1, &rect, DT_CALCRECT);
+		}
 
-	if (styleFlags & WORD_MLCODE) {
-		SIZE sz;
-		GetTextExtentPoint(hdc, word.GetWrapped(), word.GetSize(), &sz);
+		if (styleFlags & WORD_MLCODE) {
+			SIZE sz;
+			GetTextExtentPoint(hdc, word.GetWrapped(), word.GetSize(), &sz);
 
-		outWasWordWrapped = sz.cx > rect.right - rect.left;
+			outWasWordWrapped = sz.cx > rect.right - rect.left;
 
-		rect.right += 8;
-		rect.bottom += 8;
+			rect.right += 8;
+			rect.bottom += 8;
+		}
 	}
 
 	SelectObject(hdc, old);
 
 	return { rect.right - rect.left, rect.bottom - rect.top };
 }
-
+int GetProfilePictureSize();
 int MdLineHeight(DrawingContext* context, int styleFlags)
 {
 	int fontId = MdDetermineFontID(styleFlags);
-	if (context->m_cachedHeights[fontId])
-		return context->m_cachedHeights[fontId];
+	if (context->m_cachedHeights[fontId]) {
+		int result = context->m_cachedHeights[fontId];
+		if (styleFlags & WORD_HEADER1)
+			result = GetProfilePictureSize();
+		return result;
+	}
 
 	HDC hdc = context->m_hdc;
 	HFONT font = MdGetFontByID(fontId);
@@ -77,6 +92,8 @@ int MdLineHeight(DrawingContext* context, int styleFlags)
 	GetTextMetrics(context->m_hdc, &tm);
 	SelectObject(hdc, old);
 	int ht = tm.tmHeight;
+	if (styleFlags & WORD_HEADER1)
+		ht *= 2;
 	context->m_cachedHeights[fontId] = ht;
 	return ht;
 }
@@ -101,6 +118,37 @@ int MdSpaceWidth(DrawingContext* context, int styleFlags)
 void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, int styleFlags)
 {
 	RECT rc = RectToNative(rect);
+	HDC hdc = context->m_hdc;
+
+	if (styleFlags & WORD_CEMOJI) {
+		// Parse the snowflake by hand because why not
+		Snowflake parsed = 0;
+		LPCTSTR wrapped = str.GetWrapped();
+		size_t size = str.GetSize();
+
+		for (size_t i = 0, colonsSeen = 0; i < size; i++) {
+			if (wrapped[i] == (TCHAR) ':')
+				colonsSeen++;
+
+			if (colonsSeen > 2)
+				break;
+
+			if (colonsSeen == 2) {
+				if (wrapped[i] >= (TCHAR) '0' && wrapped[i] <= (TCHAR) '9')
+					parsed = parsed * 10 + int(wrapped[i] - (TCHAR) '0');
+			}
+		}
+
+		int height = MdLineHeight(context, styleFlags);
+
+		std::string nameRaw = "EMOJI_" + std::to_string(parsed);
+		std::string name = GetAvatarCache()->AddImagePlace(nameRaw, eImagePlace::EMOJIS, nameRaw, parsed, height);
+
+		bool hasAlpha = false;
+		HBITMAP hbm = GetAvatarCache()->GetBitmap(nameRaw, hasAlpha);
+		DrawBitmap(hdc, hbm, rect.left, rect.top, NULL, CLR_NONE, height, height, hasAlpha);
+		return;
+	}
 
 	if (styleFlags & WORD_MLCODE) {
 		rc.left   += 4;
@@ -137,7 +185,7 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 		setColorBG = true;
 		flags |= DT_WORDBREAK;
 	}
-	HDC hdc = context->m_hdc;
+
 	HFONT font = MdDetermineFont(styleFlags);
 	HGDIOBJ old = SelectObject(hdc, font);
 	if ((styleFlags & (WORD_AFNEWLINE | WORD_QUOTE)) == (WORD_AFNEWLINE | WORD_QUOTE)) {

@@ -325,8 +325,10 @@ void ImageViewerOnLoad(NetRequest* pRequest)
 
 	KillImageBitmaps();
 
-	g_hBitmapFull = ImageLoader::ConvertToBitmap(pData, nSize, 0, 0);
-	g_hBitmapPreview = ImageLoader::ConvertToBitmap(pData, nSize, g_ivPreviewImageWidth, g_ivPreviewImageHeight);
+	bool unusedHasAlpha1 = false;
+	bool unusedHasAlpha2 = false;
+	g_hBitmapFull = ImageLoader::ConvertToBitmap(pData, nSize, unusedHasAlpha1, 0, 0);
+	g_hBitmapPreview = ImageLoader::ConvertToBitmap(pData, nSize, unusedHasAlpha2, g_ivPreviewImageWidth, g_ivPreviewImageHeight);
 
 	g_bChildZoomedIn = false;
 	SendMessage(g_ivChildHwnd, WM_UPDATEBITMAP, 0, 0);

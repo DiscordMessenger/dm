@@ -55,8 +55,9 @@ LRESULT CALLBACK ProfileView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			HDC hdc =
 			BeginPaint(hWnd, &ps);
 
+			bool hasAlpha = false;
 			Profile* pf = GetDiscordInstance()->GetProfile();
-			HBITMAP hbm = GetAvatarCache()->GetBitmap(pf->m_avatarlnk);
+			HBITMAP hbm = GetAvatarCache()->GetBitmap(pf->m_avatarlnk, hasAlpha);
 			int pfpSize = GetProfilePictureSize();
 			int pfpBorderSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 			int pfpBorderSizeDrawn = GetProfileBorderSize();
@@ -67,7 +68,7 @@ LRESULT CALLBACK ProfileView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			rcProfile.right = pfpX + pfpBorderSize - ScaleByDPI(6);
 			FillRect(hdc, &rcProfile, GetSysColorBrush(PROFILE_VIEW_COLOR));
 			DrawIconEx(hdc, pfpX - ScaleByDPI(6), pfpY - ScaleByDPI(4), g_ProfileBorderIcon, pfpBorderSizeDrawn, pfpBorderSizeDrawn, 0, NULL, DI_NORMAL | DI_COMPAT);
-			DrawBitmap(hdc, hbm, pfpX, pfpY, NULL, CLR_NONE, pfpSize);
+			DrawBitmap(hdc, hbm, pfpX, pfpY, NULL, CLR_NONE, pfpSize, 0, hasAlpha);
 
 			DrawActivityStatus(hdc, pfpX, pfpY, pf->m_activeStatus);
 

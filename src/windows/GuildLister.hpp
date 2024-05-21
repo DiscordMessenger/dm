@@ -42,7 +42,7 @@ public:
 	void RedrawIconForGuild(Snowflake guild);
 
 private:
-	void DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, const std::string& textOver);
+	void DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, const std::string& textOver, bool hasAlpha);
 
 public:
 	static WNDCLASS g_GuildListerParentClass;

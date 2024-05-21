@@ -63,8 +63,10 @@ static uint8_t* DecodeWithStbImage(FreeFunction* pFreeFunc, const uint8_t* pData
 
 #endif
 
-HBITMAP ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, int newWidth, int newHeight)
+HBITMAP ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& outHasAlphaChannel, int newWidth, int newHeight)
 {
+	outHasAlphaChannel = false;
+
 	FreeFunction freeFunc = NopFree;
 	int width = 0, height = 0;
 	uint8_t* pNewData = DecodeWebp(&freeFunc, pData, size, &width, &height);
@@ -88,16 +90,29 @@ HBITMAP ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, int newW
 	if (!newHeight)
 		newHeight = height;
 
-	HDC wndHdc = GetDC(g_Hwnd);
-	HDC hdc = CreateCompatibleDC(wndHdc);
-	HBITMAP hbm = CreateCompatibleBitmap(wndHdc, newWidth, newHeight);
-	HGDIOBJ old = SelectObject(hdc, hbm);
+	// pre-multiply alpha
+	size_t pixelCount = width * height;
+	uint32_t* pixels = (uint32_t*)pNewData;
+	bool hasAlpha = false;
+	for (size_t i = 0; i < pixelCount; i++)
+	{
+		union {
+			uint8_t c[4];
+			uint32_t x;
+		} u;
 
-	BITMAPINFO bmi;
-	memset(&bmi, 0, sizeof bmi);
+		u.x = pixels[i];
+		if (u.c[3] != 0xFF) {
+			hasAlpha = true;
+			u.c[0] = uint8_t(int(u.c[0]) * int(u.c[3]) / 255);
+			u.c[1] = uint8_t(int(u.c[1]) * int(u.c[3]) / 255);
+			u.c[2] = uint8_t(int(u.c[2]) * int(u.c[3]) / 255);
+			pixels[i] = u.x;
+		}
+	}
 
+	BITMAPINFO bmi{};
 	BITMAPINFOHEADER& hdr = bmi.bmiHeader;
-
 	hdr.biSizeImage = 0;
 	hdr.biWidth = width;
 	hdr.biHeight = -height;
@@ -105,43 +120,193 @@ HBITMAP ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, int newW
 	hdr.biBitCount = 32;
 	hdr.biCompression = BI_RGB;
 	hdr.biSize = sizeof(BITMAPINFOHEADER);
-	hdr.biXPelsPerMeter = 0;
-	hdr.biYPelsPerMeter = 0;
-	hdr.biClrUsed = 0;
-	hdr.biClrImportant = 0;
 
-	int x;
-	if (newWidth != width || newHeight != height)
+	HDC wndHdc = GetDC(g_Hwnd);
+	HDC hdc = CreateCompatibleDC(wndHdc);
+	if (!hasAlpha)
 	{
-		// This is the best stretch mode.
-		SetStretchBltMode(hdc, HALFTONE);
-		x = StretchDIBits(hdc, 0, 0, newWidth, newHeight, 0, 0, width, height, pNewData, &bmi, DIB_RGB_COLORS, SRCCOPY);
+		HBITMAP hbm = CreateCompatibleBitmap(wndHdc, newWidth, newHeight);
+		HGDIOBJ old = SelectObject(hdc, hbm);
+
+		int x = 0;
+		if (newWidth != width || newHeight != height) {
+			int oldMode = SetStretchBltMode(hdc, HALFTONE);
+			x = StretchDIBits(hdc, 0, 0, newWidth, newHeight, 0, 0, width, height, pNewData, &bmi, DIB_RGB_COLORS, SRCCOPY);
+			SetStretchBltMode(hdc, oldMode);
+			outHasAlphaChannel = false;
+		}
+		else {
+			x = SetDIBits(hdc, hbm, 0, height, pNewData, &bmi, DIB_RGB_COLORS);
+			outHasAlphaChannel = true;
+		}
+
+		if (x == GDI_ERROR) {
+			DbgPrintW("ConvertToBitmap failed to convert opaque image!");
+			DeleteObject(hbm);
+			hbm = NULL;
+		}
+
+		freeFunc(pNewData);
+		SelectObject(hdc, old);
+		DeleteDC(hdc);
+		ReleaseDC(g_Hwnd, wndHdc);
+		return hbm;
 	}
-	else
+
+	// Check if we need to stretch the bitmap.
+	if (newWidth == width && newHeight == height)
 	{
-		x = SetDIBits(hdc, hbm, 0, height, pNewData, &bmi, DIB_RGB_COLORS);
+		// Nope, so we can apply a highly optimized scheme.
+	_UnstretchedScheme:
+		void* pvBits = NULL;
+		HBITMAP hbm = CreateDIBSection(wndHdc, &bmi, DIB_RGB_COLORS, &pvBits, NULL, 0);
+
+		if (!hbm) {
+			DbgPrintW("ConvertToBitmap failed to convert transparent unstretched image!");
+			hbm = NULL;
+		}
+		else {
+			memcpy(pvBits, pixels, sizeof(uint32_t) * pixelCount);
+		}
+
+		outHasAlphaChannel = true;
+		freeFunc(pNewData);
+		DeleteDC(hdc);
+		ReleaseDC(g_Hwnd, wndHdc);
+		return hbm;
+	}
+
+	// Yeah, need to stretch the bitmap.  Because of that, we need to perform two stretch
+	// operations and combine the bits together.
+	uint32_t* alphaPixels = new uint32_t[pixelCount];
+	for (size_t i = 0; i < pixelCount; i++) {
+		uint32_t alpha = (pixels[i]) >> 24;
+		alphaPixels[i] = (255 << 24) | (alpha << 16) | (alpha << 8) | alpha;
+	}
+
+	// Create the alpha channel bitmap.
+	HBITMAP hbm = CreateCompatibleBitmap(wndHdc, newWidth, newHeight);
+	HGDIOBJ old = SelectObject(hdc, hbm);
+	int oldMode = SetStretchBltMode(hdc, HALFTONE);
+	int x = StretchDIBits(hdc, 0, 0, newWidth, newHeight, 0, 0, width, height, alphaPixels, &bmi, DIB_RGB_COLORS, SRCCOPY);
+	SetStretchBltMode(hdc, oldMode);
+	SelectObject(hdc, old);
+	delete[] alphaPixels;
+
+	BITMAPINFO bmi2;
+	size_t newPixelCount;
+	uint32_t *pvAlphaBits, *pvColorBits;
+
+	if (x == GDI_ERROR) {
+		DbgPrintW("ConvertToBitmap failed to convert transparent stretched image!");
+		hbm = NULL;
+		goto _error;
+	}
+
+	ZeroMemory(&bmi2, sizeof bmi2);
+	BITMAPINFOHEADER& hdr2 = bmi2.bmiHeader;
+	hdr2.biSizeImage = 0;
+	hdr2.biWidth = newWidth;
+	hdr2.biHeight = -newHeight;
+	hdr2.biPlanes = 1;
+	hdr2.biBitCount = 32;
+	hdr2.biCompression = BI_RGB;
+	hdr2.biSize = sizeof(BITMAPINFOHEADER);
+	hdr2.biClrUsed = 0;
+	hdr2.biClrImportant = 0;
+	hdr2.biSizeImage = 0;
+	hdr2.biXPelsPerMeter = 0;
+	hdr2.biYPelsPerMeter = 0;
+
+	// now dump the bits
+	newPixelCount = newWidth * newHeight;
+
+	pvAlphaBits = new uint32_t[newPixelCount];
+	x = GetDIBits(hdc, hbm, 0, newHeight, pvAlphaBits, &bmi2, DIB_RGB_COLORS);
+	if (x == 0) {
+		DbgPrintW("ConvertToBitmap failed to convert transparent stretched image - GetDIBits returned 0");
+		delete[] pvAlphaBits;
+		DeleteBitmap(hbm);
+		hbm = NULL;
+		goto _error;
+	}
+
+	// Done with the alpha channel stretch.
+	DeleteBitmap(hbm);
+
+	// Create the color bitmap.
+	hbm = CreateCompatibleBitmap(wndHdc, newWidth, newHeight);
+	old = SelectObject(hdc, hbm);
+
+	oldMode = SetStretchBltMode(hdc, HALFTONE);
+	x = StretchDIBits(hdc, 0, 0, newWidth, newHeight, 0, 0, width, height, pixels, &bmi, DIB_RGB_COLORS, SRCCOPY);
+	SetStretchBltMode(hdc, oldMode);
+	if (x == GDI_ERROR) {
+		DbgPrintW("ConvertToBitmap failed to convert transparent stretched image - StretchDIBits in alpha returned 0");
+		DeleteBitmap(hbm);
+		hbm = NULL;
+		goto _error;
 	}
 
 	SelectObject(hdc, old);
 
-	freeFunc(pNewData);
+	// Dump that one's bits too.
+	ZeroMemory(&bmi2, sizeof bmi2);
+	hdr2.biSizeImage = 0;
+	hdr2.biWidth = newWidth;
+	hdr2.biHeight = -newHeight;
+	hdr2.biPlanes = 1;
+	hdr2.biBitCount = 32;
+	hdr2.biCompression = BI_RGB;
+	hdr2.biSize = sizeof(BITMAPINFOHEADER);
+	hdr2.biClrUsed = 0;
+	hdr2.biClrImportant = 0;
+	hdr2.biSizeImage = 0;
+	hdr2.biXPelsPerMeter = 0;
+	hdr2.biYPelsPerMeter = 0;
 
-	ReleaseDC(g_Hwnd, wndHdc);
-
-	if (x == GDI_ERROR)
-	{
-		// it failed...
-		OutputDebugStringA("ConvertToBitmap failed!");
-		DeleteObject(hbm);
-		DeleteDC(hdc);
+	pvColorBits = new uint32_t[newPixelCount];
+	x = GetDIBits(hdc, hbm, 0, newHeight, pvColorBits, &bmi2, DIB_RGB_COLORS);
+	if (x == 0) {
+		DbgPrintW("ConvertToBitmap failed to convert transparent stretched image - GetDIBits in color returned 0... %d",GetLastError());
+		delete[] pvColorBits;
+		DeleteBitmap(hbm);
 		hbm = NULL;
+		goto _error;
 	}
 
-	static int i = 0;
-	DbgPrintW("Loading bitmap.. %d", ++i);
+	// Done with the color channel stretch.
+	DeleteBitmap(hbm);
 
-	DeleteDC (hdc);
+	// Clean up the original image, and perform a replacement:
+	freeFunc(pNewData);
+	pixels = pvColorBits;
+	pNewData = (uint8_t*) pvColorBits;
+	freeFunc = &::free;
+	width = newWidth;
+	height = newHeight;
+	pixelCount = width * height;
+	bmi.bmiHeader.biWidth = width;
+	bmi.bmiHeader.biHeight = -height;
 
+	// Mix the two together:
+	for (size_t i = 0; i < newPixelCount; i++) {
+		pvColorBits[i] = (pvColorBits[i] & 0xFFFFFF) | ((pvAlphaBits[i] & 0xFF) << 24);
+	}
+
+	delete[] pvAlphaBits;
+
+	// Finally, apply the unstretched scheme.
+	goto _UnstretchedScheme;
+
+_error:
+	// note: you can't actually reach this part with a valid bitmap
+	assert(!hbm);
+
+	outHasAlphaChannel = false;
+	freeFunc(pNewData);
+	DeleteDC(hdc);
+	ReleaseDC(g_Hwnd, wndHdc);
 	return hbm;
 }
 

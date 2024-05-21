@@ -187,12 +187,12 @@ void Frontend_Win32::OnFailedToCheckForUpdates(int result, const std::string& re
 void Frontend_Win32::OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_t* pData, size_t nSize, const std::string& additData)
 {
 	int nImSize = bIsProfilePicture ? -1 : 0;
-
-	HBITMAP bmp = ImageLoader::ConvertToBitmap(pData, nSize, nImSize, nImSize);
+	bool bHasAlpha = false;
+	HBITMAP bmp = ImageLoader::ConvertToBitmap(pData, nSize, bHasAlpha, nImSize, nImSize);
 	if (bmp)
 	{
 		GetAvatarCache()->LoadedResource(additData);
-		GetAvatarCache()->SetBitmap(additData, bmp);
+		GetAvatarCache()->SetBitmap(additData, bmp, bHasAlpha);
 		OnUpdateAvatar(additData);
 	}
 
@@ -217,7 +217,7 @@ void Frontend_Win32::OnAttachmentFailed(bool bIsProfilePicture, const std::strin
 	}
 
 	GetAvatarCache()->LoadedResource(additData);
-	GetAvatarCache()->SetBitmap(additData, HBITMAP_ERROR);
+	GetAvatarCache()->SetBitmap(additData, HBITMAP_ERROR, false);
 	OnUpdateAvatar(additData);
 }
 

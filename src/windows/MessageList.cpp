@@ -35,14 +35,14 @@ static COLORREF GetDarkerBackgroundColor()
 	return RGB((r1 + r2) / 2, (g1 + g2) / 2, (b1 + b2) / 2);
 }
 
-static void DrawImageSpecial(HDC hdc, HBITMAP hbm, RECT rect)
+static void DrawImageSpecial(HDC hdc, HBITMAP hbm, RECT rect, bool hasAlpha)
 {
 	if (hbm == HBITMAP_LOADING)
 		DrawLoadingBox(hdc, rect);
 	else if (hbm == HBITMAP_ERROR || !hbm)
 		DrawErrorBox(hdc, rect);
 	else
-		DrawBitmap(hdc, hbm, rect.left, rect.top, NULL, CLR_NONE, rect.right - rect.left, rect.bottom - rect.top);
+		DrawBitmap(hdc, hbm, rect.left, rect.top, NULL, CLR_NONE, rect.right - rect.left, rect.bottom - rect.top, hasAlpha);
 }
 
 WNDCLASS MessageList::g_MsgListClass;
@@ -327,19 +327,21 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect)
 	if (m_thumbnailSize.cy) {
 		m_thumbnailResourceID = GetAvatarCache()->MakeIdentifier(m_pEmbed->m_thumbnailUrl);
 		GetAvatarCache()->AddImagePlace(m_thumbnailResourceID, eImagePlace::ATTACHMENTS, m_pEmbed->m_thumbnailProxiedUrl);
-		HBITMAP hbm = GetAvatarCache()->GetBitmapSpecial(m_pEmbed->m_thumbnailUrl);
+		bool hasAlpha = false;
+		HBITMAP hbm = GetAvatarCache()->GetBitmapSpecial(m_pEmbed->m_thumbnailUrl, hasAlpha);
 		if (sizeY) sizeY += gap;
 		m_thumbnailRect = { rc.left, rc.top + sizeY, rc.left + m_thumbnailSize.cx, rc.top + sizeY + m_thumbnailSize.cy };
-		DrawImageSpecial(hdc, hbm, m_thumbnailRect);
+		DrawImageSpecial(hdc, hbm, m_thumbnailRect, hasAlpha);
 		sizeY += m_thumbnailSize.cy;
 	}
 	if (m_imageSize.cy) {
 		m_imageResourceID = GetAvatarCache()->MakeIdentifier(m_pEmbed->m_imageUrl);
 		GetAvatarCache()->AddImagePlace(m_imageResourceID, eImagePlace::ATTACHMENTS, m_pEmbed->m_imageProxiedUrl);
-		HBITMAP hbm = GetAvatarCache()->GetBitmapSpecial(m_pEmbed->m_imageUrl);
+		bool hasAlpha = false;
+		HBITMAP hbm = GetAvatarCache()->GetBitmapSpecial(m_pEmbed->m_imageUrl, hasAlpha);
 		if (sizeY) sizeY += gap;
 		m_imageRect = { rc.left, rc.top + sizeY, rc.left + m_imageSize.cx, rc.top + sizeY + m_imageSize.cy };
-		DrawImageSpecial(hdc, hbm, m_imageRect);
+		DrawImageSpecial(hdc, hbm, m_imageRect, hasAlpha);
 		sizeY += m_imageSize.cy;
 	}
 	if (m_footerSize.cy) {
@@ -1321,8 +1323,9 @@ void MessageList::DrawImageAttachment(HDC hdc, RECT& paintRect, AttachmentItem& 
 
 	GetAvatarCache()->AddImagePlace(attachItem.m_resourceID, eImagePlace::ATTACHMENTS, url, pAttach->m_id);
 
-	HBITMAP hbm = GetAvatarCache()->GetBitmapSpecial(attachItem.m_resourceID);
-	DrawImageSpecial(hdc, hbm, childAttachRect);
+	bool hasAlpha = false;
+	HBITMAP hbm = GetAvatarCache()->GetBitmapSpecial(attachItem.m_resourceID, hasAlpha);
+	DrawImageSpecial(hdc, hbm, childAttachRect, hasAlpha);
 }
 
 void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem& attachItem, RECT& attachRect)
@@ -1684,8 +1687,9 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 			int pfpX = rcReply.left;
 			int pfpY = rcReply.top + (rcReply.bottom - rcReply.top - pfpSize) / 2;
 			DrawIconEx(hdc, pfpX - pfpBordOffX, pfpY - pfpBordOffY, g_ProfileBorderIcon, pfpBordSize, pfpBordSize, 0, NULL, DI_COMPAT | DI_NORMAL);
-			HBITMAP hbm = GetAvatarCache()->GetBitmap(pf->m_avatarlnk);
-			DrawBitmap(hdc, hbm, pfpX, pfpY, NULL, CLR_NONE, pfpSize);
+			bool hasAlpha = false;
+			HBITMAP hbm = GetAvatarCache()->GetBitmap(pf->m_avatarlnk, hasAlpha);
+			DrawBitmap(hdc, hbm, pfpX, pfpY, NULL, CLR_NONE, pfpSize, 0, hasAlpha);
 			rcReply.left += pfpSize + ScaleByDPI(2);
 		}
 
@@ -2317,9 +2321,10 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			if (inView)
 			{
 				// draw the avatar
+				bool hasAlpha = false;
 				Profile* pf = GetProfileCache()->LookupProfile(item.m_msg.m_author_snowflake, "", "", "", false);
-				HBITMAP hbm = GetAvatarCache()->GetBitmap(pf->m_avatarlnk);
-				DrawBitmap(hdc, hbm, pfRect.left, pfRect.top, &pfRect, CLR_NONE, GetProfilePictureSize());
+				HBITMAP hbm = GetAvatarCache()->GetBitmap(pf->m_avatarlnk, hasAlpha);
+				DrawBitmap(hdc, hbm, pfRect.left, pfRect.top, &pfRect, CLR_NONE, GetProfilePictureSize(), 0, hasAlpha);
 			}
 		}
 		else

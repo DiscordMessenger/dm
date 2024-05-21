@@ -271,7 +271,7 @@ LRESULT CALLBACK GuildLister::ParentWndProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, const std::string& textOver)
+void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, const std::string& textOver, bool hasAlpha)
 {
 	int height = 0;
 	int pfpSize = GetProfilePictureSize();
@@ -301,7 +301,7 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 
 		FillRect(hdc, &rcProfile, GetSysColorBrush(GUILD_LISTER_COLOR));
 		DrawIconEx(hdc, rect.left + BORDER_SIZE, rect.top + BORDER_SIZE + y, hborder, pfpBorderSize2, pfpBorderSize2, 0, NULL, DI_COMPAT | DI_NORMAL);
-		DrawBitmap(hdc, hicon, rect.left + BORDER_SIZE + ScaleByDPI(6), rect.top + BORDER_SIZE + y + ScaleByDPI(4), NULL, CLR_NONE, GetProfilePictureSize());
+		DrawBitmap(hdc, hicon, rect.left + BORDER_SIZE + ScaleByDPI(6), rect.top + BORDER_SIZE + y + ScaleByDPI(4), NULL, CLR_NONE, GetProfilePictureSize(), GetProfilePictureSize(), hasAlpha);
 
 		height = pfpBorderSize;
 	}
@@ -601,7 +601,7 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				HBITMAP hbm;
 				std::string textOver = "";
 				bool loadedByLoadBitmap = false;
-
+				bool hasAlpha = false;
 				if (pGuild->m_snowflake == 0)
 				{
 					loadedByLoadBitmap = true;
@@ -615,11 +615,11 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 				else
 				{
-					hbm = GetAvatarCache()->GetBitmap(pGuild->m_avatarlnk);
+					hbm = GetAvatarCache()->GetBitmap(pGuild->m_avatarlnk, hasAlpha);
 				}
 
 				int oldY = y;
-				pThis->DrawServerIcon(hdc, hbm, y, rect, sf, textOver);
+				pThis->DrawServerIcon(hdc, hbm, y, rect, sf, textOver, hasAlpha);
 				DrawMentionStatus(hdc, rect.left + BORDER_SIZE + ScaleByDPI(6), rect.top + BORDER_SIZE + ScaleByDPI(4) + oldY, mentionCount);
 
 				if (loadedByLoadBitmap)

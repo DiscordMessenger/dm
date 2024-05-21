@@ -250,7 +250,7 @@ std::string CreateMessageLink(Snowflake guild, Snowflake channel, Snowflake mess
 	return "https://discord.com/channels/" + guildStr + "/" + std::to_string(channel) + "/" + std::to_string(message);
 }
 
-void DrawBitmap(HDC hdc, HBITMAP bitmap, int x, int y, LPRECT clip, COLORREF transparent, int scaleToWidth, int scaleToHeight)
+void DrawBitmap(HDC hdc, HBITMAP bitmap, int x, int y, LPRECT clip, COLORREF transparent, int scaleToWidth, int scaleToHeight, bool hasAlpha)
 {
 	HRGN hrgn = NULL;
 	if (clip) {
@@ -284,7 +284,18 @@ void DrawBitmap(HDC hdc, HBITMAP bitmap, int x, int y, LPRECT clip, COLORREF tra
 		scaledH = scaleToHeight;
 	}
 
-	if (transparent != CLR_NONE)
+	if (hasAlpha)
+	{
+		int oldMode = SetStretchBltMode(hdc, HALFTONE);
+		BLENDFUNCTION bf{};
+		bf.BlendOp = AC_SRC_OVER;
+		bf.AlphaFormat = AC_SRC_ALPHA;
+		bf.BlendFlags = 0;
+		bf.SourceConstantAlpha = 255;
+		ri::AlphaBlend(hdc, x, y, scaledW, scaledH, hdcMem, 0, 0, bm.bmWidth, bm.bmHeight, bf);
+		SetStretchBltMode(hdc, oldMode);
+	}
+	else if (transparent != CLR_NONE)
 	{
 		ri::TransparentBlt(hdc, x, y, scaledW, scaledH, hdcMem, 0, 0, bm.bmWidth, bm.bmHeight, RGB(255, 0, 255));
 	}
@@ -366,15 +377,7 @@ void FillGradientColors(HDC hdc, const LPRECT lpRect, COLORREF c1, COLORREF c2, 
 			}
 
 			SelectObject(hdcDest, hbm);
-
-			BITMAP bm{};
-			if (!GetObject(hbm, sizeof(BITMAP), &bm)) {
-				DbgPrintW("FillGradientColors : Could not get bitmap object!");
-				DeleteObject(hbm);
-				DeleteDC(hdcDest);
-				goto _FALLBACK;
-			}
-
+			
 			// Alpha Gradient
 			PUINT32 puBits = (PUINT32)pvBits;
 			COLORREF clr = (c1 == CLR_NONE ? c2 : c1);
