@@ -93,7 +93,7 @@ struct Channel
 	}
 
 	bool HasUnreadMessages() const {
-		return m_lastViewedMsg < m_lastSentMsg;
+		return m_lastViewedMsg != 0 && m_lastViewedMsg < m_lastSentMsg;
 	}
 
 	bool IsCategory() const {
