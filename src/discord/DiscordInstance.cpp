@@ -511,6 +511,7 @@ void DiscordInstance::HandleRequest(void* pRequestPtr)
 		}
 
 		case HTTP_NOTFOUND:
+		case HTTP_BADGATEWAY:
 		{
 			if (pRequest->itype == IMAGE || pRequest->itype == IMAGE_ATTACHMENT) {
 				GetFrontend()->OnAttachmentFailed(pRequest->itype == IMAGE, pRequest->additional_data);
@@ -522,7 +523,14 @@ void DiscordInstance::HandleRequest(void* pRequestPtr)
 				return;
 			}
 
-			str = "The following resource " + pRequest->url + " was not found.";
+			std::string suffix = " was not found. (404)";
+			switch (pRequest->result) {
+				case HTTP_BADGATEWAY:
+					suffix = " could not be accessed due to a bad gateway. (502)";
+					break;
+			}
+
+			str = "The following resource " + pRequest->url + suffix;
 			bExitAfterError = false;
 			bShowMessageBox = true;
 			break;

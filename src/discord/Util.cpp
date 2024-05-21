@@ -141,6 +141,16 @@ std::string GetSizeString(size_t sz)
 	return ss.str();
 }
 
+int StringCompareCaseInsens(const char* s1, const char* s2)
+{
+	while (tolower(*s1) == tolower(*s2)) {
+		if (*s1 == '\0') break;
+		s1++, s2++;
+	}
+
+	return tolower(*s1) - tolower(*s2);
+}
+
 bool EndsWith(const std::string& what, const std::string& with)
 {
 	if (what.size() < with.size())
@@ -150,15 +160,24 @@ bool EndsWith(const std::string& what, const std::string& with)
 	return strcmp(what.c_str() + diff, with.c_str()) == 0;
 }
 
+bool EndsWithCaseInsens(const std::string& what, const std::string& with)
+{
+	if (what.size() < with.size())
+		return false;
+
+	size_t diff = what.size() - with.size();
+	return StringCompareCaseInsens(what.c_str() + diff, with.c_str()) == 0;
+}
+
 bool IsPotentiallyDangerousDownload(const std::string& filename)
 {
 	return
-		EndsWith(filename, ".exe") ||
-		EndsWith(filename, ".bat") ||
-		EndsWith(filename, ".com") ||
-		EndsWith(filename, ".vbs") ||
-		EndsWith(filename, ".cmd") ||
-		EndsWith(filename, ".scr");
+		EndsWithCaseInsens(filename, ".exe") ||
+		EndsWithCaseInsens(filename, ".bat") ||
+		EndsWithCaseInsens(filename, ".com") ||
+		EndsWithCaseInsens(filename, ".vbs") ||
+		EndsWithCaseInsens(filename, ".cmd") ||
+		EndsWithCaseInsens(filename, ".scr");
 }
 
 int64_t ExtractTimestamp(Snowflake sf)

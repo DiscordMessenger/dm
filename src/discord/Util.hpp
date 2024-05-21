@@ -17,7 +17,9 @@ bool ReadEntireFile(const std::string& fileName, char** data, size_t* size, bool
 std::string LoadEntireTextFile(const std::string& fileName);
 std::string HttpEncodeString(std::string str);
 std::string GetSizeString(size_t sz);
+int StringCompareCaseInsens(const char* s1, const char* s2);
 bool EndsWith(const std::string& what, const std::string& with);
+bool EndsWithCaseInsens(const std::string& what, const std::string& with);
 bool IsPotentiallyDangerousDownload(const std::string& filename);
 int64_t ExtractTimestamp(Snowflake sf);
 const uint64_t GetTimeMs() noexcept;

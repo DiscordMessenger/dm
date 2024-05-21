@@ -20,6 +20,8 @@ enum eHttpResponseCodes
 	HTTP_FORBIDDEN    = 403,
 	HTTP_NOTFOUND     = 404,
 	HTTP_TOOMANYREQS  = 429,
+
+	HTTP_BADGATEWAY   = 502,
 };
 
 namespace httplib {

@@ -114,6 +114,16 @@ void Attachment::Load(Json& j)
 	m_fileName    = GetFieldSafe(j, "filename");
 	m_contentType = ContentType::GetFromString(GetFieldSafe(j, "content_type"));
 
+	// If width and height are set, but no content type was assigned, try to automatically detect the type of content.
+	if (m_contentType == ContentType::BLOB && m_width != 0 && m_height != 0)
+	{
+		if (EndsWithCaseInsens(m_fileName, ".png"))  m_contentType = ContentType::PNG;
+		if (EndsWithCaseInsens(m_fileName, ".gif"))  m_contentType = ContentType::GIF;
+		if (EndsWithCaseInsens(m_fileName, ".jpg"))  m_contentType = ContentType::JPEG;
+		if (EndsWithCaseInsens(m_fileName, ".jpeg")) m_contentType = ContentType::JPEG;
+		if (EndsWithCaseInsens(m_fileName, ".webp")) m_contentType = ContentType::WEBP;
+	}
+
 	UpdatePreviewSize();
 }
 

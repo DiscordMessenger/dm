@@ -835,20 +835,32 @@ void DrawLoadingBox(HDC hdc, RECT rect)
 {
 	DrawEdge(hdc, &rect, BDR_SUNKEN, BF_RECT);
 
+	HRGN rgn = CreateRectRgnIndirect(&rect);
+	SelectClipRgn(hdc, rgn);
+
 	int smcxicon = GetSystemMetrics(SM_CXICON);
 	int x = rect.left + (rect.right - rect.left - smcxicon) / 2;
 	int y = rect.top  + (rect.bottom - rect.top - smcxicon) / 2;
 	DrawIconEx(hdc, x, y, g_WaitIcon, smcxicon, smcxicon, 0, NULL, DI_COMPAT | DI_NORMAL);
+
+	SelectClipRgn(hdc, NULL);
+	DeleteRgn(rgn);
 }
 
 void DrawErrorBox(HDC hdc, RECT rect)
 {
 	DrawEdge(hdc, &rect, BDR_SUNKEN, BF_RECT);
 
+	HRGN rgn = CreateRectRgnIndirect(&rect);
+	SelectClipRgn(hdc, rgn);
+
 	int smcxsmicon = GetSystemMetrics(SM_CXSMICON);
 	int x = rect.left + (rect.right - rect.left - smcxsmicon) / 2;
 	int y = rect.top  + (rect.bottom - rect.top - smcxsmicon) / 2;
 	DrawIconEx(hdc, x, y, g_ImgErrorIcon, smcxsmicon, smcxsmicon, 0, NULL, DI_COMPAT | DI_NORMAL);
+
+	SelectClipRgn(hdc, NULL);
+	DeleteRgn(rgn);
 }
 
 bool GetDataFromBitmap(HDC hdc, HBITMAP hbm, BYTE*& pBytes, int& width, int& height, int& bpp)
