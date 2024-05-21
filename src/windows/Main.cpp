@@ -175,13 +175,16 @@ void OnUpdateAvatar(const std::string& resid)
 		case eImagePlace::ICONS:
 		{
 			SendMessage(g_Hwnd, WM_REPAINTGUILDLIST, 0, (LPARAM)&ip.sf);
-
 			break;
 		}
 		case eImagePlace::ATTACHMENTS:
 		{
 			SendMessage(g_Hwnd, WM_UPDATEATTACHMENT, 0, (LPARAM) &ip);
-
+			break;
+		}
+		case eImagePlace::EMOJIS:
+		{
+			SendMessage(g_Hwnd, WM_UPDATEEMOJI, 0, (LPARAM) &ip.sf);
 			break;
 		}
 	}
@@ -577,6 +580,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	switch (uMsg)
 	{
+		case WM_UPDATEEMOJI:
+		{
+			Snowflake sf = *(Snowflake*) lParam;
+			g_pMessageList->OnUpdateEmoji(sf);
+			break;
+		}
 		case WM_UPDATEUSER:
 		{
 			Snowflake sf = *(Snowflake*) lParam;

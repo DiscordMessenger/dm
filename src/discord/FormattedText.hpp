@@ -130,9 +130,12 @@ struct Word
 class FormattedText
 {
 public:
+	typedef void(*FunctionEachEmote) (void* context, const Rect& rect);
+
 	void SetMessage(const std::string& msg);
 	void Layout(DrawingContext* context, const Rect& rect, int offsetX = 0);
 	void Draw(DrawingContext* context, int offsetY = 0);
+	void RunForEachCustomEmote(FunctionEachEmote func, void* context);
 	Rect GetExtent();
 
 	std::vector<Word>& GetWords() {

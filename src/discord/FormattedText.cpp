@@ -600,6 +600,18 @@ void FormattedText::Draw(DrawingContext* context, int offsetY)
 	}
 }
 
+void FormattedText::RunForEachCustomEmote(FunctionEachEmote func, void* context)
+{
+	assert(m_bFormatted && "Have to call Layout(rc) first!");
+
+	for (auto& w : m_words)
+	{
+		if (w.m_flags & WORD_CEMOJI) {
+			func(context, w.m_rect);
+		}
+	}
+}
+
 std::vector<std::pair<std::string, std::string> >
 FormattedText::SplitBackticks(const std::string& str)
 {

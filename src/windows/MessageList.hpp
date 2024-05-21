@@ -190,6 +190,7 @@ private:
 	RECT m_authorRect{};
 	RECT m_messageRect{};
 	RECT m_avatarRect{};
+	RECT m_refAvatarRect{};
 	int m_height = 0;
 	int m_textHeight = 0;
 	int m_authHeight = 0;
@@ -231,6 +232,7 @@ public:
 		m_msg = other.m_msg;
 		m_rect = other.m_rect;
 		m_authorRect = other.m_authorRect;
+		m_refAvatarRect = other.m_refAvatarRect;
 		m_messageRect = other.m_messageRect;
 		m_height = other.m_height;
 		m_textHeight = other.m_textHeight;
@@ -267,6 +269,7 @@ public:
 		m_msg = other.m_msg;
 		m_rect = other.m_rect;
 		m_authorRect = other.m_authorRect;
+		m_refAvatarRect = other.m_refAvatarRect;
 		m_messageRect = other.m_messageRect;
 		m_height = other.m_height;
 		m_textHeight = other.m_textHeight;
@@ -446,6 +449,7 @@ public:
 	void OnUpdateAttachment(Snowflake sf);
 	void OnUpdateEmbed(const std::string& res);
 	void OnUpdateAvatar(Snowflake sf);
+	void OnUpdateEmoji(Snowflake sf);
 	void OnFailedToSendMessage(Snowflake sf);
 	void UpdateMembers(std::set<Snowflake>& mems);
 	void UpdateBackgroundBrush();
@@ -519,4 +523,7 @@ private:
 	static COLORREF DrawMentionBackground(HDC hdc, RECT& rc, COLORREF chosenBkColor);
 
 	static LRESULT CALLBACK OpenLinkMsgBoxHook(int code, WPARAM wParam, LPARAM lParam);
+
+	// called by OnUpdateEmoji
+	static void InvalidateEmote(void* context, const Rect& rc);
 };

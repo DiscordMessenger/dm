@@ -1670,7 +1670,6 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 
 	int iconSize    = ScaleByDPI(32);
 	int iconOffset = (GetProfilePictureSize() - ScaleByDPI(2)) / 2;
-
 	DrawIconEx(hdc, rcReply.left + iconOffset, rcReply.bottom + ScaleByDPI(5) - iconSize, g_ReplyPieceIcon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
 
 	rcReply.left += pfpOffset;
@@ -1689,6 +1688,12 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 			DrawIconEx(hdc, pfpX - pfpBordOffX, pfpY - pfpBordOffY, g_ProfileBorderIcon, pfpBordSize, pfpBordSize, 0, NULL, DI_COMPAT | DI_NORMAL);
 			bool hasAlpha = false;
 			HBITMAP hbm = GetAvatarCache()->GetBitmap(pf->m_avatarlnk, hasAlpha);
+
+			RECT& raRect = item.m_refAvatarRect;
+			raRect.left   = pfpX;
+			raRect.top    = pfpY;
+			raRect.right  = raRect.left + pfpSize;
+			raRect.bottom = raRect.top  + pfpSize;
 			DrawBitmap(hdc, hbm, pfpX, pfpY, NULL, CLR_NONE, pfpSize, 0, hasAlpha);
 			rcReply.left += pfpSize + ScaleByDPI(2);
 		}
@@ -3606,6 +3611,25 @@ void MessageList::OnUpdateAvatar(Snowflake sf)
 	{
 		if (msg.m_msg.m_author_snowflake == sf && !IsCompact())
 			InvalidateRect(m_hwnd, &msg.m_avatarRect, false);
+
+		if (msg.m_msg.m_bHaveReferencedMessage && msg.m_msg.m_referencedMessage.m_author_snowflake == sf)
+			InvalidateRect(m_hwnd, &msg.m_refAvatarRect, false);
+	}
+}
+
+void MessageList::InvalidateEmote(void* context, const Rect& rc)
+{
+	RECT invRect { W32RECT(rc) };
+	InvalidateRect((HWND) context, &invRect, FALSE);
+}
+
+void MessageList::OnUpdateEmoji(Snowflake sf)
+{
+	// TODO: Only invalidate the emoji that were updated
+	for (auto& msg : m_messages)
+	{
+		void* context = (void*) m_hwnd;
+		msg.m_message.RunForEachCustomEmote(&InvalidateEmote, context);
 	}
 }
 
