@@ -1653,12 +1653,13 @@ COLORREF MessageList::DrawMentionBackground(HDC hdc, RECT& rc, COLORREF chosenBk
 int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 {
 	const int pfpOffset = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
-	int replyOffset = item.m_replyHeight + ScaleByDPI(5);
+	const int replyOffset = item.m_replyHeight + ScaleByDPI(5);
 	RECT rcReply = rc;
 	rcReply.bottom = rcReply.top + item.m_replyHeight;
 
 	auto& refMsg = item.m_msg.m_referencedMessage;
-	bool isActionMessage = IsActionMessage(refMsg.m_type);
+	const bool isActionMessage = IsActionMessage(refMsg.m_type);
+	const bool isCompact = IsCompact();
 
 	Snowflake authorID = refMsg.m_author_snowflake;
 	Profile* pf = nullptr;
@@ -1666,18 +1667,35 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 		pf = GetProfileCache()->LookupProfile(authorID, "", "", "", false);
 
 	// Draw the corner piece
-	rcReply.left -= pfpOffset;
+	const int offset2 = isCompact ? 0 : pfpOffset;
+	rcReply.left -= offset2;
 
-	int iconSize    = ScaleByDPI(32);
-	int iconOffset = (GetProfilePictureSize() - ScaleByDPI(2)) / 2;
-	DrawIconEx(hdc, rcReply.left + iconOffset, rcReply.bottom + ScaleByDPI(5) - iconSize, g_ReplyPieceIcon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+	const int iconSize    = ScaleByDPI(32);
+	const int iconOffset = (GetProfilePictureSize() - ScaleByDPI(2)) / 2;
+	const int offset3 = isCompact ? iconSize : 0;
 
-	rcReply.left += pfpOffset;
+	if (isCompact) {
+		HRGN rgn = CreateRectRgn(
+			rcReply.left + iconOffset,
+			rcReply.bottom + ScaleByDPI(5) - iconSize,
+			rcReply.left + iconOffset + offset2 + offset3 - ScaleByDPI(20),
+			rcReply.bottom + ScaleByDPI(5)
+		);
+		SelectClipRgn(hdc, rgn);
+		DrawIconEx(hdc, rcReply.left + iconOffset, rcReply.bottom + ScaleByDPI(5) - iconSize, g_ReplyPieceIcon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+		SelectClipRgn(hdc, NULL);
+		DeleteRgn(rgn);
+	}
+	else {
+		DrawIconEx(hdc, rcReply.left + iconOffset, rcReply.bottom + ScaleByDPI(5) - iconSize, g_ReplyPieceIcon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+	}
+
+	rcReply.left += offset2 + offset3;
 
 	COLORREF nameClr = CLR_NONE;
 	if (authorID)
 	{
-		if (!isActionMessage)
+		if (!isCompact && !isActionMessage)
 		{
 			int pfpSize     = ScaleByDPI(16);
 			int pfpBordSize = MulDiv(GetProfileBorderRenderSize(), ScaleByDPI(16), GetProfilePictureSize());
@@ -1696,6 +1714,10 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 			raRect.bottom = raRect.top  + pfpSize;
 			DrawBitmap(hdc, hbm, pfpX, pfpY, NULL, CLR_NONE, pfpSize, 0, hasAlpha);
 			rcReply.left += pfpSize + ScaleByDPI(2);
+		}
+		else
+		{
+			SetRectEmpty(&item.m_refAvatarRect);
 		}
 
 		nameClr = GetNameColor(pf, m_guildID);
@@ -3612,7 +3634,7 @@ void MessageList::OnUpdateAvatar(Snowflake sf)
 		if (msg.m_msg.m_author_snowflake == sf && !IsCompact())
 			InvalidateRect(m_hwnd, &msg.m_avatarRect, false);
 
-		if (msg.m_msg.m_bHaveReferencedMessage && msg.m_msg.m_referencedMessage.m_author_snowflake == sf)
+		if (msg.m_msg.m_bHaveReferencedMessage && msg.m_msg.m_referencedMessage.m_author_snowflake == sf && !IsCompact())
 			InvalidateRect(m_hwnd, &msg.m_refAvatarRect, false);
 	}
 }
