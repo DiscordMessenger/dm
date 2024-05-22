@@ -51,6 +51,12 @@ public:
 	bool GetSaveWindowSize() const {
 		return m_bSaveWindowSize;
 	}
+	void SetReducePadding(bool b) {
+		m_bReducePadding = b;
+	}
+	bool GetReducePadding() const {
+		return m_bReducePadding;
+	}
 	void SetStartMaximized(bool b) {
 		m_bStartMaximized = b;
 	}
@@ -106,6 +112,7 @@ private:
 	bool m_bCheckUpdates = false;
 	bool m_bAskToCheckUpdates = true;
 	bool m_bEnableTLSVerification = true;
+	bool m_bReducePadding = false;
 	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
 	int m_height = 700;

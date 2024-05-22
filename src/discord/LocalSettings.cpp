@@ -74,6 +74,9 @@ bool LocalSettings::Load()
 	if (j.contains("EnableTLSVerification"))
 		m_bEnableTLSVerification = j["EnableTLSVerification"];
 
+	if (j.contains("ReducePadding"))
+		m_bReducePadding = j["ReducePadding"];
+
 	if (m_bSaveWindowSize)
 	{
 		if (j.contains("WindowWidth"))
@@ -119,6 +122,7 @@ bool LocalSettings::Save()
 	j["SaveWindowSize"] = m_bSaveWindowSize;
 	j["CheckUpdates"] = m_bCheckUpdates;
 	j["EnableTLSVerification"] = m_bEnableTLSVerification;
+	j["ReducePadding"] = m_bReducePadding;
 	j["RemindUpdateCheckOn"] = (long long)(m_remindUpdatesOn);
 	if (m_bSaveWindowSize) {
 		j["WindowWidth"] = m_width;
