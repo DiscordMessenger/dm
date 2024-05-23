@@ -778,6 +778,7 @@ int MapIconToOldIfNeeded(int iconID)
 		case IDI_JUMP: return IDI_JUMP_2K;
 		case IDI_SEND: return IDI_SEND_2K;
 		case IDI_BOT: return IDI_BOT_2K;
+		case IDI_NEW: return IDI_NEW_2K;
 		case IDI_PIN: return IDI_PIN_2K;
 		case IDI_DM: return IDI_DM_2K;
 

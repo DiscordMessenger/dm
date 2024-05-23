@@ -199,8 +199,12 @@
     <Image Include="..\res\icon_marker_8.ico" />
     <Image Include="..\res\icon_marker_9.ico" />
     <Image Include="..\res\icon_marker_9plus.ico" />
+    <Image Include="..\res\icon_mark_read.ico" />
+    <Image Include="..\res\icon_mark_read_2k.ico" />
     <Image Include="..\res\icon_members.ico" />
     <Image Include="..\res\icon_members_2k.ico" />
+    <Image Include="..\res\icon_new.ico" />
+    <Image Include="..\res\icon_new_2k.ico" />
     <Image Include="..\res\icon_offline_small.ico" />
     <Image Include="..\res\icon_online_small.ico" />
     <Image Include="..\res\icon_pin.ico" />

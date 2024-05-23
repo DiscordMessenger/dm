@@ -71,8 +71,11 @@
 #define IDI_SERVER                      67
 #define IDI_SERVER_2K                   68
 #define IDI_CATEGORY_COLLAPSE           71
-#define IDI_ICON2                       72
 #define IDI_CATEGORY_EXPAND             72
+#define IDI_NEW                         73
+#define IDI_NEW_2K                      74
+#define IDI_MARK_READ                   75
+#define IDI_MARK_READ_2K                76
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -357,7 +360,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        73
+#define _APS_NEXT_RESOURCE_VALUE        77
 #define _APS_NEXT_COMMAND_VALUE         1069
 #define _APS_NEXT_CONTROL_VALUE         873
 #define _APS_NEXT_SYMED_VALUE           40000

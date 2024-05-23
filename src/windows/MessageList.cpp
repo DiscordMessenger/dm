@@ -739,8 +739,15 @@ void MessageList::ClearMessages()
 	UpdateScrollBar(0, 0, false);
 }
 
-void MessageList::RefetchMessages(Snowflake gapCulprit)
+void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 {
+	Channel* pChan = GetDiscordInstance()->GetChannel(m_channelID);
+	if (!pChan)
+		return;
+
+	if (!causedByLoad)
+		m_previousLastReadMessage = pChan->m_lastViewedMsg;
+
 	RECT rect;
 	GetClientRect(m_hwnd, &rect);
 
@@ -1827,6 +1834,11 @@ COLORREF RandColor() {
 	return RGB(rand(), rand(), rand());
 }
 
+void MessageList::RequestMarkRead()
+{
+	GetDiscordInstance()->RequestAcknowledgeChannel(m_channelID);
+}
+
 void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& clientRect, RECT& paintRect, DrawingContext& mddc, COLORREF chosenBkColor)
 {
 	LPCTSTR strAuth = item.m_author;
@@ -2462,17 +2474,6 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		);
 	}
 
-	if (inView)
-	{
-		Channel* pChan = GetDiscordInstance()->GetChannel(m_channelID);
-
-		if (pChan && pChan->m_lastSentMsg == item.m_msg.m_snowflake && pChan->m_lastSentMsg != pChan->m_lastViewedMsg)
-		{
-			DbgPrintW("Acknowledging unread messages");
-			GetDiscordInstance()->RequestAcknowledgeChannel(m_channelID);
-		}
-	}
-
 	SetTextColor(hdc, crOldTextColor);
 	SetBkColor  (hdc, crOldBkgdColor);
 
@@ -2752,12 +2753,17 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			// of other things.
 			MessageItem* pMsg = NULL;
 			Snowflake rightClickedMessage = pThis->m_rightClickedMessage;
+			Snowflake messageBeforeRightClickedMessage = 0;
 
 			for (auto iter = pThis->m_messages.rbegin(); iter != pThis->m_messages.rend(); ++iter)
 			{
 				if (iter->m_msg.m_snowflake == pThis->m_rightClickedMessage)
 				{
 					pMsg = &(*iter);
+
+					++iter;
+					if (iter != pThis->m_messages.rend())
+						messageBeforeRightClickedMessage = iter->m_msg.m_snowflake;
 					break;
 				}
 			}
@@ -2770,6 +2776,22 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			switch (test)
 			{
+				case ID_DUMMYPOPUP_MARKUNREAD:
+				{
+					if (messageBeforeRightClickedMessage == 0) {
+						uint64_t timeStamp = rightClickedMessage >> 22;
+						timeStamp--; // in milliseconds since Discord epoch - irrelevant because we just want to take ONE millisecond
+						messageBeforeRightClickedMessage = timeStamp << 22;
+					}
+
+					assert(messageBeforeRightClickedMessage < rightClickedMessage);
+
+					GetDiscordInstance()->RequestAcknowledgeMessages(pThis->m_channelID, messageBeforeRightClickedMessage);
+
+					// Block acknowledgements until we switch to the channel again.
+					pThis->m_bAcknowledgeNow = false;
+					break;
+				}
 				case ID_DUMMYPOPUP_COPYMESSAGELINK:
 				{
 					// Copy the message link.
@@ -3017,6 +3039,10 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			DrawingContext mddc(hdc);
 			mddc.SetBackgroundColor(chosenBkColor);
 
+			Snowflake lastDrawnMessage = 0;
+			Snowflake lastKnownMessage = 0;
+
+			int unreadMarkerState = 0;
 			pThis->m_firstShownMessage = 0;
 			for (std::list<MessageItem>::iterator iter = pThis->m_messages.begin();
 				iter != pThis->m_messages.end();
@@ -3044,9 +3070,14 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				msgRect.bottom = msgRect.top + iter->m_height;
 				iter->m_rect = msgRect;
 
-				if (msgRect.top <= rect.bottom && msgRect.bottom > rect.top)
+				bool bDraw = msgRect.top <= rect.bottom && msgRect.bottom > rect.top;
+
+				lastKnownMessage = iter->m_msg.m_snowflake;
+
+				if (bDraw)
 				{
 					pThis->DrawMessage(hdc, *iter, msgRect, rect, paintRect, mddc, chosenBkColor);
+					lastDrawnMessage = iter->m_msg.m_snowflake;
 				}
 				else
 				{
@@ -3064,9 +3095,39 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					for (auto& inter : iter->m_interactableData)
 						SetRectEmpty(&inter.m_rect);
 				}
+				
+				if (pThis->m_previousLastReadMessage && iter->m_msg.m_snowflake > pThis->m_previousLastReadMessage)
+				{
+					if (unreadMarkerState++ == 0 && bDraw) {
+						// Draw the unread marker.
+						HGDIOBJ oldPen = SelectObject(hdc, GetStockObject(DC_PEN));
+						COLORREF oldClr = ri::SetDCPenColor(hdc, RGB(255, 0, 0));
+
+						POINT ptOld{};
+						MoveToEx(hdc, msgRect.left, msgRect.top, &ptOld);
+						LineTo(hdc, msgRect.right, msgRect.top);
+						MoveToEx(hdc, ptOld.x, ptOld.y, NULL);
+
+						int iconSize = ScaleByDPI(32);
+						if (iconSize > 32) iconSize = 48;
+						if (iconSize < 32) iconSize = 32;
+						HICON hic = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_NEW)), IMAGE_ICON, iconSize, iconSize, LR_SHARED | LR_CREATEDIBSECTION);
+						DrawIconEx(hdc, msgRect.right - iconSize, msgRect.top, hic, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+
+						ri::SetDCPenColor(hdc, oldClr);
+						SelectObject(hdc, oldPen);
+					}
+				}
 
 				msgRect.top = msgRect.bottom;
 				SelectObject(hdc, gdiObj);
+			}
+
+			Channel* pChan = GetDiscordInstance()->GetChannel(pThis->m_channelID);
+
+			if (pChan && lastDrawnMessage == lastKnownMessage && pChan->m_lastSentMsg != pChan->m_lastViewedMsg && pThis->m_bAcknowledgeNow) {
+				pThis->RequestMarkRead();
+				pChan->m_lastViewedMsg = pChan->m_lastSentMsg;
 			}
 
 			if (oldBkModeSet)
@@ -3651,7 +3712,8 @@ void MessageList::OnUpdateEmoji(Snowflake sf)
 	for (auto& msg : m_messages)
 	{
 		void* context = (void*) m_hwnd;
-		msg.m_message.RunForEachCustomEmote(&InvalidateEmote, context);
+		if (!msg.m_message.Empty())
+			msg.m_message.RunForEachCustomEmote(&InvalidateEmote, context);
 	}
 }
 
@@ -3817,12 +3879,68 @@ void MessageList::EditMessage(const Message& newMsg)
 	}
 }
 
+void MessageList::SetLastViewedMessage(Snowflake sf, bool refreshItAlso)
+{
+	if (m_previousLastReadMessage == sf)
+		return;
+
+	bool notExactMatch = false;
+	auto itm = m_messages.begin();
+	for (; itm != m_messages.end(); ++itm) {
+		if (itm->m_msg.m_snowflake >= sf) {
+			notExactMatch = itm->m_msg.m_snowflake != sf;
+			break;
+		}
+	}
+
+	// check if this message is the last one
+	if (!notExactMatch && itm != m_messages.end()) {
+		++itm;
+		if (itm == m_messages.end())
+			// yeah, so don't ACTUALLY update - that'll be done on refresh.
+			return;
+	}
+
+	Snowflake old = m_previousLastReadMessage;
+	m_previousLastReadMessage = sf;
+	if (old != 0)
+	{
+		// find that message's iter...
+		auto it = m_messages.rbegin();
+		auto it2 = m_messages.end();
+		for (; it != m_messages.rend(); ++it) {
+			if (it->m_msg.m_snowflake == old) {
+				it2 = it.base(); // returns the NEXT element.
+				break;
+			}
+		}
+
+		if (it2 != m_messages.end()) {
+			// refresh JUST the top part
+			RECT rcMsg = it2->m_rect;
+			rcMsg.bottom = rcMsg.top + ScaleByDPI(15); // about the height of the NEW marker
+			InvalidateRect(m_hwnd, &rcMsg, FALSE);
+		}
+	}
+
+	if (refreshItAlso)
+	{
+		// TODO: fix bug where first message isn't actually properly refreshed?
+		if (itm != m_messages.end()) {
+			// refresh, again, JUST the top part
+			RECT rcMsg = itm->m_rect;
+			rcMsg.bottom = rcMsg.top + ScaleByDPI(15) + (itm->m_bIsDateGap ? DATE_GAP_HEIGHT : 0); // about the height of the NEW marker
+			InvalidateRect(m_hwnd, &rcMsg, FALSE);
+		}
+	}
+}
+
 void MessageList::MessageHeightChanged(int oldHeight, int newHeight, bool toStart)
 {
 	UpdateScrollBar(newHeight - oldHeight, newHeight - oldHeight, toStart);
 }
 
-void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool resetAnchor)
+void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool updateLastViewedMessage, bool resetAnchor)
 {
 	MessageItem mi;
 	mi.m_msg = msg;
@@ -3888,10 +4006,18 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool rese
 	if (resetAnchor)
 		mi.m_msg.m_anchor = 0;
 
+	Snowflake lastMessageId = 0;
+	if (!m_messages.empty())
+		lastMessageId = m_messages.rbegin()->m_msg.m_snowflake;
+
 	if (toStart)
 		m_messages.push_front(mi);
 	else
 		m_messages.push_back(mi);
+
+	if (updateLastViewedMessage) {
+		SetLastViewedMessage(mi.m_msg.m_snowflake, false);
+	}
 
 	RECT rcClient{};
 	GetClientRect(m_hwnd, &rcClient);

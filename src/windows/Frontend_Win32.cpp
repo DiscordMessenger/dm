@@ -241,9 +241,12 @@ void Frontend_Win32::UpdateMemberList()
 	SendMessage(g_Hwnd, WM_UPDATEMEMBERLIST, 0, 0);
 }
 
-void Frontend_Win32::UpdateChannelAcknowledge(Snowflake channelID)
+void Frontend_Win32::UpdateChannelAcknowledge(Snowflake channelID, Snowflake messageID)
 {
-	SendMessage(g_Hwnd, WM_UPDATECHANACKS, 0, (LPARAM) &channelID);
+	Snowflake sfs[2];
+	sfs[0] = channelID;
+	sfs[1] = messageID;
+	SendMessage(g_Hwnd, WM_UPDATECHANACKS, 0, (LPARAM) sfs);
 }
 
 void Frontend_Win32::UpdateProfileAvatar(Snowflake userID, const std::string& resid)

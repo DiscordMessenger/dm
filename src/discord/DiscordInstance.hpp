@@ -334,6 +334,10 @@ public:
 	// Inform the Discord backend that we are typing.
 	void Typing();
 
+	// Inform the Discord backend that we have acknowledged messages up to but not including "message".
+	// Used by the "mark unread" feature.
+	void RequestAcknowledgeMessages(Snowflake channel, Snowflake message, bool manual = true);
+
 	// Inform the Discord backend that we have acknowledged a message.
 	void RequestAcknowledgeChannel(Snowflake channel);
 

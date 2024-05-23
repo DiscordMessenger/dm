@@ -34,7 +34,7 @@ public:
 	void UpdateSelectedChannel() override;
 	void UpdateChannelList() override;
 	void UpdateMemberList() override;
-	void UpdateChannelAcknowledge(Snowflake channelID) override;
+	void UpdateChannelAcknowledge(Snowflake channelID, Snowflake messageID) override;
 	void UpdateProfileAvatar(Snowflake userID, const std::string& resid) override;
 	void UpdateProfilePopout(Snowflake userID) override;
 	void UpdateUserData(Snowflake userID) override;

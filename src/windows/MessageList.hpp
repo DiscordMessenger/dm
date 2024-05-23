@@ -359,6 +359,9 @@ private:
 	Snowflake m_messageSentTo = 0;
 	Snowflake m_emphasizedMessage = 0; // flashed message
 	Snowflake m_firstShownMessage = 0;
+	Snowflake m_previousLastReadMessage = 0;
+
+	bool m_bAcknowledgeNow = true;
 
 	int m_total_height = 0;
 	int m_oldPos = 0;
@@ -370,7 +373,7 @@ private:
 	bool m_bIsTopDown = false;
 
 	void MessageHeightChanged(int oldHeight, int newHeight, bool toStart = false);
-	void AddMessageInternal(const Message& msg, bool toStart, bool resetAnchor = true);
+	void AddMessageInternal(const Message& msg, bool toStart, bool updateLastViewedMessage = false, bool resetAnchor = true);
 	void UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bool update = true, int offsetY = 0, bool addingMessage = false);
 
 	void FlashMessage(Snowflake msg);
@@ -406,17 +409,18 @@ public:
 	);
 
 	void AddMessageStart(const Message& msg) {
-		AddMessageInternal(msg, true);
+		AddMessageInternal(msg, true, false);
 	}
-	void AddMessage(const Message& msg) {
-		AddMessageInternal(msg, false);
+	void AddMessage(const Message& msg, bool updateLastViewedMessage = false) {
+		AddMessageInternal(msg, false, updateLastViewedMessage);
 	}
 	void EditMessage(const Message& newMsg); // NOTE: the message HAS to have existed before!
 	void DeleteMessage(Snowflake sf);
+	void SetLastViewedMessage(Snowflake sf, bool refreshItAlso);
 
 	void Repaint();
 	void ClearMessages();
-	void RefetchMessages(Snowflake gapCulprit = 0);
+	void RefetchMessages(Snowflake gapCulprit = 0, bool causedByLoad = false);
 
 	void SetGuild(Snowflake sf) {
 		m_guildID = sf;
@@ -424,6 +428,7 @@ public:
 
 	void SetChannel(Snowflake sf) {
 		m_channelID = sf;
+		m_bAcknowledgeNow = true;
 	}
 
 	void SetManagedByOwner(bool bNew) {
@@ -489,6 +494,8 @@ private:
 
 	int DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc);
 	void DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& clientRect, RECT& paintRect, DrawingContext& mddc, COLORREF chosenBkColor);
+
+	void RequestMarkRead();
 
 	// [Left] [Author] [pinned] [a message](uid) [ to this channel.
 

@@ -645,7 +645,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_REFRESHMESSAGES:
 		{
 			Snowflake sf = *(Snowflake*)lParam;
-			g_pMessageList->RefetchMessages(sf);
+			g_pMessageList->RefetchMessages(sf, true);
 			break;
 		}
 		case WM_REPAINTMSGLIST:
@@ -755,10 +755,13 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_UPDATECHANACKS:
 		{
-			Snowflake sf = *((Snowflake*)lParam);
+			Snowflake* sfs = (Snowflake*)lParam;
+
+			Snowflake channelID = sfs[0];
+			Snowflake messageID = sfs[1];
 			auto inst = GetDiscordInstance();
 
-			Channel* pChan = GetDiscordInstance()->GetChannelGlobally(sf);
+			Channel* pChan = GetDiscordInstance()->GetChannelGlobally(channelID);
 
 			// Update the icon for the specific guild
 			g_pGuildLister->RedrawIconForGuild(pChan->m_parentGuild);
@@ -768,11 +771,13 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			Guild* pGuild = inst->GetGuild(inst->m_CurrentGuild);
 			if (!pGuild) break;
 
-			pChan = pGuild->GetChannel(sf);
+			pChan = pGuild->GetChannel(channelID);
 			if (!pChan)
 				break;
 
-			g_pChannelView->UpdateAcknowledgement(sf);
+			g_pChannelView->UpdateAcknowledgement(channelID);
+			if (g_pMessageList->GetCurrentChannel() == channelID)
+				g_pMessageList->SetLastViewedMessage(messageID, true);
 			break;
 		}
 		case WM_UPDATECHANLIST:
@@ -817,7 +822,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			if (g_pMessageList->GetCurrentChannel() == pParms->channel)
 			{
-				g_pMessageList->AddMessage(pParms->msg);
+				g_pMessageList->AddMessage(pParms->msg, GetForegroundWindow() == hWnd);
 				OnStopTyping(pParms->channel, pParms->msg.m_author_snowflake);
 			}
 

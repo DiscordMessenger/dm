@@ -969,6 +969,34 @@ void DiscordInstance::Typing()
 	);
 }
 
+void DiscordInstance::RequestAcknowledgeMessages(Snowflake channel, Snowflake message, bool manual)
+{
+	Channel* pChan = GetChannelGlobally(channel);
+
+	if (!pChan) {
+		DbgPrintF("DiscordInstance::RequestAcknowledgeChannel requested ack for invalid channel %lld?", channel);
+		return;
+	}
+
+	int mentCount = GetMessageCache()->GetMentionCountSince(channel, message, m_mySnowflake);
+
+	Json j;
+	j["manual"] = manual;
+	j["mention_count"] = mentCount;
+
+	std::string url = GetDiscordAPI() + "channels/" + std::to_string(channel) + "/messages/" + std::to_string(message) + "/ack";
+
+	GetHTTPClient()->PerformRequest(
+		true,
+		NetRequest::POST_JSON,
+		url,
+		DiscordRequest::ACK,
+		0,
+		j.dump(),
+		m_token
+	);
+}
+
 void DiscordInstance::RequestAcknowledgeChannel(Snowflake channel)
 {
 	Channel* pChan = GetChannelGlobally(channel);
@@ -1297,7 +1325,7 @@ void DiscordInstance::ParseReadStateObject(nlohmann::json& readState, bool bAlte
 	pChan->m_lastViewedMsg = lastMessageId;
 	pChan->m_mentionCount = mentionCount;
 
-	GetFrontend()->UpdateChannelAcknowledge(id);
+	GetFrontend()->UpdateChannelAcknowledge(id, lastMessageId);
 }
 
 void DiscordInstance::ParseChannel(Channel& c, nlohmann::json& chan, int& num)
@@ -1852,7 +1880,7 @@ void DiscordInstance::HandleMessageInsertOrUpdate(Json& j, bool bIsUpdate)
 		GetFrontend()->OnAddMessage(channelId, msg);
 
 	if (updateAck)
-		GetFrontend()->UpdateChannelAcknowledge(channelId);
+		GetFrontend()->UpdateChannelAcknowledge(channelId, pChan->m_lastViewedMsg);
 }
 
 void DiscordInstance::HandleMESSAGE_CREATE(Json& j)

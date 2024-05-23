@@ -40,6 +40,11 @@ void MessageCache::DeleteMessage(Snowflake channel, Snowflake msg)
 	m_mapMessages[channel].DeleteMessage(msg);
 }
 
+int MessageCache::GetMentionCountSince(Snowflake channel, Snowflake message, Snowflake user)
+{
+	return m_mapMessages[channel].GetMentionCountSince(message, user);
+}
+
 void MessageCache::ClearAllChannels()
 {
 	m_mapMessages.clear();
@@ -150,6 +155,22 @@ void MessageChunkList::DeleteMessage(Snowflake message)
 	auto iter = m_messages.find(message);
 	if (m_messages.end() != iter)
 		m_messages.erase(iter);
+}
+
+int MessageChunkList::GetMentionCountSince(Snowflake message, Snowflake user)
+{
+	int mentCount = 0;
+
+	for (auto& msg : m_messages)
+	{
+		if (msg.first < message)
+			continue;
+
+		if (msg.second.CheckWasMentioned(user, m_guild))
+			mentCount++;
+	}
+
+	return mentCount;
 }
 
 Message* MessageChunkList::GetLoadedMessage(Snowflake message)

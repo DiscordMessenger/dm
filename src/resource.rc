@@ -350,6 +350,14 @@ IDI_CATEGORY_COLLAPSE   ICON                    "../res/icon_category_collapse.i
 
 IDI_CATEGORY_EXPAND     ICON                    "../res/icon_category_expand.ico"
 
+IDI_NEW                 ICON                    "../res/icon_new.ico"
+
+IDI_NEW_2K              ICON                    "../res/icon_new_2k.ico"
+
+IDI_MARK_READ           ICON                    "../res/icon_mark_read.ico"
+
+IDI_MARK_READ_2K        ICON                    "../res/icon_mark_read_2k.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

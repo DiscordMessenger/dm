@@ -20,6 +20,7 @@ struct MessageChunkList
 	void AddMessage(const Message& msg);
 	void EditMessage(const Message& msg);
 	void DeleteMessage(Snowflake message);
+	int GetMentionCountSince(Snowflake message, Snowflake user);
 	Message* GetLoadedMessage(Snowflake message);
 };
 
@@ -36,7 +37,7 @@ public:
 	void AddMessage(Snowflake channel, const Message& msg);
 	void EditMessage(Snowflake channel, const Message& msg);
 	void DeleteMessage(Snowflake channel, Snowflake message);
-
+	int GetMentionCountSince(Snowflake channel, Snowflake message, Snowflake user);
 	void ClearAllChannels();
 
 	// NOTE: Returned message pointer is invalidated when the specific channel is updated. So fetch
