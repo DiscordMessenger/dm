@@ -1001,6 +1001,8 @@ void DiscordInstance::RequestAcknowledgeChannel(Snowflake channel)
 {
 	Channel* pChan = GetChannelGlobally(channel);
 
+	DbgPrintF("RequestAcknowledgeChannel: %lld", channel);
+
 	if (!pChan) {
 		DbgPrintF("DiscordInstance::RequestAcknowledgeChannel requested ack for invalid channel %lld?", channel);
 		return;

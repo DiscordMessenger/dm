@@ -76,6 +76,8 @@
 #define IDI_NEW_2K                      74
 #define IDI_MARK_READ                   75
 #define IDI_MARK_READ_2K                76
+#define IDI_NEW_INLINE                  77
+#define IDI_NEW_INLINE_2K               78
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -360,7 +362,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        77
+#define _APS_NEXT_RESOURCE_VALUE        79
 #define _APS_NEXT_COMMAND_VALUE         1069
 #define _APS_NEXT_CONTROL_VALUE         873
 #define _APS_NEXT_SYMED_VALUE           40000

@@ -354,6 +354,10 @@ IDI_NEW                 ICON                    "../res/icon_new.ico"
 
 IDI_NEW_2K              ICON                    "../res/icon_new_2k.ico"
 
+IDI_NEW_INLINE          ICON                    "../res/icon_new_inline.ico"
+
+IDI_NEW_INLINE_2K       ICON                    "../res/icon_new_inline_2k.ico"
+
 IDI_MARK_READ           ICON                    "../res/icon_mark_read.ico"
 
 IDI_MARK_READ_2K        ICON                    "../res/icon_mark_read_2k.ico"

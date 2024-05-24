@@ -768,6 +768,7 @@ int MapIconToOldIfNeeded(int iconID)
 		case IDI_TYPING_FRAME2: return IDI_TYPING_FRAME2_2K;
 		case IDI_TYPING_FRAME3: return IDI_TYPING_FRAME3_2K;
 		case IDI_REPLY_PIECE: return IDI_REPLY_PIECE_2K;
+		case IDI_NEW_INLINE: return IDI_NEW_INLINE_2K;
 		case IDI_CATEGORY: return IDI_CATEGORY_2K;
 		case IDI_CHANNEL: return IDI_CHANNEL_2K;
 		case IDI_MEMBERS: return IDI_MEMBERS_2K;

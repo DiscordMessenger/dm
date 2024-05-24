@@ -15,6 +15,8 @@
 #define IDC_HAND            MAKEINTRESOURCE(32649)
 #endif//IDC_HAND
 
+#define NEW_MARKER_COLOR RGB(255,0,0)
+
 #define ATTACHMENT_HEIGHT (ScaleByDPI(40))
 #define ATTACHMENT_GAP    (ScaleByDPI(4))
 #define DATE_GAP_HEIGHT   (ScaleByDPI(20))
@@ -753,6 +755,13 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 
 	int pageHeight = rect.bottom - rect.top;
 
+	bool wasAnythingLoaded = false;
+	for (auto& msg : m_messages) {
+		wasAnythingLoaded = !msg.m_msg.IsLoadGap();
+		if (wasAnythingLoaded)
+			break;
+	}
+
 	SCROLLINFO scrollInfo;
 	scrollInfo.cbSize = sizeof scrollInfo;
 	scrollInfo.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
@@ -969,11 +978,30 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 			updateRect.bottom += scrollAdded + repaintSize;
 	}
 
+	if (!wasAnythingLoaded && m_previousLastReadMessage != pChan->m_lastSentMsg)
+	{
+		// Send them to the top of the unread section
+		int y = 0;
+
+		for (auto& msg : m_messages)
+		{
+			if (!msg.m_msg.IsLoadGap() && msg.m_msg.m_snowflake > m_previousLastReadMessage)
+				break;
+
+			y += msg.m_height;
+		}
+
+		DbgPrintW("Setting y pos to: %d.  Prevlastread: %lld", y, m_previousLastReadMessage);
+		scrollInfo.nPos = y;
+		scrollAnyway = false;
+		haveUpdateRect = false;
+	}
+
 	SetScrollInfo(m_hwnd, SB_VERT, &scrollInfo, true);
 	GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
 
 	m_oldPos = scrollInfo.nPos;
-
+	
 	if (m_messageSentTo)
 	{
 		// Send to the message without creating a new gap.
@@ -1839,7 +1867,7 @@ void MessageList::RequestMarkRead()
 	GetDiscordInstance()->RequestAcknowledgeChannel(m_channelID);
 }
 
-void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& clientRect, RECT& paintRect, DrawingContext& mddc, COLORREF chosenBkColor)
+void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& clientRect, RECT& paintRect, DrawingContext& mddc, COLORREF chosenBkColor, bool bDrawNewMarker)
 {
 	LPCTSTR strAuth = item.m_author;
 	LPCTSTR strDate = item.m_date;
@@ -1874,8 +1902,10 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		msgRect.top += DATE_GAP_HEIGHT;
 
 		LPTSTR strDateGap = ConvertCppStringToTString("  " + item.m_msg.m_dateOnly + "  ");
-		COLORREF oldTextClr = SetTextColor(hdc, GetSysColor(COLOR_GRAYTEXT));
-		COLORREF oldPenClr = ri::SetDCPenColor(hdc, GetSysColor(COLOR_GRAYTEXT));
+
+		COLORREF clrText = bDrawNewMarker ? NEW_MARKER_COLOR : GetSysColor(COLOR_GRAYTEXT);
+		COLORREF oldTextClr = SetTextColor(hdc, clrText);
+		COLORREF oldPenClr = ri::SetDCPenColor(hdc, clrText);
 
 		auto clr = COLOR_3DFACE;
 		if (mStyle == MS_FLATBR) clr = COLOR_WINDOW;
@@ -1898,6 +1928,10 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		int l2 = dgRect.right / 2 + width / 2 + 1;
 		int r2 = dgRect.right - ScaleByDPI(10) - 1;
 
+		HGDIOBJ oldFont = NULL;
+		if (bDrawNewMarker)
+			oldFont = SelectObject(hdc, g_AuthorTextFont);
+
 		POINT old;
 		HGDIOBJ oldob = SelectObject(hdc, GetStockPen(DC_PEN));
 		MoveToEx(hdc, l1, (dgRect.top + dgRect.bottom) / 2, &old);
@@ -1909,8 +1943,20 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 		DrawText(hdc, strDateGap, -1, &dgRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
 		free(strDateGap);
+
+		if (bDrawNewMarker)
+		{
+			int iconSize = ScaleByDPI(32);
+			if (iconSize > 32) iconSize = 48;
+			if (iconSize < 32) iconSize = 32;
+			HICON hic = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_NEW_INLINE)), IMAGE_ICON, iconSize, iconSize, LR_SHARED | LR_CREATEDIBSECTION);
+			DrawIconEx(hdc, dgRect.right - iconSize, dgRect.top + (dgRect.bottom - dgRect.top - iconSize) / 2 + 1, hic, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+		}
+
+		if (oldFont) SelectObject(hdc, oldFont);
 		SetTextColor(hdc, oldTextClr);
 		ri::SetDCPenColor(hdc, oldPenClr);
+		bDrawNewMarker = false;
 	}
 
 	if (isFlashed) {
@@ -2450,7 +2496,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	}
 
 	bool isGap =
-			item.m_msg.m_type == MessageType::GAP_DOWN
+		   item.m_msg.m_type == MessageType::GAP_DOWN
 		|| item.m_msg.m_type == MessageType::GAP_UP
 		|| item.m_msg.m_type == MessageType::GAP_AROUND;
 	if (inView && isGap)
@@ -2478,6 +2524,27 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	SetBkColor  (hdc, crOldBkgdColor);
 
 	free((void*) freedString);
+
+	if (bDrawNewMarker)
+	{
+		// Draw the unread marker.
+		HGDIOBJ oldPen = SelectObject(hdc, GetStockObject(DC_PEN));
+		COLORREF oldClr = ri::SetDCPenColor(hdc, RGB(255, 0, 0));
+
+		POINT ptOld{};
+		MoveToEx(hdc, msgRect.left, msgRect.top, &ptOld);
+		LineTo(hdc, msgRect.right, msgRect.top);
+		MoveToEx(hdc, ptOld.x, ptOld.y, NULL);
+
+		int iconSize = ScaleByDPI(32);
+		if (iconSize > 32) iconSize = 48;
+		if (iconSize < 32) iconSize = 32;
+		HICON hic = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_NEW)), IMAGE_ICON, iconSize, iconSize, LR_SHARED | LR_CREATEDIBSECTION);
+		DrawIconEx(hdc, msgRect.right - iconSize, msgRect.top, hic, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+
+		ri::SetDCPenColor(hdc, oldClr);
+		SelectObject(hdc, oldPen);
+	}
 }
 
 LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -3041,6 +3108,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			Snowflake lastDrawnMessage = 0;
 			Snowflake lastKnownMessage = 0;
+			bool isLastKnownMessageGap = false;
 
 			int unreadMarkerState = 0;
 			pThis->m_firstShownMessage = 0;
@@ -3070,13 +3138,26 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				msgRect.bottom = msgRect.top + iter->m_height;
 				iter->m_rect = msgRect;
 
-				bool bDraw = msgRect.top <= rect.bottom && msgRect.bottom > rect.top;
-
 				lastKnownMessage = iter->m_msg.m_snowflake;
+				isLastKnownMessageGap = iter->m_msg.IsLoadGap();
+
+				bool bDraw = msgRect.top <= rect.bottom && msgRect.bottom > rect.top;
+				bool bDrawNewMarker = false;
+
+				// Observation: We increment unreadMarkerState in this if condition.  If the conditions before aren't true, the variable
+				// isn't incremented. The variable is incremented regardless of bDraw. We just need it to increase when we stumble across
+				// the oldest unread message to know whether and where we should draw the unread marker.
+				if (pThis->m_previousLastReadMessage &&
+					iter->m_msg.m_snowflake > pThis->m_previousLastReadMessage &&
+					!iter->m_msg.IsLoadGap() &&
+					unreadMarkerState++ == 0 &&
+					bDraw) {
+					bDrawNewMarker = true;
+				}
 
 				if (bDraw)
 				{
-					pThis->DrawMessage(hdc, *iter, msgRect, rect, paintRect, mddc, chosenBkColor);
+					pThis->DrawMessage(hdc, *iter, msgRect, rect, paintRect, mddc, chosenBkColor, bDrawNewMarker);
 					lastDrawnMessage = iter->m_msg.m_snowflake;
 				}
 				else
@@ -3095,29 +3176,6 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					for (auto& inter : iter->m_interactableData)
 						SetRectEmpty(&inter.m_rect);
 				}
-				
-				if (pThis->m_previousLastReadMessage && iter->m_msg.m_snowflake > pThis->m_previousLastReadMessage)
-				{
-					if (unreadMarkerState++ == 0 && bDraw) {
-						// Draw the unread marker.
-						HGDIOBJ oldPen = SelectObject(hdc, GetStockObject(DC_PEN));
-						COLORREF oldClr = ri::SetDCPenColor(hdc, RGB(255, 0, 0));
-
-						POINT ptOld{};
-						MoveToEx(hdc, msgRect.left, msgRect.top, &ptOld);
-						LineTo(hdc, msgRect.right, msgRect.top);
-						MoveToEx(hdc, ptOld.x, ptOld.y, NULL);
-
-						int iconSize = ScaleByDPI(32);
-						if (iconSize > 32) iconSize = 48;
-						if (iconSize < 32) iconSize = 32;
-						HICON hic = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_NEW)), IMAGE_ICON, iconSize, iconSize, LR_SHARED | LR_CREATEDIBSECTION);
-						DrawIconEx(hdc, msgRect.right - iconSize, msgRect.top, hic, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
-
-						ri::SetDCPenColor(hdc, oldClr);
-						SelectObject(hdc, oldPen);
-					}
-				}
 
 				msgRect.top = msgRect.bottom;
 				SelectObject(hdc, gdiObj);
@@ -3125,7 +3183,11 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			Channel* pChan = GetDiscordInstance()->GetChannel(pThis->m_channelID);
 
-			if (pChan && lastDrawnMessage == lastKnownMessage && pChan->m_lastSentMsg != pChan->m_lastViewedMsg && pThis->m_bAcknowledgeNow) {
+			if (pChan &&
+				lastDrawnMessage == lastKnownMessage &&
+				!isLastKnownMessageGap &&
+				pChan->m_lastSentMsg != pChan->m_lastViewedMsg &&
+				pThis->m_bAcknowledgeNow) {
 				pThis->RequestMarkRead();
 				pChan->m_lastViewedMsg = pChan->m_lastSentMsg;
 			}

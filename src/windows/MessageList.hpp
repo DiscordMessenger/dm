@@ -493,7 +493,7 @@ private:
 	void DetermineMessageMeasurements(MessageItem& mi, HDC hdc = NULL, const LPRECT rect = NULL);
 
 	int DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc);
-	void DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& clientRect, RECT& paintRect, DrawingContext& mddc, COLORREF chosenBkColor);
+	void DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& clientRect, RECT& paintRect, DrawingContext& mddc, COLORREF chosenBkColor, bool drawNewMarker);
 
 	void RequestMarkRead();
 
