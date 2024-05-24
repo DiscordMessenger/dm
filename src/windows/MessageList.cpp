@@ -2553,7 +2553,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	if (!pThis && uMsg != WM_NCCREATE)
 		return DefWindowProc(hWnd, uMsg, wParam, lParam);
 
-	SCROLLINFO si;
+	SCROLLINFO si{};
 	switch (uMsg)
 	{
 		case WM_NCCREATE:
@@ -2646,10 +2646,53 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (oldWidth != -1)
 			{
 				int rpsUnused = 0;
-				if (oldWidth != GET_X_LPARAM(lParam))
+				if (oldWidth != GET_X_LPARAM(lParam)) {
+					si.cbSize = sizeof(si);
+					si.fMask = SIF_TRACKPOS | SIF_POS | SIF_RANGE | SIF_PAGE;
+					GetScrollInfo(hWnd, SB_VERT, &si);
+
+					bool retrack = si.nPos < si.nMax - si.nPage - 10;
+					int position = 0, ypos = 0, ypos2 = 0;
+					Snowflake sf = 0;
+
+					if (retrack)
+					{
+						position = si.nPos;
+
+						// find the old offset from the top of the messages
+						for (auto& msg : pThis->m_messages) {
+							if (ypos + msg.m_height >= position) {
+								sf = msg.m_msg.m_snowflake;
+								break;
+							}
+							ypos += msg.m_height;
+						}
+					}
+
+					// recalculate
 					pThis->RecalcMessageSizes(true, rpsUnused, 0);
-				else
+
+					if (retrack) {
+						// find the new offset from the top of the messages
+						for (auto& msg : pThis->m_messages) {
+							if (msg.m_msg.m_snowflake == sf)
+								break;
+
+							ypos2 += msg.m_height;
+						}
+
+						// scroll to the old position plus the offset
+						si.nTrackPos = position + ypos2 - ypos;
+						if (si.nTrackPos < si.nMin) si.nTrackPos = si.nMin;
+						if (si.nTrackPos > si.nMax) si.nTrackPos = si.nMax;
+						si.fMask &= SIF_POS;
+						wParam = SB_THUMBTRACK;
+						goto _lbl;
+					}
+				}
+				else {
 					pThis->UpdateScrollBar(0, oldHeight - newHeight, false, true);
+				}
 
 				(void) rpsUnused;
 				return 0;
