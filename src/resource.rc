@@ -362,6 +362,14 @@ IDI_MARK_READ           ICON                    "../res/icon_mark_read.ico"
 
 IDI_MARK_READ_2K        ICON                    "../res/icon_mark_read_2k.ico"
 
+IDI_SHIFT_LEFT          ICON                    "../res/icon_shift_left.ico"
+
+IDI_SHIFT_LEFT_2K       ICON                    "../res/icon_shift_left_2k.ico"
+
+IDI_SHIFT_RIGHT         ICON                    "../res/icon_shift_right.ico"
+
+IDI_SHIFT_RIGHT_2K      ICON                    "../res/icon_shift_right_2k.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

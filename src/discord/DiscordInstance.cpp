@@ -1202,6 +1202,7 @@ void DiscordInstance::SetActivityStatus(eActiveStatus status, bool bRequestServe
 
 	GetSettingsManager()->SetOnlineIndicator(GetProfile()->m_activeStatus);
 	GetSettingsManager()->FlushSettings();
+	GetFrontend()->RepaintProfile();
 }
 
 void DiscordInstance::CloseGatewaySession()

@@ -31,15 +31,31 @@ public:
 	static GuildHeader* Create(HWND hwnd, LPRECT pRect);
 
 private:
+	enum eButtonPlacement {
+		BUTTON_RIGHT,       // To the right of the channel name section
+		BUTTON_LEFT,        // To the left of the channel name section
+		BUTTON_GUILD_RIGHT, // To the right of the guild name section
+		BUTTON_GUILD_LEFT,  // To the left of the guild name section
+	};
+
+	static bool IsPlacementGuildType(eButtonPlacement pl) {
+		return pl == BUTTON_GUILD_LEFT || pl == BUTTON_GUILD_RIGHT;
+	}
+
+	static bool IsPlacementChannelType(eButtonPlacement pl) {
+		return pl == BUTTON_RIGHT || pl == BUTTON_LEFT;
+	}
+
 	struct Button {
 		RECT m_rect;
 		bool m_hot = false;
 		bool m_held = false;
 		int m_iconID;
 		int m_buttonID;
-		bool m_bRightJustify;
+		eButtonPlacement m_placement = BUTTON_RIGHT;
 
-		Button(int bid, int iid, bool rj = true) : m_iconID(iid), m_buttonID(bid), m_bRightJustify(rj) {}
+		Button(int bid, int iid, eButtonPlacement pl = BUTTON_RIGHT):
+			m_iconID(iid), m_buttonID(bid), m_placement(pl) {}
 	};
 
 	HICON m_channelIcon;
@@ -50,14 +66,17 @@ private:
 	// layout
 	RECT m_fullRect;
 	RECT m_rectLeft;
-	RECT m_rectMidFull;
+	RECT m_rectLeftFull;
 	RECT m_rectMid;
+	RECT m_rectMidFull;
 	RECT m_rectRight;
+	RECT m_rectRightFull;
 
 	std::vector<Button> m_buttons;
 	bool m_bLClickHeld = false;
 
 	LONG m_oldWidth = 0;
+	LONG m_guildTextWidth = 0;
 	LONG m_minRightToolbarX = 0;
 
 	std::map<int, HICON> m_hIcons;
@@ -66,7 +85,7 @@ private:
 
 	HICON GetIconFromType(Channel::eChannelType);
 	HICON GetIcon(int iconID, int iconSize);
-	void LayoutButton(Button& button, RECT& toolbarRect);
+	void LayoutButton(Button& button, RECT& chanNameRect, RECT& guildNameRect);
 	void DrawButton(HDC hdc, Button& button);
 	void HitTestButton(HDC hdc, Button& button, POINT& pt);
 	void CheckClickButton(HDC hdc, Button& button, POINT& pt);

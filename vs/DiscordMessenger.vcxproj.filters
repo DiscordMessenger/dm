@@ -309,17 +309,35 @@
     <Image Include="..\res\icon_category_collapse.ico">
       <Filter>Resource Files\Resources</Filter>
     </Image>
-    <Image Include="..\res\icon_new_2k.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="..\res\icon_new.ico">
       <Filter>Resource Files\Resources</Filter>
     </Image>
+    <Image Include="..\res\icon_shift_right_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_shift_left.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_shift_left_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_shift_right.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_new_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
     <Image Include="..\res\icon_mark_read.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Resources</Filter>
     </Image>
     <Image Include="..\res\icon_mark_read_2k.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_new_inline_2k.ico">
+      <Filter>Resource Files\Resources</Filter>
+    </Image>
+    <Image Include="..\res\icon_new_inline.ico">
+      <Filter>Resource Files\Resources</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

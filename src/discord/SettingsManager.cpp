@@ -58,10 +58,10 @@ void SettingsManager::SetOnlineIndicator(eActiveStatus status)
 		->GetFieldObjectDefault<ObjectString>(Settings::Activity::Indicator::FIELD_STATE);
 
 	const char* possibleUpdates[] = {
+		"invisible",
 		"online",
 		"idle",
 		"dnd",
-		"invisible",
 	};
 	
 	static_assert(_countof(possibleUpdates) == int(STATUS_MAX), "Update this array if you add more status states!");

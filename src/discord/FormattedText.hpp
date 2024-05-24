@@ -165,6 +165,10 @@ public:
 			return true;
 		return false;
 	}
+	
+	bool IsFormatted() const {
+		return m_bFormatted;
+	}
 
 private:
 	std::string m_rawMessage;

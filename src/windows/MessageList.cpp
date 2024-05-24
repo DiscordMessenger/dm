@@ -3774,7 +3774,7 @@ void MessageList::OnUpdateEmoji(Snowflake sf)
 	for (auto& msg : m_messages)
 	{
 		void* context = (void*) m_hwnd;
-		if (!msg.m_message.Empty())
+		if (!msg.m_message.IsFormatted())
 			msg.m_message.RunForEachCustomEmote(&InvalidateEmote, context);
 	}
 }

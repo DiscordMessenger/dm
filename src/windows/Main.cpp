@@ -191,6 +191,7 @@ void OnUpdateAvatar(const std::string& resid)
 }
 
 bool g_bMemberListVisible = false;
+bool g_bChannelListVisible = false;
 
 void ProperlySizeControls(HWND hWnd)
 {
@@ -235,13 +236,15 @@ void ProperlySizeControls(HWND hWnd)
 	bool bRepaint = true;
 
 	// Create a message list
-	rect.left += g_ChannelViewListWidth + scaled10 + g_GuildListerWidth + scaled10;
+	rect.left += g_GuildListerWidth + scaled10;
 	rect.bottom -= g_MessageEditorHeight + g_pMessageEditor->ExpandedBy() + scaled10;
 	rect.top += g_GuildHeaderHeight;
+	if (g_bChannelListVisible) rect.left += g_ChannelViewListWidth + scaled10;
 	if (g_bMemberListVisible) rect.right -= g_MemberListWidth + scaled10;
 	MoveWindow(hWndMsg, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
 
 	rect.left = rect.right + scaled10;
+	if (!g_bMemberListVisible) rect.left -= g_MemberListWidth;
 	rect.right = rect.left + g_MemberListWidth;
 	rect.bottom = rect2.bottom;
 	MoveWindow(hWndMel, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
@@ -260,8 +263,9 @@ void ProperlySizeControls(HWND hWnd)
 	MoveWindow(hWndPfv, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
 	rect = rect2;
 
-	rect.left   = g_ChannelViewListWidth + scaled10 + scaled10 + g_GuildListerWidth + scaled10;
+	rect.left   = scaled10 + g_GuildListerWidth + scaled10;
 	rect.top    = rect.bottom - g_MessageEditorHeight - g_pMessageEditor->ExpandedBy();
+	if (g_bChannelListVisible) rect.left += g_ChannelViewListWidth + scaled10;
 	if (g_bMemberListVisible) rect.right -= g_MemberListWidth + scaled10;
 	int textInputHeight = rect.bottom - rect.top, textInputWidth = rect.right - rect.left;
 	MoveWindow(hWndTin, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
@@ -743,6 +747,30 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			break;
 		}
+		case WM_TOGGLECHANNELS:
+		{
+			g_bChannelListVisible ^= 1;
+			int off = ScaleByDPI(10) + g_ChannelViewListWidth;
+
+			if (g_bChannelListVisible) {
+				ShowWindow(g_pChannelView->m_hwnd, SW_SHOWNORMAL);
+				ShowWindow(g_pProfileView->m_hwnd, SW_SHOWNORMAL);
+				UpdateWindow(g_pChannelView->m_hwnd);
+				UpdateWindow(g_pProfileView->m_hwnd);
+				ResizeWindow(g_pMessageList->m_hwnd, off, 0, true, false, true);
+				ResizeWindow(g_pMessageEditor->m_hwnd, off, 0, true, false, true);
+			}
+			else {
+				ShowWindow(g_pChannelView->m_hwnd, SW_HIDE);
+				ShowWindow(g_pProfileView->m_hwnd, SW_HIDE);
+				UpdateWindow(g_pChannelView->m_hwnd);
+				UpdateWindow(g_pProfileView->m_hwnd);
+				ResizeWindow(g_pMessageList->m_hwnd, -off, 0, true, false, true);
+				ResizeWindow(g_pMessageEditor->m_hwnd, -off, 0, true, false, true);
+			}
+
+			break;
+		}
 		case WM_UPDATESELECTEDGUILD:
 		{
 			// repaint the guild lister
@@ -886,6 +914,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_CREATE:
 		{
 			g_bMemberListVisible = true;
+			g_bChannelListVisible = true;
 			ForgetSystemDPI();
 			g_ProfilePictureSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF);
 

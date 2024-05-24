@@ -205,6 +205,8 @@
     <Image Include="..\res\icon_members_2k.ico" />
     <Image Include="..\res\icon_new.ico" />
     <Image Include="..\res\icon_new_2k.ico" />
+    <Image Include="..\res\icon_new_inline.ico" />
+    <Image Include="..\res\icon_new_inline_2k.ico" />
     <Image Include="..\res\icon_offline_small.ico" />
     <Image Include="..\res\icon_online_small.ico" />
     <Image Include="..\res\icon_pin.ico" />
@@ -219,6 +221,10 @@
     <Image Include="..\res\icon_send_2k.ico" />
     <Image Include="..\res\icon_server.ico" />
     <Image Include="..\res\icon_server_2k.ico" />
+    <Image Include="..\res\icon_shift_left.ico" />
+    <Image Include="..\res\icon_shift_left_2k.ico" />
+    <Image Include="..\res\icon_shift_right.ico" />
+    <Image Include="..\res\icon_shift_right_2k.ico" />
     <Image Include="..\res\icon_status_dnd.ico" />
     <Image Include="..\res\icon_status_idle.ico" />
     <Image Include="..\res\icon_status_offline.ico" />

@@ -5,8 +5,9 @@
 #define GUILD_HEADER_COLOR_2 COLOR_GRADIENTACTIVECAPTION
 #define CHANNEL_ICON_SIZE 16
 
-#define IDTB_MEMBERS (1000)
-#define IDTB_PINS    (1001)
+#define IDTB_MEMBERS  (1000) // Show list of members
+#define IDTB_PINS     (1001) // Show pinned messages
+#define IDTB_CHANNELS (1002) // Hide channel list
 
 WNDCLASS GuildHeader::g_GuildHeaderClass;
 
@@ -33,8 +34,9 @@ GuildHeader::GuildHeader()
 	m_dmIcon      = LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_DM)));
 	m_groupDmIcon = LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM)));
 
-	m_buttons.push_back(Button(IDTB_MEMBERS, DMIC(IDI_MEMBERS)));
-	m_buttons.push_back(Button(IDTB_PINS,    DMIC(IDI_PIN)));
+	m_buttons.push_back(Button(IDTB_MEMBERS,  DMIC(IDI_MEMBERS),    BUTTON_RIGHT));
+	m_buttons.push_back(Button(IDTB_PINS,     DMIC(IDI_PIN),        BUTTON_RIGHT));
+	m_buttons.push_back(Button(IDTB_CHANNELS, DMIC(IDI_SHIFT_LEFT), BUTTON_GUILD_RIGHT));
 }
 
 std::string GuildHeader::GetGuildName()
@@ -71,20 +73,48 @@ void GuildHeader::Update()
 	InvalidateRect(m_hwnd, NULL, false);
 }
 
-void GuildHeader::LayoutButton(Button& button, RECT& toolbarRect)
+void GuildHeader::LayoutButton(Button& button, RECT& chanNameRect, RECT& guildNameRect)
 {
-	button.m_rect = toolbarRect;
-	int tbrh = toolbarRect.bottom - toolbarRect.top;
-
-	if (button.m_bRightJustify) {
-		button.m_rect.left = button.m_rect.right - tbrh;
-		toolbarRect.right = button.m_rect.left;
+	int tbrh = 0;
+	if (IsPlacementGuildType(button.m_placement)) {
+		button.m_rect = guildNameRect;
+		tbrh = guildNameRect.bottom - chanNameRect.top;
 	}
 	else {
-		button.m_rect.right = button.m_rect.left + tbrh;
-		toolbarRect.left = button.m_rect.right;
+		button.m_rect = chanNameRect;
+		tbrh = chanNameRect.bottom - chanNameRect.top;
+	}
+
+	switch (button.m_placement)
+	{
+		case BUTTON_RIGHT:
+		{
+			button.m_rect.left = button.m_rect.right - tbrh;
+			chanNameRect.right = button.m_rect.left;
+			break;
+		}
+		case BUTTON_LEFT:
+		{
+			button.m_rect.right = button.m_rect.left + tbrh;
+			chanNameRect.left = button.m_rect.right;
+			break;
+		}
+		case BUTTON_GUILD_RIGHT:
+		{
+			button.m_rect.left = button.m_rect.right - tbrh;
+			guildNameRect.right = button.m_rect.left;
+			break;
+		}
+		case BUTTON_GUILD_LEFT:
+		{
+			button.m_rect.right = button.m_rect.left + tbrh;
+			guildNameRect.left = button.m_rect.right;
+			break;
+		}
 	}
 }
+
+extern bool g_bChannelListVisible; // main.cpp
 
 void GuildHeader::Layout()
 {
@@ -93,14 +123,16 @@ void GuildHeader::Layout()
 
 	m_fullRect = rect;
 
-	RECT& rrect1 = m_rectLeft, & rrect2 = m_rectMidFull, & rrect3 = m_rectRight;
+	RECT &rrect1 = m_rectLeftFull, &rrect2 = m_rectMidFull, &rrect3 = m_rectRightFull;
 		
 	rrect1 = rect, rrect2 = rect, rrect3 = rect;
-	rrect1.right = rrect1.left + ScaleByDPI(CHANNEL_VIEW_LIST_WIDTH);
+	rrect1.right = rrect1.left + g_bChannelListVisible ? ScaleByDPI(CHANNEL_VIEW_LIST_WIDTH) : (rect.bottom - rect.top);
 	rrect2.left  = rrect1.right;
 	rrect3.left  = rrect3.right - ScaleByDPI(MEMBER_LIST_WIDTH);
 	rrect2.right = rrect3.left;
 
+	m_rectLeft = m_rectLeftFull;
+	m_rectRight = m_rectRightFull;
 	m_rectMid = m_rectMidFull;
 	m_rectMid.left  += ScaleByDPI(10);
 	m_rectMid.right -= ScaleByDPI(10);
@@ -108,9 +140,9 @@ void GuildHeader::Layout()
 
 	for (auto& btn : m_buttons)
 	{
-		LayoutButton(btn, m_rectMid);
+		LayoutButton(btn, m_rectMid, m_rectLeft);
 
-		if (btn.m_bRightJustify)
+		if (btn.m_placement == BUTTON_RIGHT)
 			m_minRightToolbarX = std::min(btn.m_rect.left, m_minRightToolbarX);
 	}
 }
@@ -152,7 +184,16 @@ void GuildHeader::DrawButton(HDC hdc, Button& button)
 	exp.right  = std::min(exp.right,  button.m_rect.right);
 	exp.bottom = std::min(exp.bottom, button.m_rect.bottom);
 
-	FillRect(hdc, &exp, GetSysColorBrush(clr));
+	if (IsPlacementGuildType(button.m_placement)) {
+		HRGN rgn = CreateRectRgnIndirect(&exp);
+		SelectClipRgn(hdc, rgn);
+		FillGradient(hdc, &m_rectLeftFull, GUILD_HEADER_COLOR, GUILD_HEADER_COLOR_2, false);
+		SelectClipRgn(hdc, NULL);
+		DeleteRgn(rgn);
+	}
+	else {
+		FillRect(hdc, &exp, GetSysColorBrush(clr));
+	}
 
 	if (button.m_held) {
 		iconX++, iconY++;
@@ -282,15 +323,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			assert(pThis);
 			pThis->m_bLClickHeld = false;
 			POINT pt = { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) };
-			HDC hdc = GetDC(hWnd);
-			for (size_t i = 0; i < pThis->m_buttons.size(); i++)
-			{
-				Button& button = pThis->m_buttons[i];
-				pThis->CheckReleaseButton(hdc, hWnd, button, int(i), pt);
-				pThis->HitTestButton(hdc, button, pt);
-			}
-			ReleaseDC(hWnd, hdc);
-			
+
 			RECT& inforect = pThis->m_rectMid;
 			if (PtInRect(&inforect, pt))
 			{
@@ -306,6 +339,15 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					free((void*)ctstr2);
 				}
 			}
+
+			HDC hdc = GetDC(hWnd);
+			for (size_t i = 0; i < pThis->m_buttons.size(); i++)
+			{
+				Button& button = pThis->m_buttons[i];
+				pThis->CheckReleaseButton(hdc, hWnd, button, int(i), pt);
+				pThis->HitTestButton(hdc, button, pt);
+			}
+			ReleaseDC(hWnd, hdc);
 
 			break;
 		}
@@ -344,12 +386,12 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			COLORREF old = SetBkColor(hdc, GetSysColor(GUILD_HEADER_COLOR));
 			COLORREF oldText = SetTextColor(hdc, GetSysColor(COLOR_CAPTIONTEXT));
 
-			//draw the background
 			pThis->Layout();
 
+			//draw the background
 #if (WINVER>=0x0500)
-			FillGradient(hdc, &pThis->m_rectLeft,  GUILD_HEADER_COLOR, GUILD_HEADER_COLOR_2, false);
-			FillGradient(hdc, &pThis->m_rectRight, GUILD_HEADER_COLOR_2, GUILD_HEADER_COLOR, false);
+			FillGradient(hdc, &pThis->m_rectLeftFull,  GUILD_HEADER_COLOR, GUILD_HEADER_COLOR_2, false);
+			FillGradient(hdc, &pThis->m_rectRightFull, GUILD_HEADER_COLOR_2, GUILD_HEADER_COLOR, false);
 			FillRect(hdc, &pThis->m_rectMidFull, GetSysColorBrush(GUILD_HEADER_COLOR_2));
 #else
 			FillRect(hdc, &pThis->m_rectFull, GetSysColorBrush(GUILD_HEADER_COLOR));
@@ -368,34 +410,39 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			LPCTSTR ctstrChIn = ConvertCppStringToTString(cinfo);
 
 			HGDIOBJ objOld = SelectObject(hdc, g_GuildCaptionFont);
+			RECT nameRect;
+			int nameHeight;
 
-			RECT nameRect = pThis->m_rectLeft;
-			nameRect.left += ScaleByDPI(8);
-			DrawText(hdc, ctstrName, -1, &nameRect, DT_SINGLELINE | DT_CALCRECT | DT_NOPREFIX | DT_WORD_ELLIPSIS);
-			int nameHeight = nameRect.bottom - nameRect.top;
+			if (g_bChannelListVisible)
+			{
+				nameRect = pThis->m_rectLeft;
+				nameRect.left += ScaleByDPI(8);
+				DrawText(hdc, ctstrName, -1, &nameRect, DT_SINGLELINE | DT_CALCRECT | DT_NOPREFIX | DT_WORD_ELLIPSIS);
+				int nameHeight = nameRect.bottom - nameRect.top;
 
-			nameRect = pThis->m_rectLeft;
-			nameRect.right = nameRect.left + ScaleByDPI(CHANNEL_VIEW_LIST_WIDTH);
-			nameRect.left += ScaleByDPI(8);
-			
-			// if we have a subtitle...
-			if (ginfo.size())
-				nameRect.top += (rectHeight - nameHeight * 2) / 2;
-			else
-				nameRect.top += (rectHeight - nameHeight) / 2;
-			nameRect.bottom = nameRect.top + nameHeight;
+				nameRect = pThis->m_rectLeft;
+				nameRect.right = nameRect.left + ScaleByDPI(CHANNEL_VIEW_LIST_WIDTH);
+				nameRect.left += ScaleByDPI(8);
 
-			// draw the name text.
-			DrawText(hdc, ctstrName, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | DT_WORD_ELLIPSIS);
-			// also draw the subtitle text
-			SelectObject(hdc, g_GuildSubtitleFont);
-			nameRect.top += nameHeight;
-			nameRect.bottom += nameHeight;
-			DrawText(hdc, ctstrSubt, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | DT_WORD_ELLIPSIS);
+				// if we have a subtitle...
+				if (ginfo.size())
+					nameRect.top += (rectHeight - nameHeight * 2) / 2;
+				else
+					nameRect.top += (rectHeight - nameHeight) / 2;
+				nameRect.bottom = nameRect.top + nameHeight;
+
+				// draw the name text.
+				DrawText(hdc, ctstrName, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | DT_WORD_ELLIPSIS);
+				// also draw the subtitle text
+				SelectObject(hdc, g_GuildSubtitleFont);
+				nameRect.top += nameHeight;
+				nameRect.bottom += nameHeight;
+				DrawText(hdc, ctstrSubt, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | DT_WORD_ELLIPSIS);
+
+				SelectObject(hdc, g_GuildCaptionFont);
+			}
 
 			// Measure the channel name.
-			SelectObject(hdc, g_GuildCaptionFont);
-
 			nameRect = pThis->m_rectMid;
 			DrawText(hdc, ctstrChNm, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | DT_WORD_ELLIPSIS | DT_CALCRECT);
 			nameHeight = nameRect.bottom - nameRect.top;
@@ -473,6 +520,14 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 				case IDTB_MEMBERS:
 					SendMessage(g_Hwnd, WM_TOGGLEMEMBERS, 0, 0);
+					break;
+				case IDTB_CHANNELS:
+					SendMessage(g_Hwnd, WM_TOGGLECHANNELS, 0, 0);
+					pThis->m_buttons[lParam].m_iconID = DMIC(g_bChannelListVisible ? IDI_SHIFT_LEFT : IDI_SHIFT_RIGHT);
+					pThis->m_buttons[lParam].m_placement = g_bChannelListVisible ? BUTTON_GUILD_RIGHT : BUTTON_GUILD_LEFT;
+					pThis->Layout();
+					InvalidateRect(hWnd, &pThis->m_rectLeftFull, FALSE);
+					InvalidateRect(hWnd, &pThis->m_rectMidFull, FALSE);
 					break;
 			}
 			break;
