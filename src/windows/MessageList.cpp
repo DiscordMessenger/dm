@@ -15,10 +15,57 @@
 #define IDC_HAND            MAKEINTRESOURCE(32649)
 #endif//IDC_HAND
 
-#define ATTACHMENT_HEIGHT (ScaleByDPI(40))
-#define ATTACHMENT_GAP    (ScaleByDPI(4))
-#define DATE_GAP_HEIGHT   (ScaleByDPI(20))
+#define ATTACHMENT_HEIGHT   (ScaleByDPI(40))
 #define PROFILE_PICTURE_GAP (PROFILE_PICTURE_SIZE + 8);
+
+// ADJUSTABLE MEASUREMENTS
+int GetMessageBorderPadding() {
+	return ScaleByDPI(GetLocalSettings()->GetReducePadding() ? 4 : 10);
+}
+
+int GetEmbedBorderPadding() {
+	return ScaleByDPI(GetLocalSettings()->GetReducePadding() ? 4 : 10);
+}
+
+int GetAuthorAndDatePadding() {
+	return ScaleByDPI(GetLocalSettings()->GetReducePadding() ? 4 : 10);
+}
+
+int GetDateAndEditDatePadding() {
+	return ScaleByDPI(GetLocalSettings()->GetReducePadding() ? 2 : 5);
+}
+
+int GetMessageAndEmbedGap() {
+	return ScaleByDPI(GetLocalSettings()->GetReducePadding() ? 2 : 5);
+}
+
+int GetMessageAndAttachmentGap() {
+	return ScaleByDPI(GetLocalSettings()->GetReducePadding() ? 2 : 5);
+}
+
+int GetReplyPadHeight() {
+	return ScaleByDPI(GetLocalSettings()->GetReducePadding() ? 2 : 5);
+}
+
+int GetGapBetweenEmbedItems() {
+	return ScaleByDPI(GetLocalSettings()->GetReducePadding() ? 2 : 5);
+}
+
+int GetEmbedGap() {
+	return ScaleByDPI(GetLocalSettings()->GetReducePadding() ? 2 : 5);
+}
+
+int GetAuthorAndMessagePadding() {
+	return GetLocalSettings()->GetReducePadding() ? 0 : ScaleByDPI(5);
+}
+
+int GetAttachmentGap() {
+	return ScaleByDPI(GetLocalSettings()->GetReducePadding() ? 2 : 4);
+}
+
+int GetDateGapHeight() {
+	return ScaleByDPI(GetLocalSettings()->GetReducePadding() ? 14 : 20);
+}
 
 static int GetProfileBorderRenderSize()
 {
@@ -121,7 +168,7 @@ void RichEmbedItem::Update()
 
 void RichEmbedItem::Measure(HDC hdc, RECT& messageRect, bool isCompact)
 {
-	const int borderSize = ScaleByDPI(10);
+	const int borderSize = GetEmbedBorderPadding();
 	SIZE sz { 0, 0 };
 
 	RECT rcItem = messageRect;
@@ -129,8 +176,8 @@ void RichEmbedItem::Measure(HDC hdc, RECT& messageRect, bool isCompact)
 	rcItem.top    += borderSize;
 	rcItem.right  -= borderSize * 2;
 	rcItem.bottom -= borderSize * 2;
-	rcItem.right -= ScaleByDPI(20);
-	rcItem.bottom -= ScaleByDPI(20);
+	rcItem.right -= GetEmbedBorderPadding() * 2;
+	rcItem.bottom -= GetEmbedBorderPadding() * 2;
 	if (!isCompact)
 		rcItem.right -= ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 
@@ -207,7 +254,7 @@ void RichEmbedItem::Measure(HDC hdc, RECT& messageRect, bool isCompact)
 	}
 	else m_dateSize = sz;
 
-	int gap = ScaleByDPI(5);
+	int gap = GetGapBetweenEmbedItems();
 	LONG footerPlusDateXSize = m_footerSize.cx;
 	if (m_dateSize.cx) {
 		if (footerPlusDateXSize)
@@ -269,7 +316,7 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect)
 	ri::SetDCBrushColor(hdc, oldCol);
 
 	// Draw the thing
-	const int borderSize = ScaleByDPI(10);
+	const int borderSize = GetEmbedBorderPadding();
 	const int gap = ScaleByDPI(5);
 	int sizeY = 0;
 	rc.left   += ScaleByDPI(4);
@@ -395,8 +442,8 @@ void MessageList::MeasureMessage(
 	HGDIOBJ gdiObj = SelectObject(hdc, g_AuthorTextFont);
 	RECT rcCommon1 = msgRect, rcCommon2;
 	RECT rc;
-	rcCommon1.right -= ScaleByDPI(20);
-	rcCommon1.bottom -= ScaleByDPI(20);
+	rcCommon1.right -= GetMessageBorderPadding();
+	rcCommon1.bottom -= GetMessageBorderPadding();
 	if (placeinchain == 0) {
 		rcCommon2 = rcCommon1;
 		if (!bIsCompact)
@@ -423,7 +470,7 @@ void MessageList::MeasureMessage(
 
 		if (strReplyMsg) {
 			rc = rcCommon1;
-			rc.right -= ScaleByDPI(5) - replyauthwidth;
+			rc.right -= GetAuthorAndMessagePadding() - replyauthwidth;
 			replyheight2 = DrawText(hdc, strReplyMsg, -1, &rc, DT_CALCRECT | DT_SINGLELINE | DT_NOPREFIX);
 			replymsgwidth = rc.right - rc.left;
 		}
@@ -440,30 +487,30 @@ void MessageList::MeasureMessage(
 		datewidth = 0;
 		SelectObject(hdc, g_DateTextFont);
 		rc = msgRect;
-		rc.right  -= ScaleByDPI(20);
-		rc.bottom -= ScaleByDPI(20);
+		rc.right  -= GetMessageBorderPadding() * 2;
+		rc.bottom -= GetMessageBorderPadding() * 2;
 		DrawText(hdc, strDate, -1, &rc, DT_CALCRECT | DT_NOPREFIX);
 		datewidth += rc.right - rc.left;
 		if (strDateEdit) {
 			rc = msgRect;
-			rc.right  -= ScaleByDPI(20);
-			rc.bottom -= ScaleByDPI(20);
+			rc.right  -= GetMessageBorderPadding() * 2;
+			rc.bottom -= GetMessageBorderPadding() * 2;
 			DrawText(hdc, strDateEdit, -1, &rc, DT_CALCRECT | DT_NOPREFIX);
-			datewidth += rc.right - rc.left + ScaleByDPI(10);
+			datewidth += rc.right - rc.left + GetAuthorAndDatePadding();
 		}
 	}
 	else datewidth = 0;
 
 	SelectObject(hdc, g_MessageTextFont);
 	rc = msgRect;
-	rc.right  -= ScaleByDPI(20);
-	rc.bottom -= ScaleByDPI(20);
+	rc.right  -= GetMessageBorderPadding() * 2;
+	rc.bottom -= GetMessageBorderPadding() * 2;
 	if (!bIsCompact)
 		rc.right -= ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 
 	DrawingContext mddc(hdc);
 
-	strMsg.Layout(&mddc, Rect(W32RECT(rc)), bIsCompact ? (authwidth + datewidth + ScaleByDPI(10)) : 0);
+	strMsg.Layout(&mddc, Rect(W32RECT(rc)), bIsCompact ? (authwidth + datewidth + GetAuthorAndDatePadding()) : 0);
 	Rect ext = strMsg.GetExtent();
 	textheight = ext.Height();
 
@@ -764,7 +811,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 	for (auto& msg : m_messages) {
 		if (msg.m_msg.m_snowflake == m_firstShownMessage) {
 			if (m_bManagedByOwner && msg.m_bIsDateGap)
-				oldYMessage += DATE_GAP_HEIGHT;
+				oldYMessage += GetDateGapHeight();
 			break;
 		}
 		oldYMessage += msg.m_height;
@@ -1305,7 +1352,7 @@ void MessageList::DrawImageAttachment(HDC hdc, RECT& paintRect, AttachmentItem& 
 	attachItem.m_boxRect = childAttachRect;
 	attachItem.m_textRect = childAttachRect;
 
-	attachRect.bottom = attachRect.top = childAttachRect.bottom + ATTACHMENT_GAP;
+	attachRect.bottom = attachRect.top = childAttachRect.bottom + GetAttachmentGap();
 
 	RECT intersRect;
 	if (!IntersectRect(&intersRect, &paintRect, &childAttachRect))
@@ -1365,7 +1412,7 @@ void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem
 	textRect.right = textRect.left + rcMeasure.right;
 
 	childAttachRect.right = childAttachRect.left + iconSize + iconSize + width + ScaleByDPI(20);
-	attachRect.bottom = attachRect.top = childAttachRect.bottom + ATTACHMENT_GAP;
+	attachRect.bottom = attachRect.top = childAttachRect.bottom + GetAttachmentGap();
 
 	if (inView)
 	{
@@ -1660,7 +1707,7 @@ COLORREF MessageList::DrawMentionBackground(HDC hdc, RECT& rc, COLORREF chosenBk
 int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 {
 	const int pfpOffset = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
-	const int replyOffset = item.m_replyHeight + ScaleByDPI(5);
+	const int replyOffset = item.m_replyHeight + GetReplyPadHeight();
 	RECT rcReply = rc;
 	rcReply.bottom = rcReply.top + item.m_replyHeight;
 
@@ -1791,7 +1838,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 
 	rcReply.left += item.m_replyAuthorWidth;
 	if (!isActionMessage)
-		rcReply.left += ScaleByDPI(5);
+		rcReply.left += GetAuthorAndMessagePadding();
 
 	SetTextColor(hdc, GetSysColor(COLOR_GRAYTEXT));
 
@@ -1859,19 +1906,19 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	const bool isChainBegin = item.m_placeInChain == 0;
 	const bool isChainCont = item.m_placeInChain != 0;
 
-	rc.left += ScaleByDPI(10);
-	rc.right -= ScaleByDPI(10);
-	rc.bottom -= ScaleByDPI(10);
+	rc.left   += GetMessageBorderPadding();
+	rc.right  -= GetMessageBorderPadding();
+	rc.bottom -= GetMessageBorderPadding();
 	if (isChainBegin)
-		rc.top += ScaleByDPI(10);
+		rc.top += GetMessageBorderPadding();
 
 	if (!m_bManagedByOwner && item.m_bIsDateGap && isChainBegin)
 	{
 		RECT dgRect = msgRect;
-		dgRect.bottom = dgRect.top + DATE_GAP_HEIGHT;
+		dgRect.bottom = dgRect.top + GetDateGapHeight();
 
-		rc.top += DATE_GAP_HEIGHT;
-		msgRect.top += DATE_GAP_HEIGHT;
+		rc.top += GetDateGapHeight();
+		msgRect.top += GetDateGapHeight();
 
 		LPTSTR strDateGap = ConvertCppStringToTString("  " + item.m_msg.m_dateOnly + "  ");
 		COLORREF oldTextClr = SetTextColor(hdc, GetSysColor(COLOR_GRAYTEXT));
@@ -1893,10 +1940,10 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		DrawText(hdc, strDateGap, -1, &rcMeasure, DT_CALCRECT | DT_NOPREFIX);
 		int width = rcMeasure.right - rcMeasure.left;
 
-		int l1 = dgRect.left + ScaleByDPI(10);
+		int l1 = dgRect.left + GetMessageBorderPadding();
 		int r1 = dgRect.right / 2 - width / 2 - 1;
 		int l2 = dgRect.right / 2 + width / 2 + 1;
-		int r2 = dgRect.right - ScaleByDPI(10) - 1;
+		int r2 = dgRect.right - GetMessageBorderPadding() - 1;
 
 		POINT old;
 		HGDIOBJ oldob = SelectObject(hdc, GetStockPen(DC_PEN));
@@ -2138,16 +2185,16 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		int oldLeft = rc.left;
 		if (inView) {
 			if (!bIsCompact || isActionMessage)
-				rc.left += authwidth + ScaleByDPI(10);
+				rc.left += authwidth + GetAuthorAndDatePadding();
 			rc.left += dateOffset;
 			rc.left -= authorOffset;
 			DrawText(hdc, strDate, -1, &rc, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP);
 			if (item.m_msg.m_timeEdited) {
 				RECT rcMeasure{};
 				DrawText(hdc, strDate, -1, &rcMeasure, DT_SINGLELINE | DT_NOPREFIX | DT_CALCRECT);
-				rc.left += rcMeasure.right - rcMeasure.left + ScaleByDPI(5);
+				rc.left += rcMeasure.right - rcMeasure.left + GetDateAndEditDatePadding();
 				DrawText(hdc, strEditDate, -1, &rc, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP);
-				rc.left -= rcMeasure.right - rcMeasure.left + ScaleByDPI(5);
+				rc.left -= rcMeasure.right - rcMeasure.left + GetDateAndEditDatePadding();
 			}
 		}
 		rc.left = oldLeft;
@@ -2249,14 +2296,17 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	}
 	else
 	{
-		if (!bIsCompact && isChainBegin)
-			rc.top += ScaleByDPI(5);
+		if (!bIsCompact && isChainBegin && !GetLocalSettings()->GetReducePadding())
+			rc.top += GetAuthorAndMessagePadding();
 
 		RECT rcMsg = rc;
 		rcMsg.bottom -= item.m_attachHeight + item.m_embedHeight;
 		if (item.m_attachHeight)
-			rcMsg.bottom -= ATTACHMENT_GAP;
-		item.m_message.Layout(&mddc, Rect(W32RECT(rcMsg)), bIsCompact ? (item.m_authWidth + item.m_dateWidth + ScaleByDPI(10)) : 0);
+			rcMsg.bottom -= GetAttachmentGap();
+		if (item.m_embedHeight)
+			rcMsg.bottom -= GetEmbedGap();
+
+		item.m_message.Layout(&mddc, Rect(W32RECT(rcMsg)), bIsCompact ? (item.m_authWidth + item.m_dateWidth + GetAuthorAndDatePadding()) : 0);
 		
 		Rect ext = item.m_message.GetExtent();
 		int height = std::max(item.m_authHeight, ext.Height());
@@ -2280,13 +2330,16 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			if (item.m_bWasMentioned) {
 				COLORREF color;
 				if (!bIsCompact) {
-					color = DrawMentionBackground(hdc, rc, chosenBkColor);
+					RECT rc2{ W32RECT(ext) };
+					rc2.top += offsetY;
+					rc2.bottom += offsetY;
+					color = DrawMentionBackground(hdc, rc2, chosenBkColor);
 				}
 				else {
 					RECT rc1, rc2;
 					rc1 = rc2 = rc;
 
-					rc1.left += item.m_authWidth + item.m_dateWidth + ScaleByDPI(10);
+					rc1.left += item.m_authWidth + item.m_dateWidth + GetAuthorAndDatePadding();
 					rc1.bottom = rc1.top + item.m_authHeight;
 					rc2.top += item.m_authHeight;
 
@@ -2377,9 +2430,9 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	auto& embedVec = item.m_embedData;
 	size_t sz = embedVec.size();
 	if (isChainBegin && sz)
-		embedRect.bottom += ScaleByDPI(5);
+		embedRect.bottom += GetMessageAndEmbedGap();
 
-	embedRect.right = msgRect.right - ScaleByDPI(10);
+	embedRect.right = msgRect.right - GetAuthorAndDatePadding();
 	embedRect.top = embedRect.bottom;
 
 	if (bIsCompact) embedRect.left = rc.left;
@@ -2411,16 +2464,16 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			}
 		}
 
-		embedRect.top += eitem.m_size.cy + ScaleByDPI(5);
+		embedRect.top += eitem.m_size.cy + GetEmbedGap();
 		embedRect.bottom = embedRect.top;
 	}
 
 	// draw available attachments, if any:
 	RECT attachRect = embedRect;
 	if (isChainBegin || sz != 0)
-		attachRect.bottom += ScaleByDPI(5) + ATTACHMENT_GAP;
+		attachRect.bottom += GetMessageAndAttachmentGap() + GetAttachmentGap();
 
-	attachRect.right   = msgRect.right - ScaleByDPI(10);
+	attachRect.right   = msgRect.right - GetAuthorAndDatePadding();
 	attachRect.top     = attachRect.bottom;
 
 	if (bIsCompact) attachRect.left = rc.left;
@@ -3455,7 +3508,7 @@ void MessageList::AdjustHeightInfo(const MessageItem& msg, int& height, int& tex
 	bool isCompact = IsCompact();
 	int replyheight2 = replyheight;
 	if (replyheight2)
-		replyheight2 += ScaleByDPI(5);
+		replyheight2 += GetReplyPadHeight();
 
 	bool isChainCont = msg.m_placeInChain != 0;
 	if (isChainCont)
@@ -3466,17 +3519,17 @@ void MessageList::AdjustHeightInfo(const MessageItem& msg, int& height, int& tex
 	if (IsActionMessage(msg.m_msg.m_type))
 	{
 		replyheight2 = 0;
-		height = replyheight2 + authheight + ScaleByDPI(20);
+		height = replyheight2 + authheight + GetMessageBorderPadding() * 2;
 	}
 	else if (isCompact)
 	{
-		height = replyheight2 + std::max(textheight, authheight) + ScaleByDPI(20);
+		height = replyheight2 + std::max(textheight, authheight) + GetMessageBorderPadding() * 2;
 	}
 	else
 	{
-		int pad = 25;
-		if (!authheight) pad = 20;
-		if (isChainCont) pad = 10;
+		int pad = GetMessageBorderPadding() * 2 + GetAuthorAndMessagePadding();
+		if (!authheight) pad = GetMessageBorderPadding() * 2;
+		if (isChainCont) pad = GetMessageBorderPadding();
 		height = replyheight2 + textheight + authheight + ScaleByDPI(pad);
 	}
 
@@ -3484,13 +3537,13 @@ void MessageList::AdjustHeightInfo(const MessageItem& msg, int& height, int& tex
 
 	// If a date gap, add an extra X pixels
 	if (!m_bManagedByOwner && msg.m_bIsDateGap)
-		height += DATE_GAP_HEIGHT, minHeight += DATE_GAP_HEIGHT;
+		height += GetDateGapHeight(), minHeight += GetDateGapHeight();
 
 	// also figure out embed size
 	embedheight = 0;
 	for (auto& emb : msg.m_embedData)
 	{
-		int inc = emb.m_size.cy + ScaleByDPI(5);
+		int inc = emb.m_size.cy + GetEmbedGap();
 		height += inc;
 		embedheight += inc;
 	}
@@ -3502,9 +3555,9 @@ void MessageList::AdjustHeightInfo(const MessageItem& msg, int& height, int& tex
 		// XXX improve?
 		int inc = 0;
 		if (att.m_contentType == ContentType::BLOB)
-			inc = ATTACHMENT_HEIGHT + ATTACHMENT_GAP;
+			inc = ATTACHMENT_HEIGHT + GetAttachmentGap();
 		else
-			inc = att.m_previewHeight + ATTACHMENT_GAP;
+			inc = att.m_previewHeight + GetAttachmentGap();
 
 		height += inc;
 		attachheight += inc;
@@ -3512,16 +3565,16 @@ void MessageList::AdjustHeightInfo(const MessageItem& msg, int& height, int& tex
 
 	if (isChainCont) {
 		if (embedheight != 0)
-			height -= ScaleByDPI(5);
+			height -= GetEmbedGap();
 		else if (attachheight != 0)
-			height -= ATTACHMENT_GAP;
+			height -= GetAttachmentGap();
 	}
 	else {
 		// add some separators
 		if (attachheight != 0)
-			height += ScaleByDPI(5);
+			height += GetMessageAndAttachmentGap();
 		if (embedheight != 0)
-			height += ScaleByDPI(5);
+			height += GetMessageAndEmbedGap();
 	}
 
 	if (!IsActionMessage(msg.m_msg.m_type) && !IsCompact() && !isChainCont && height < minHeight)
@@ -3614,9 +3667,9 @@ int MessageList::RecalcMessageSizes(bool update, int& repaintSize, Snowflake add
 			}
 
 			if (bIsDateGap && !msgOldIsDateGap)
-				iter->m_height += DATE_GAP_HEIGHT;
+				iter->m_height += GetDateGapHeight();
 			if (!bIsDateGap && msgOldIsDateGap)
-				iter->m_height -= DATE_GAP_HEIGHT;
+				iter->m_height -= GetDateGapHeight();
 
 			if (oldHeight != iter->m_height)
 			{

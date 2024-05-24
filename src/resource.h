@@ -281,9 +281,9 @@
 #define IDC_ICON_WARN_CONNECT           868
 #define IDC_ICON_WARN_WEBSOCKETSTUFF    869
 #define IDC_ICON_WARN_WEBSOCKETSTUFF2   870
-#define IDC_CHECK1                      871
 #define IDC_ENABLE_TLS_CHECKS           871
 #define IDC_CHECK_UPDATES               872
+#define IDC_REDUCE_PADDING              873
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
 #define ID_FILE_EXIT                    1003
@@ -362,7 +362,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        77
 #define _APS_NEXT_COMMAND_VALUE         1069
-#define _APS_NEXT_CONTROL_VALUE         873
+#define _APS_NEXT_CONTROL_VALUE         874
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif
 #endif

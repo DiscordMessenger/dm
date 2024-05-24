@@ -290,6 +290,10 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 							GetLocalSettings()->SetMessageStyle(MS_FLATBR);
 							SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
 							break;
+						case IDC_REDUCE_PADDING:
+							GetLocalSettings()->SetReducePadding(IsDlgButtonChecked(hWnd, IDC_REDUCE_PADDING));
+							SendMessage(g_Hwnd, WM_REPOSITIONEVERYTHING, 0, 0);
+							break;
 						case IDC_SAVE_WINDOW_SIZE:
 							GetLocalSettings()->SetSaveWindowSize(IsDlgButtonChecked(hWnd, IDC_SAVE_WINDOW_SIZE));
 							break;
