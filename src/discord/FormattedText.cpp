@@ -602,7 +602,8 @@ void FormattedText::Draw(DrawingContext* context, int offsetY)
 
 void FormattedText::RunForEachCustomEmote(FunctionEachEmote func, void* context)
 {
-	assert(m_bFormatted && "Have to call Layout(rc) first!");
+	if (m_bFormatted)
+		return;
 
 	for (auto& w : m_words)
 	{

@@ -332,7 +332,9 @@ public:
 	~MessageItem() {
 		Clear();
 	}
+
 	void Update(Snowflake guildID);
+	void ShiftUp(int amount);
 };
 
 class MessageList
@@ -372,6 +374,8 @@ private:
 	bool m_bManagedByOwner = false;
 	bool m_bIsTopDown = false;
 
+	void Scroll(int amount, RECT* rcClip = NULL, bool shiftAllRects = true);
+	
 	void MessageHeightChanged(int oldHeight, int newHeight, bool toStart = false);
 	void AddMessageInternal(const Message& msg, bool toStart, bool updateLastViewedMessage = false, bool resetAnchor = true);
 	void UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bool update = true, int offsetY = 0, bool addingMessage = false);

@@ -649,6 +649,53 @@ void MessageItem::Update(Snowflake guildID)
 	}
 }
 
+static void ShiftUpRect(RECT& rc, int amount) {
+	// n.b. Don't shift if covering a total area of zero
+	if (rc.top == rc.bottom || rc.left == rc.right) return;
+	rc.top    -= amount;
+	rc.bottom -= amount;
+}
+
+static void ShiftUpDRect(Rect& rc, int amount) {
+	// n.b. Don't shift if covering a total area of zero
+	if (rc.top == rc.bottom || rc.left == rc.right) return;
+	rc.top    -= amount;
+	rc.bottom -= amount;
+}
+
+void MessageItem::ShiftUp(int amount)
+{
+	// Shift all the rectangles up by [amount] pixels.
+	// Validation care has been taken to ensure this doesn't result in an illegal state.
+	ShiftUpRect(m_rect, amount);
+	ShiftUpRect(m_authorRect, amount);
+	ShiftUpRect(m_refAvatarRect, amount);
+	ShiftUpRect(m_messageRect, amount);
+	
+	for (auto& word : m_message.GetWords()) {
+		ShiftUpDRect(word.m_rect, amount);
+	}
+
+	for (auto& att : m_attachmentData) {
+		ShiftUpRect(att.m_addRect, amount);
+		ShiftUpRect(att.m_boxRect, amount);
+		ShiftUpRect(att.m_textRect, amount);
+	}
+
+	for (auto& itd : m_interactableData) {
+		ShiftUpRect(itd.m_rect, amount);
+	}
+
+	for (auto& emb : m_embedData) {
+		ShiftUpRect(emb.m_rect, amount);
+		ShiftUpRect(emb.m_imageRect, amount);
+		ShiftUpRect(emb.m_thumbnailRect, amount);
+		ShiftUpRect(emb.m_titleRect, amount);
+		ShiftUpRect(emb.m_authorRect, amount);
+		ShiftUpRect(emb.m_providerRect, amount);
+	}
+}
+
 void MessageList::DeleteMessage(Snowflake sf)
 {
 	std::list<MessageItem>::reverse_iterator iter;
@@ -1013,7 +1060,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 	else if (!m_bManagedByOwner)
 	{
 		if (scrollAnyway)
-			WindowScroll(m_hwnd, -scrollAnyway);
+			Scroll(-scrollAnyway);
 
 		InvalidateRect(m_hwnd, haveUpdateRect ? &updateRect : NULL, eraseWhenUpdating);
 	}
@@ -2778,7 +2825,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			diffUpDown = si.nPos - pThis->m_oldPos;
 			pThis->m_oldPos = si.nPos;
 
-			WindowScroll(hWnd, diffUpDown);
+			pThis->Scroll(diffUpDown);
 
 			break;
 		}
@@ -3457,9 +3504,9 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 		} else {
 			rcScroll.top -= offsetY;
 		}
+
 		int diffUpDown = toStart ? 0 : diffNow;
-		ScrollWindowEx(m_hwnd, 0, -diffUpDown, offsetY ? &rcScroll : NULL, NULL, NULL, NULL, SW_INVALIDATE);
-		UpdateWindow(m_hwnd);
+		Scroll(diffUpDown, offsetY ? &rcScroll : NULL);
 	}
 }
 
@@ -3807,19 +3854,24 @@ void MessageList::OnUpdateAvatar(Snowflake sf)
 
 void MessageList::InvalidateEmote(void* context, const Rect& rc)
 {
-	RECT invRect { W32RECT(rc) };
-	InvalidateRect((HWND) context, &invRect, FALSE);
+	HRGN invRgn = CreateRectRgn(W32RECT(rc));
+	UnionRgn((HRGN)context, (HRGN)context, invRgn);
+	DeleteRgn(invRgn);
 }
 
 void MessageList::OnUpdateEmoji(Snowflake sf)
 {
+	HRGN rgn = CreateRectRgn(0, 0, 0, 0);
+
 	// TODO: Only invalidate the emoji that were updated
 	for (auto& msg : m_messages)
 	{
-		void* context = (void*) m_hwnd;
 		if (!msg.m_message.IsFormatted())
-			msg.m_message.RunForEachCustomEmote(&InvalidateEmote, context);
+			msg.m_message.RunForEachCustomEmote(&InvalidateEmote, (void*) 0);
 	}
+
+	InvalidateRgn(m_hwnd, rgn, TRUE);
+	DeleteRgn(rgn);
 }
 
 void MessageList::OnFailedToSendMessage(Snowflake sf)
@@ -4038,6 +4090,22 @@ void MessageList::SetLastViewedMessage(Snowflake sf, bool refreshItAlso)
 			InvalidateRect(m_hwnd, &rcMsg, FALSE);
 		}
 	}
+}
+
+void MessageList::Scroll(int amount, RECT* rcClip, bool shiftAllRects)
+{
+	// amount - Amount of pixels to scroll UP
+	if (shiftAllRects)
+	{
+		for (auto& msg : m_messages)
+			msg.ShiftUp(amount);
+	}
+
+	// Note. In the case that any repainting is done, we perform the shifts
+	// BEFORE repainting to avoid some weird glitches caused by a shift occuring
+	// twice.
+	ScrollWindowEx(m_hwnd, 0, -amount, rcClip, NULL, NULL, NULL, SW_INVALIDATE);
+	UpdateWindow(m_hwnd);
 }
 
 void MessageList::MessageHeightChanged(int oldHeight, int newHeight, bool toStart)
