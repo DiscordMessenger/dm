@@ -232,8 +232,9 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 			SetDlgItemText(hwndDlg, IDC_EDIT_DISCORDAPI, tstrAPI);
 			SetDlgItemText(hwndDlg, IDC_EDIT_DISCORDCDN, tstrCDN);
 
-			CheckDlgButton(hwndDlg, IDC_ENABLE_TLS_CHECKS, GetLocalSettings()->EnableTLSVerification() ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_CHECK_UPDATES, GetLocalSettings()->CheckUpdates() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_ENABLE_TLS_CHECKS,  GetLocalSettings()->EnableTLSVerification() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_CHECK_UPDATES,      GetLocalSettings()->CheckUpdates()          ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_TOGGLE_XSUPERPROPS, GetLocalSettings()->AddExtraHeaders()       ? BST_CHECKED : BST_UNCHECKED);
 
 			free(tstrAPI);
 			free(tstrCDN);
@@ -454,6 +455,12 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 						case IDC_CHECK_UPDATES:
 						{
 							GetLocalSettings()->SetCheckUpdates(IsDlgButtonChecked(hWnd, IDC_CHECK_UPDATES));
+							break;
+						}
+
+						case IDC_TOGGLE_XSUPERPROPS:
+						{
+							GetLocalSettings()->SetAddExtraHeaders(IsDlgButtonChecked(hWnd, IDC_TOGGLE_XSUPERPROPS));
 							break;
 						}
 

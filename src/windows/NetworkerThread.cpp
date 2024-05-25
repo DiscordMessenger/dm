@@ -30,6 +30,11 @@ static bool g_bQuittingFromSSLError;
 
 int g_latestSSLError = 0; // HACK - used by httplib.h, to debug some weird issue
 
+bool AddExtraHeaders()
+{
+	return GetLocalSettings()->AddExtraHeaders();
+}
+
 int NetRequest::Priority() const
 {
 	int prio = 0;
@@ -205,12 +210,16 @@ void NetworkerThread::FulfillRequest(NetRequest& req)
 
 	Headers headers;
 	headers.insert(std::make_pair("User-Agent", GetClientConfig()->GetUserAgent()));
-	headers.insert(std::make_pair("X-Super-Properties", GetClientConfig()->GetSerializedBase64Blob()));
-	headers.insert(std::make_pair("X-Discord-Timezone", GetClientConfig()->GetTimezone()));
-	headers.insert(std::make_pair("X-Discord-Locale", GetClientConfig()->GetLocale()));
-	headers.insert(std::make_pair("Sec-Ch-Ua", GetClientConfig()->GetSecChUa()));
-	headers.insert(std::make_pair("Sec-Ch-Ua-Mobile", "?0"));
-	headers.insert(std::make_pair("Sec-Ch-Ua-Platform", GetClientConfig()->GetOS()));
+
+	if (AddExtraHeaders())
+	{
+		headers.insert(std::make_pair("X-Super-Properties", GetClientConfig()->GetSerializedBase64Blob()));
+		headers.insert(std::make_pair("X-Discord-Timezone", GetClientConfig()->GetTimezone()));
+		headers.insert(std::make_pair("X-Discord-Locale", GetClientConfig()->GetLocale()));
+		headers.insert(std::make_pair("Sec-Ch-Ua", GetClientConfig()->GetSecChUa()));
+		headers.insert(std::make_pair("Sec-Ch-Ua-Mobile", "?0"));
+		headers.insert(std::make_pair("Sec-Ch-Ua-Platform", GetClientConfig()->GetOS()));
+	}
 
 	if (req.authorization.size())
 	{
