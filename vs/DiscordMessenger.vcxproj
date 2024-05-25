@@ -465,6 +465,7 @@
     <ClInclude Include="..\src\discord\Channel.hpp" />
     <ClInclude Include="..\src\discord\ContentType.hpp" />
     <ClInclude Include="..\src\discord\DiscordAPI.hpp" />
+    <ClInclude Include="..\src\discord\DiscordClientConfig.hpp" />
     <ClInclude Include="..\src\discord\DiscordInstance.hpp" />
     <ClInclude Include="..\src\discord\DiscordRequest.hpp" />
     <ClInclude Include="..\src\discord\Emoji.hpp" />
@@ -539,6 +540,7 @@
     <ClCompile Include="..\deps\mwas\src\reimpl.cpp" />
     <ClCompile Include="..\src\discord\Channel.cpp" />
     <ClCompile Include="..\src\discord\DiscordAPI.cpp" />
+    <ClCompile Include="..\src\discord\DiscordClientConfig.cpp" />
     <ClCompile Include="..\src\discord\DiscordInstance.cpp" />
     <ClCompile Include="..\src\discord\Emoji.cpp" />
     <ClCompile Include="..\src\discord\FormattedText.cpp" />

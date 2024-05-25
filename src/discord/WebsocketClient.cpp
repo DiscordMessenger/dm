@@ -1,4 +1,5 @@
 #include "WebsocketClient.hpp"
+#include "DiscordClientConfig.hpp"
 #include "Frontend.hpp"
 #include "Util.hpp"
 #include "LocalSettings.hpp"
@@ -216,7 +217,7 @@ int WebsocketClient::Connect(const std::string& uri)
 		return -1;
 	}
 
-	con->append_header("User-Agent", GetFrontend()->GetUserAgent());
+	con->append_header("User-Agent", GetClientConfig()->GetUserAgent());
 	con->append_header("Origin", "https://discord.com");
 
 	int newID = m_nextId++;
