@@ -18,6 +18,12 @@ account.
 
 See https://twitter.com/discord/status/1229357198918197248.
 
+## Discord Server
+
+A Discord server about this client can be joined here: https://discord.gg/cEDjgDbxJj
+
+###### Note, you will need to use an official client to accept invitations currently. This may change in the future.
+
 ## Screenshots
 
 ![Windows 2000 screenshot](doc/ss_2000.png)
@@ -126,11 +132,11 @@ section.
 - Viewing member list in servers (2)
 - Viewing pinned messages in server
 - Embeds (6)
+- Showing profile pictures in DM list
 
 ### Unimplemented but planned
 
 - Friends list
-- Showing profile pictures in DM list
 - Viewing member list in group messages and DMs
 - Dark mode on modern systems (3)
 - Using an asynchronous HTTP library (4)
