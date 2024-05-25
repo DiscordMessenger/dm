@@ -53,22 +53,22 @@ static HICON g_ReplyPieceIcon;
 
 static const int g_WelcomeTextIds[] =
 {
-	0, IDS_WELCOME_001_R,
-	0, IDS_WELCOME_002_R,
-	IDS_WELCOME_003_L, IDS_WELCOME_003_R,
-	IDS_WELCOME_004_L, IDS_WELCOME_004_R,
-	0, IDS_WELCOME_005_R,
-	0, IDS_WELCOME_006_R,
-	0, IDS_WELCOME_007_R,
-	IDS_WELCOME_008_L, IDS_WELCOME_008_R,
-	0, IDS_WELCOME_009_R,
-	IDS_WELCOME_010_L, IDS_WELCOME_EXCLAM,
-	IDS_WELCOME_011_L, IDS_WELCOME_PERIOD,
-	IDS_WELCOME_012_L, IDS_WELCOME_PERIOD,
-	IDS_WELCOME_013_L, IDS_WELCOME_EXCLAM,
+	IDS_WELCOME_01,
+	IDS_WELCOME_02,
+	IDS_WELCOME_03,
+	IDS_WELCOME_04,
+	IDS_WELCOME_05,
+	IDS_WELCOME_06,
+	IDS_WELCOME_07,
+	IDS_WELCOME_08,
+	IDS_WELCOME_09,
+	IDS_WELCOME_10,
+	IDS_WELCOME_11,
+	IDS_WELCOME_12,
+	IDS_WELCOME_13,
 };
 
-static const int g_WelcomeTextCount = 13;
+static const int g_WelcomeTextCount = _countof(g_WelcomeTextIds);
 
 MessageList::MessageList()
 {
@@ -1554,12 +1554,33 @@ void MessageList::DetermineMessageData(
 	{
 		case MessageType::USER_JOIN:
 		{
-			int welcomeTextIndex = ExtractTimestamp(id) % g_WelcomeTextCount;
-			int left  = g_WelcomeTextIds[welcomeTextIndex * 2 + 0];
-			int right = g_WelcomeTextIds[welcomeTextIndex * 2 + 1];
-			messagePart1 = left  == 0 ? TEXT("") : TmGetTString(left);
-			messagePart2 = right == 0 ? TEXT("") : TmGetTString(right);
 			icon = IDI_USER_JOIN;
+
+			int welcomeTextIndex = ExtractTimestamp(id) % g_WelcomeTextCount;
+
+			LPCTSTR tstr = TmGetTString(g_WelcomeTextIds[welcomeTextIndex]);
+			size_t slen = _tcslen(tstr);
+			freedStringSpace = (LPTSTR) calloc(slen + 1, sizeof(TCHAR));
+			if (!freedStringSpace) {
+				messagePart1 = TEXT("Yer' probably outta memory, duuuude! But ");
+				messagePart2 = TEXT("joined.");
+				break;
+			}
+
+			_tcscpy(freedStringSpace, tstr);
+
+			messagePart1 = freedStringSpace;
+			messagePart2 = TEXT(" Oh no!");
+
+			// find the dollar sign, place a null character and set part 2 to the right
+			for (size_t i = 0; i < slen; i++) {
+				if (freedStringSpace[i] == (TCHAR) '$') {
+					freedStringSpace[i] =  (TCHAR) '\0';
+					messagePart2 = &freedStringSpace[i + 1];
+					break;
+				}
+			}
+
 			break;
 		}
 

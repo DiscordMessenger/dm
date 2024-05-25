@@ -1381,7 +1381,7 @@ void DiscordInstance::ParseChannel(Channel& c, nlohmann::json& chan, int& num)
 			{
 				assert(c.m_channelType == Channel::GROUPDM);
 
-				int recCount = 0;
+				int recCount = 1;
 				if (chan["recipient_ids"].is_array())
 					recCount += chan["recipient_ids"].size();
 				if (chan["recipients"].is_array())

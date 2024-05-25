@@ -907,32 +907,32 @@ BEGIN
     IDS_REMOVED_FROM_GROUP  " removed someone from the group."
     IDS_ADDED_TO_GROUP      " added someone to the group."
     IDS_PINNED_MESSAGE      " pinned a message to this channel."
-    IDS_WELCOME_001_R       " joined the party."
+    IDS_WELCOME_01          "$ joined the party."
 END
 
 STRINGTABLE
 BEGIN
-    IDS_WELCOME_002_R       " is here."
-    IDS_WELCOME_003_L       "Welcome, "
-    IDS_WELCOME_003_R       ". We hope you brought pizza."
-    IDS_WELCOME_004_L       "A wild "
-    IDS_WELCOME_004_R       " appeared."
-    IDS_WELCOME_005_R       " just landed."
-    IDS_WELCOME_006_R       " just slid into the server!"
-    IDS_WELCOME_007_R       " just showed up!"
-    IDS_WELCOME_008_L       "Welcome "
-    IDS_WELCOME_008_R       ". Say hi!"
-    IDS_WELCOME_009_R       " hopped into the server."
-    IDS_WELCOME_010_L       "Everyone welcome "
-    IDS_WELCOME_011_L       "Glad you're here, "
-    IDS_WELCOME_012_L       "Good to see you, "
-    IDS_WELCOME_013_L       "Yay you made it, "
-    IDS_WELCOME_EXCLAM      "!"
-END
-
-STRINGTABLE
-BEGIN
+    IDS_WELCOME_02          "$ is here."
+    IDS_WELCOME_03          "Welcome, $. We hope you brought pizza."
+    IDS_WELCOME_04          "A wild $ appeared."
+    IDS_WELCOME_05          "$ just landed."
+    IDS_WELCOME_06          "$ just slid into the server!"
+    IDS_WELCOME_07          "$ just showed up!"
+    IDS_WELCOME_08          "Welcome $. Say hi!"
+    IDS_WELCOME_09          "$ hopped into the server."
+    IDS_WELCOME_10          "Everyone welcome $!"
+    IDS_WELCOME_11          "Glad you're here, $."
+    IDS_WELCOME_12          "Good to see you, $."
+    IDS_WELCOME_13          "Yay you made it, $!"
     IDS_WELCOME_PERIOD      "."
+    IDS_UNUSED_1            "b"
+    IDS_UNUSED_2            "c"
+    IDS_UNUSED_3            "d"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_UNUSED_4            "e"
     IDS_SAVE_IMAGE          "Save image as..."
     IDS_SAVE_FILE_AS_TITLE  "Save File"
     IDS_ERROR_ACCESSING_FILE "The resource %s could not be accessed.\n\n%s"

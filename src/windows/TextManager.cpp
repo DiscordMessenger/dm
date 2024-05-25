@@ -27,12 +27,14 @@ void TextManager::LoadIfNeeded(int id)
 		return;
 
 	int strLen = LoadString(g_hInstance, id, loadBuffer, _countof(loadBuffer));
-	if (!strLen)
-		lstrcpy(loadBuffer, TEXT("[string doesn't exist]"));
+	if (!strLen) {
+		_tcscpy(loadBuffer, TEXT("[string doesn't exist]"));
+		strLen = int(_tcslen(loadBuffer));
+	}
 
-	m_loadedStrings[id] = MakeStringFromUnicodeString(loadBuffer);
+	m_loadedStrings[id] = MakeStringFromTString(loadBuffer);
 
 	TCHAR* tchr = new TCHAR[strLen + 1];
-	lstrcpy(tchr, loadBuffer);
+	_tcscpy(tchr, loadBuffer);
 	m_loadedTStrings[id] = tchr;
 }
