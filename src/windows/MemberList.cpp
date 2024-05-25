@@ -81,6 +81,12 @@ void MemberList::Update()
 	Guild* pGuild = GetDiscordInstance()->GetGuild(m_guild);
 	assert(pGuild);
 
+	// Preserve scroll position
+	SCROLLINFO si{};
+	si.cbSize = sizeof si;
+	si.fMask = SIF_POS;
+	GetScrollInfo(m_listHwnd, SB_VERT, &si);
+
 	// Add each group
 	for (auto& mem : pGuild->m_members)
 	{
@@ -131,6 +137,9 @@ void MemberList::Update()
 
 		ListView_InsertItem(m_listHwnd, &lvi);
 	}
+
+	// Now restore the position
+	ListView_Scroll(m_listHwnd, 0, si.nPos);
 
 	StopUpdate();
 }
