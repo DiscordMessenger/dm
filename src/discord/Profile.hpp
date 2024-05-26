@@ -13,12 +13,15 @@ struct Profile
 	std::string m_globalName;
 	int m_discrim = 0;
 	std::string m_email;
+	std::string m_pronouns = "";
 	std::string m_bio = "";
-	std::string m_status = "";// "(i) User is suspected to be COOL as SHIT. Please report any COOL activity to Discord staff.";
+	std::string m_status = "";
+	std::string m_note = "";
 	std::string m_avatarlnk = "";
 	eActiveStatus m_activeStatus = STATUS_OFFLINE;
 	bool m_bUsingDefaultData = true;
 	bool m_bIsBot = false;
+	bool m_bNoteFetched = false;
 
 	std::map<Snowflake, GuildMember> m_guildMembers;
 

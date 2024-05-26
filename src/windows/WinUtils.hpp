@@ -29,6 +29,7 @@ struct NetRequest;
 
 // note: this must be free()'d!
 LPTSTR ConvertCppStringToTString(const std::string& str, size_t* lenOut = NULL);
+LPTSTR ConvertToTStringAddCR(const std::string& str, size_t* lenOut = NULL);
 void ConvertCppStringToTCharArray(const std::string& sstr, TCHAR* buff, size_t szMax);
 
 std::string MakeStringFromUnicodeString(LPCWSTR wstr);

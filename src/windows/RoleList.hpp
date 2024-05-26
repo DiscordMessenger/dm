@@ -27,6 +27,7 @@ public:
 	HWND m_hwnd = NULL;
 	int m_scrollY = 0;
 	int m_scrollHeight = 0;
+	bool m_bHasBorder = false;
 
 	std::vector<RoleItem> m_items;
 
@@ -38,6 +39,7 @@ public:
 	void AddRole(GuildRole& role);
 	void ClearRoles();
 	void LayoutRoles();
+	int GetRolesHeight();
 
 public:
 	static WNDCLASS g_RoleListClass;
@@ -45,7 +47,7 @@ public:
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void InitializeClass();
 
-	static RoleList* Create(HWND hwnd, LPRECT pRect, int comboId = 0);
+	static RoleList* Create(HWND hwnd, LPRECT pRect, int comboId = 0, bool border = false, bool visible = true);
 
 private:
 	void DrawRole(HDC hdc, RoleItem* role);

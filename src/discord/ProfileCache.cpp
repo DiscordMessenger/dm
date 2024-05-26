@@ -44,6 +44,8 @@ Profile* ProfileCache::LookupProfile(Snowflake user, const std::string& username
 Profile* ProfileCache::LoadProfile(Snowflake user, nlohmann::json& jx)
 {
 	std::string str = jx.dump();
+	DbgPrintF("Loading profile for user %lld: %s", user, str.c_str());
+
 	Profile* pf = LookupProfile(user, "", "", "", false);
 
 	bool anythingChanged = false;
@@ -63,10 +65,13 @@ Profile* ProfileCache::LoadProfile(Snowflake user, nlohmann::json& jx)
 	pf->m_snowflake  = user;
 	pf->m_name       = GetUsername(userData);
 	pf->m_discrim    = userData.contains("discriminator") ? GetIntFromString(jx["discriminator"]) : 0;
-	pf->m_bio        = GetFieldSafe(userData, "bio");
 	pf->m_globalName = GetGlobalName(userData);
-	pf->m_bUsingDefaultData = false;
 	pf->m_bIsBot     = userData["bot"].is_boolean() ? bool(userData["bot"]) : false;
+
+	if (userData.contains("bio"))      pf->m_bio      = GetFieldSafe(userData, "bio");
+	if (userData.contains("pronouns")) pf->m_pronouns = GetFieldSafe(userData, "pronouns");
+
+	pf->m_bUsingDefaultData = false;
 
 	if (userData.contains("email"))
 		pf->m_email = GetFieldSafe(userData, "email");

@@ -218,6 +218,20 @@ LPTSTR ConvertCppStringToTString(const std::string& sstr, size_t* lenOut)
 	return (LPTSTR)str;
 }
 
+LPTSTR ConvertToTStringAddCR(const std::string& str, size_t* lenOut)
+{
+	std::string str2;
+	str2.reserve(str.size() + 16);
+
+	for (auto& c : str) {
+		if (c == '\n')
+			str2 += '\r';
+		str2 += c;
+	}
+
+	return ConvertCppStringToTString(str2, lenOut);
+}
+
 void ConvertCppStringToTCharArray(const std::string& sstr, TCHAR* buff, size_t szMax)
 {
 	int len = MultiByteToWideChar(CP_UTF8, 0, sstr.c_str(), -1, buff, (int)szMax - 1);

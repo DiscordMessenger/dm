@@ -46,7 +46,7 @@ void RoleList::LayoutRoles()
 	GetClientRect(m_hwnd, &rect);
 
 	// position of next role item
-	const int initX = 2;
+	const int initX = m_bHasBorder ? 2 : 0;
 	POINT point = { initX, initX };
 
 	const int vertGap = 6;
@@ -82,7 +82,7 @@ void RoleList::LayoutRoles()
 		point.x = realRect.right + 2;
 	}
 
-	m_scrollHeight = point.y + rowHeight + 4;
+	m_scrollHeight = point.y + rowHeight + (m_bHasBorder ? 4 : 0);
 
 	ReleaseDC(m_hwnd, hdc);
 
@@ -95,6 +95,17 @@ void RoleList::LayoutRoles()
 	si.nMax = m_scrollHeight; // Adjust this value depending on the total height of child controls
 	si.nPage = rcClient.bottom - rcClient.top; // Set to the height of the client area
 	SetScrollInfo(m_hwnd, SB_VERT, &si, TRUE);
+}
+
+int RoleList::GetRolesHeight()
+{
+	int top = INT_MAX, btm = INT_MIN;
+	for (auto& item : m_items) {
+		top = std::min(top, (int) item.m_rect.top);
+		btm = std::max(btm, (int) item.m_rect.bottom);
+	}
+
+	return btm - top;
 }
 
 void RoleList::DrawRole(HDC hdc, RoleItem* role)
@@ -368,17 +379,18 @@ void RoleList::InitializeClass()
 	RegisterClass(&wc);
 }
 
-RoleList* RoleList::Create(HWND hwnd, LPRECT pRect, int comboId)
+RoleList* RoleList::Create(HWND hwnd, LPRECT pRect, int comboId, bool border, bool visible)
 {
 	RoleList* newThis = new RoleList;
 
 	int width = pRect->right - pRect->left, height = pRect->bottom - pRect->top;
 
+	newThis->m_bHasBorder = border;
 	newThis->m_hwnd = CreateWindowEx(
-		WS_EX_CLIENTEDGE,
+		border ? WS_EX_CLIENTEDGE : 0,
 		T_ROLE_LIST_CLASS,
 		NULL,
-		WS_CHILD | WS_VISIBLE | WS_VSCROLL,
+		WS_CHILD | WS_VSCROLL | (visible ? WS_VISIBLE : 0),
 		pRect->left, pRect->top,
 		width, height,
 		hwnd,

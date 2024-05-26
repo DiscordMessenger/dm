@@ -21,11 +21,36 @@ ProfileView::~ProfileView()
 		assert(b && "was window deleted?");
 		m_hwnd = NULL;
 	}
+
+	if (m_name) {
+		free(m_name);
+		m_name = NULL;
+	}
+
+	if (m_username) {
+		free(m_username);
+		m_username = NULL;
+	}
 }
 
 void ProfileView::Update()
 {
 	InvalidateRect(m_hwnd, NULL, false);
+}
+
+void ProfileView::SetData(LPTSTR name, LPTSTR username, eActiveStatus astatus, const std::string& avlnk)
+{
+	assert(!m_bAutonomous);
+
+	if (m_name) free(m_name);
+	if (m_username) free(m_username);
+
+	m_name = name;
+	m_username = username;
+	m_avatarLnk = avlnk;
+	m_activeStatus = astatus;
+
+	Update();
 }
 
 LRESULT CALLBACK ProfileView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -55,13 +80,47 @@ LRESULT CALLBACK ProfileView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			HDC hdc =
 			BeginPaint(hWnd, &ps);
 
+			LPTSTR sName, sUserName;
+			bool freeNameAndUserName = false;
+			std::string avatarLink;
+			eActiveStatus activeStatus;
+
+			if (pThis->m_bAutonomous)
+			{
+				Profile* pf = GetDiscordInstance()->GetProfile();
+
+				std::string nameText = pf->m_discrim ? pf->m_name : pf->m_globalName;
+				sName = ConvertCppStringToTString(nameText);
+
+				std::string str;
+				if (pf->m_status.size())
+					str = pf->m_status;
+				else if (pf->m_discrim)
+					str = "#" + FormatDiscrim(pf->m_discrim);
+				else
+					str = pf->m_name;
+
+				sUserName = ConvertCppStringToTString(str);
+
+				activeStatus = pf->m_activeStatus;
+				avatarLink = pf->m_avatarlnk;
+				freeNameAndUserName = true;
+			}
+			else
+			{
+				sName = pThis->m_name;
+				sUserName = pThis->m_username;
+				activeStatus = pThis->m_activeStatus;
+				avatarLink = pThis->m_avatarLnk;
+				freeNameAndUserName = false;
+			}
+
 			bool hasAlpha = false;
-			Profile* pf = GetDiscordInstance()->GetProfile();
-			HBITMAP hbm = GetAvatarCache()->GetBitmap(pf->m_avatarlnk, hasAlpha);
+			HBITMAP hbm = GetAvatarCache()->GetBitmap(avatarLink, hasAlpha);
 			int pfpSize = GetProfilePictureSize();
 			int pfpBorderSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 			int pfpBorderSizeDrawn = GetProfileBorderSize();
-			int pfpX = rect.left + ScaleByDPI(8);
+			int pfpX = rect.left + ScaleByDPI(6);
 			int pfpY = rect.top + ScaleByDPI(6) + (rect.bottom - rect.top - pfpBorderSize) / 2;
 
 			RECT rcProfile = rect;
@@ -70,38 +129,29 @@ LRESULT CALLBACK ProfileView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			DrawIconEx(hdc, pfpX - ScaleByDPI(6), pfpY - ScaleByDPI(4), g_ProfileBorderIcon, pfpBorderSizeDrawn, pfpBorderSizeDrawn, 0, NULL, DI_NORMAL | DI_COMPAT);
 			DrawBitmap(hdc, hbm, pfpX, pfpY, NULL, CLR_NONE, pfpSize, 0, hasAlpha);
 
-			DrawActivityStatus(hdc, pfpX, pfpY, pf->m_activeStatus);
+			DrawActivityStatus(hdc, pfpX, pfpY, activeStatus);
 
 			COLORREF clrOld = SetBkColor(hdc, GetSysColor(PROFILE_VIEW_COLOR));
 			COLORREF cltOld = SetTextColor(hdc, GetSysColor(COLOR_MENUTEXT));
 			HGDIOBJ objOld = SelectObject(hdc, g_AccountInfoFont);
 
-			std::string nameText = pf->m_discrim ? pf->m_name : pf->m_globalName;
-			LPTSTR ctstr = ConvertCppStringToTString(nameText);
 			RECT rcText = rect;
 			rcText.left = pfpX + pfpBorderSize - ScaleByDPI(6);
 			rcText.bottom = (rect.top + rect.bottom) / 2;
-			DrawText(hdc, ctstr, -1, &rcText, DT_BOTTOM | DT_SINGLELINE | DT_WORD_ELLIPSIS);
-
-			free(ctstr);
+			DrawText(hdc, sName, -1, &rcText, DT_BOTTOM | DT_SINGLELINE | DT_WORD_ELLIPSIS);
 
 			SelectObject(hdc, g_AccountTagFont);
-			std::string str;
-			if (pf->m_status.size())
-				str = pf->m_status;
-			else if (pf->m_discrim)
-				str = "#" + FormatDiscrim(pf->m_discrim);
-			else
-				str = pf->m_name;
-
-			ctstr = ConvertCppStringToTString(str);
 
 			rcText = rect;
 			rcText.left = pfpX + pfpBorderSize - ScaleByDPI(6);
 			rcText.top = (rect.top + rect.bottom) / 2;
-			DrawText(hdc, ctstr, -1, &rcText, DT_TOP | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+			DrawText(hdc, sUserName, -1, &rcText, DT_TOP | DT_SINGLELINE | DT_WORD_ELLIPSIS);
 
-			free(ctstr);
+			if (freeNameAndUserName) {
+				free(sName);
+				free(sUserName);
+			}
+
 			SelectObject(hdc, objOld);
 			SetTextColor(hdc, cltOld);
 			SetBkColor(hdc, clrOld);
@@ -126,9 +176,10 @@ void ProfileView::InitializeClass()
 	RegisterClass(&wc);
 }
 
-ProfileView* ProfileView::Create(HWND hwnd, LPRECT pRect)
+ProfileView* ProfileView::Create(HWND hwnd, LPRECT pRect, int id, bool autonomous)
 {
 	ProfileView* newThis = new ProfileView;
+	newThis->m_bAutonomous = autonomous;
 
 	int width = pRect->right - pRect->left, height = pRect->bottom - pRect->top;
 
@@ -140,7 +191,7 @@ ProfileView* ProfileView::Create(HWND hwnd, LPRECT pRect)
 		pRect->left, pRect->top,
 		width, height,
 		hwnd,
-		(HMENU)CID_MESSAGELIST,
+		(HMENU) id,
 		g_hInstance,
 		newThis
 	);

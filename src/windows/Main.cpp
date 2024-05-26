@@ -994,7 +994,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pStatusBar   = StatusBar::Create(hWnd);
 			g_pMessageList = MessageList::Create(hWnd, &rect);
 			g_pChannelView = ChannelView::Create(hWnd, &rect);
-			g_pProfileView = ProfileView::Create(hWnd, &rect);
+			g_pProfileView = ProfileView::Create(hWnd, &rect, CID_PROFILEVIEW, true);
 			g_pGuildHeader = GuildHeader::Create(hWnd, &rect);
 			g_pGuildLister = GuildLister::Create(hWnd, &rect);
 			g_pMemberList  = MemberList ::Create(hWnd, &rect);
