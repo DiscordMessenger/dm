@@ -99,7 +99,7 @@ void RoleList::LayoutRoles()
 
 int RoleList::GetRolesHeight()
 {
-	int top = INT_MAX, btm = INT_MIN;
+	int top = 1000000000, btm = -1000000000;
 	for (auto& item : m_items) {
 		top = std::min(top, (int) item.m_rect.top);
 		btm = std::max(btm, (int) item.m_rect.bottom);
