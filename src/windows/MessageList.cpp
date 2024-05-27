@@ -3887,11 +3887,11 @@ void MessageList::OnUpdateEmoji(Snowflake sf)
 	// TODO: Only invalidate the emoji that were updated
 	for (auto& msg : m_messages)
 	{
-		if (!msg.m_message.IsFormatted())
-			msg.m_message.RunForEachCustomEmote(&InvalidateEmote, (void*) 0);
+		if (msg.m_message.IsFormatted())
+			msg.m_message.RunForEachCustomEmote(&InvalidateEmote, (void*) rgn);
 	}
 
-	InvalidateRgn(m_hwnd, rgn, TRUE);
+	InvalidateRgn(m_hwnd, rgn, FALSE);
 	DeleteRgn(rgn);
 }
 

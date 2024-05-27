@@ -3,8 +3,9 @@
 #include <stack>
 #include <algorithm>
 #include "RectAndPoint.hpp"
+#include "Util.hpp"
 
-#define USE_STL_REGEX //-- way slower than Boost Regex
+//#define USE_STL_REGEX //-- way slower than Boost Regex
 
 #ifdef USE_STL_REGEX
 #include <regex>
@@ -604,7 +605,7 @@ void FormattedText::Draw(DrawingContext* context, int offsetY)
 
 void FormattedText::RunForEachCustomEmote(FunctionEachEmote func, void* context)
 {
-	if (m_bFormatted)
+	if (!m_bFormatted)
 		return;
 
 	for (auto& w : m_words)
