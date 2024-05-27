@@ -66,13 +66,29 @@ Profile* ProfileCache::LoadProfile(Snowflake user, nlohmann::json& jx)
 	pf->m_name       = GetUsername(userData);
 	pf->m_discrim    = userData.contains("discriminator") ? GetIntFromString(jx["discriminator"]) : 0;
 	pf->m_globalName = GetGlobalName(userData);
-	pf->m_bIsBot     = userData["bot"].is_boolean() ? bool(userData["bot"]) : false;
-
-	if (userData.contains("bio"))      pf->m_bio      = GetFieldSafe(userData, "bio");
-	if (userData.contains("pronouns")) pf->m_pronouns = GetFieldSafe(userData, "pronouns");
-
+	pf->m_bIsBot     = GetFieldSafeBool(userData, "bot", false);
 	pf->m_bUsingDefaultData = false;
 
+	if (userData.contains("bio")) {
+		pf->m_bio = GetFieldSafe(userData, "bio");
+		pf->m_bExtraDataFetched = true;
+	}
+	if (userData.contains("pronouns")) {
+		pf->m_pronouns = GetFieldSafe(userData, "pronouns");
+		pf->m_bExtraDataFetched = true;
+	}
+	if (jx.contains("user_profile")) {
+		pf->m_bExtraDataFetched = true;
+
+		// TODO: I think this is the guild profile
+		auto& userProf = jx["user_profile"];
+		if (userProf.contains("pronouns"))
+			pf->m_pronouns = GetFieldSafe(userProf, "pronouns");
+		if (userProf.contains("bio"))
+			pf->m_bio = GetFieldSafe(userProf, "bio");
+	}
+
+	// Used only for the user's own profile!
 	if (userData.contains("email"))
 		pf->m_email = GetFieldSafe(userData, "email");
 
@@ -129,10 +145,13 @@ void ProfileCache::ForgetProfile(Snowflake user)
 		m_profileSets.erase(iter);
 }
 
-void ProfileCache::RequestLoadProfile(Snowflake user)
+void ProfileCache::RequestExtraData(Snowflake user, Snowflake guild, bool mutualGuilds, bool mutualFriends)
 {
-	DbgPrintF("Request load for profile %lld", user);
+	RequestLoadProfile(user, guild, mutualGuilds, mutualFriends);
+}
 
+void ProfileCache::RequestLoadProfile(Snowflake user, Snowflake guild, bool mutualGuilds, bool mutualFriends)
+{
 	if (!user)
 		return;
 
@@ -144,8 +163,10 @@ void ProfileCache::RequestLoadProfile(Snowflake user)
 	std::string additionalData = "";
 	std::string userSource = "";
 	
-	additionalData += "&with_mutual_guilds=true";
-	additionalData += "&with_mutual_friends_count=false";
+	additionalData += "&with_mutual_guilds=" + std::string(mutualGuilds ? "true" : "false");
+	additionalData += "&with_mutual_friends=" + std::string(mutualFriends ? "true" : "false");
+	additionalData += "&with_mutual_friends_count=" + std::string(mutualFriends ? "true" : "false");
+	if (guild) additionalData += "&guild_id=" + std::to_string(guild);
 
 	if (!additionalData.empty() && additionalData[0] == '&')
 		additionalData[0] = '?';

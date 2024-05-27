@@ -27,8 +27,11 @@ public:
 	// Forget a profile.
 	void ForgetProfile(Snowflake user);
 
+	// Request extra data from a profile.
+	void RequestExtraData(Snowflake user, Snowflake guild = 0, bool mutualGuilds = true, bool mutualFriends = true);
+
 private:
-	void RequestLoadProfile(Snowflake user);
+	void RequestLoadProfile(Snowflake user, Snowflake guild = 0, bool mutualGuilds = true, bool mutualFriends = true);
 
 	std::map<Snowflake, Profile> m_profileSets;
 	std::set<Snowflake> m_processingRequests;

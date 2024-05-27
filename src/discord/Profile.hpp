@@ -8,20 +8,28 @@
 
 struct Profile
 {
+	// Basic data. Provided with almost every user object.
+	bool m_bUsingDefaultData = true;
 	Snowflake m_snowflake = 0;
 	std::string m_name;
 	std::string m_globalName;
 	int m_discrim = 0;
-	std::string m_email;
-	std::string m_pronouns = "";
-	std::string m_bio = "";
-	std::string m_status = "";
-	std::string m_note = "";
+	std::string m_email; // Used only for the user's own profile!
 	std::string m_avatarlnk = "";
-	eActiveStatus m_activeStatus = STATUS_OFFLINE;
-	bool m_bUsingDefaultData = true;
 	bool m_bIsBot = false;
+
+	// Note
 	bool m_bNoteFetched = false;
+	std::string m_note = "";
+
+	// Extra data. Loaded as part of a "PROFILE" request.
+	bool m_bExtraDataFetched = false;
+	std::string m_bio = "";
+	std::string m_pronouns = "";
+
+	// Activity data. This is updated by presence updates.
+	eActiveStatus m_activeStatus = STATUS_OFFLINE;
+	std::string m_status = "";
 
 	std::map<Snowflake, GuildMember> m_guildMembers;
 

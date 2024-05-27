@@ -3,7 +3,7 @@
 #include "RoleList.hpp"
 
 #define ADD_NOTES
-#define ADD_MESSAGE
+//#define ADD_MESSAGE
 
 HWND g_ProfilePopoutHwnd;
 Snowflake g_ProfilePopoutUser;
@@ -39,6 +39,10 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 	if (!pProf) {
 		EndDialog(hWnd, 0);
 		return TRUE;
+	}
+
+	if (!pProf->m_bExtraDataFetched) {
+		GetProfileCache()->RequestExtraData(g_ProfilePopoutUser, g_ProfilePopoutGuild);
 	}
 
 	Guild* gld = GetDiscordInstance()->GetGuild(g_ProfilePopoutGuild);
@@ -97,7 +101,7 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 	DrawText2(hdc, status, -1, &rcStatus, singleLineFlags);
 	
 	rcAboutMe = rcMeasureTemplate;
-	rcAboutMe.right -= groupBoxBorder * 2;
+	rcAboutMe.right -= groupBoxBorder * 2 + ScaleByDPI(20);
 	DrawText2(hdc, bio, -1, &rcAboutMe, editControlFlags);
 
 	rcMemberSinceGuild = rcMeasureTemplate;
@@ -226,6 +230,7 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 	hChild = GetDlgItem(hWnd, IDC_PROFILE_PRONOUNS);
 	if (rcPronouns.bottom) {
 		MoveWindow(hChild, pos.x, pos.y, rcPronouns.right, rcPronouns.bottom, TRUE);
+		ShowWindow(hChild, SW_SHOW);
 		SetWindowText(hChild, pronouns);
 		SetWindowFont(hChild, g_MessageTextFont, TRUE);
 		pos.x += rcPronouns.right + pronounStatusGap;
@@ -237,6 +242,7 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 	hChild = GetDlgItem(hWnd, IDC_PROFILE_STATUS);
 	if (rcStatus.bottom) {
 		MoveWindow(hChild, pos.x, pos.y, rcStatus.right, rcStatus.bottom, TRUE);
+		ShowWindow(hChild, SW_SHOW);
 		SetWindowFont(hChild, g_MessageTextFont, TRUE);
 		SetWindowText(hChild, status);
 	}
@@ -251,6 +257,7 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 
 	// Move the gap
 	hChild = GetDlgItem(hWnd, IDC_STATIC_GAP);
+	ShowWindow(hChild, SW_SHOW);
 	MoveWindow(hChild, pos.x, pos.y + (separatorSize - 2) / 2, fullSize.cx - windowBorder * 2, 2, TRUE);
 	pos.y += separatorSize;
 	
@@ -259,10 +266,12 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 	if (rcAboutMe.bottom)
 	{
 		MoveWindow(hChild, pos.x, pos.y, fullWidth, rcAboutMe.bottom + rcGroupBox.bottom, TRUE);
+		ShowWindow(hChild, SW_SHOW);
 		SetWindowFont(hChild, g_MessageTextFont, TRUE);
 
 		hChild = GetDlgItem(hWnd, IDC_EDIT_ABOUTME);
-		MoveWindow(hChild, pos.x + groupBoxBorder, pos.y + rcGroupBox.bottom - groupBoxBorder, rcAboutMe.right, rcAboutMe.bottom, TRUE);
+		MoveWindow(hChild, pos.x + groupBoxBorder, pos.y + rcGroupBox.bottom - groupBoxBorder, inGroupBoxWidth, rcAboutMe.bottom, TRUE);
+		ShowWindow(hChild, SW_SHOW);
 		SetWindowFont(hChild, g_MessageTextFont, TRUE);
 		SetWindowText(hChild, bio);
 
@@ -279,6 +288,7 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 	if (rcMemberSinceFull.bottom) // eh - probably always true
 	{
 		SetWindowFont(hChild, g_MessageTextFont, TRUE);
+		ShowWindow(hChild, SW_SHOW);
 		MoveWindow(hChild, pos.x, pos.y, fullWidth, rcMemberSinceFull.bottom, TRUE);
 		LONG oldPosY = pos.y;
 		pos.y += rcGroupBox.bottom - groupBoxBorder;
@@ -288,6 +298,7 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 		if (rcMemberSinceGuild.bottom) {
 			assert(gld);
 			hChild = GetDlgItem(hWnd, IDC_ICON_GUILD);
+			ShowWindow(hChild, SW_SHOW);
 			MoveWindow(hChild, pos.x, pos.y, joinedAtIconSize, joinedAtIconSize, TRUE);
 			bool hasAlpha = false;
 			HBITMAP hbm = GetAvatarCache()->GetBitmap(gld->m_avatarlnk, hasAlpha);
@@ -334,9 +345,11 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 				DeleteDC(hdc3);
 				DeleteObject(hack);
 				ReleaseDC(hWnd, hdc);
+				ShowWindow(hChild, SW_SHOW);
 				SendMessage(hChild, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) g_hPopoutBitmap);
 			}
 			hChild = GetDlgItem(hWnd, IDC_GUILD_JOIN_DATE);
+			ShowWindow(hChild, SW_SHOW);
 			SetWindowText(hChild, gldJoinedAt);
 			SetWindowFont(hChild, g_MessageTextFont, TRUE);
 			MoveWindow(hChild, pos.x + joinedAtIconSize + ScaleByDPI(4), pos.y, rcMemberSinceGuild.right, rcMemberSinceGuild.bottom, TRUE);
@@ -354,9 +367,11 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 			else if (icsz <= 48) icsz = 48;
 			else icsz = 64;
 			hChild = GetDlgItem(hWnd, IDC_ICON_DISCORD);
+			ShowWindow(hChild, SW_SHOW);
 			MoveWindow(hChild, pos.x, pos.y, joinedAtIconSize, joinedAtIconSize, TRUE);
 			SendMessage(hChild, STM_SETIMAGE, IMAGE_ICON, (LPARAM) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)), IMAGE_ICON, icsz, icsz, LR_SHARED | LR_CREATEDIBSECTION));
 			hChild = GetDlgItem(hWnd, IDC_DISCORD_JOIN_DATE);
+			ShowWindow(hChild, SW_SHOW);
 			SetWindowText(hChild, dscJoinedAt);
 			SetWindowFont(hChild, g_MessageTextFont, TRUE);
 			MoveWindow(hChild, pos.x + joinedAtIconSize + ScaleByDPI(4), pos.y, rcMemberSinceDiscord.right, rcMemberSinceDiscord.bottom, TRUE);
@@ -382,6 +397,7 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 	if (gm && !gm->m_roles.empty() && gld)
 	{
 		hChild = GetDlgItem(hWnd, IDC_ROLE_GROUP);
+		ShowWindow(hChild, SW_SHOW);
 		SetWindowFont(hChild, g_MessageTextFont, TRUE);
 		MoveWindow(hChild, pos.x, pos.y, fullWidth, rcRoles.bottom + rcGroupBox.bottom, TRUE);
 		pos.y += rcGroupBox.bottom - groupBoxBorder;
@@ -397,10 +413,12 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 	// Add note text box.
 #ifdef ADD_NOTES
 	hChild = GetDlgItem(hWnd, IDC_NOTE_GROUP);
+	ShowWindow(hChild, SW_SHOW);
 	SetWindowFont(hChild, g_MessageTextFont, TRUE);
 	MoveWindow(hChild, pos.x, pos.y, fullWidth, rcNote.bottom + rcGroupBox.bottom, TRUE);
 
 	hChild = GetDlgItem(hWnd, IDC_NOTE_TEXT);
+	ShowWindow(hChild, SW_SHOW);
 	SetWindowFont(hChild, g_MessageTextFont, TRUE);
 	SetWindowText(hChild, note);
 	MoveWindow(hChild, pos.x + groupBoxBorder, pos.y + rcGroupBox.bottom - groupBoxBorder, inGroupBoxWidth, rcNote.bottom, TRUE);
@@ -413,10 +431,12 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 
 #ifdef ADD_MESSAGE
 	hChild = GetDlgItem(hWnd, IDC_MESSAGE_GROUP);
+	ShowWindow(hChild, SW_SHOW);
 	SetWindowFont(hChild, g_MessageTextFont, TRUE);
 	MoveWindow(hChild, pos.x, pos.y, fullWidth, rcMessage.bottom + rcGroupBox.bottom, TRUE);
 
 	hChild = GetDlgItem(hWnd, IDC_MESSAGE_TEXT);
+	ShowWindow(hChild, SW_SHOW);
 	SetWindowFont(hChild, g_MessageTextFont, TRUE);
 	MoveWindow(hChild, pos.x + groupBoxBorder, pos.y + rcGroupBox.bottom - groupBoxBorder, inGroupBoxWidth, rcMessage.bottom, TRUE);
 
@@ -464,8 +484,13 @@ BOOL CALLBACK ProfileViewerProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		}
 
 		case WM_INITDIALOG:
-		case WM_UPDATEPROFILEPOPOUT:
-			return ProfileViewerLayout(hWnd, g_ProfilePopoutSize);
+		case WM_UPDATEPROFILEPOPOUT: {
+			g_ProfilePopoutSize = {};
+			ProfileViewerLayout(hWnd, g_ProfilePopoutSize);
+			SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, g_ProfilePopoutSize.cx, g_ProfilePopoutSize.cy, SWP_NOACTIVATE | SWP_NOREPOSITION | SWP_NOZORDER | SWP_NOMOVE);
+			InvalidateRect(hWnd, NULL, TRUE);
+			break;
+		}
 
 		case WM_DESTROY:
 			g_ProfilePopoutHwnd = NULL;

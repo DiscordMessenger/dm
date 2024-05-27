@@ -614,7 +614,11 @@ void DiscordInstance::HandleRequest(void* pRequestPtr)
 			}
 			case PROFILE:
 			{
-				Snowflake userSF = GetSnowflake(j, "id");
+				Snowflake userSF = 0;
+				if (j.contains("user"))
+					userSF = GetSnowflake(j["user"], "id");
+				else
+					userSF = GetSnowflake(j, "id");
 				
 				GetProfileCache()->LoadProfile(userSF, j);
 				
