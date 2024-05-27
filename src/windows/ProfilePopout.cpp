@@ -560,11 +560,11 @@ void DeferredShowProfilePopout(const ShowProfilePopoutParams& params)
 	}
 
 	MoveWindow(g_ProfilePopoutHwnd, x, y, wndWidth, wndHeight, TRUE);
-	ShowWindow(g_ProfilePopoutHwnd, SW_SHOWNOACTIVATE);
+	//ShowWindow(g_ProfilePopoutHwnd, SW_SHOWNOACTIVATE);
 	
 	// NOTE: You need to disable the above ShowWindow to use this. Also, it's
 	// kind of broken, in that the message text box just doesn't render.
-	//AnimateWindow(g_ProfilePopoutHwnd, 200, AW_BLEND);
+	ri::AnimateWindow(g_ProfilePopoutHwnd, 200, AW_BLEND);
 }
 
 void ShowProfilePopout(Snowflake user, Snowflake guild, int x, int y, bool bRightJustify)
