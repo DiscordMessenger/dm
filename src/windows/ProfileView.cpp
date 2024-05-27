@@ -115,14 +115,14 @@ void ProfileView::Paint(HDC hdc)
 
 	RECT rcText = rect;
 	rcText.left = pfpX + pfpBorderSize - ScaleByDPI(6);
-	rcText.bottom = (rect.top + rect.bottom) / 2;
+	rcText.bottom = (rect.top + rect.bottom) / 2 - ScaleByDPI(1);
 	DrawText(hdc, sName, -1, &rcText, DT_BOTTOM | DT_SINGLELINE | DT_WORD_ELLIPSIS);
 
 	SelectObject(hdc, g_AccountTagFont);
 
 	rcText = rect;
 	rcText.left = pfpX + pfpBorderSize - ScaleByDPI(6);
-	rcText.top = (rect.top + rect.bottom) / 2;
+	rcText.top = (rect.top + rect.bottom) / 2 + ScaleByDPI(1);
 	DrawText(hdc, sUserName, -1, &rcText, DT_TOP | DT_SINGLELINE | DT_WORD_ELLIPSIS);
 
 	if (freeNameAndUserName) {

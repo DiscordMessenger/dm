@@ -98,7 +98,9 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 	rcStatus = rcMeasureTemplate;
 	rcStatus.right -= groupBoxBorder * 2;
 	rcStatus.right -= rcPronouns.right + pronounStatusGap;
+	HGDIOBJ o2 = SelectObject(hdc, g_DateTextFont);
 	DrawText2(hdc, status, -1, &rcStatus, singleLineFlags);
+	SelectObject(hdc, o2);
 	
 	rcAboutMe = rcMeasureTemplate;
 	rcAboutMe.right -= groupBoxBorder * 2 + ScaleByDPI(20);
@@ -136,8 +138,10 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 	DrawText(hdc, TEXT("Message this user"), -1, &rcMessage, editControlFlags | singleLineFlags);
 	rcMessage.bottom += ScaleByDPI(8);
 
-	rcProfileView.right = profileImageSize + ScaleByDPI(6) + std::max(rcName.right, rcUserName.right);
-	rcProfileView.bottom = std::max((LONG) profileImageSize, rcName.bottom + rcUserName.bottom);
+	rcProfileView.right   = profileImageSize + ScaleByDPI(6) + std::max(rcName.right, rcUserName.right);
+	rcProfileView.bottom  = std::max((LONG) profileImageSize, rcName.bottom + rcUserName.bottom);
+	rcProfileView.right  -= ScaleByDPI(4);
+	rcProfileView.bottom -= ScaleByDPI(6);
 
 	SelectObject(hdc, oldFont);
 	ReleaseDC(hWnd, hdc);
@@ -216,6 +220,8 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 	place = rcProfileView;
 	OffsetRect(&place, pos.x, pos.y);
 	pos.y += rcProfileView.bottom + interItemGap;
+	place.left -= ScaleByDPI(4);
+	place.top  -= ScaleByDPI(2);
 
 	g_pPopoutProfileView = ProfileView::Create(hWnd, &place, IDC_PROFILE_VIEW, false);
 	if (!g_pPopoutProfileView) {
@@ -243,7 +249,7 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 	if (rcStatus.bottom) {
 		MoveWindow(hChild, pos.x, pos.y, rcStatus.right, rcStatus.bottom, TRUE);
 		ShowWindow(hChild, SW_SHOW);
-		SetWindowFont(hChild, g_MessageTextFont, TRUE);
+		SetWindowFont(hChild, g_DateTextFont, TRUE);
 		SetWindowText(hChild, status);
 	}
 	else {
@@ -255,10 +261,7 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 		pos.y += std::max(rcStatus.bottom, rcPronouns.bottom) + interItemGap;
 	}
 
-	// Move the gap
-	hChild = GetDlgItem(hWnd, IDC_STATIC_GAP);
-	ShowWindow(hChild, SW_SHOW);
-	MoveWindow(hChild, pos.x, pos.y + (separatorSize - 2) / 2, fullSize.cx - windowBorder * 2, 2, TRUE);
+	// Add a gap.
 	pos.y += separatorSize;
 	
 	// Add about me text if needed.
@@ -352,8 +355,9 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 			ShowWindow(hChild, SW_SHOW);
 			SetWindowText(hChild, gldJoinedAt);
 			SetWindowFont(hChild, g_MessageTextFont, TRUE);
-			MoveWindow(hChild, pos.x + joinedAtIconSize + ScaleByDPI(4), pos.y, rcMemberSinceGuild.right, rcMemberSinceGuild.bottom, TRUE);
-			pos.x += inGroupBoxWidth / 2;
+			int wid = rcMemberSinceGuild.right, xpos = pos.x + joinedAtIconSize + ScaleByDPI(4);
+			MoveWindow(hChild, xpos, pos.y, wid, rcMemberSinceGuild.bottom, TRUE);
+			pos.x = std::max(wid + xpos + ScaleByDPI(6), int(pos.x) + inGroupBoxWidth / 2);
 		}
 		else {
 			ShowWindow(GetDlgItem(hWnd, IDC_ICON_GUILD), SW_HIDE);
