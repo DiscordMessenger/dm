@@ -472,6 +472,7 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 	int maxLineY = MdLineHeight(context, 0);
 	for (auto& word : m_words) {
 		int& wflags = word.m_flags;
+		wflags &= ~WORD_AFNEWLINE;
 
 		// If this is a new line:
 		if (wflags & WORD_NEWLINE) {
@@ -488,6 +489,7 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 		if (wflags & WORD_SPACE) {
 			word.m_flags |= WORD_DONTDRAW;
 			nSpacesBefore++;
+			bHadNewlineBefore = false;
 			continue;
 		}
 
