@@ -26,8 +26,8 @@ struct NetworkResponse
 	int m_code; // 200 = OK, 404 = Not Found, 403 = Forbidden, 401 = Unauthorized
 };
 
-#define C_AMT_NETWORKER_THREADS (16)
-#define C_INTERACTIVE_NETWORKER_THREADS (8)
+#define C_AMT_NETWORKER_THREADS (4)
+#define C_INTERACTIVE_NETWORKER_THREADS (2)
 
 class NetworkerThread
 {

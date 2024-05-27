@@ -495,12 +495,12 @@ void DeferredShowProfilePopout(const ShowProfilePopoutParams& params)
 	}
 
 	POINT pt { x + wndWidth / 2, y + wndHeight / 2 };
-	HMONITOR mon = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+	HMONITOR mon = ri::MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
 
 	if (mon) {
 		MONITORINFO mi{};
 		mi.cbSize = sizeof mi;
-		GetMonitorInfo(mon, &mi);
+		ri::GetMonitorInfo(mon, &mi);
 
 		if (x  < mi.rcWork.left)
 			x  = mi.rcWork.left;
