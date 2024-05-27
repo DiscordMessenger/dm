@@ -353,6 +353,15 @@ LRESULT CALLBACK RoleList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			EndPaint(hWnd, &ps);
 			break;
 		}
+		case WM_PRINT:
+		case WM_PRINTCLIENT:
+		{
+			HDC hdc = (HDC) wParam;
+			for (auto& item : pThis->m_items) {
+				pThis->DrawRole(hdc, &item);
+			}
+			break;
+		}
 		case WM_GESTURE:
 		{
 			HandleGestureMessage(hWnd, uMsg, wParam, lParam);

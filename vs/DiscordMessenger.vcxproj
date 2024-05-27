@@ -239,6 +239,7 @@
     <Image Include="..\res\icon_channel_unread.ico" />
     <Image Include="..\res\icon_channel_unread_2k.ico" />
     <Image Include="..\res\icon_discord.ico" />
+    <Image Include="..\res\icon_discord_2k.ico" />
     <Image Include="..\res\icon_discord_small.ico" />
     <Image Include="..\res\icon_dm.ico" />
     <Image Include="..\res\icon_dm_2k.ico" />

@@ -29,6 +29,8 @@ public:
 	// NOTE: Pointers will be owned by the profile view after this.
 	void SetData(LPTSTR name, LPTSTR username, eActiveStatus astatus, const std::string& avlnk);
 
+	void Paint(HDC hdc);
+
 public:
 	static WNDCLASS g_ProfileViewClass;
 

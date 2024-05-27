@@ -145,8 +145,13 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 		rcStatus.right + rcPronouns.right + pronounStatusGap,
 		rcAboutMe.right + pad,
 		rcMemberSinceFull.right + pad,
+#ifdef ADD_NOTES
 		rcNote.right + pad,
+#endif
+#ifdef ADD_MESSAGES
 		rcMessage.right + pad,
+#endif
+		(LONG) 0
 	}));
 	const int fullWidth = fullSize.cx;
 	const int inGroupBoxWidth = fullWidth - groupBoxBorder * 2;
@@ -191,7 +196,9 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 #ifdef ADD_NOTES
 	if (rcNote.bottom)            fullSize.cy += rcGroupBox.bottom + rcNote.bottom;
 #endif
+#ifdef ADD_MESSAGE
 	if (rcMessage.bottom)         fullSize.cy += rcGroupBox.bottom + rcMessage.bottom;
+#endif
 	rcGroupBox.bottom -= interItemGap;
 
 	POINT pos{ };
@@ -341,8 +348,14 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 		}
 
 		if (rcMemberSinceDiscord.bottom) {
+			int icsz = GetSystemMetrics(SM_CXSMICON);
+			if (icsz <= 16) icsz = 16; // ensure a common size so LoadImage wont leak our LR_SHARED loaded icon
+			else if (icsz <= 32) icsz = 32;
+			else if (icsz <= 48) icsz = 48;
+			else icsz = 64;
 			hChild = GetDlgItem(hWnd, IDC_ICON_DISCORD);
 			MoveWindow(hChild, pos.x, pos.y, joinedAtIconSize, joinedAtIconSize, TRUE);
+			SendMessage(hChild, STM_SETIMAGE, IMAGE_ICON, (LPARAM) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)), IMAGE_ICON, icsz, icsz, LR_SHARED | LR_CREATEDIBSECTION));
 			hChild = GetDlgItem(hWnd, IDC_DISCORD_JOIN_DATE);
 			SetWindowText(hChild, dscJoinedAt);
 			SetWindowFont(hChild, g_MessageTextFont, TRUE);
@@ -424,20 +437,29 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 
 static SIZE g_ProfilePopoutSize;
 
+static void ProfileViewerPaint(HWND hWnd, HDC hdc)
+{
+	RECT rect = {};
+	GetClientRect(hWnd, &rect);
+
+	DrawEdge(hdc, &rect, EDGE_RAISED, BF_RECT);
+}
+
 BOOL CALLBACK ProfileViewerProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
-		case WM_PAINT:
-		{
+		case WM_PAINT: {
 			PAINTSTRUCT ps = {};
-			RECT rect = {};
 			HDC hdc = BeginPaint(hWnd, &ps);
-			GetClientRect(hWnd, &rect);
-
-			DrawEdge(hdc, &rect, EDGE_RAISED, BF_RECT);
-
+			ProfileViewerPaint(hWnd, hdc);
 			EndPaint(hWnd, &ps);
+			break;
+		}
+
+		case WM_PRINT:
+		case WM_PRINTCLIENT: {
+			ProfileViewerPaint(hWnd, (HDC) wParam);
 			break;
 		}
 
@@ -512,8 +534,12 @@ void DeferredShowProfilePopout(const ShowProfilePopoutParams& params)
 			y  = mi.rcWork.bottom - wndHeight;
 	}
 
-	MoveWindow(g_ProfilePopoutHwnd, x, y, wndWidth, wndHeight, false);
+	MoveWindow(g_ProfilePopoutHwnd, x, y, wndWidth, wndHeight, TRUE);
 	ShowWindow(g_ProfilePopoutHwnd, SW_SHOWNOACTIVATE);
+	
+	// NOTE: You need to disable the above ShowWindow to use this. Also, it's
+	// kind of broken, in that the message text box just doesn't render.
+	//AnimateWindow(g_ProfilePopoutHwnd, 200, AW_BLEND);
 }
 
 void ShowProfilePopout(Snowflake user, Snowflake guild, int x, int y, bool bRightJustify)
