@@ -3204,6 +3204,8 @@ inline bool can_compress_content_type(const std::string &content_type) {
 
   auto tag = str2tag(content_type);
 
+#pragma warning(push)
+#pragma warning(disable : 4307)
   switch (tag) {
   case "image/svg+xml"_t:
   case "application/javascript"_t:
@@ -3211,6 +3213,7 @@ inline bool can_compress_content_type(const std::string &content_type) {
   case "application/xml"_t:
   case "application/protobuf"_t:
   case "application/xhtml+xml"_t: return true;
+#pragma warning(pop)
 
   default:
 	return !content_type.rfind("text/", 0) && tag != "text/event-stream"_t;

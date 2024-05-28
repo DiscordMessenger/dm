@@ -380,8 +380,6 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 {
 	GuildLister* pThis = (GuildLister*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 
-	SCROLLINFO si;
-
 	switch (uMsg)
 	{
 		case WM_NCCREATE:

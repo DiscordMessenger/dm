@@ -1019,7 +1019,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 	if (haveUpdateRect)
 	{
 		// TODO - hacky fix
-		if (m_total_height < scrollInfo.nPage)
+		if (m_total_height < int(scrollInfo.nPage))
 			updateRect.bottom = rect.bottom, updateRect.top = rect.top, scrollAnyway = 0, eraseWhenUpdating = TRUE;
 		else
 			updateRect.bottom += scrollAdded + repaintSize;
@@ -1086,7 +1086,7 @@ COLORREF GetBrushColor(HBRUSH brush)
 
 void MessageList::ProperlyResizeSubWindows()
 {
-	RECT rect, rect2;
+	RECT rect;
 	GetClientRect(m_hwnd, &rect);
 	MoveWindow(m_hwnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
 }
@@ -2719,7 +2719,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					si.fMask = SIF_TRACKPOS | SIF_POS | SIF_RANGE | SIF_PAGE;
 					GetScrollInfo(hWnd, SB_VERT, &si);
 
-					bool retrack = si.nPos < si.nMax - si.nPage - 10;
+					bool retrack = si.nPos < si.nMax - int(si.nPage) - 10;
 					int position = 0, ypos = 0, ypos2 = 0;
 					Snowflake sf = 0;
 
@@ -3133,7 +3133,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			si.fMask = SIF_PAGE;
 			GetScrollInfo(hWnd, SB_VERT, &si);
 
-			InvalidateRect(hWnd, &refreshRect, si.nPage > pThis->m_total_height);
+			InvalidateRect(hWnd, &refreshRect, int(si.nPage) > pThis->m_total_height);
 
 			break;
 		}

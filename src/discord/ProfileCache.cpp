@@ -64,7 +64,7 @@ Profile* ProfileCache::LoadProfile(Snowflake user, nlohmann::json& jx)
 
 	pf->m_snowflake  = user;
 	pf->m_name       = GetUsername(userData);
-	pf->m_discrim    = userData.contains("discriminator") ? GetIntFromString(jx["discriminator"]) : 0;
+	pf->m_discrim    = userData.contains("discriminator") ? int(GetIntFromString(jx["discriminator"])) : 0;
 	pf->m_globalName = GetGlobalName(userData);
 	pf->m_bIsBot     = GetFieldSafeBool(userData, "bot", false);
 	pf->m_bUsingDefaultData = false;

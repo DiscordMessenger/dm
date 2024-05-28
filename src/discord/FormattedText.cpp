@@ -724,7 +724,7 @@ void FormattedText::UseRegex(std::string& str)
 			if (str[i] != '@')
 				continue;
 
-			int setEveryone = 0;
+			size_t setEveryone = 0;
 			if (strncmp(str.c_str() + i, "@everyone", 9) == 0)
 				str[i] = CHAR_EVERYONE, setEveryone = 8;
 			else if (strncmp(str.c_str() + i, "@here", 5) == 0)

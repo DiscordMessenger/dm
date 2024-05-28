@@ -502,7 +502,6 @@ void DiscordInstance::HandleRequest(void* pRequestPtr)
 				}
 					
 				default:
-				_default:
 					str = "Access to the resource " + pRequest->url + " is forbidden.";
 					bShowMessageBox = true;
 					break;
@@ -2291,7 +2290,7 @@ void DiscordInstance::HandleGuildMemberListUpdate_Insert(Snowflake guild, nlohma
 	int index = j["index"];
 	Snowflake sf = ParseGuildMemberOrGroup(guild, item);
 
-	if (index < 0 || index >= pGld->m_members.size() + 1) {
+	if (index < 0 || index >= int(pGld->m_members.size() + 1)) {
 		//assert(!"huh");
 		// TODO: Treat this case somehow
 		return;
@@ -2307,7 +2306,7 @@ void DiscordInstance::HandleGuildMemberListUpdate_Delete(Snowflake guild, nlohma
 
 	int index = j["index"];
 
-	if (index < 0 || index >= pGld->m_members.size()) {
+	if (index < 0 || index >= int(pGld->m_members.size())) {
 		//assert(!"huh");
 		// TODO: Treat this case somehow
 		return;
@@ -2331,7 +2330,7 @@ void DiscordInstance::HandleGuildMemberListUpdate_Update(Snowflake guild, nlohma
 
 	int index = j["index"];
 
-	if (index < 0 || index >= pGld->m_members.size()) {
+	if (index < 0 || index >= int(pGld->m_members.size())) {
 		//assert(!"huh");
 		// TODO: Treat this case somehow
 		return;

@@ -221,7 +221,7 @@ std::string GetGlobalName(Json& j)
 std::string GetUsername(nlohmann::json& j)
 {
 	std::string username = GetFieldSafe(j, "username");
-	int discrim = GetIntFromString(GetFieldSafe(j, "discriminator"));
+	int discrim = int(GetIntFromString(GetFieldSafe(j, "discriminator")));
 
 	if (discrim > 0)
 		username += "#" + FormatDiscrim(discrim);

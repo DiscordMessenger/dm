@@ -44,7 +44,6 @@ bool ChannelView::InitTreeView()
 	HWND hwndTV = m_treeHwnd;
 
 	HIMAGELIST himl;  // handle to image list
-	HBITMAP hbmp;     // handle to bitmap
 
 	// Create the image list.
 	int flag = 0;
@@ -541,15 +540,14 @@ bool ChannelView::OnNotifyTree(LRESULT& out, WPARAM wParam, LPARAM lParam)
 			HTREEITEM hSelectedItem = nmtv->itemNew.hItem;
 			if (!hSelectedItem) break;
 
-			TCHAR buffer[128];
 			TVITEM item;
 			item.hItem = hSelectedItem;
 			item.mask = TVIF_PARAM;
 			if (!TreeView_GetItem(m_treeHwnd, &item)) break;
 
 			// look for a channel with that name
-			int idx = int(item.lParam);
-			if (idx < 0 || idx >= m_channels.size())
+			size_t idx = size_t(item.lParam);
+			if (idx >= m_channels.size())
 				break;
 
 			Snowflake sf = m_channels[item.lParam].m_snowflake;

@@ -246,7 +246,6 @@ std::string MakeStringFromUnicodeString(LPCWSTR wstr)
 	// generate the size of the UTF-8 string
 	size_t slmax = (sl + 1) * 4; // whatever
 	char* chr = (char*)malloc(slmax);
-	size_t sz;
 	//_wcstombs_s_l(&sz, chr, slmax, wstr, slmax, CP_UTF8);
 	WideCharToMultiByte(CP_UTF8, 0, wstr, -1, chr, slmax, NULL, NULL);
 
@@ -399,7 +398,7 @@ void FillGradientColors(HDC hdc, const LPRECT lpRect, COLORREF c1, COLORREF c2, 
 			BYTE bytes[sizeof(COLORREF)];
 			memcpy(bytes, &clr, sizeof(COLORREF));
 
-			for (LONG y = 0, index = 0; y < ulHeight; y++)
+			for (ULONG y = 0, index = 0; y < ulHeight; y++)
 			{
 				UCHAR pcalpha;
 				if (vertical) {
@@ -408,7 +407,7 @@ void FillGradientColors(HDC hdc, const LPRECT lpRect, COLORREF c1, COLORREF c2, 
 					else
 						pcalpha = (UCHAR)(y * 255 / ulHeight);
 				}
-				for (LONG x = 0; x < ulWidth; x++, index++)
+				for (ULONG x = 0; x < ulWidth; x++, index++)
 				{
 					UCHAR alpha;
 					if (!vertical) {
