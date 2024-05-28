@@ -2370,11 +2370,16 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		rcMsg.bottom -= item.m_attachHeight + item.m_embedHeight;
 		if (item.m_attachHeight)
 			rcMsg.bottom -= ATTACHMENT_GAP;
+		if (item.m_embedHeight)
+			rcMsg.bottom -= ScaleByDPI(5);
+
 		item.m_message.Layout(&mddc, Rect(W32RECT(rcMsg)), bIsCompact ? (item.m_authWidth + item.m_dateWidth + ScaleByDPI(10)) : 0);
 		
 		Rect ext = item.m_message.GetExtent();
 		int height = std::max(item.m_authHeight, ext.Height());
 		int offsetY = ((rcMsg.bottom - rcMsg.top) - ext.Height()) / 2;
+		
+		item.m_messageRect = rcMsg;
 
 		// Once laid out, also update the rectangles for the interactable items.
 		const auto& words = item.m_message.GetWords();
@@ -2447,8 +2452,6 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			}
 		}
 
-		item.m_messageRect = RectToNative(ext);
-
 		if (bIsCompact)
 			item.m_messageRect.bottom = std::max(item.m_messageRect.bottom, item.m_messageRect.top + item.m_authHeight);
 
@@ -2482,7 +2485,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		}
 		else
 		{
-			item.m_avatarRect = { -10000, -10000, -9999, -9999 };
+			item.m_avatarRect = { 0, 0, 0, 0 };
 		}
 	}
 
@@ -4221,6 +4224,14 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool upda
 	}
 
 	UpdateScrollBar(mi.m_height - oldHeight, mi.m_height - oldHeight, toStart, true, offsetY, true);
+
+	bool needUpdateAboveMessage = GetLocalSettings()->GetMessageStyle() == MS_3DFACE;
+	if (needUpdateAboveMessage && mi.m_placeInChain != 0) {
+		RECT rcUpdate = rcClient;
+		rcUpdate.bottom -= offsetY;
+		rcUpdate.top = rcUpdate.bottom - 2;
+		InvalidateRect(m_hwnd, &rcUpdate, FALSE);
+	}
 
 	if (bDeletedNonce)
 	{

@@ -1644,11 +1644,13 @@ void DiscordInstance::HandleREADY_SUPPLEMENTAL(Json& j)
 
 		for (auto& memPres : guildPres) {
 			Snowflake userID = GetSnowflake(memPres, "user_id");
-			std::string status = GetFieldSafe(memPres, "status");
-			if (status.empty()) status = "offline";
-
 			Profile* pf = GetProfileCache()->LookupProfile(userID, "", "", "", false);
-			pf->m_activeStatus = GetStatusFromString(status);
+
+			if (memPres.contains("status")) {
+				std::string status = GetFieldSafe(memPres, "status");
+				if (status.empty()) status = "offline";
+				pf->m_activeStatus = GetStatusFromString(status);
+			}
 
 			// Look for any activities -- TODO: Server specific activities
 			if (guildPres.contains("game") && !guildPres["game"].is_null())
@@ -1663,11 +1665,13 @@ void DiscordInstance::HandleREADY_SUPPLEMENTAL(Json& j)
 	for (auto& friendPres : merPreFriends)
 	{
 		Snowflake userID = GetSnowflake(friendPres, "user_id");
-		std::string status = GetFieldSafe(friendPres, "status");
-		if (status.empty()) status = "offline";
 
 		Profile* pf = GetProfileCache()->LookupProfile(userID, "", "", "", false);
-		pf->m_activeStatus = GetStatusFromString(status);
+		if (friendPres.contains("status")) {
+			std::string status = GetFieldSafe(friendPres, "status");
+			if (status.empty()) status = "offline";
+			pf->m_activeStatus = GetStatusFromString(status);
+		}
 
 		// Look for any activities
 		if (friendPres.contains("game") && !friendPres["game"].is_null())
@@ -1732,9 +1736,6 @@ void DiscordInstance::HandleREADY(Json& j)
 	if (sesh.empty())
 		DbgPrintF("No session found with id %s!", m_sessionId.c_str());
 	assert(!sesh.empty());
-
-	//eActiveStatus status = GetStatusFromString(sesh["status"]);
-	//SetActivityStatus(status, false);
 
 	// ==== load users
 	if (data.contains("users") && data["users"].is_array())
@@ -2117,7 +2118,11 @@ Snowflake DiscordInstance::ParseGuildMember(Snowflake guild, nlohmann::json& mem
 
 	// TODO: Not sure if this is the guild specific or global status. Probably guild specific
 	if (!pres.is_null()) {
-		pf->m_activeStatus = GetStatusFromString(GetFieldSafe(pres, "status"));
+		if (pres.contains("status")) {
+			auto status = GetFieldSafe(pres, "status");
+			if (status.empty()) status = "offline";
+			pf->m_activeStatus = GetStatusFromString(status);
+		}
 		if (pres.contains("game") && !pres["game"].is_null()) {
 			pf->m_status = GetStatusStringFromGameJsonObject(pres["game"]);
 		}
@@ -2149,7 +2154,11 @@ void DiscordInstance::HandlePRESENCE_UPDATE(nlohmann::json& j)
 	Profile* pf = GetProfileCache()->LookupProfile(userID, "", "", "", false);
 
 	// Note: Updating these first because maybe LoadProfile triggers a refresh
-	pf->m_activeStatus = GetStatusFromString(GetFieldSafe(data, "status"));
+	if (data.contains("status")) {
+		std::string stat = GetFieldSafe(data, "status");
+		if (stat.empty()) stat = "offline";
+		pf->m_activeStatus = GetStatusFromString(stat);
+	}
 
 	// Look for any activities -- TODO: Server specific activities
 	if (data.contains("game") && !data["game"].is_null())

@@ -136,7 +136,7 @@ public:
 	void Layout(DrawingContext* context, const Rect& rect, int offsetX = 0);
 	void Draw(DrawingContext* context, int offsetY = 0);
 	void RunForEachCustomEmote(FunctionEachEmote func, void* context);
-	Rect GetExtent();
+	Rect GetExtent(int offsetY = 0);
 
 	std::vector<Word>& GetWords() {
 		return m_words;

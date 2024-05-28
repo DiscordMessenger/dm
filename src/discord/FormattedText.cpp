@@ -543,7 +543,7 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 	}
 }
 
-Rect FormattedText::GetExtent()
+Rect FormattedText::GetExtent(int offsetY)
 {
 	assert(m_bFormatted && "Have to call Layout(rc) first!");
 
@@ -565,12 +565,12 @@ Rect FormattedText::GetExtent()
 
 		if (ext.left   > w.m_rect.left)
 			ext.left   = w.m_rect.left;
-		if (ext.top    > w.m_rect.top)
-			ext.top    = w.m_rect.top;
+		if (ext.top    > w.m_rect.top + offsetY)
+			ext.top    = w.m_rect.top + offsetY;
 		if (ext.right  < w.m_rect.right)
 			ext.right  = w.m_rect.right;
-		if (ext.bottom < w.m_rect.bottom)
-			ext.bottom = w.m_rect.bottom;
+		if (ext.bottom < w.m_rect.bottom + offsetY)
+			ext.bottom = w.m_rect.bottom + offsetY;
 	}
 
 	return ext;

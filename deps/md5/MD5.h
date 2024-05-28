@@ -35,6 +35,7 @@ documentation and/or software.
 
 #include <cstring>
 #include <iostream>
+#include <string>
 
 
 // a small class for calculating MD5 hashes of strings or byte arrays
@@ -53,7 +54,7 @@ public:
 	typedef unsigned int size_type; // must be 32bit
 
 	MD5();
-	MD5(const std::string& text);
+	explicit MD5(const std::string& text);
 	void update(const unsigned char* buf, size_type length);
 	void update(const char* buf, size_type length);
 	MD5& finalize();
