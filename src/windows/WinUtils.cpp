@@ -299,14 +299,12 @@ void DrawBitmap(HDC hdc, HBITMAP bitmap, int x, int y, LPRECT clip, COLORREF tra
 
 	if (hasAlpha)
 	{
-		int oldMode = SetStretchBltMode(hdc, HALFTONE);
 		BLENDFUNCTION bf{};
 		bf.BlendOp = AC_SRC_OVER;
 		bf.AlphaFormat = AC_SRC_ALPHA;
 		bf.BlendFlags = 0;
 		bf.SourceConstantAlpha = 255;
 		ri::AlphaBlend(hdc, x, y, scaledW, scaledH, hdcMem, 0, 0, bm.bmWidth, bm.bmHeight, bf);
-		SetStretchBltMode(hdc, oldMode);
 	}
 	else if (transparent != CLR_NONE)
 	{

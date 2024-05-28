@@ -127,17 +127,16 @@ HBITMAP ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& ou
 	{
 		HBITMAP hbm = CreateCompatibleBitmap(wndHdc, newWidth, newHeight);
 		HGDIOBJ old = SelectObject(hdc, hbm);
+		outHasAlphaChannel = false;
 
 		int x = 0;
 		if (newWidth != width || newHeight != height) {
 			int oldMode = SetStretchBltMode(hdc, HALFTONE);
 			x = StretchDIBits(hdc, 0, 0, newWidth, newHeight, 0, 0, width, height, pNewData, &bmi, DIB_RGB_COLORS, SRCCOPY);
 			SetStretchBltMode(hdc, oldMode);
-			outHasAlphaChannel = false;
 		}
 		else {
 			x = SetDIBits(hdc, hbm, 0, height, pNewData, &bmi, DIB_RGB_COLORS);
-			outHasAlphaChannel = true;
 		}
 
 		if (x == GDI_ERROR) {
