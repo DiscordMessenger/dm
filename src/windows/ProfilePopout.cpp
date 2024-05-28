@@ -457,6 +457,8 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 	free(pronouns);
 	free(dscJoinedAt);
 	free(gldJoinedAt);
+
+	return FALSE;
 }
 
 static SIZE g_ProfilePopoutSize;
@@ -490,10 +492,12 @@ BOOL CALLBACK ProfileViewerProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		case WM_INITDIALOG:
 		case WM_UPDATEPROFILEPOPOUT: {
 			g_ProfilePopoutSize = {};
-			ProfileViewerLayout(hWnd, g_ProfilePopoutSize);
-			SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, g_ProfilePopoutSize.cx, g_ProfilePopoutSize.cy, SWP_NOACTIVATE | SWP_NOREPOSITION | SWP_NOZORDER | SWP_NOMOVE);
-			InvalidateRect(hWnd, NULL, TRUE);
-			break;
+			BOOL res = ProfileViewerLayout(hWnd, g_ProfilePopoutSize);
+			if (!res) {
+				SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, g_ProfilePopoutSize.cx, g_ProfilePopoutSize.cy, SWP_NOACTIVATE | SWP_NOREPOSITION | SWP_NOZORDER | SWP_NOMOVE);
+				InvalidateRect(hWnd, NULL, TRUE);
+			}
+			return res;
 		}
 
 		case WM_DESTROY:

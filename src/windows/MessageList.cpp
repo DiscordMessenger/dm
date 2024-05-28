@@ -2490,7 +2490,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	RECT embedRect = item.m_messageRect;
 	auto& embedVec = item.m_embedData;
 	size_t sz = embedVec.size();
-	if (isChainBegin && sz)
+	if (sz)
 		embedRect.bottom += ScaleByDPI(5);
 
 	embedRect.right = msgRect.right - ScaleByDPI(10);
@@ -2531,7 +2531,10 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 	// draw available attachments, if any:
 	RECT attachRect = embedRect;
-	if (isChainBegin || sz != 0)
+	auto& attachVec = item.m_msg.m_attachments;
+	auto& attachItemVec = item.m_attachmentData;
+	sz = attachVec.size();
+	if (sz != 0)
 		attachRect.bottom += ScaleByDPI(5) + ATTACHMENT_GAP;
 
 	attachRect.right   = msgRect.right - ScaleByDPI(10);
@@ -2539,9 +2542,6 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 	if (bIsCompact) attachRect.left = rc.left;
 
-	auto& attachVec = item.m_msg.m_attachments;
-	auto& attachItemVec = item.m_attachmentData;
-	sz = attachVec.size();
 	for (size_t i = 0; i < sz; i++)
 	{
 		auto& attach = attachVec[i];
@@ -3683,19 +3683,15 @@ void MessageList::AdjustHeightInfo(const MessageItem& msg, int& height, int& tex
 		attachheight += inc;
 	}
 
-	if (isChainCont) {
-		if (embedheight != 0)
-			height -= ScaleByDPI(5);
-		else if (attachheight != 0)
-			height -= ATTACHMENT_GAP;
-	}
-	else {
-		// add some separators
-		if (attachheight != 0)
-			height += ScaleByDPI(5);
-		if (embedheight != 0)
-			height += ScaleByDPI(5);
-	}
+	if (embedheight != 0)
+		embedheight -= ScaleByDPI(5);
+	if (attachheight != 0)
+		attachheight -= ATTACHMENT_GAP;
+
+	if (attachheight != 0)
+		height += ScaleByDPI(5);
+	if (embedheight != 0)
+		height += ScaleByDPI(5);
 
 	if (!IsActionMessage(msg.m_msg.m_type) && !IsCompact() && !isChainCont && height < minHeight)
 		height = minHeight;
