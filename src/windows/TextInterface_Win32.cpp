@@ -53,20 +53,22 @@ Point MdMeasureString(DrawingContext* context, const String& word, int styleFlag
 			rect.left = rect.top = 0;
 			rect.right = maxWidth;
 			rect.bottom = 10000000;
-			DrawText(hdc, word.GetWrapped(), -1, &rect, DT_CALCRECT | DT_WORDBREAK);
+			DrawText(hdc, word.GetWrapped(), -1, &rect, DT_CALCRECT | DT_WORDBREAK | DT_NOPREFIX | DT_EDITCONTROL);
 		}
 		else {
-			DrawText(hdc, word.GetWrapped(), -1, &rect, DT_CALCRECT);
+			DrawText(hdc, word.GetWrapped(), -1, &rect, DT_CALCRECT | DT_NOPREFIX);
 		}
 
-		if (styleFlags & WORD_MLCODE) {
+		if (styleFlags & (WORD_MLCODE | WORD_NOFORMAT)) {
 			SIZE sz;
 			GetTextExtentPoint(hdc, word.GetWrapped(), word.GetSize(), &sz);
 
 			outWasWordWrapped = sz.cx > rect.right - rect.left;
 
-			rect.right += 8;
-			rect.bottom += 8;
+			if (styleFlags & WORD_MLCODE) {
+				rect.right += 8;
+				rect.bottom += 8;
+			}
 		}
 	}
 
@@ -183,7 +185,10 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 	if (styleFlags & (WORD_CODE | WORD_MLCODE)) {
 		oldColorBG = SetBkColor(context->m_hdc, GetSysColor(COLOR_WINDOW));
 		setColorBG = true;
-		flags |= DT_WORDBREAK;
+		flags |= DT_WORDBREAK | DT_EDITCONTROL;
+	}
+	if (styleFlags & WORD_NOFORMAT) {
+		flags |= DT_WORDBREAK | DT_EDITCONTROL;
 	}
 
 	HFONT font = MdDetermineFont(styleFlags);

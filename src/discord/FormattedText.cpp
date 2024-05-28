@@ -3,7 +3,7 @@
 #include <stack>
 #include <algorithm>
 #include "RectAndPoint.hpp"
-#include "Util.hpp"
+#include "LocalSettings.hpp"
 
 //#define USE_STL_REGEX //-- way slower than Boost Regex
 
@@ -499,7 +499,7 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 		}
 
 		int maxWidth = 0;
-		if (wflags & (WORD_MLCODE | WORD_CODE)) {
+		if (wflags & (WORD_MLCODE | WORD_CODE | WORD_NOFORMAT)) {
 			maxWidth = rect.Width();
 		}
 
@@ -808,7 +808,6 @@ void FormattedText::TokenizeAll()
 	}
 }
 
-
 void FormattedText::SetMessage(const std::string& msg)
 {
 	m_rawMessage = msg;
@@ -816,6 +815,11 @@ void FormattedText::SetMessage(const std::string& msg)
 	m_blocks.clear();
 	m_tokens.clear();
 	m_words.clear();
+
+	if (GetLocalSettings()->DisableFormatting()) {
+		m_words.push_back(Word(WORD_NOFORMAT, m_rawMessage));
+		return;
+	}
 
 	SplitBlocks();
 	RegexNecessary();

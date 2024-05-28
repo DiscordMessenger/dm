@@ -92,6 +92,12 @@ public:
 		m_bEnableTLSVerification = b;
 	}
 	void StopUpdateCheckTemporarily();
+	bool DisableFormatting() const {
+		return m_bDisableFormatting;
+	}
+	void SetDisableFormatting(bool b) {
+		m_bDisableFormatting = b;
+	}
 
 private:
 	std::string m_token;
@@ -106,6 +112,7 @@ private:
 	bool m_bCheckUpdates = false;
 	bool m_bAskToCheckUpdates = true;
 	bool m_bEnableTLSVerification = true;
+	bool m_bDisableFormatting = false;
 	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
 	int m_height = 700;

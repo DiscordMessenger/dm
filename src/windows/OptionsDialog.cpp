@@ -161,8 +161,9 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 				mStyleId
 			);
 
-			CheckDlgButton(hwndDlg, IDC_SAVE_WINDOW_SIZE, GetLocalSettings()->GetSaveWindowSize() ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_START_MAXIMIZED,  GetLocalSettings()->GetStartMaximized() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_SAVE_WINDOW_SIZE,   GetLocalSettings()->GetSaveWindowSize() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_START_MAXIMIZED,    GetLocalSettings()->GetStartMaximized() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_DISABLE_FORMATTING, GetLocalSettings()->DisableFormatting() ? BST_CHECKED : BST_UNCHECKED);
 
 			break;
 		}
@@ -289,6 +290,10 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 						case IDC_RADIO_FLAT_2:
 							GetLocalSettings()->SetMessageStyle(MS_FLATBR);
 							SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
+							break;
+						case IDC_DISABLE_FORMATTING:
+							GetLocalSettings()->SetDisableFormatting(IsDlgButtonChecked(hWnd, IDC_DISABLE_FORMATTING));
+							SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
 							break;
 						case IDC_SAVE_WINDOW_SIZE:
 							GetLocalSettings()->SetSaveWindowSize(IsDlgButtonChecked(hWnd, IDC_SAVE_WINDOW_SIZE));

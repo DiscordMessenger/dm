@@ -292,6 +292,8 @@
 #define IDC_ENABLE_TLS_CHECKS           871
 #define IDC_CHECK_UPDATES               872
 #define IDC_EDIT_ABOUTME                873
+#define IDC_CHECK1                      874
+#define IDC_DISABLE_FORMATTING          874
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
 #define ID_FILE_EXIT                    1003
@@ -370,7 +372,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        84
 #define _APS_NEXT_COMMAND_VALUE         1069
-#define _APS_NEXT_CONTROL_VALUE         874
+#define _APS_NEXT_CONTROL_VALUE         875
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif
 #endif

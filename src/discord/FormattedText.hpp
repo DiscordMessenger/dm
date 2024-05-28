@@ -63,6 +63,7 @@ struct Token
 #define WORD_EMOJI     (1 << 17) // Unicode emoji.  Unsupported as of yet.
 #define WORD_CEMOJI    (1 << 18) // Custom emoji.
 #define WORD_HEADER1   (1 << 19) // Header 1 style. Currently only used by emoji.
+#define WORD_NOFORMAT  (1 << 20) // Not actually formatted.
 
 struct Word
 {
@@ -88,7 +89,7 @@ struct Word
 			return true;
 
 		// If this is a multiline code block, return true.  
-		if ((m_flags & WORD_MLCODE) &&
+		if ((m_flags & (WORD_MLCODE | WORD_NOFORMAT)) &&
 			(m_size.x > layoutRect.Width() || ((m_flags & WORD_WRAPPED) && m_size.x < layoutRect.Width())))
 			return true;
 

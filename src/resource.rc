@@ -428,19 +428,22 @@ IDD_DIALOG_APPEARANCE DIALOGEX 0, 0, 260, 242
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    GROUPBOX        "Message Display",IDC_MDISPLAY_BOX,6,6,245,41
+    GROUPBOX        "Message Display",IDC_MDISPLAY_BOX,6,6,245,88
     CONTROL         "Cozy: Modern, beautiful, and easy on your eyes.",IDC_APPEARANCE_COZY,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,18,174,10
     CONTROL         "Compact: Fit more messages on screen at one time. #IRC",IDC_APPEARANCE_COMPACT,
                     "Button",BS_AUTORADIOBUTTON,12,30,201,10
-    GROUPBOX        "Message Style",IDC_MSTYLE_BOX,6,54,245,66
-    CONTROL         "3-D Frame",IDC_RADIO_3D_FRAME,"Button",BS_AUTORADIOBUTTON | WS_GROUP,12,65,49,10
-    CONTROL         "Gradient",IDC_RADIO_GRADIENT,"Button",BS_AUTORADIOBUTTON,12,78,43,10
-    CONTROL         "Flat Color 1",IDC_RADIO_FLAT_1,"Button",BS_AUTORADIOBUTTON,12,91,53,10
-    CONTROL         "Flat Color 2",IDC_RADIO_FLAT_2,"Button",BS_AUTORADIOBUTTON,12,104,53,10
-    GROUPBOX        "Window Settings",IDC_STATIC,6,127,245,38
-    CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,138,72,10
-    CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,150,67,10
+    GROUPBOX        "Message Style",IDC_MSTYLE_BOX,6,95,245,66
+    CONTROL         "3-D Frame",IDC_RADIO_3D_FRAME,"Button",BS_AUTORADIOBUTTON | WS_GROUP,12,106,49,10
+    CONTROL         "Gradient",IDC_RADIO_GRADIENT,"Button",BS_AUTORADIOBUTTON,12,119,43,10
+    CONTROL         "Flat Color 1",IDC_RADIO_FLAT_1,"Button",BS_AUTORADIOBUTTON,12,132,53,10
+    CONTROL         "Flat Color 2",IDC_RADIO_FLAT_2,"Button",BS_AUTORADIOBUTTON,12,145,53,10
+    GROUPBOX        "Window Settings",IDC_STATIC,6,161,245,38
+    CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,172,72,10
+    CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,184,67,10
+    CONTROL         "Disable markdown formatting",IDC_DISABLE_FORMATTING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,45,228,10
+    LTEXT           "Disable markdown formatting if:\n- You operate frequently with right-to-left scripts such as Arabic.\n- You are running into performance issues (message channels are taking too long to load, etc)",IDC_STATIC,12,57,232,34
 END
 
 IDD_DIALOG_PROFILE_POPOUT DIALOGEX 0, 0, 126, 134
@@ -613,7 +616,7 @@ BEGIN
         LEFTMARGIN, 6
         RIGHTMARGIN, 251
         TOPMARGIN, 7
-        BOTTOMMARGIN, 192
+        BOTTOMMARGIN, 232
     END
 
     IDD_DIALOG_PROFILE_POPOUT, DIALOG
