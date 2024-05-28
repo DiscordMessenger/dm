@@ -1195,6 +1195,11 @@ void DiscordInstance::LaunchURL(const std::string& url)
 	GetFrontend()->LaunchURL(url);
 }
 
+void DiscordInstance::ResetGatewayURL()
+{
+	m_gatewayUrl = "";
+}
+
 void DiscordInstance::SetActivityStatus(eActiveStatus status, bool bRequestServer)
 {
 	DbgPrintF("Setting activity status to %d", status);

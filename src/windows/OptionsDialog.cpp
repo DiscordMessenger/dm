@@ -370,6 +370,7 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 							GetLocalSettings()->SetToken("");
 							GetLocalSettings()->SetDiscordAPI(api);
 							GetLocalSettings()->SetDiscordCDN(cdn);
+							GetDiscordInstance()->ResetGatewayURL();
 							EndDialog(hWnd, 0);
 							EndDialog(hwndParent, OPTIONS_RESULT_LOGOUT);
 

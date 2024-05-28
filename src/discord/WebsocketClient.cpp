@@ -258,6 +258,8 @@ void WebsocketClient::Close(int id, websocketpp::close::status::value code)
 	m_endpoint.close(metadata_it->second->GetHDL(), code, "", ec);
 	if (ec)
 		DbgPrintF("Error initiating close: %s", ec.message().c_str());
+
+	m_connList.erase(metadata_it);
 }
 
 void WebsocketClient::SendMsg(int id, const std::string& msg)

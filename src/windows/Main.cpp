@@ -572,6 +572,27 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
+int g_tryAgainTimerElapse = 100;
+UINT_PTR g_tryAgainTimer = 0;
+const UINT_PTR g_tryAgainTimerId = 123456;
+
+void CALLBACK TryAgainTimer(HWND hWnd, UINT uMsg, UINT_PTR uTimerID, DWORD dwParam) {
+	if (uTimerID != g_tryAgainTimerId)
+		return;
+
+	KillTimer(hWnd, g_tryAgainTimer);
+	g_tryAgainTimer = 0;
+	GetDiscordInstance()->StartGatewaySession();
+}
+
+void TryConnectAgainIn(int time) {
+	g_tryAgainTimer = SetTimer(g_Hwnd, g_tryAgainTimerId, time, TryAgainTimer);
+}
+
+void ResetTryAgainInTime() {
+	g_tryAgainTimerElapse = 500;
+}
+
 int g_agerCounter = 0;
 
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -1005,26 +1026,40 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		case WM_CONNECTERROR:
-		case WM_CONNECTED: {
+			// try it again
+			DbgPrintW("Trying to connect to websocket again in %d ms", g_tryAgainTimerElapse);
+			TryConnectAgainIn(g_tryAgainTimerElapse);
+			g_tryAgainTimerElapse = g_tryAgainTimerElapse * 115 / 100;
+			if (g_tryAgainTimerElapse > 10000)
+				g_tryAgainTimerElapse = 10000;
+			break;
+		case WM_CONNECTED:
+			ResetTryAgainInTime();
+			if (g_tryAgainTimer) {
+				KillTimer(hWnd, g_tryAgainTimer);
+				g_tryAgainTimer = 0;
+			}
 			g_pLoadingMessage->Hide();
 			break;
-		}
 		case WM_CONNECTING: {
 			g_pLoadingMessage->Show();
 			break;
 		}
 		case WM_LOGINAGAIN:
 		{
-			// Issue requests to Discord
-			GetHTTPClient()->PerformRequest(
-				false,
-				NetRequest::GET,
-				GetDiscordAPI() + "gateway",
-				DiscordRequest::GATEWAY,
-				0,
-				"",
-				GetDiscordToken()
-			);
+			if (GetDiscordInstance()->HasGatewayURL()) {
+				GetDiscordInstance()->StartGatewaySession();
+			}
+			else {
+				GetHTTPClient()->PerformRequest(
+					false,
+					NetRequest::GET,
+					GetDiscordAPI() + "gateway",
+					DiscordRequest::GATEWAY,
+					0, "", GetDiscordToken()
+				);
+			}
+
 			break;
 		}
 		case WM_CLOSE:

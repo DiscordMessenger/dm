@@ -360,6 +360,12 @@ public:
 	// which we have to specially handle.
 	void LaunchURL(const std::string& url);
 
+	// Check if we did the initial API_URL/gateway request.
+	bool HasGatewayURL() const { return !m_gatewayUrl.empty(); }
+
+	// Reset the initial gateway URL. Used when switching service providers.
+	void ResetGatewayURL();
+
 public:
 	DiscordInstance(std::string token) : m_token(token) {
 		InitDispatchFunctions();

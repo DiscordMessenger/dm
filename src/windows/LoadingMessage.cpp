@@ -43,11 +43,11 @@ void LoadingMessage::CreateWnd()
 
 void LoadingMessage::Show()
 {
-	if (!m_hwnd)
+	if (!m_hwnd) {
 		CreateWnd();
-
-	ShowWindow(m_hwnd, SW_SHOWNORMAL);
-	SetFocus(m_hwnd);
+		ShowWindow(m_hwnd, SW_SHOWNORMAL);
+		SetFocus(m_hwnd);
+	}
 }
 
 void LoadingMessage::Hide()

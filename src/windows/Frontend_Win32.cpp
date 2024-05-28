@@ -324,6 +324,8 @@ void Frontend_Win32::OnWebsocketClose(int gatewayID, int errorCode, const std::s
 		DbgPrintW("Unknown gateway connection %d closed: %d", gatewayID, errorCode);
 }
 
+#include <websocketpp/close.hpp>
+
 void Frontend_Win32::OnWebsocketFail(int gatewayID, int errorCode, const std::string& message, bool isTLSError)
 {
 	static TCHAR buffer[8192];
@@ -356,7 +358,7 @@ void Frontend_Win32::OnWebsocketFail(int gatewayID, int errorCode, const std::st
 	}
 
 	free(msg);
-
+	
 	MessageBox(g_Hwnd, buffer, TmGetTString(IDS_PROGRAM_NAME), (isTLSError ? MB_ICONWARNING : MB_ICONERROR) | MB_OK);
 	SendMessage(g_Hwnd, WM_CONNECTERROR, 0, 0);
 }
