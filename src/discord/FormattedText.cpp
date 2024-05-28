@@ -108,7 +108,20 @@ static void AddAndClearToken(std::vector<Token>& tokens, std::string& tok, int t
 {
 	if (!tok.empty())
 	{
-		tokens.push_back(Token(type, tok));
+		// HACK: If the token is TEXT and it's extremely long (>10 chars), split it up.
+		// This is a hack because I couldn't be bothered to try to do word wrapping properly.
+		if (type == Token::TEXT && tok.size() >= 10)
+		{
+			const size_t chunkSize = 2;
+			for (size_t i = 0; i < tok.size(); i += chunkSize) {
+				size_t len = std::min(tok.size() - i, chunkSize);
+				tokens.push_back(Token(type, tok.substr(i, len)));
+			}
+		}
+		else
+		{
+			tokens.push_back(Token(type, tok));
+		}
 		tok.clear();
 	}
 }
