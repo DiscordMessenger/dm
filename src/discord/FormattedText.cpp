@@ -106,11 +106,32 @@ static REN::regex g_QuoteMatch("^> .*?(\n|$)");
 
 static void AddAndClearToken(std::vector<Token>& tokens, std::string& tok, int type)
 {
-	if (!tok.empty())
+	if (tok.empty())
+		return;
+
+	// HACK: If the token is TEXT and it's obscenely long (>20 chars), split it up.
+	// This is a hack because I couldn't be bothered to try to do word wrapping properly.
+	if (type == Token::TEXT && tok.size() >= 20)
 	{
-		tokens.push_back(Token(type, tok));
-		tok.clear();
+		const size_t chunkSize = 2;
+		bool hasJustAscii = true;
+		for (size_t i = 0; i < tok.size() && hasJustAscii; i += chunkSize) {
+			if (tok[i] < ' ' || tok[i] >= 0x7F)
+				hasJustAscii = false;
+		}
+
+		if (hasJustAscii) {
+			for (size_t i = 0; i < tok.size(); i += chunkSize) {
+				size_t len = std::min(tok.size() - i, chunkSize);
+				tokens.push_back(Token(type, tok.substr(i, len)));
+			}
+			tok.clear();
+			return;
+		}
 	}
+	
+	tokens.push_back(Token(type, tok));
+	tok.clear();
 }
 
 static void RegexReplace(std::string& msg, const REN::regex& regex, int length1, int length2, char chr1, char chr2)
