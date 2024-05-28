@@ -1648,8 +1648,8 @@ void DiscordInstance::HandleREADY_SUPPLEMENTAL(Json& j)
 
 			if (memPres.contains("status")) {
 				std::string status = GetFieldSafe(memPres, "status");
-				if (status.empty()) status = "offline";
-				pf->m_activeStatus = GetStatusFromString(status);
+				if (!status.empty())
+					pf->m_activeStatus = GetStatusFromString(status);
 			}
 
 			// Look for any activities -- TODO: Server specific activities
@@ -1669,8 +1669,8 @@ void DiscordInstance::HandleREADY_SUPPLEMENTAL(Json& j)
 		Profile* pf = GetProfileCache()->LookupProfile(userID, "", "", "", false);
 		if (friendPres.contains("status")) {
 			std::string status = GetFieldSafe(friendPres, "status");
-			if (status.empty()) status = "offline";
-			pf->m_activeStatus = GetStatusFromString(status);
+			if (!status.empty())
+				pf->m_activeStatus = GetStatusFromString(status);
 		}
 
 		// Look for any activities
@@ -2120,8 +2120,8 @@ Snowflake DiscordInstance::ParseGuildMember(Snowflake guild, nlohmann::json& mem
 	if (!pres.is_null()) {
 		if (pres.contains("status")) {
 			auto status = GetFieldSafe(pres, "status");
-			if (status.empty()) status = "offline";
-			pf->m_activeStatus = GetStatusFromString(status);
+			if (!status.empty())
+				pf->m_activeStatus = GetStatusFromString(status);
 		}
 		if (pres.contains("game") && !pres["game"].is_null()) {
 			pf->m_status = GetStatusStringFromGameJsonObject(pres["game"]);
@@ -2132,9 +2132,6 @@ Snowflake DiscordInstance::ParseGuildMember(Snowflake guild, nlohmann::json& mem
 		else {
 			pf->m_status = "";
 		}
-	}
-	else {
-		pf->m_activeStatus = STATUS_OFFLINE;
 	}
 
 	gm.m_roles.clear();
@@ -2156,8 +2153,8 @@ void DiscordInstance::HandlePRESENCE_UPDATE(nlohmann::json& j)
 	// Note: Updating these first because maybe LoadProfile triggers a refresh
 	if (data.contains("status")) {
 		std::string stat = GetFieldSafe(data, "status");
-		if (stat.empty()) stat = "offline";
-		pf->m_activeStatus = GetStatusFromString(stat);
+		if (!stat.empty())
+			pf->m_activeStatus = GetStatusFromString(stat);
 	}
 
 	// Look for any activities -- TODO: Server specific activities
