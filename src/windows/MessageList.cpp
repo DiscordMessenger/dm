@@ -2554,6 +2554,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			case ContentType::PNG:
 			case ContentType::GIF:
 			case ContentType::JPEG:
+			case ContentType::WEBP:
 			{
 				DrawImageAttachment(hdc, paintRect, attachItem, attachRect);
 				break;
