@@ -4161,14 +4161,6 @@ void MessageList::SetLastViewedMessage(Snowflake sf, bool refreshItAlso)
 		}
 	}
 
-	// check if this message is the last one
-	if (!notExactMatch && itm != m_messages.end()) {
-		++itm;
-		if (itm == m_messages.end())
-			// yeah, so don't ACTUALLY update - that'll be done on refresh.
-			return;
-	}
-
 	Snowflake old = m_previousLastReadMessage;
 	m_previousLastReadMessage = sf;
 	if (old != 0)
@@ -4189,6 +4181,14 @@ void MessageList::SetLastViewedMessage(Snowflake sf, bool refreshItAlso)
 			rcMsg.bottom = rcMsg.top + ScaleByDPI(15); // about the height of the NEW marker
 			InvalidateRect(m_hwnd, &rcMsg, FALSE);
 		}
+	}
+
+	// check if this message is the last one
+	if (!notExactMatch && itm != m_messages.end()) {
+		++itm;
+		if (itm == m_messages.end())
+			// yeah, so don't ACTUALLY update - that'll be done on refresh.
+			return;
 	}
 
 	if (refreshItAlso)

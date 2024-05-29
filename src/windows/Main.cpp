@@ -1217,7 +1217,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			m.SetTime(time(NULL));
 			m.m_dateFull = "Sending...";
 			m.m_dateCompact = "Sending...";
-			g_pMessageList->AddMessage(m);
+			g_pMessageList->AddMessage(m, true);
 			return 0;
 		}
 		case WM_FAILMESSAGE:

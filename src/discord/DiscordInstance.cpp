@@ -1602,6 +1602,7 @@ void DiscordInstance::InitDispatchFunctions()
 	DECL(GUILD_DELETE);
 	DECL(CHANNEL_CREATE);
 	DECL(CHANNEL_DELETE);
+	DECL(CHANNEL_UPDATE);
 	DECL(GUILD_MEMBER_LIST_UPDATE);
 	DECL(GUILD_MEMBERS_CHUNK);
 	DECL(TYPING_START);
@@ -1983,13 +1984,13 @@ void DiscordInstance::HandleCHANNEL_CREATE(Json& j)
 	Json& data = j["d"];
 	Snowflake guildId = GetSnowflake(data, "guild_id");//will return 0 if no guild
 
-	int ord = 0;
-	Channel chn;
-	ParseChannel(chn, data, ord);
-
 	Guild* pGuild = GetGuild(guildId);
 	if (!pGuild)
 		return;
+
+	int ord = 0;
+	Channel chn;
+	ParseChannel(chn, data, ord);
 
 	chn.m_parentGuild = pGuild->m_snowflake;
 	pGuild->m_channels.push_back(chn);
@@ -1999,6 +2000,39 @@ void DiscordInstance::HandleCHANNEL_CREATE(Json& j)
 		GetFrontend()->UpdateChannelList();
 }
 
+void DiscordInstance::HandleCHANNEL_UPDATE(Json& j)
+{
+	Json& data = j["d"];
+	Snowflake guildId = GetSnowflake(data, "guild_id");//will return 0 if no guild
+	Snowflake channelId = GetSnowflake(data, "id");
+
+	Guild* pGuild = GetGuild(guildId);
+	if (!pGuild)
+		return;
+
+	Channel* pChan = pGuild->GetChannel(channelId);
+	if (!pChan)
+		return;
+
+	int position = pChan->m_pos;
+	Snowflake oldCategory = pChan->m_parentCateg;
+	uint64_t oldPerms = pChan->ComputePermissionOverwrites(m_mySnowflake, pGuild->ComputeBasePermissions(m_mySnowflake));
+
+	int ord = 0;
+	ParseChannel(*pChan, data, ord);
+
+	// If the position, permissions, or parent category changed, refresh the channel.
+	bool modifiedOrder = position != pChan->m_pos || oldCategory != pChan->m_parentCateg;
+
+	if (modifiedOrder) {
+		pGuild->m_channels.sort();
+	}
+
+	if (modifiedOrder || oldPerms != pChan->ComputePermissionOverwrites(m_mySnowflake, pGuild->ComputeBasePermissions(m_mySnowflake))) {
+		GetFrontend()->UpdateChannelList();
+	}
+}
+
 void DiscordInstance::HandleCHANNEL_DELETE(Json& j)
 {
 	Json& data = j["d"];
@@ -2006,7 +2040,7 @@ void DiscordInstance::HandleCHANNEL_DELETE(Json& j)
 	Snowflake channelId = GetSnowflake(data, "id");
 
 	Guild* pGuild = GetGuild(guildId);
-	if (!GetGuild(guildId))
+	if (!pGuild)
 		return;
 
 	for (auto iter = pGuild->m_channels.begin();

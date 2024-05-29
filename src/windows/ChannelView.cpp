@@ -406,10 +406,6 @@ void ChannelView::RemoveCategoryIfNeeded(const Channel& ch)
 	if (ch.m_channelType != Channel::CATEGORY)
 		return;
 
-	if (ch.HasPermissionConst(PERM_VIEW_CHANNEL))
-		// We can see this category, so it's fine if it's empty
-		return;
-
 	int parentIndex = m_idToIdx[ch.m_parentCateg];
 	ChannelMember& mem = m_channels[parentIndex];
 	if (mem.m_childCount > 0)
