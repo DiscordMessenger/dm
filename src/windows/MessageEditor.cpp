@@ -276,6 +276,8 @@ void MessageEditor::StartReply(Snowflake messageID, Snowflake authorID)
 
 	bool mention = GetLocalSettings()->ReplyMentionByDefault();
 	SendMessage(m_mentionCheck_hwnd, BM_SETCHECK, mention ? BST_CHECKED : BST_UNCHECKED, 0);
+
+	SetFocus(m_edit_hwnd);
 }
 
 void MessageEditor::StopReply()

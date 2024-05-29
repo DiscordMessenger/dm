@@ -30,7 +30,6 @@ struct UploadDialogData
 static int g_UploadId = 1;
 static std::map<int, UploadDialogData*> g_PendingUploads;
 
-
 void UploadDialogFireInitialRequest(int id)
 {
 	UploadDialogData* data = g_PendingUploads[id];
@@ -203,6 +202,7 @@ INT_PTR CALLBACK UploadDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 
 			MoveWindow(hWnd, rect1.left, rect1.top, rect1.right - rect1.left, rect1.bottom - rect1.top, TRUE);
 
+			SetFocus(GetDlgItem(hWnd, IDC_ATTACH_COMMENT));
 			break;
 		}
 		case WM_COMMAND:

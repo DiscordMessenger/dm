@@ -712,6 +712,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pMessageList->UpdateAllowDrop();
 
 			UpdateMainWindowTitle(hWnd);
+			SetFocus(g_pMessageEditor->m_edit_hwnd);
 
 			if (!GetDiscordInstance()->GetCurrentChannel())
 			{
