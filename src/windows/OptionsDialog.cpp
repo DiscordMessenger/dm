@@ -34,11 +34,11 @@ DLGTEMPLATEEX; // huh??
 
 struct DialogHeader
 {
-	HWND hwndTab;     // tab control
-	HWND hwndDisplay; // current child dialog box
-	RECT rcDisplay;
-	DLGTEMPLATEEX* apRes[C_PAGES];
-	int  pageNum;
+	HWND hwndTab = NULL;     // tab control
+	HWND hwndDisplay = NULL; // current child dialog box
+	RECT rcDisplay{};
+	DLGTEMPLATEEX* apRes[C_PAGES] = { NULL };
+	int  pageNum = 0;
 };
 
 void AddTab(HWND hwndTab, TCITEM& tie, int index, LPTSTR str)
@@ -432,14 +432,15 @@ HRESULT OnPreferenceDialogInit(HWND hWnd)
 	int cxMargin = LOWORD(dwDlgBase) / 4;
 	int cyMargin = HIWORD(dwDlgBase) / 8;
 
-	DialogHeader* pHeader = (DialogHeader*)LocalAlloc(LPTR, sizeof(DialogHeader)); // not sure why they're using LocalAlloc here
-
+	DialogHeader* pHeader = new DialogHeader;
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG)pHeader);
 
 	// Get the tab control. Note the hardcoded sizes:
 	HWND hwndTab = GetDlgItem(hWnd, IDC_OPTIONS_TABS);
-	if (!hwndTab)
+	if (!hwndTab) {
+		delete pHeader;
 		return HRESULT_FROM_WIN32(GetLastError());
+	}
 
 	pHeader->hwndTab = hwndTab;
 
@@ -523,8 +524,15 @@ static INT_PTR CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			LPNMHDR hdr = (LPNMHDR)lParam;
 			return OptionsOnNotify(hdr->hwndFrom, hWnd, lParam);
 		}
-		case WM_CLOSE:
 		case WM_DESTROY:
+		{
+			DialogHeader* pData = (DialogHeader*) GetWindowLongPtr(hWnd, GWLP_USERDATA);
+			if (pData)
+				delete pData;
+
+			// fallthrough
+		}
+		case WM_CLOSE:
 		{
 			EndDialog(hWnd, OPTIONS_RESULT_OK);
 			break;
