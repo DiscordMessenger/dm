@@ -326,7 +326,7 @@ void Frontend_Win32::OnWebsocketClose(int gatewayID, int errorCode, const std::s
 
 #include <websocketpp/close.hpp>
 
-void Frontend_Win32::OnWebsocketFail(int gatewayID, int errorCode, const std::string& message, bool isTLSError)
+void Frontend_Win32::OnWebsocketFail(int gatewayID, int errorCode, const std::string& message, bool isTLSError, bool mayRetry)
 {
 	static TCHAR buffer[8192];
 	LPTSTR msg = ConvertCppStringToTString(message);
@@ -337,6 +337,7 @@ void Frontend_Win32::OnWebsocketFail(int gatewayID, int errorCode, const std::st
 		errorCode,
 		msg
 	);
+	free(msg);
 
 	if (isTLSError) {
 		_tcscat(
@@ -357,10 +358,25 @@ void Frontend_Win32::OnWebsocketFail(int gatewayID, int errorCode, const std::st
 		);
 	}
 
-	free(msg);
+	if (mayRetry) {
+		_tcscat(buffer, TEXT("\n\nClick Retry to try connecting again, or Cancel to quit."));
+	}
+
+	int flags = (mayRetry ? MB_RETRYCANCEL : MB_OK) | (isTLSError ? MB_ICONWARNING : MB_ICONERROR);
+	int result = MessageBox(g_Hwnd, buffer, TmGetTString(IDS_PROGRAM_NAME), flags);
 	
-	MessageBox(g_Hwnd, buffer, TmGetTString(IDS_PROGRAM_NAME), (isTLSError ? MB_ICONWARNING : MB_ICONERROR) | MB_OK);
-	SendMessage(g_Hwnd, WM_CONNECTERROR, 0, 0);
+	if (mayRetry) {
+		if (result == IDRETRY) {
+			SendMessage(g_Hwnd, WM_CONNECTERROR, 0, 0);
+		}
+		else {
+			SendMessage(g_Hwnd, WM_DESTROY, 0, 0);
+			RequestQuit();
+		}
+	}
+	else {
+		SendMessage(g_Hwnd, WM_CONNECTERROR2, 0, 0);
+	}
 }
 
 void Frontend_Win32::RequestQuit()

@@ -47,7 +47,7 @@ public:
 	void JumpToMessage(Snowflake messageInCurrentChannel) override;
 	void OnWebsocketMessage(int gatewayID, const std::string& payload) override;
 	void OnWebsocketClose(int gatewayID, int errorCode, const std::string& message) override;
-	void OnWebsocketFail(int gatewayID, int errorCode, const std::string& message, bool isTLSError) override;
+	void OnWebsocketFail(int gatewayID, int errorCode, const std::string& message, bool isTLSError, bool mayRetry) override;
 	void SetHeartbeatInterval(int timeMs) override;
 	void LaunchURL(const std::string& url) override;
 	void RegisterIcon(Snowflake sf, const std::string& avatarlnk) override;

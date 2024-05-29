@@ -57,4 +57,5 @@ enum eWmUserMsgs
 	WM_UPDATEUSER, // Snowflake[1]
 	WM_UPDATEEMOJI, // Snowflake[1]
 	WM_TOGGLECHANNELS,
+	WM_CONNECTERROR2,
 };

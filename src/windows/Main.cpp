@@ -1033,6 +1033,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (g_tryAgainTimerElapse > 10000)
 				g_tryAgainTimerElapse = 10000;
 			break;
+		case WM_CONNECTERROR2:
 		case WM_CONNECTED:
 			ResetTryAgainInTime();
 			if (g_tryAgainTimer) {

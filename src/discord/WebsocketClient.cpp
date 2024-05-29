@@ -44,18 +44,35 @@ void WSConnectionMetadata::OnFail(WSClient* c, websocketpp::connection_hdl hdl)
 		guiMessage += " (transport error " + xportEc.message() + ")";
 
 	namespace SocketErrors = websocketpp::transport::asio::socket::error;
+	using WebsocketErrors = websocketpp::error::value;
+
 	bool isTLSError = false;
 	switch (pConn->get_ec().value()) {
 		case SocketErrors::missing_tls_init_handler:
 		case SocketErrors::tls_failed_sni_hostname:
-		case SocketErrors::tls_handshake_timeout:
-		case SocketErrors::tls_handshake_failed:
 		case SocketErrors::invalid_tls_context:
 		case SocketErrors::security:
+		//case SocketErrors::tls_handshake_timeout:
+		//case SocketErrors::tls_handshake_failed:
 			isTLSError = true;
 	}
 
-	GetFrontend()->OnWebsocketFail(m_id, pConn->get_ec().value(), guiMessage, isTLSError);
+	bool mayRetry = false;
+	switch (pConn->get_ec().value()) {
+		case WSAHOST_NOT_FOUND:
+		case WSATRY_AGAIN:
+		case WSAEDISCON:
+		case WSAETIMEDOUT:
+		case SocketErrors::tls_handshake_timeout:
+		case SocketErrors::tls_handshake_failed:
+		case WebsocketErrors::bad_connection:
+		case WebsocketErrors::open_handshake_timeout:
+		case WebsocketErrors::close_handshake_timeout:
+		case WebsocketErrors::extension_neg_failed:
+			mayRetry = true;
+	}
+
+	GetFrontend()->OnWebsocketFail(m_id, pConn->get_ec().value(), guiMessage, isTLSError, mayRetry);
 }
 
 void WSConnectionMetadata::OnClose(WSClient* c, websocketpp::connection_hdl hdl)
