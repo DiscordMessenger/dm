@@ -248,6 +248,11 @@
     <Image Include="..\res\icon_file_2k.ico" />
     <Image Include="..\res\icon_groupdm.ico" />
     <Image Include="..\res\icon_groupdm_2k.ico" />
+    <Image Include="..\res\icon_header_1.ico" />
+    <Image Include="..\res\icon_header_2.ico" />
+    <Image Include="..\res\icon_header_3.ico" />
+    <Image Include="..\res\icon_header_4.ico" />
+    <Image Include="..\res\icon_header_5.ico" />
     <Image Include="..\res\icon_image_error.ico" />
     <Image Include="..\res\icon_jump.ico" />
     <Image Include="..\res\icon_jump_2k.ico" />

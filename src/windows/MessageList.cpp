@@ -1514,6 +1514,24 @@ bool MessageList::IsActionMessage(MessageType::eType msgType)
 		case MessageType::CANT_VIEW_MSG_HISTORY:
 		case MessageType::LOADING_PINNED_MESSAGES:
 		case MessageType::NO_PINNED_MESSAGES:
+		case MessageType::CHANNEL_HEADER:
+			return true;
+	}
+
+	return false;
+}
+
+bool MessageList::IsClientSideMessage(MessageType::eType msgType)
+{
+	switch (msgType)
+	{
+		case MessageType::GAP_UP:
+		case MessageType::GAP_DOWN:
+		case MessageType::GAP_AROUND:
+		case MessageType::CANT_VIEW_MSG_HISTORY:
+		case MessageType::LOADING_PINNED_MESSAGES:
+		case MessageType::NO_PINNED_MESSAGES:
+		case MessageType::CHANNEL_HEADER:
 			return true;
 	}
 
@@ -1523,6 +1541,7 @@ bool MessageList::IsActionMessage(MessageType::eType msgType)
 // This is a horrible mess!
 void MessageList::DetermineMessageData(
 	Snowflake guildID,                /* IN */
+	Snowflake channelID,              /* IN */
 	MessageType::eType msgType,	      /* IN */
 	Snowflake id,				      /* IN */
 	Snowflake authorId,		          /* IN */
@@ -1581,6 +1600,19 @@ void MessageList::DetermineMessageData(
 				}
 			}
 
+			break;
+		}
+
+		case MessageType::CHANNEL_HEADER:
+		{
+			Channel* pChan = GetDiscordInstance()->GetChannel(channelID);
+			if (!pChan) {
+				messagePart1 = TEXT("Unknown channel");
+				break;
+			}
+
+			messagePart1 = TEXT("Welcome to the beginning of the ");
+			messagePart2 = TEXT(" channel.");
 			break;
 		}
 
@@ -1842,6 +1874,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 	if (isActionMessage)
 		DetermineMessageData(
 			m_guildID,
+			m_channelID,
 			refMsg.m_type,
 			refMsg.m_snowflake,
 			refMsg.m_author_snowflake,
@@ -2045,7 +2078,12 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			if (!isFlashed)
 				bkgdColor = GetSysColor(COLOR_3DFACE);
 
-			DrawEdge(hdc, &rect2, BDR_RAISED, edgeFlags);
+			if (item.m_msg.m_type != MessageType::CHANNEL_HEADER) {
+				DrawEdge(hdc, &rect2, BDR_RAISED, edgeFlags);
+			}
+			else if (edgeFlags & BF_MIDDLE) {
+				FillRect(hdc, &rect2, GetSysColorBrush(COLOR_3DFACE));
+			}
 			break;
 		}
 		case MS_FLAT: {
@@ -2077,6 +2115,14 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 				c1 = c2;
 				c2 = tmp;
 				swapped = true;
+			}
+
+			// note: Intentionally perform the swap again
+			if (item.m_msg.m_type == MessageType::CHANNEL_HEADER) {
+				COLORREF tmp = c1;
+				c1 = c2;
+				c2 = tmp;
+				swapped = !swapped;
 			}
 
 			bkgdColor = c2;
@@ -2132,6 +2178,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	if (isActionMessage)
 		DetermineMessageData(
 			m_guildID,
+			m_channelID,
 			item.m_msg.m_type,
 			item.m_msg.m_snowflake,
 			item.m_msg.m_author_snowflake,
@@ -2156,11 +2203,42 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	int dateOffset = 0;
 	int sizePart2 = 0, sizeClick = 0, sizePart3 = 0;
 	int actionIconSize = ScaleByDPI(16);
+	int oldMode = 0;
+	bool restoreOldMode = false;
 
 	if (isActionMessage)
 	{
+		if (item.m_msg.m_type == MessageType::CHANNEL_HEADER && Supports32BitIcons() && GetDeviceCaps(hdc, BITSPIXEL) >= 16)
+		{
+			restoreOldMode = true;
+			oldMode = SetBkMode(hdc, TRANSPARENT);
+
+			HICON hics[5];
+			int sz = ScaleByDPI(64);
+
+			for (int i = 0; i < 5; i++) {
+				hics[i] = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_HEADER_1 + i), IMAGE_ICON, sz, sz, LR_SHARED | LR_CREATEDIBSECTION);
+			}
+
+			// Render on the left side.
+			int x = 0;
+			for (int i = 0; i < 2; i++) {
+				DrawIconEx(hdc, x, rc.top, hics[i], sz, sz, 0, NULL, DI_NORMAL | DI_COMPAT);
+				x += sz;
+			}
+
+			x = rc.right;
+			for (int i = 4; i >= 2; i--) {
+				x -= sz;
+				DrawIconEx(hdc, x, rc.top, hics[i], sz, sz, 0, NULL, DI_NORMAL | DI_COMPAT);
+			}
+
+			rc.top = rc.bottom - item.m_authHeight;
+		}
+
 		SelectObject(hdc, g_MessageTextFont);
 		RECT rca = rc;
+
 		RECT rcMeasure;
 		rca.right -= ScaleByDPI(75); // TODO: Figure out why I have to do this.
 		rcMeasure = rca;
@@ -2488,6 +2566,9 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			item.m_avatarRect = { 0, 0, 0, 0 };
 		}
 	}
+
+	if (restoreOldMode)
+		SetBkMode(hdc, oldMode);
 
 	// draw available embeds, if any:
 	RECT embedRect = item.m_messageRect;
@@ -2889,6 +2970,8 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			if (!pRCMsg) break;
+
+			if (IsClientSideMessage(pRCMsg->m_msg.m_type)) break;
 
 			HMENU menu = GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_MESSAGE_CONTEXT)), 0);
 
@@ -3699,6 +3782,10 @@ void MessageList::AdjustHeightInfo(const MessageItem& msg, int& height, int& tex
 
 	if (!IsActionMessage(msg.m_msg.m_type) && !IsCompact() && !isChainCont && height < minHeight)
 		height = minHeight;
+
+	if (msg.m_msg.m_type == MessageType::CHANNEL_HEADER) {
+		height = ScaleByDPI(64);
+	}
 }
 
 bool MessageList::ShouldBeDateGap(time_t oldTime, time_t newTime)

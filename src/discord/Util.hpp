@@ -41,6 +41,7 @@ std::string FormatTimeLong(time_t time, bool relativity = false); // relativity=
 std::string FormatTimeShort(time_t time);
 std::string FormatTimeShorter(time_t time);
 void SplitURL(const std::string& url, std::string& domainOut, std::string& resourceOut);
+std::string CreateChannelLink(Snowflake guild, Snowflake channel);
 std::string CreateMessageLink(Snowflake guild, Snowflake channel, Snowflake message);
 float CompareFuzzy(const std::string& item, const char* query); // returns a "closeness" factor, =0 if no match, >0 if match. The closeness is used for sorting matches
 float GetAppVersion();

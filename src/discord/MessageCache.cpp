@@ -3,6 +3,8 @@
 #include "Frontend.hpp"
 #include "DiscordInstance.hpp"
 
+constexpr int MESSAGES_PER_REQUEST = 50;
+
 using nlohmann::json;
 static MessageCache g_MCSingleton;
 
@@ -19,10 +21,10 @@ void MessageCache::GetLoadedMessages(Snowflake channel, Snowflake guild, std::li
 		out.push_back(msg.second);
 }
 
-void MessageCache::ProcessRequest(Snowflake channel, ScrollDir::eScrollDir sd, Snowflake anchor, nlohmann::json& j)
+void MessageCache::ProcessRequest(Snowflake channel, ScrollDir::eScrollDir sd, Snowflake anchor, nlohmann::json& j, const std::string& channelName)
 {
 	MessageChunkList& lst = m_mapMessages[channel];
-	lst.ProcessRequest(sd, anchor, j);
+	lst.ProcessRequest(sd, anchor, j, channelName);
 }
 
 void MessageCache::AddMessage(Snowflake channel, const Message& msg)
@@ -74,7 +76,7 @@ MessageChunkList::MessageChunkList()
 	m_messages[msg.m_snowflake] = msg;
 }
 
-void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, json& j)
+void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, json& j, const std::string& channelName)
 {
 	Snowflake lowestMsg = (Snowflake) -1LL, highestMsg = 0;
 
@@ -89,6 +91,7 @@ void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, j
 	}
 
 	// for each message
+	int receivedMessages = 0;
 	for (json& data : j)
 	{
 		Message msg;
@@ -101,6 +104,7 @@ void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, j
 		}
 
 		m_messages[msg.m_snowflake] = msg;
+		receivedMessages++;
 
 		if (lowestMsg > msg.m_snowflake)
 			lowestMsg = msg.m_snowflake;
@@ -108,15 +112,24 @@ void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, j
 			highestMsg = msg.m_snowflake;
 	}
 
-	bool addBefore = sd != ScrollDir::AFTER;
+	bool addBefore = sd != ScrollDir::AFTER && receivedMessages >= MESSAGES_PER_REQUEST;
 	bool addAfter  = sd != ScrollDir::BEFORE;
 
 	Message msg;
-	msg.m_author = GetFrontend()->GetPleaseWaitText();
+	msg.m_author = "";
 	msg.m_message = "";
 	msg.m_dateFull = "";
 	msg.m_dateCompact = "";
 
+	if (receivedMessages < MESSAGES_PER_REQUEST)
+	{
+		msg.m_type = MessageType::CHANNEL_HEADER;
+		msg.m_snowflake = 1;
+		msg.m_author = "#" + channelName;
+		m_messages[msg.m_snowflake] = msg;
+	}
+
+	msg.m_author = GetFrontend()->GetPleaseWaitText();
 	if (addBefore && addedMessages)
 	{
 		msg.m_type = MessageType::GAP_UP;

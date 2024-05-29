@@ -83,6 +83,11 @@
 #define IDI_SHIFT_RIGHT                 81
 #define IDI_SHIFT_RIGHT_2K              82
 #define IDI_ICON_2K                     83
+#define IDI_HEADER_1                    84
+#define IDI_HEADER_2                    85
+#define IDI_HEADER_3                    86
+#define IDI_HEADER_4                    87
+#define IDI_HEADER_5                    88
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -292,7 +297,6 @@
 #define IDC_ENABLE_TLS_CHECKS           871
 #define IDC_CHECK_UPDATES               872
 #define IDC_EDIT_ABOUTME                873
-#define IDC_CHECK1                      874
 #define IDC_DISABLE_FORMATTING          874
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
@@ -370,7 +374,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        84
+#define _APS_NEXT_RESOURCE_VALUE        89
 #define _APS_NEXT_COMMAND_VALUE         1069
 #define _APS_NEXT_CONTROL_VALUE         875
 #define _APS_NEXT_SYMED_VALUE           40000

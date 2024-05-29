@@ -659,6 +659,10 @@ void DiscordInstance::HandleRequest(void* pRequestPtr)
 			}
 			case MESSAGES:
 			{
+				Channel* pChan = GetDiscordInstance()->GetChannel(pRequest->key);
+				if (!pChan)
+					break;
+
 				ScrollDir::eScrollDir sd = ScrollDir::BEFORE;
 				switch (pRequest->additional_data[0]) {
 					case /*b*/'e': sd = ScrollDir::BEFORE; break;
@@ -667,7 +671,7 @@ void DiscordInstance::HandleRequest(void* pRequestPtr)
 				}
 				DbgPrintF("Processing request %d (%c)", sd, pRequest->additional_data[0]);
 				uint64_t ts = GetTimeUs();
-				GetMessageCache()->ProcessRequest(pRequest->key, sd, (Snowflake)GetIntFromString(pRequest->additional_data.substr(1)), j);
+				GetMessageCache()->ProcessRequest(pRequest->key, sd, (Snowflake)GetIntFromString(pRequest->additional_data.substr(1)), j, pChan->m_name);
 				uint64_t te = GetTimeUs();
 				DbgPrintF("Total process took %lld us", te - ts);
 
@@ -1147,8 +1151,8 @@ void DiscordInstance::JumpToMessage(Snowflake guild, Snowflake channel, Snowflak
 	if (m_CurrentChannel != channel) {
 		OnSelectChannel(channel);
 	}
-
-	GetFrontend()->JumpToMessage(message);
+	if (message)
+		GetFrontend()->JumpToMessage(message);
 }
 
 void DiscordInstance::LaunchURL(const std::string& url)

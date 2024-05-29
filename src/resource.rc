@@ -372,6 +372,16 @@ IDI_SHIFT_RIGHT_2K      ICON                    "../res/icon_shift_right_2k.ico"
 
 IDI_ICON_2K             ICON                    "../res/icon_discord_2k.ico"
 
+IDI_HEADER_1            ICON                    "../res/icon_header_1.ico"
+
+IDI_HEADER_2            ICON                    "../res/icon_header_2.ico"
+
+IDI_HEADER_3            ICON                    "../res/icon_header_3.ico"
+
+IDI_HEADER_4            ICON                    "../res/icon_header_4.ico"
+
+IDI_HEADER_5            ICON                    "../res/icon_header_5.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

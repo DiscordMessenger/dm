@@ -481,6 +481,7 @@ public:
 protected:
 	friend class MessageItem;
 	static bool IsActionMessage(MessageType::eType msgType);
+	static bool IsClientSideMessage(MessageType::eType msgType);
 
 private:
 	void HitTestAuthor(POINT pt, BOOL& hit);
@@ -511,6 +512,7 @@ private:
 	// This is a horrible mess!
 	static void DetermineMessageData(
 		Snowflake guildID,                /* IN */
+		Snowflake channelID,              /* IN */
 		MessageType::eType msgType,	      /* IN */
 		Snowflake id,				      /* IN */
 		Snowflake authorId,		          /* IN */

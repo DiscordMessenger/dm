@@ -255,6 +255,14 @@ std::string MakeStringFromUnicodeString(LPCWSTR wstr)
 	return final_str;
 }
 
+std::string CreateChannelLink(Snowflake guild, Snowflake channel)
+{
+	std::string guildStr = std::to_string(guild);
+	if (!guild) guildStr = "@me";
+
+	return "https://discord.com/channels/" + guildStr + "/" + std::to_string(channel);
+}
+
 std::string CreateMessageLink(Snowflake guild, Snowflake channel, Snowflake message)
 {
 	std::string guildStr = std::to_string(guild);
