@@ -95,4 +95,6 @@ struct Guild
 	std::string GetGroupName(Snowflake id);
 
 	uint64_t ComputeBasePermissions(Snowflake member);
+
+	bool IsFirstChannel(Snowflake channel);
 };

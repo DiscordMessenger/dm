@@ -2208,29 +2208,32 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 	if (isActionMessage)
 	{
-		if (item.m_msg.m_type == MessageType::CHANNEL_HEADER && Supports32BitIcons() && GetDeviceCaps(hdc, BITSPIXEL) >= 16)
+		if (item.m_msg.m_type == MessageType::CHANNEL_HEADER)
 		{
-			restoreOldMode = true;
-			oldMode = SetBkMode(hdc, TRANSPARENT);
+			if (Supports32BitIcons() && GetDeviceCaps(hdc, BITSPIXEL) >= 16)
+			{
+				restoreOldMode = true;
+				oldMode = SetBkMode(hdc, TRANSPARENT);
 
-			HICON hics[5];
-			int sz = ScaleByDPI(64);
+				HICON hics[5];
+				int sz = ScaleByDPI(64);
 
-			for (int i = 0; i < 5; i++) {
-				hics[i] = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_HEADER_1 + i), IMAGE_ICON, sz, sz, LR_SHARED | LR_CREATEDIBSECTION);
-			}
+				for (int i = 0; i < 5; i++) {
+					hics[i] = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_HEADER_1 + i), IMAGE_ICON, sz, sz, LR_SHARED | LR_CREATEDIBSECTION);
+				}
 
-			// Render on the left side.
-			int x = 0;
-			for (int i = 0; i < 2; i++) {
-				DrawIconEx(hdc, x, rc.top, hics[i], sz, sz, 0, NULL, DI_NORMAL | DI_COMPAT);
-				x += sz;
-			}
+				// Render on the left side.
+				int x = 0;
+				for (int i = 0; i < 2; i++) {
+					DrawIconEx(hdc, x, rc.top, hics[i], sz, sz, 0, NULL, DI_NORMAL | DI_COMPAT);
+					x += sz;
+				}
 
-			x = rc.right;
-			for (int i = 4; i >= 2; i--) {
-				x -= sz;
-				DrawIconEx(hdc, x, rc.top, hics[i], sz, sz, 0, NULL, DI_NORMAL | DI_COMPAT);
+				x = rc.right;
+				for (int i = 4; i >= 2; i--) {
+					x -= sz;
+					DrawIconEx(hdc, x, rc.top, hics[i], sz, sz, 0, NULL, DI_NORMAL | DI_COMPAT);
+				}
 			}
 
 			rc.top = rc.bottom - item.m_authHeight;
@@ -4349,7 +4352,7 @@ MessageList* MessageList::Create(HWND hwnd, LPRECT pRect)
 
 	newThis->m_hwnd = CreateWindowEx(
 		WS_EX_CLIENTEDGE, T_MESSAGE_LIST_CLASS, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL,
-		0, 0, width, height, hwnd, (HMENU)CID_MESSAGELIST, g_hInstance, newThis
+		pRect->left, pRect->top, width, height, hwnd, (HMENU)CID_MESSAGELIST, g_hInstance, newThis
 	);
 
 	newThis->UpdateBackgroundBrush();

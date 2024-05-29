@@ -387,8 +387,7 @@ void DiscordInstance::OnSelectGuild(Snowflake sf, Snowflake chan)
 	// check if there are any channels and select the first (for now)
 	Guild* pGuild = GetGuild(sf);
 	if (!pGuild) return;
-
-	GetFrontend()->RepaintGuildList();
+	
 	GetFrontend()->UpdateSelectedGuild();
 
 	if (pGuild->m_bChannelsLoaded && pGuild->m_channels.size())

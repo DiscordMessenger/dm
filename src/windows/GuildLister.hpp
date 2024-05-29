@@ -24,6 +24,7 @@ public:
 	int m_scroll_pos = 0;
 
 	Snowflake m_rightClickedGuild = 0;
+	Snowflake m_selectedGuild = 0; // kept in store to ensure that things don't flicker too much
 
 	std::map<Snowflake, RECT> m_iconRects;
 
@@ -36,6 +37,7 @@ public:
 	void ClearTooltips();
 	void UpdateTooltips();
 	void Update();
+	void UpdateSelected();
 	void OnScroll();
 	void ShowMenu(Snowflake guild, POINT pt);
 	void AskLeave(Snowflake guild);

@@ -796,7 +796,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_UPDATESELECTEDGUILD:
 		{
 			// repaint the guild lister
-			g_pGuildLister->Update();
+			g_pGuildLister->UpdateSelected();
 			g_pGuildHeader->Update();
 
 			SendMessage(hWnd, WM_UPDATECHANLIST, 0, 0);

@@ -113,6 +113,20 @@ void GuildLister::Update()
 	UpdateTooltips();
 }
 
+void GuildLister::UpdateSelected()
+{
+	auto it = m_iconRects.find(m_selectedGuild);
+	if (it != m_iconRects.end()) {
+		InvalidateRect(m_hwnd, NULL, TRUE);
+	}
+
+	m_selectedGuild = GetDiscordInstance()->GetCurrentGuildID();
+	it = m_iconRects.find(m_selectedGuild);
+	if (it != m_iconRects.end()) {
+		InvalidateRect(m_hwnd, NULL, TRUE);
+	}
+}
+
 void GuildLister::OnScroll()
 {
 	UpdateTooltips();
@@ -280,6 +294,7 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 
 	SetRectEmpty(&m_iconRects[id]);
 
+	m_selectedGuild = GetDiscordInstance()->GetCurrentGuildID();
 	if (hdc && hicon)
 	{
 		HICON hborder;
