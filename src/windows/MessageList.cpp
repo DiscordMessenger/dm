@@ -4087,7 +4087,7 @@ void MessageList::EditMessage(const Message& newMsg)
 	bool canInsert = false;
 	bool firstTime = true;
 	auto insertIter = m_messages.end();
-	for (; firstTime || insertIter != m_messages.end(); ++insertIter)
+	while (firstTime || insertIter != m_messages.end())
 	{
 		Snowflake thisSF = 0, nextSF = UINT64_MAX;
 
@@ -4115,6 +4115,8 @@ void MessageList::EditMessage(const Message& newMsg)
 
 		if (firstTime)
 			insertIter = m_messages.begin();
+		else
+			++insertIter;
 
 		firstTime = false;
 	}
