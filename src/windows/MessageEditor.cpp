@@ -552,7 +552,7 @@ void MessageEditor::Layout()
 		rc2.top = rc2.top + (rcButton.bottom - rcButton.top - sendButtonHeight) / 2;
 		rc2.bottom = rc2.top + sendButtonHeight;
 		ShowWindow(m_btnUpload_hwnd, SW_SHOW);
-		MoveWindow(m_btnUpload_hwnd, rc2.left, rc2.top, rc2.right - rc2.left, sendButtonHeight, FALSE);
+		MoveWindow(m_btnUpload_hwnd, rc2.left, rc2.top, rc2.right - rc2.left, sendButtonHeight, TRUE);
 		rc.left = rcButton.right + ScaleByDPI(2);
 	}
 	else
@@ -560,7 +560,7 @@ void MessageEditor::Layout()
 		ShowWindow(m_btnUpload_hwnd, SW_HIDE);
 	}
 	
-	MoveWindow(m_edit_hwnd, rc.left, rc.top, rc.right - rc.left, height, FALSE);
+	MoveWindow(m_edit_hwnd, rc.left, rc.top, rc.right - rc.left, height, TRUE);
 
 	if (isUploadingAllowed != m_bWasUploadingAllowed) {
 		rcButton.right += ScaleByDPI(6);
