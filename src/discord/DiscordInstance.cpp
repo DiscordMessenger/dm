@@ -510,7 +510,10 @@ void DiscordInstance::HandleRequest(void* pRequestPtr)
 
 		case HTTP_NOTFOUND:
 		case HTTP_BADGATEWAY:
+		case HTTP_UNSUPPMEDIA:
 		{
+			DbgPrintF("Resource %s not loaded due to error %d", pRequest->url, pRequest->result);
+
 			if (pRequest->itype == IMAGE || pRequest->itype == IMAGE_ATTACHMENT) {
 				GetFrontend()->OnAttachmentFailed(pRequest->itype == IMAGE, pRequest->additional_data);
 				return;
@@ -525,6 +528,9 @@ void DiscordInstance::HandleRequest(void* pRequestPtr)
 			switch (pRequest->result) {
 				case HTTP_BADGATEWAY:
 					suffix = " could not be accessed due to a bad gateway. (502)";
+					break;
+				case HTTP_UNSUPPMEDIA:
+					suffix = " could not be accessed due to an unsupported media type. (415)";
 					break;
 			}
 
