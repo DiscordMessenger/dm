@@ -23,11 +23,20 @@ enum eHttpResponseCodes
 	HTTP_TOOMANYREQS  = 429,
 
 	HTTP_BADGATEWAY   = 502,
+
+	HTTP_PROGRESS     = 999,
 };
 
 namespace httplib {
 	class Result;
 }
+
+//
+// ! - The PUT_OCTETS_PROGRESS HTTP request type is a special one.
+// Basically, the pFunc is called for every time that httplib wants
+// to report progress, with a result of HTTP_PROGRESS (999), and then
+// with the actual code.
+//
 
 struct NetRequest
 {
@@ -43,6 +52,7 @@ struct NetRequest
 		POST_JSON,
 		DELETE_, // WinNT defines "DELETE" as a macro... bruh
 		PUT_OCTETS,
+		PUT_OCTETS_PROGRESS, // (!)
 	};
 	int result = 0;
 	int itype  = 0;
@@ -55,6 +65,14 @@ struct NetRequest
 	std::string authorization = "";
 	std::string additional_data = "";
 	std::vector<uint8_t> params_bytes;
+	size_t m_offset;
+
+	size_t GetOffset() const {
+		return m_offset;
+	}
+	size_t GetTotalBytes() const {
+		return params_bytes.size();
+	}
 
 	int Priority() const;
 

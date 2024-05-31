@@ -85,6 +85,8 @@ public:
 
 	void StopAllRequests();
 	void PrepareQuit();
+
+	bool ProgressFunction(NetRequest* pRequest, uint64_t offset, uint64_t length);
 };
 
 class NetworkerThreadManager : public HTTPClient

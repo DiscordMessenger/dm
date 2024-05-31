@@ -2427,7 +2427,7 @@ void DiscordInstance::OnUploadAttachmentFirst(NetRequest* pReq)
 
 		GetHTTPClient()->PerformRequest(
 			true,
-			NetRequest::PUT_OCTETS,
+			NetRequest::PUT_OCTETS_PROGRESS,
 			up.m_uploadUrl,
 			DiscordRequest::UPLOAD_ATTACHMENT_2,
 			pReq->key,
@@ -2450,6 +2450,12 @@ void DiscordInstance::OnUploadAttachmentSecond(NetRequest* pReq)
 
 	if (pReq->result != HTTP_OK)
 	{
+		if (pReq->result == HTTP_PROGRESS) {
+			// N.B. totally safe to access because corresponding networker thread is locked up waiting for us
+			DbgPrintF("Reporting progress: %zu of %zu", pReq->GetOffset(), pReq->GetTotalBytes());
+			return;
+		}
+
 		// Delete enqueued upload
 		ups.erase(iter);
 		GetFrontend()->OnFailedToUploadFile(pReq->additional_data, pReq->result);

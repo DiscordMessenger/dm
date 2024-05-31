@@ -13,6 +13,8 @@
 
 #include <httplib/httplib.h>
 
+constexpr size_t REPORT_PROGRESS_EVERY_BYTES = 15360; // arbitrary
+
 void LoadSystemCertsOnWindows(SSL_CTX* ctx)
 {
 	X509_STORE* store = X509_STORE_new();
@@ -136,6 +138,34 @@ void NetworkerThread::IdleWait()
 	Sleep(100);
 }
 
+// Custom Content Provider to track progress
+class ProgressContentProvider {
+public:
+	typedef std::function<bool(uint64_t, uint64_t)> ProgressFunction;
+
+    ProgressContentProvider(const uint8_t* bytes, size_t size, ProgressFunction prog)
+        : data_(bytes), data_size_(size), offset_(0), progfunc(prog) {}
+
+    bool operator()(size_t offset, httplib::DataSink& sink) {
+        size_t data_to_send = std::min(data_size_ - offset, REPORT_PROGRESS_EVERY_BYTES);
+        if (data_to_send > 0) {
+            sink.write((const char*) &data_[offset], data_to_send);
+            offset_ = offset;
+			progfunc(offset_, data_size_);
+        }
+		else {
+			sink.done();
+		}
+		return true;
+    }
+
+private:
+	const uint8_t* data_;
+    size_t data_size_;
+    size_t offset_;
+	ProgressFunction progfunc;
+};
+
 void NetworkerThread::FulfillRequest(NetRequest& req)
 {
 	std::string& url = req.url;
@@ -204,6 +234,15 @@ void NetworkerThread::FulfillRequest(NetRequest& req)
 				retry = ProcessResult(req, res);
 				break;
 			}
+			case NetRequest::PUT_OCTETS_PROGRESS:
+			{
+				using namespace std::placeholders;
+				ProgressContentProvider provider(req.params_bytes.data(), req.params_bytes.size(),std::bind(&NetworkerThread::ProgressFunction, this, &req, _1, _2));
+				req.result = HTTP_PROGRESS;
+				const Result res = client.Put(path, headers, provider, "application/octet-stream");
+				retry = ProcessResult(req, res);
+				break;
+			}
 			case NetRequest::GET:
 			{
 				const Result res = client.Get(path, headers);
@@ -265,8 +304,6 @@ DWORD WINAPI NetworkerThread::Init(LPVOID that)
 	return 0;
 }
 
-void OutputPrintf(const char* str, ...);
-
 void NetworkerThread::AddRequest(
 	NetRequest::eType type,
 	const std::string& url,
@@ -304,6 +341,17 @@ void NetworkerThread::PrepareQuit()
 	m_requests.push(NetRequest(0, 0, 0, NetRequest::QUIT));
 
 	m_requestLock.unlock();
+}
+
+bool NetworkerThread::ProgressFunction(NetRequest* pRequest, uint64_t offset, uint64_t length)
+{
+	assert(length == pRequest->params_bytes.size());
+
+	pRequest->m_offset = offset;
+	pRequest->result = HTTP_PROGRESS;
+	pRequest->pFunc(pRequest);
+
+	return true;
 }
 
 NetworkerThread::NetworkerThread()
@@ -410,14 +458,6 @@ void NetworkerThreadManager::PerformRequest(
 	uint8_t* stream_bytes,
 	size_t stream_size)
 {
-	//OutputPrintf("*** PERFORM REQUEST (%s) ***", url.c_str());
-	//OutputPrintf("Method: %d", type);
-	//OutputPrintf("IType: %d", itype);
-	//OutputPrintf("Key: %llu", requestKey);
-	//OutputPrintf("AdditionalData: %s", additional_data.c_str());
-	//OutputPrintf("StreamSize: %zu", stream_size);
-	//OutputPrintf("Body: <START>%s<END>", params.c_str());
-
 	int idx;
 	if (interactive) {
 		m_nextInteractiveId = (m_nextInteractiveId + 1) % C_INTERACTIVE_NETWORKER_THREADS;
