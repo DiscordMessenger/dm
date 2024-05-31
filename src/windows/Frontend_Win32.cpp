@@ -259,8 +259,8 @@ void Frontend_Win32::UpdateProfileAvatar(Snowflake userID, const std::string& re
 
 void Frontend_Win32::UpdateProfilePopout(Snowflake userID)
 {
-	if (GetProfilePopoutUser() == userID)
-		::UpdateProfilePopout();
+	if (ProfilePopout::GetUser() == userID)
+		ProfilePopout::Update();
 }
 
 void Frontend_Win32::UpdateUserData(Snowflake userID)

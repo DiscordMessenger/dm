@@ -194,7 +194,7 @@ bool MemberList::OnNotify(LRESULT& out, WPARAM wParam, LPARAM lParam)
 				POINT pt{ rcItem.left, rcItem.top };
 				ClientToScreen(m_listHwnd, &pt);
 
-				ShowProfilePopout(sf, m_guild, pt.x, pt.y, true);
+				ProfilePopout::Show(sf, m_guild, pt.x, pt.y, true);
 			}
 			break;
 		}

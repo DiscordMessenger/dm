@@ -1343,7 +1343,7 @@ void MessageList::OpenInteractable(InteractableItem* pItem)
 				case '@': {
 					RECT rect;
 					GetWindowRect(m_hwnd, &rect);
-					ShowProfilePopout(sf, m_guildID, rect.left + pItem->m_rect.right + 10, rect.top + pItem->m_rect.top);
+					ProfilePopout::Show(sf, m_guildID, rect.left + pItem->m_rect.right + 10, rect.top + pItem->m_rect.top);
 					break;
 				}
 				case '#': {
@@ -3158,7 +3158,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					RECT rect;
 					GetWindowRect(hWnd, &rect);
 
-					ShowProfilePopout(authorSF, pThis->m_guildID, rect.left + msg->m_authorRect.right + 10, rect.top + msg->m_authorRect.top);
+					ProfilePopout::Show(authorSF, pThis->m_guildID, rect.left + msg->m_authorRect.right + 10, rect.top + msg->m_authorRect.top);
 				}
 
 				for (auto& att : msg->m_attachmentData)

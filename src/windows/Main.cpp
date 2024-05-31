@@ -165,7 +165,7 @@ void OnUpdateAvatar(const std::string& resid)
 			if (GetDiscordInstance()->GetUserID() == ip.sf)
 				SendMessage(g_Hwnd, WM_REPAINTPROFILE, 0, 0);
 
-			if (GetProfilePopoutUser() == ip.sf)
+			if (ProfilePopout::GetUser() == ip.sf)
 				SendMessage(g_Hwnd, WM_UPDATEPROFILEPOPOUT, 0, 0);
 
 			Snowflake sf = ip.sf;
@@ -618,8 +618,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pMemberList->OnUpdateAvatar(sf);
 			g_pChannelView->OnUpdateAvatar(sf);
 
-			if (GetProfilePopoutUser() == sf)
-				UpdateProfilePopout();
+			if (ProfilePopout::GetUser() == sf)
+				ProfilePopout::Update();
 			break;
 		}
 		case WM_SSLERROR:
@@ -659,7 +659,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_UPDATEPROFILEPOPOUT:
 		{
-			UpdateProfilePopout();
+			ProfilePopout::Update();
 			break;
 		}
 		case WM_REPAINTGUILDLIST:
@@ -1064,18 +1064,20 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			break;
 		}
+
 		case WM_CLOSE:
 			KillImageViewer();
-			DismissProfilePopout();
+			ProfilePopout::Dismiss();
 			g_pLoadingMessage->Hide();
 			break;
+
 		case WM_SIZE: {
 			int width = LOWORD(lParam);
 			int height = HIWORD(lParam);
 			// Save the new size
 			GetLocalSettings()->SetWindowSize(UnscaleByDPI(width), UnscaleByDPI(height));
 
-			DismissProfilePopout();
+			ProfilePopout::Dismiss();
 			ProperlySizeControls(hWnd);
 			break;
 		}
@@ -1253,7 +1255,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_SHOWPROFILEPOPOUT:
 		{
 			auto* pParams = (ShowProfilePopoutParams*) lParam;
-			DeferredShowProfilePopout(*pParams);
+			ProfilePopout::DeferredShow(*pParams);
 			delete pParams;
 			break;
 		}
@@ -1323,9 +1325,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_ACTIVATE:
 		{
-			extern HWND g_ProfilePopoutHwnd;
-			if (wParam == WA_INACTIVE && (HWND)lParam != g_ProfilePopoutHwnd)
-				DismissProfilePopout();
+			if (wParam == WA_INACTIVE && (HWND) lParam != ProfilePopout::GetHWND())
+				ProfilePopout::Dismiss();
+
 			break;
 		}
 		case WM_IMAGESAVED:
@@ -1345,7 +1347,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 
 		case WM_MOVE:
-			DismissProfilePopout();
+			ProfilePopout::Dismiss();
 			break;
 	}
 
@@ -1566,13 +1568,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 		TextToSpeech::Initialize();
 
 		// Run the message loop.
-		extern HWND g_ProfilePopoutHwnd;
-
 		ShowWindow (g_Hwnd, startMaximized ? SW_SHOWMAXIMIZED : nShowCmd);
 
 		while (GetMessage(&msg, NULL, 0, 0) > 0)
 		{
-			if (IsWindow(g_ProfilePopoutHwnd) && IsDialogMessage(g_ProfilePopoutHwnd, &msg))
+			if (IsWindow(ProfilePopout::GetHWND()) && IsDialogMessage(ProfilePopout::GetHWND(), &msg))
 				continue;
 
 			if (hAccTable &&
@@ -1585,17 +1585,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 			// add code to the child windows themselves to dismiss the popout.
 			//
 			// Note, this is safe to do because if msg's hwnd member is equal to
-			// g_ProfilePopoutHwnd, IsDialogMessage has already called its dialogproc,
+			// ProfilePopout::m_hwnd, IsDialogMessage has already called its dialogproc,
 			// and returned false, therefore we wouldn't even get here.
 			//
-			//if (msg.message == WM_LBUTTONDOWN)
-			//	DismissProfilePopout();
-
-			if (msg.message == WM_LBUTTONDOWN)
+			if (msg.message == WM_LBUTTONDOWN ||
+				msg.message == WM_RBUTTONDOWN ||
+				msg.message == WM_MBUTTONDOWN ||
+				msg.message == WM_XBUTTONDOWN)
 			{
 				// If the focus isn't sent to a child of the profile popout, dismiss the latter
-				if (!IsChildOf(msg.hwnd, g_ProfilePopoutHwnd))
-					DismissProfilePopout();
+				if (!IsChildOf(msg.hwnd, ProfilePopout::GetHWND()))
+					ProfilePopout::Dismiss();
 			}
 
 			TranslateMessage(&msg);

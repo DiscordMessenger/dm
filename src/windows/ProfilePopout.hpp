@@ -2,6 +2,9 @@
 
 #include "Main.hpp"
 
+class RoleList;
+class ProfileView;
+
 struct ShowProfilePopoutParams
 {
 	POINT m_pt;
@@ -10,12 +13,27 @@ struct ShowProfilePopoutParams
 	bool m_bRightJustify;
 };
 
-void DeferredShowProfilePopout(const ShowProfilePopoutParams& params);
+class ProfilePopout
+{
+public:
+	static void Show(Snowflake user, Snowflake guild, int x, int y, bool rightJustify = false);
+	static void Dismiss();
+	static void Update();
+	static Snowflake GetUser();
 
-void ShowProfilePopout(Snowflake user, Snowflake guild, int x, int y, bool rightJustify = false);
+	// only Main.cpp should use these!
+	static HWND GetHWND();
+	static void DeferredShow(const ShowProfilePopoutParams& params);
 
-void DismissProfilePopout();
+private:
+	static bool Layout(HWND hWnd, SIZE& fullSize);
+	static void Paint(HWND hWnd, HDC hDC);
+	static BOOL CALLBACK Proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-Snowflake GetProfilePopoutUser();
-
-void UpdateProfilePopout();
+	static Snowflake m_user, m_guild;
+	static RoleList* m_pRoleList;
+	static ProfileView* m_pProfileView;
+	static HWND m_hwnd;
+	static HBITMAP m_hBitmap;
+	static SIZE m_size;
+};

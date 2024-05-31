@@ -5,19 +5,6 @@
 #define ADD_NOTES
 //#define ADD_MESSAGE
 
-HWND g_ProfilePopoutHwnd;
-Snowflake g_ProfilePopoutUser;
-Snowflake g_ProfilePopoutGuild;
-
-RoleList* g_pRoleList;
-ProfileView* g_pPopoutProfileView;
-HBITMAP g_hPopoutBitmap; // This bitmap will be disposed of when the popout is dismissed.
-
-Snowflake GetProfilePopoutUser()
-{
-	return g_ProfilePopoutUser;
-}
-
 // Unlike DrawText, this sets the rect to an area of zero if the text is empty
 static int DrawText2(HDC hdc, LPCTSTR lpchText, int cchText, RECT* lprc, UINT format)
 {
@@ -33,26 +20,39 @@ static int DrawText2(HDC hdc, LPCTSTR lpchText, int cchText, RECT* lprc, UINT fo
 	return result;
 }
 
-bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
+Snowflake ProfilePopout::m_user;
+Snowflake ProfilePopout::m_guild;
+RoleList* ProfilePopout::m_pRoleList;
+ProfileView* ProfilePopout::m_pProfileView;
+HWND ProfilePopout::m_hwnd;
+SIZE ProfilePopout::m_size;
+HBITMAP ProfilePopout::m_hBitmap; // This bitmap will be disposed of when the popout is dismissed.
+
+Snowflake ProfilePopout::GetUser()
 {
-	Profile* pProf = GetProfileCache()->LookupProfile(g_ProfilePopoutUser, "...", "...", "");
+	return m_user;
+}
+
+bool ProfilePopout::Layout(HWND hWnd, SIZE& fullSize)
+{
+	Profile* pProf = GetProfileCache()->LookupProfile(m_user, "...", "...", "");
 	if (!pProf) {
 		EndDialog(hWnd, 0);
 		return TRUE;
 	}
 
 	if (!pProf->m_bExtraDataFetched) {
-		GetProfileCache()->RequestExtraData(g_ProfilePopoutUser, g_ProfilePopoutGuild);
+		GetProfileCache()->RequestExtraData(m_user, m_guild);
 	}
 
-	Guild* gld = GetDiscordInstance()->GetGuild(g_ProfilePopoutGuild);
+	Guild* gld = GetDiscordInstance()->GetGuild(m_guild);
 	GuildMember* gm = nullptr;
-	if (pProf->HasGuildMemberProfile(g_ProfilePopoutGuild))
-		gm = &pProf->m_guildMembers[g_ProfilePopoutGuild];
+	if (pProf->HasGuildMemberProfile(m_guild))
+		gm = &pProf->m_guildMembers[m_guild];
 
 	// Gather data about the user profile.
-	LPTSTR name        = ConvertCppStringToTString(pProf->GetName(g_ProfilePopoutGuild));
-	LPTSTR status      = ConvertCppStringToTString(pProf->GetStatus(g_ProfilePopoutGuild));
+	LPTSTR name        = ConvertCppStringToTString(pProf->GetName(m_guild));
+	LPTSTR status      = ConvertCppStringToTString(pProf->GetStatus(m_guild));
 	LPTSTR userName    = ConvertCppStringToTString(pProf->m_name);
 	LPTSTR pronouns    = ConvertCppStringToTString(pProf->m_pronouns);
 	LPTSTR bio         = ConvertToTStringAddCR(pProf->m_bio);
@@ -172,7 +172,7 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 		RECT rcRolePos{};
 		rcRolePos.right = inGroupBoxWidth;
 		rcRolePos.bottom = ScaleByDPI(100);
-		g_pRoleList = RoleList::Create(hWnd, &rcRolePos, IDC_ROLE_STATIC, false, false);
+		m_pRoleList = RoleList::Create(hWnd, &rcRolePos, IDC_ROLE_STATIC, false, false);
 
 		std::vector<GuildRole> grs;
 		for (Snowflake role : gm->m_roles) {
@@ -180,14 +180,14 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 		}
 		std::sort(grs.begin(), grs.end());
 		for (auto& gr : grs) {
-			g_pRoleList->AddRole(gr);
+			m_pRoleList->AddRole(gr);
 		}
 
-		g_pRoleList->Update();
+		m_pRoleList->Update();
 
 		// get the total outstanding size and update it:
 		SetRectEmpty(&rcRoles);
-		rcRoles.bottom = std::min(g_pRoleList->GetRolesHeight(), ScaleByDPI(200));
+		rcRoles.bottom = std::min(m_pRoleList->GetRolesHeight(), ScaleByDPI(200));
 		rcRoles.right  = inGroupBoxWidth;
 	}
 
@@ -223,13 +223,13 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 	place.left -= ScaleByDPI(4);
 	place.top  -= ScaleByDPI(2);
 
-	g_pPopoutProfileView = ProfileView::Create(hWnd, &place, IDC_PROFILE_VIEW, false);
-	if (!g_pPopoutProfileView) {
+	m_pProfileView = ProfileView::Create(hWnd, &place, IDC_PROFILE_VIEW, false);
+	if (!m_pProfileView) {
 		free(name);
 		free(userName);
 	}
 	else {
-		g_pPopoutProfileView->SetData(name, userName, pProf->m_activeStatus, pProf->m_avatarlnk);
+		m_pProfileView->SetData(name, userName, pProf->m_activeStatus, pProf->m_avatarlnk);
 	}
 
 	// Add pronouns and status if needed
@@ -317,12 +317,12 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 				// this "hack" bitmap will hold an intermediate: the profile picture but behind a COLOR_3DFACE background.
 				// This allows us to call StretchBlt with no loss of quality while also looking like it's blended in.
 				HBITMAP hack = CreateCompatibleBitmap(hdc, pps, pps);
-				g_hPopoutBitmap = CreateCompatibleBitmap(hdc, joinedAtIconSize, joinedAtIconSize);
+				m_hBitmap = CreateCompatibleBitmap(hdc, joinedAtIconSize, joinedAtIconSize);
 
 				// select the bitmaps
 				HGDIOBJ a1 = SelectObject(hdc1, hbm);
 				HGDIOBJ a2 = SelectObject(hdc2, hack);
-				HGDIOBJ a3 = SelectObject(hdc3, g_hPopoutBitmap);
+				HGDIOBJ a3 = SelectObject(hdc3, m_hBitmap);
 
 				// into hdc2, we will first draw the background and then alphablend the profile picture if has alpha
 				RECT rcFull = { 0, 0, pps, pps };
@@ -349,7 +349,7 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 				DeleteObject(hack);
 				ReleaseDC(hWnd, hdc);
 				ShowWindow(hChild, SW_SHOW);
-				SendMessage(hChild, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) g_hPopoutBitmap);
+				SendMessage(hChild, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)m_hBitmap);
 			}
 			hChild = GetDlgItem(hWnd, IDC_GUILD_JOIN_DATE);
 			ShowWindow(hChild, SW_SHOW);
@@ -461,9 +461,7 @@ bool ProfileViewerLayout(HWND hWnd, SIZE& fullSize)
 	return FALSE;
 }
 
-static SIZE g_ProfilePopoutSize;
-
-static void ProfileViewerPaint(HWND hWnd, HDC hdc)
+void ProfilePopout::Paint(HWND hWnd, HDC hdc)
 {
 	RECT rect = {};
 	GetClientRect(hWnd, &rect);
@@ -471,43 +469,43 @@ static void ProfileViewerPaint(HWND hWnd, HDC hdc)
 	DrawEdge(hdc, &rect, EDGE_RAISED, BF_RECT);
 }
 
-BOOL CALLBACK ProfileViewerProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK ProfilePopout::Proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
 		case WM_PAINT: {
 			PAINTSTRUCT ps = {};
 			HDC hdc = BeginPaint(hWnd, &ps);
-			ProfileViewerPaint(hWnd, hdc);
+			Paint(hWnd, hdc);
 			EndPaint(hWnd, &ps);
 			break;
 		}
 
 		case WM_PRINT:
 		case WM_PRINTCLIENT: {
-			ProfileViewerPaint(hWnd, (HDC) wParam);
+			Paint(hWnd, (HDC) wParam);
 			break;
 		}
 
 		case WM_INITDIALOG:
 		case WM_UPDATEPROFILEPOPOUT: {
-			g_ProfilePopoutSize = {};
-			BOOL res = ProfileViewerLayout(hWnd, g_ProfilePopoutSize);
+			m_size = {};
+			BOOL res = Layout(hWnd, m_size);
 			if (!res) {
-				SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, g_ProfilePopoutSize.cx, g_ProfilePopoutSize.cy, SWP_NOACTIVATE | SWP_NOREPOSITION | SWP_NOZORDER | SWP_NOMOVE);
+				SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, m_size.cx, m_size.cy, SWP_NOACTIVATE | SWP_NOREPOSITION | SWP_NOZORDER | SWP_NOMOVE);
 				InvalidateRect(hWnd, NULL, TRUE);
 			}
 			return res;
 		}
 
 		case WM_DESTROY:
-			g_ProfilePopoutHwnd = NULL;
-			SAFE_DELETE(g_pRoleList);
-			SAFE_DELETE(g_pPopoutProfileView);
+			m_hwnd = NULL;
+			SAFE_DELETE(m_pRoleList);
+			SAFE_DELETE(m_pProfileView);
 
-			if (g_hPopoutBitmap) {
-				DeleteBitmap(g_hPopoutBitmap);
-				g_hPopoutBitmap = NULL;
+			if (m_hBitmap) {
+				DeleteBitmap(m_hBitmap);
+				m_hBitmap = NULL;
 			}
 			return TRUE;
 	}
@@ -515,16 +513,21 @@ BOOL CALLBACK ProfileViewerProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	return FALSE;
 }
 
-void DismissProfilePopout()
+void ProfilePopout::Dismiss()
 {
-	if (g_ProfilePopoutHwnd)
+	if (m_hwnd)
 	{
-		DestroyWindow(g_ProfilePopoutHwnd);
-		g_ProfilePopoutHwnd = NULL;
+		DestroyWindow(m_hwnd);
+		m_hwnd = NULL;
 	}
 }
 
-void DeferredShowProfilePopout(const ShowProfilePopoutParams& params)
+HWND ProfilePopout::GetHWND()
+{
+	return m_hwnd;
+}
+
+void ProfilePopout::DeferredShow(const ShowProfilePopoutParams& params)
 {
 	Snowflake user = params.m_user;
 	Snowflake guild = params.m_guild;
@@ -536,14 +539,15 @@ void DeferredShowProfilePopout(const ShowProfilePopoutParams& params)
 	if (!pf)
 		return; // that profile is nonexistent!
 
-	DismissProfilePopout();
-	g_ProfilePopoutUser = user;
-	g_ProfilePopoutGuild = guild;
-	g_ProfilePopoutSize = { 10, 10 };
-	g_ProfilePopoutHwnd = CreateDialog(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG_PROFILE_POPOUT), g_Hwnd, ProfileViewerProc);
+	Dismiss();
+	m_user = user;
+	m_guild = guild;
+	m_size = { 10, 10 };
+	m_hwnd = CreateDialog(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG_PROFILE_POPOUT), g_Hwnd, &Proc);
 
-	int wndWidth = g_ProfilePopoutSize.cx;
-	int wndHeight = g_ProfilePopoutSize.cy;
+	// calculated in WM_CREATE
+	int wndWidth = m_size.cx;
+	int wndHeight = m_size.cy;
 
 	if (bRightJustify) {
 		x -= wndWidth;
@@ -567,15 +571,15 @@ void DeferredShowProfilePopout(const ShowProfilePopoutParams& params)
 			y  = mi.rcWork.bottom - wndHeight;
 	}
 
-	MoveWindow(g_ProfilePopoutHwnd, x, y, wndWidth, wndHeight, TRUE);
-	//ShowWindow(g_ProfilePopoutHwnd, SW_SHOWNOACTIVATE);
+	MoveWindow(m_hwnd, x, y, wndWidth, wndHeight, TRUE);
+	//ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
 	
 	// NOTE: You need to disable the above ShowWindow to use this. Also, it's
 	// kind of broken, in that the message text box just doesn't render.
-	ri::AnimateWindow(g_ProfilePopoutHwnd, 200, AW_BLEND);
+	ri::AnimateWindow(m_hwnd, 200, AW_BLEND);
 }
 
-void ShowProfilePopout(Snowflake user, Snowflake guild, int x, int y, bool bRightJustify)
+void ProfilePopout::Show(Snowflake user, Snowflake guild, int x, int y, bool bRightJustify)
 {
 	ShowProfilePopoutParams* parms = new ShowProfilePopoutParams;
 	parms->m_user = user;
@@ -590,7 +594,7 @@ void ShowProfilePopout(Snowflake user, Snowflake guild, int x, int y, bool bRigh
 		delete parms;
 }
 
-void UpdateProfilePopout()
+void ProfilePopout::Update()
 {
-	SendMessage(g_ProfilePopoutHwnd, WM_UPDATEPROFILEPOPOUT, 0, 0);
+	SendMessage(m_hwnd, WM_UPDATEPROFILEPOPOUT, 0, 0);
 }
