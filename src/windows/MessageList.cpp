@@ -4243,21 +4243,9 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool upda
 
 	int oldHeight = 0;
 
-	// If the message has a nonce, then delete that.
-	bool bDeletedNonce = false;
-	RECT nonceRect = {};
-	for (auto iter = m_messages.rbegin(); iter != m_messages.rend(); ++iter)
-	{
-		if (iter->m_msg.m_snowflake == msg.m_anchor)
-		{
-			// delete it!
-			oldHeight = iter->m_height;
-			nonceRect = iter->m_rect;
-			m_messages.erase(--(iter.base())); // sucks
-			bDeletedNonce = true;
-			break;
-		}
-	}
+	// If the message has a nonce, then delete it.
+	if (msg.m_anchor)
+		DeleteMessage(msg.m_anchor);
 
 	Snowflake prevAuthor = Snowflake(-1);
 	time_t prevDate = 0;
@@ -4308,31 +4296,13 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool upda
 	RECT rcClient{};
 	GetClientRect(m_hwnd, &rcClient);
 
-	int offsetY = 0;
-	if (bDeletedNonce) {
-		if (toStart)
-			offsetY = -(nonceRect.bottom - rcClient.top);
-		else
-			offsetY = rcClient.bottom - nonceRect.top;
-	}
-
-	UpdateScrollBar(mi.m_height - oldHeight, mi.m_height - oldHeight, toStart, true, offsetY, true);
+	UpdateScrollBar(mi.m_height - oldHeight, mi.m_height - oldHeight, toStart, true, 0, true);
 
 	bool needUpdateAboveMessage = GetLocalSettings()->GetMessageStyle() == MS_3DFACE;
 	if (needUpdateAboveMessage && mi.m_placeInChain != 0) {
 		RECT rcUpdate = rcClient;
-		rcUpdate.bottom -= offsetY;
 		rcUpdate.top = rcUpdate.bottom - 2;
 		InvalidateRect(m_hwnd, &rcUpdate, FALSE);
-	}
-
-	if (bDeletedNonce)
-	{
-		// in case the message shrunk in size
-		nonceRect.top += oldHeight - mi.m_height;
-
-		// do it better
-		InvalidateRect(m_hwnd, &nonceRect, false);
 	}
 }
 
