@@ -915,7 +915,9 @@ bool DiscordInstance::SendMessageToCurrentChannel(const std::string& msg, Snowfl
 	if (replyTo)
 	{
 		Json mr;
-		mr["guild_id"] = m_CurrentGuild;
+		if (m_CurrentGuild)
+			mr["guild_id"] = m_CurrentGuild;
+
 		mr["channel_id"] = m_CurrentChannel;
 		mr["message_id"] = replyTo;
 		j["message_reference"] = mr;
