@@ -210,177 +210,177 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON                ICON                    "../res/icon_discord.ico"
+IDI_ICON                ICON                    "../res/icons/icon_discord.ico"
 
-IDI_SEND                ICON                    "../res/icon_send.ico"
+IDI_SEND                ICON                    "../res/icons/icon_send.ico"
 
-IDI_FILE                ICON                    "../res/icon_file.ico"
+IDI_FILE                ICON                    "../res/icons/icon_file.ico"
 
-IDI_ICON_SMALL          ICON                    "../res/icon_discord_small.ico"
+IDI_ICON_SMALL          ICON                    "../res/icons/icon_discord_small.ico"
 
-IDI_WARNING_IC          ICON                    "../res/icon_warning.ico"
+IDI_WARNING_IC          ICON                    "../res/icons/icon_warning.ico"
 
-IDI_CATEGORY            ICON                    "../res/icon_category.ico"
+IDI_CATEGORY            ICON                    "../res/icons/icon_category.ico"
 
-IDI_CHANNEL             ICON                    "../res/icon_channel.ico"
+IDI_CHANNEL             ICON                    "../res/icons/icon_channel.ico"
 
-IDI_DM                  ICON                    "../res/icon_dm.ico"
+IDI_DM                  ICON                    "../res/icons/icon_dm.ico"
 
-IDI_GROUPDM             ICON                    "../res/icon_groupdm.ico"
+IDI_GROUPDM             ICON                    "../res/icons/icon_groupdm.ico"
 
-IDI_VOICE               ICON                    "../res/icon_voice.ico"
+IDI_VOICE               ICON                    "../res/icons/icon_voice.ico"
 
-IDI_PROFILE_BORDER      ICON                    "../res/icon_profile_border.ico"
+IDI_PROFILE_BORDER      ICON                    "../res/icons/icon_profile_border.ico"
 
-IDI_OFFLINE_SM          ICON                    "../res/icon_offline_small.ico"
+IDI_OFFLINE_SM          ICON                    "../res/icons/icon_offline_small.ico"
 
-IDI_ONLINE_SM           ICON                    "../res/icon_online_small.ico"
+IDI_ONLINE_SM           ICON                    "../res/icons/icon_online_small.ico"
 
-IDI_MENTION_MARKER_1    ICON                    "../res/icon_marker_1.ico"
+IDI_MENTION_MARKER_1    ICON                    "../res/icons/icon_marker_1.ico"
 
-IDI_MENTION_MARKER_2    ICON                    "../res/icon_marker_2.ico"
+IDI_MENTION_MARKER_2    ICON                    "../res/icons/icon_marker_2.ico"
 
-IDI_MENTION_MARKER_3    ICON                    "../res/icon_marker_3.ico"
+IDI_MENTION_MARKER_3    ICON                    "../res/icons/icon_marker_3.ico"
 
-IDI_MENTION_MARKER_4    ICON                    "../res/icon_marker_4.ico"
+IDI_MENTION_MARKER_4    ICON                    "../res/icons/icon_marker_4.ico"
 
-IDI_MENTION_MARKER_5    ICON                    "../res/icon_marker_5.ico"
+IDI_MENTION_MARKER_5    ICON                    "../res/icons/icon_marker_5.ico"
 
-IDI_MENTION_MARKER_6    ICON                    "../res/icon_marker_6.ico"
+IDI_MENTION_MARKER_6    ICON                    "../res/icons/icon_marker_6.ico"
 
-IDI_MENTION_MARKER_7    ICON                    "../res/icon_marker_7.ico"
+IDI_MENTION_MARKER_7    ICON                    "../res/icons/icon_marker_7.ico"
 
-IDI_MENTION_MARKER_8    ICON                    "../res/icon_marker_8.ico"
+IDI_MENTION_MARKER_8    ICON                    "../res/icons/icon_marker_8.ico"
 
-IDI_MENTION_MARKER_9    ICON                    "../res/icon_marker_9.ico"
+IDI_MENTION_MARKER_9    ICON                    "../res/icons/icon_marker_9.ico"
 
-IDI_MENTION_MARKER_9P   ICON                    "../res/icon_marker_9plus.ico"
+IDI_MENTION_MARKER_9P   ICON                    "../res/icons/icon_marker_9plus.ico"
 
-IDI_CHANNEL_MENTIONED   ICON                    "../res/icon_channel_mentioned.ico"
+IDI_CHANNEL_MENTIONED   ICON                    "../res/icons/icon_channel_mentioned.ico"
 
-IDI_CHANNEL_UNREAD      ICON                    "../res/icon_channel_unread.ico"
+IDI_CHANNEL_UNREAD      ICON                    "../res/icons/icon_channel_unread.ico"
 
-IDI_PIN                 ICON                    "../res/icon_pin.ico"
+IDI_PIN                 ICON                    "../res/icons/icon_pin.ico"
 
-IDI_MEMBERS             ICON                    "../res/icon_members.ico"
+IDI_MEMBERS             ICON                    "../res/icons/icon_members.ico"
 
-IDI_BOT                 ICON                    "../res/icon_bot.ico"
+IDI_BOT                 ICON                    "../res/icons/icon_bot.ico"
 
-IDI_REPLY_PIECE         ICON                    "../res/icon_reply_line.ico"
+IDI_REPLY_PIECE         ICON                    "../res/icons/icon_reply_line.ico"
 
-IDI_USER_JOIN           ICON                    "../res/icon_user_join.ico"
+IDI_USER_JOIN           ICON                    "../res/icons/icon_user_join.ico"
 
-IDI_USER_LEAVE          ICON                    "../res/icon_user_leave.ico"
+IDI_USER_LEAVE          ICON                    "../res/icons/icon_user_leave.ico"
 
-IDI_TYPING_FRAME1       ICON                    "../res/icon_typing_f1.ico"
+IDI_TYPING_FRAME1       ICON                    "../res/icons/icon_typing_f1.ico"
 
-IDI_TYPING_FRAME2       ICON                    "../res/icon_typing_f2.ico"
+IDI_TYPING_FRAME2       ICON                    "../res/icons/icon_typing_f2.ico"
 
-IDI_TYPING_FRAME3       ICON                    "../res/icon_typing_f3.ico"
+IDI_TYPING_FRAME3       ICON                    "../res/icons/icon_typing_f3.ico"
 
-IDI_DOWNLOAD            ICON                    "../res/icon_download.ico"
+IDI_DOWNLOAD            ICON                    "../res/icons/icon_download.ico"
 
-IDI_CANCEL              ICON                    "../res/icon_cancel.ico"
+IDI_CANCEL              ICON                    "../res/icons/icon_cancel.ico"
 
-IDI_JUMP                ICON                    "../res/icon_jump.ico"
+IDI_JUMP                ICON                    "../res/icons/icon_jump.ico"
 
-IDI_UPLOAD              ICON                    "../res/icon_upload.ico"
+IDI_UPLOAD              ICON                    "../res/icons/icon_upload.ico"
 
-IDI_PROFILE_BORDER_2K   ICON                    "../res/icon_profile_border_2k.ico"
+IDI_PROFILE_BORDER_2K   ICON                    "../res/icons/icon_profile_border_2k.ico"
 
-IDI_CHANNEL_2K          ICON                    "../res/icon_channel_2k.ico"
+IDI_CHANNEL_2K          ICON                    "../res/icons/icon_channel_2k.ico"
 
-IDI_MEMBERS_2K          ICON                    "../res/icon_members_2k.ico"
+IDI_MEMBERS_2K          ICON                    "../res/icons/icon_members_2k.ico"
 
-IDI_PIN_2K              ICON                    "../res/icon_pin_2k.ico"
+IDI_PIN_2K              ICON                    "../res/icons/icon_pin_2k.ico"
 
-IDI_CATEGORY_2K         ICON                    "../res/icon_category_2k.ico"
+IDI_CATEGORY_2K         ICON                    "../res/icons/icon_category_2k.ico"
 
-IDI_DM_2K               ICON                    "../res/icon_dm_2k.ico"
+IDI_DM_2K               ICON                    "../res/icons/icon_dm_2k.ico"
 
-IDI_GROUPDM_2K          ICON                    "../res/icon_groupdm_2k.ico"
+IDI_GROUPDM_2K          ICON                    "../res/icons/icon_groupdm_2k.ico"
 
-IDI_VOICE_2K            ICON                    "../res/icon_voice_2k.ico"
+IDI_VOICE_2K            ICON                    "../res/icons/icon_voice_2k.ico"
 
-IDI_CHANNEL_MENTIONED_2K ICON                    "../res/icon_channel_mentioned_2k.ico"
+IDI_CHANNEL_MENTIONED_2K ICON                    "../res/icons/icon_channel_mentioned_2k.ico"
 
-IDI_CHANNEL_UNREAD_2K   ICON                    "../res/icon_channel_unread_2k.ico"
+IDI_CHANNEL_UNREAD_2K   ICON                    "../res/icons/icon_channel_unread_2k.ico"
 
-IDI_FILE_2K             ICON                    "../res/icon_file_2k.ico"
+IDI_FILE_2K             ICON                    "../res/icons/icon_file_2k.ico"
 
-IDI_BOT_2K              ICON                    "../res/icon_bot_2k.ico"
+IDI_BOT_2K              ICON                    "../res/icons/icon_bot_2k.ico"
 
-IDI_STATUS_DND          ICON                    "../res/icon_status_dnd.ico"
+IDI_STATUS_DND          ICON                    "../res/icons/icon_status_dnd.ico"
 
-IDI_STATUS_IDLE         ICON                    "../res/icon_status_idle.ico"
+IDI_STATUS_IDLE         ICON                    "../res/icons/icon_status_idle.ico"
 
-IDI_STATUS_OFFLINE      ICON                    "../res/icon_status_offline.ico"
+IDI_STATUS_OFFLINE      ICON                    "../res/icons/icon_status_offline.ico"
 
-IDI_STATUS_ONLINE       ICON                    "../res/icon_status_online.ico"
+IDI_STATUS_ONLINE       ICON                    "../res/icons/icon_status_online.ico"
 
-IDI_PROFILE_BORDER_GOLD ICON                    "../res/icon_profile_border_sel.ico"
+IDI_PROFILE_BORDER_GOLD ICON                    "../res/icons/icon_profile_border_sel.ico"
 
-IDI_PROFILE_BORDER_GOLD_2K ICON                    "../res/icon_profile_border_sel_2k.ico"
+IDI_PROFILE_BORDER_GOLD_2K ICON                    "../res/icons/icon_profile_border_sel_2k.ico"
 
-IDI_JUMP_2K             ICON                    "../res/icon_jump_2k.ico"
+IDI_JUMP_2K             ICON                    "../res/icons/icon_jump_2k.ico"
 
-IDI_REPLY_PIECE_2K      ICON                    "../res/icon_reply_line_2k.ico"
+IDI_REPLY_PIECE_2K      ICON                    "../res/icons/icon_reply_line_2k.ico"
 
-IDI_SEND_2K             ICON                    "../res/icon_send_2k.ico"
+IDI_SEND_2K             ICON                    "../res/icons/icon_send_2k.ico"
 
-IDI_TYPING_FRAME1_2K    ICON                    "../res/icon_typing_f1_2k.ico"
+IDI_TYPING_FRAME1_2K    ICON                    "../res/icons/icon_typing_f1_2k.ico"
 
-IDI_TYPING_FRAME2_2K    ICON                    "../res/icon_typing_f2_2k.ico"
+IDI_TYPING_FRAME2_2K    ICON                    "../res/icons/icon_typing_f2_2k.ico"
 
-IDI_TYPING_FRAME3_2K    ICON                    "../res/icon_typing_f3_2k.ico"
+IDI_TYPING_FRAME3_2K    ICON                    "../res/icons/icon_typing_f3_2k.ico"
 
-IDI_WAIT                ICON                    "../res/icon_wait.ico"
+IDI_WAIT                ICON                    "../res/icons/icon_wait.ico"
 
-IDI_IMAGE_ERROR         ICON                    "../res/icon_image_error.ico"
+IDI_IMAGE_ERROR         ICON                    "../res/icons/icon_image_error.ico"
 
-IDI_BALLOON             ICON                    "../res/icon_balloon.ico"
+IDI_BALLOON             ICON                    "../res/icons/icon_balloon.ico"
 
-IDI_BALLOON_OFF         ICON                    "../res/icon_balloon_block.ico"
+IDI_BALLOON_OFF         ICON                    "../res/icons/icon_balloon_block.ico"
 
-IDI_SERVER              ICON                    "../res/icon_server.ico"
+IDI_SERVER              ICON                    "../res/icons/icon_server.ico"
 
-IDI_SERVER_2K           ICON                    "../res/icon_server_2k.ico"
+IDI_SERVER_2K           ICON                    "../res/icons/icon_server_2k.ico"
 
-IDI_CATEGORY_COLLAPSE   ICON                    "../res/icon_category_collapse.ico"
+IDI_CATEGORY_COLLAPSE   ICON                    "../res/icons/icon_category_collapse.ico"
 
-IDI_CATEGORY_EXPAND     ICON                    "../res/icon_category_expand.ico"
+IDI_CATEGORY_EXPAND     ICON                    "../res/icons/icon_category_expand.ico"
 
-IDI_NEW                 ICON                    "../res/icon_new.ico"
+IDI_NEW                 ICON                    "../res/icons/icon_new.ico"
 
-IDI_NEW_2K              ICON                    "../res/icon_new_2k.ico"
+IDI_NEW_2K              ICON                    "../res/icons/icon_new_2k.ico"
 
-IDI_NEW_INLINE          ICON                    "../res/icon_new_inline.ico"
+IDI_NEW_INLINE          ICON                    "../res/icons/icon_new_inline.ico"
 
-IDI_NEW_INLINE_2K       ICON                    "../res/icon_new_inline_2k.ico"
+IDI_NEW_INLINE_2K       ICON                    "../res/icons/icon_new_inline_2k.ico"
 
-IDI_MARK_READ           ICON                    "../res/icon_mark_read.ico"
+IDI_MARK_READ           ICON                    "../res/icons/icon_mark_read.ico"
 
-IDI_MARK_READ_2K        ICON                    "../res/icon_mark_read_2k.ico"
+IDI_MARK_READ_2K        ICON                    "../res/icons/icon_mark_read_2k.ico"
 
-IDI_SHIFT_LEFT          ICON                    "../res/icon_shift_left.ico"
+IDI_SHIFT_LEFT          ICON                    "../res/icons/icon_shift_left.ico"
 
-IDI_SHIFT_LEFT_2K       ICON                    "../res/icon_shift_left_2k.ico"
+IDI_SHIFT_LEFT_2K       ICON                    "../res/icons/icon_shift_left_2k.ico"
 
-IDI_SHIFT_RIGHT         ICON                    "../res/icon_shift_right.ico"
+IDI_SHIFT_RIGHT         ICON                    "../res/icons/icon_shift_right.ico"
 
-IDI_SHIFT_RIGHT_2K      ICON                    "../res/icon_shift_right_2k.ico"
+IDI_SHIFT_RIGHT_2K      ICON                    "../res/icons/icon_shift_right_2k.ico"
 
-IDI_ICON_2K             ICON                    "../res/icon_discord_2k.ico"
+IDI_ICON_2K             ICON                    "../res/icons/icon_discord_2k.ico"
 
-IDI_HEADER_1            ICON                    "../res/icon_header_1.ico"
+IDI_HEADER_1            ICON                    "../res/icons/icon_header_1.ico"
 
-IDI_HEADER_2            ICON                    "../res/icon_header_2.ico"
+IDI_HEADER_2            ICON                    "../res/icons/icon_header_2.ico"
 
-IDI_HEADER_3            ICON                    "../res/icon_header_3.ico"
+IDI_HEADER_3            ICON                    "../res/icons/icon_header_3.ico"
 
-IDI_HEADER_4            ICON                    "../res/icon_header_4.ico"
+IDI_HEADER_4            ICON                    "../res/icons/icon_header_4.ico"
 
-IDI_HEADER_5            ICON                    "../res/icon_header_5.ico"
+IDI_HEADER_5            ICON                    "../res/icons/icon_header_5.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -827,37 +827,37 @@ END
 // Bitmap
 //
 
-IDB_CHANNEL             BITMAP                  "../res/bmp_channel.bmp"
+IDB_CHANNEL             BITMAP                  "../res/bitmaps/bmp_channel.bmp"
 
-IDB_CATEGORY            BITMAP                  "../res/bmp_category.bmp"
+IDB_CATEGORY            BITMAP                  "../res/bitmaps/bmp_category.bmp"
 
-IDB_VOICE               BITMAP                  "../res/bmp_voice.bmp"
+IDB_VOICE               BITMAP                  "../res/bitmaps/bmp_voice.bmp"
 
-IDB_PROFILE             BITMAP                  "../res/bmp_profile.bmp"
+IDB_PROFILE             BITMAP                  "../res/bitmaps/bmp_profile.bmp"
 
-IDB_DEFAULT             BITMAP                  "../res/bmp_default.bmp"
+IDB_DEFAULT             BITMAP                  "../res/bitmaps/bmp_default.bmp"
 
-IDB_DM                  BITMAP                  "../res/bmp_dm.bmp"
+IDB_DM                  BITMAP                  "../res/bitmaps/bmp_dm.bmp"
 
-IDB_GROUPDM             BITMAP                  "../res/bmp_groupdm.bmp"
+IDB_GROUPDM             BITMAP                  "../res/bitmaps/bmp_groupdm.bmp"
 
-IDB_STATUS_OFFLINE      BITMAP                  "../res/bmp_status_offline.bmp"
+IDB_STATUS_OFFLINE      BITMAP                  "../res/bitmaps/bmp_status_offline.bmp"
 
-IDB_STATUS_DND          BITMAP                  "../res/bmp_status_dnd.bmp"
+IDB_STATUS_DND          BITMAP                  "../res/bitmaps/bmp_status_dnd.bmp"
 
-IDB_STATUS_IDLE         BITMAP                  "../res/bmp_status_idle.bmp"
+IDB_STATUS_IDLE         BITMAP                  "../res/bitmaps/bmp_status_idle.bmp"
 
-IDB_STATUS_ONLINE       BITMAP                  "../res/bmp_status_online.bmp"
+IDB_STATUS_ONLINE       BITMAP                  "../res/bitmaps/bmp_status_online.bmp"
 
-IDB_STATUS_MASK_CIRC    BITMAP                  "../res/bmp_status_mask_circ.bmp"
+IDB_STATUS_MASK_CIRC    BITMAP                  "../res/bitmaps/bmp_status_mask_circ.bmp"
 
-IDB_STATUS_MASK_MOON    BITMAP                  "../res/bmp_status_mask_moon.bmp"
+IDB_STATUS_MASK_MOON    BITMAP                  "../res/bitmaps/bmp_status_mask_moon.bmp"
 
-IDB_TARGET              BITMAP                  "../res/target.bmp"
+IDB_TARGET              BITMAP                  "../res/bitmaps/target.bmp"
 
-IDB_LOGON_BANNER        BITMAP                  "../res/bmp_banner.bmp"
+IDB_LOGON_BANNER        BITMAP                  "../res/bitmaps/bmp_banner.bmp"
 
-IDB_EMPTY               BITMAP                  "../res/bmp_empty.bmp"
+IDB_EMPTY               BITMAP                  "../res/bitmaps/bmp_empty.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -865,9 +865,9 @@ IDB_EMPTY               BITMAP                  "../res/bmp_empty.bmp"
 // Cursor
 //
 
-IDC_ZOOMIN              CURSOR                  "../res/cur_zoomin.cur"
+IDC_ZOOMIN              CURSOR                  "../res/cursors/cur_zoomin.cur"
 
-IDC_ZOOMOUT             CURSOR                  "../res/cur_zoomout.cur"
+IDC_ZOOMOUT             CURSOR                  "../res/cursors/cur_zoomout.cur"
 
 
 /////////////////////////////////////////////////////////////////////////////

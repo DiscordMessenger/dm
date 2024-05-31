@@ -43,327 +43,336 @@
     <Filter Include="Source Files\Deps\Httplib">
       <UniqueIdentifier>{552415f8-f70b-4d64-9741-f2722deed194}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Resources\Bitmaps">
+      <UniqueIdentifier>{cc19d2da-c293-4a24-80f2-11ff83b2afd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Resources\Icons">
+      <UniqueIdentifier>{3500c6fa-1abb-484f-81f5-bf54b8666f77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Resources\Cursors">
+      <UniqueIdentifier>{64b163e1-8714-4745-acb7-a73a12b8a7f3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\res\bmp_banner.bmp">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\bitmaps\bmp_voice.bmp">
+      <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
-    <Image Include="..\res\bmp_category.bmp">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\bitmaps\bmp_banner.bmp">
+      <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
-    <Image Include="..\res\bmp_channel.bmp">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\bitmaps\bmp_category.bmp">
+      <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
-    <Image Include="..\res\bmp_default.bmp">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\bitmaps\bmp_channel.bmp">
+      <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
-    <Image Include="..\res\bmp_dm.bmp">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\bitmaps\bmp_default.bmp">
+      <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
-    <Image Include="..\res\bmp_empty.bmp">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\bitmaps\bmp_dm.bmp">
+      <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
-    <Image Include="..\res\bmp_groupdm.bmp">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\bitmaps\bmp_empty.bmp">
+      <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
-    <Image Include="..\res\bmp_profile.bmp">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\bitmaps\bmp_groupdm.bmp">
+      <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
-    <Image Include="..\res\bmp_status_dnd.bmp">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\bitmaps\bmp_profile.bmp">
+      <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
-    <Image Include="..\res\bmp_status_idle.bmp">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\bitmaps\bmp_status_dnd.bmp">
+      <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
-    <Image Include="..\res\bmp_status_mask_circ.bmp">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\bitmaps\bmp_status_idle.bmp">
+      <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
-    <Image Include="..\res\bmp_status_mask_moon.bmp">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\bitmaps\bmp_status_mask_circ.bmp">
+      <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
-    <Image Include="..\res\bmp_status_offline.bmp">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\bitmaps\bmp_status_mask_moon.bmp">
+      <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
-    <Image Include="..\res\bmp_status_online.bmp">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\bitmaps\bmp_status_offline.bmp">
+      <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
-    <Image Include="..\res\bmp_voice.bmp">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\bitmaps\bmp_status_online.bmp">
+      <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
-    <Image Include="..\res\icon_add.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_add.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_bot.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_balloon.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_bot_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_balloon_block.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_cancel.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_bot.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_category.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_bot_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_category_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_cancel.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_channel.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_category.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_channel_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_category_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_channel_mentioned.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_category_collapse.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_channel_mentioned_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_category_expand.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_channel_unread.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_channel.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_channel_unread_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_channel_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_discord.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_channel_mentioned.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_discord_small.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_channel_mentioned_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_dm.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_channel_unread.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_dm_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_channel_unread_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_download.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_discord.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_file.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_discord_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_file_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_discord_small.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_groupdm.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_dm.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_groupdm_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_dm_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_jump.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_download.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_jump_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_file.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_marker_1.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_file_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_marker_2.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_groupdm.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_marker_3.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_groupdm_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_marker_4.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_header_1.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_marker_5.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_header_2.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_marker_6.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_header_3.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_marker_7.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_header_4.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_marker_8.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_header_5.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_marker_9.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_image_error.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_marker_9plus.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_jump.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_members.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_jump_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_members_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_mark_read.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_offline_small.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_mark_read_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_online_small.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_marker_1.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_pin.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_marker_2.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_pin_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_marker_3.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_profile_border.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_marker_4.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_profile_border_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_marker_5.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_profile_border_sel.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_marker_6.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_profile_border_sel_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_marker_7.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_reply_line.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_marker_8.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_reply_line_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_marker_9.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_send.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_marker_9plus.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_send_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_members.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_status_dnd.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_members_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_status_idle.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_new.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_status_offline.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_new_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_status_online.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_new_inline.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_typing_f1.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_new_inline_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_typing_f1_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_offline_small.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_typing_f2.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_online_small.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_typing_f2_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_pin.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_typing_f3.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_pin_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_typing_f3_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_profile_border.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_upload.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_profile_border_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_user_join.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_profile_border_sel.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_user_leave.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_profile_border_sel_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_voice.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_reply_line.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_voice_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_reply_line_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_warning.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_send.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\modern_app.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_send_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\target.bmp">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_server.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_image_error.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_server_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_wait.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_shift_left.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_balloon.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_shift_left_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_balloon_block.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_shift_right.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_server_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_shift_right_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_server.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_status_dnd.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_category_expand.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_status_idle.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_category_collapse.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_status_offline.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_new.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_status_online.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_shift_right_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_typing_f1.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_shift_left.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_typing_f1_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_shift_left_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_typing_f2.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_shift_right.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_typing_f2_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_new_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_typing_f3.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_mark_read.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_typing_f3_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_mark_read_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_upload.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_new_inline_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_user_join.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_new_inline.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_user_leave.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_discord_2k.ico">
-      <Filter>Resource Files\Resources</Filter>
+    <Image Include="..\res\icons\icon_voice.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_header_1.ico">
-      <Filter>Resource Files</Filter>
+    <Image Include="..\res\icons\icon_voice_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_header_2.ico">
-      <Filter>Resource Files</Filter>
+    <Image Include="..\res\icons\icon_wait.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_header_3.ico">
-      <Filter>Resource Files</Filter>
+    <Image Include="..\res\icons\icon_warning.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_header_4.ico">
-      <Filter>Resource Files</Filter>
+    <Image Include="..\res\icons\modern_app.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icon_header_5.ico">
-      <Filter>Resource Files</Filter>
+    <Image Include="..\res\bitmaps\target.bmp">
+      <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\res\cur_zoomin.cur">
-      <Filter>Resource Files\Resources</Filter>
+    <None Include="..\res\cursors\cur_zoomout.cur">
+      <Filter>Resource Files\Resources\Cursors</Filter>
     </None>
-    <None Include="..\res\cur_zoomout.cur">
-      <Filter>Resource Files\Resources</Filter>
+    <None Include="..\res\cursors\cur_zoomin.cur">
+      <Filter>Resource Files\Resources\Cursors</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -456,9 +465,6 @@
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
     <ClInclude Include="..\src\windows\OptionsDialog.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\PinnedMessageViewer.hpp">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
     <ClInclude Include="..\src\windows\ProfilePopout.hpp">
@@ -560,6 +566,9 @@
     <ClInclude Include="..\src\discord\UpdateChecker.hpp">
       <Filter>Header Files\Discord</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\windows\PinList.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\windows\ProfileView.cpp">
@@ -634,9 +643,6 @@
     <ClCompile Include="..\src\windows\OptionsDialog.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\windows\PinnedMessageViewer.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\windows\ProfilePopout.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
@@ -699,6 +705,9 @@
     </ClCompile>
     <ClCompile Include="..\src\discord\UpdateChecker.cpp">
       <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\PinList.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
