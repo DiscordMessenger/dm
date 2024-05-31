@@ -92,7 +92,7 @@ bool ProfilePopout::Layout(HWND hWnd, SIZE& fullSize)
 	DrawText(hdc, userName, -1, &rcUserName, singleLineFlags);
 
 	rcPronouns = rcMeasureTemplate;
-	rcPronouns.right = ScaleByDPI(100); // Max width for pronouns, if exists
+	rcPronouns.right = ScaleByDPI(70); // Max width for pronouns, if exists
 	DrawText2(hdc, pronouns, -1, &rcPronouns, singleLineFlags);
 
 	rcStatus = rcMeasureTemplate;

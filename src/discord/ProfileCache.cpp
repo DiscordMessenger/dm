@@ -58,13 +58,11 @@ Profile* ProfileCache::LoadProfile(Snowflake user, nlohmann::json& jx)
 	if (iter != m_processingRequests.end())
 		m_processingRequests.erase(iter);
 
-	auto& userData = jx;
-	if (userData.contains("user"))
-		userData = jx["user"];
+	auto& userData = jx.contains("user") ? jx["user"] : jx;
 
 	pf->m_snowflake  = user;
 	pf->m_name       = GetUsername(userData);
-	pf->m_discrim    = userData.contains("discriminator") ? int(GetIntFromString(jx["discriminator"])) : 0;
+	pf->m_discrim    = userData.contains("discriminator") ? int(GetIntFromString(userData["discriminator"])) : 0;
 	pf->m_globalName = GetGlobalName(userData);
 	pf->m_bIsBot     = GetFieldSafeBool(userData, "bot", false);
 	pf->m_bUsingDefaultData = false;
