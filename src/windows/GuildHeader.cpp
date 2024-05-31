@@ -1,5 +1,5 @@
 #include "GuildHeader.hpp"
-#include "PinnedMessageViewer.hpp"
+#include "PinList.hpp"
 
 #define GUILD_HEADER_COLOR   COLOR_ACTIVECAPTION
 #define GUILD_HEADER_COLOR_2 COLOR_GRADIENTACTIVECAPTION
@@ -515,7 +515,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						pThis->m_buttons[lParam].m_rect.bottom
 					};
 					ClientToScreen(hWnd, &pt);
-					PmvCreate(pChan->m_snowflake, pGuild->m_snowflake, pt.x, pt.y, true);
+					PinList::Show(pChan->m_snowflake, pGuild->m_snowflake, pt.x, pt.y, true);
 					break;
 				}
 				case IDTB_MEMBERS:

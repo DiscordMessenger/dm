@@ -368,7 +368,7 @@
     <ClInclude Include="..\src\windows\MissingDefinitions.hpp" />
     <ClInclude Include="..\src\windows\NetworkerThread.hpp" />
     <ClInclude Include="..\src\windows\OptionsDialog.hpp" />
-    <ClInclude Include="..\src\windows\PinnedMessageViewer.hpp" />
+    <ClInclude Include="..\src\windows\PinList.hpp" />
     <ClInclude Include="..\src\windows\ProfilePopout.hpp" />
     <ClInclude Include="..\src\windows\ProfileView.hpp" />
     <ClInclude Include="..\src\windows\QRCodeDialog.hpp" />
@@ -420,7 +420,7 @@
     <ClCompile Include="..\src\windows\MessageList.cpp" />
     <ClCompile Include="..\src\windows\NetworkerThread.cpp" />
     <ClCompile Include="..\src\windows\OptionsDialog.cpp" />
-    <ClCompile Include="..\src\windows\PinnedMessageViewer.cpp" />
+    <ClCompile Include="..\src\windows\PinList.cpp" />
     <ClCompile Include="..\src\windows\ProfilePopout.cpp" />
     <ClCompile Include="..\src\windows\ProfileView.cpp" />
     <ClCompile Include="..\src\windows\QRCodeDialog.cpp" />

@@ -4,7 +4,7 @@
 #include "ImageLoader.hpp"
 #include "ProfilePopout.hpp"
 #include "QRCodeDialog.hpp"
-#include "PinnedMessageViewer.hpp"
+#include "PinList.hpp"
 #include "../discord/UpdateChecker.hpp"
 #include "../discord/LocalSettings.hpp"
 
@@ -130,8 +130,8 @@ void Frontend_Win32::OnRequestDone(NetRequest* pRequest)
 
 void Frontend_Win32::OnLoadedPins(Snowflake channel, const std::string& data)
 {
-	if (PmvIsActive())
-		PmvOnLoadedPins(channel, data);
+	if (PinList::IsActive())
+		PinList::OnLoadedPins(channel, data);
 }
 
 void Frontend_Win32::OnUpdateAvailable(const std::string& url, const std::string& version)

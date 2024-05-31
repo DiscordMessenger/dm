@@ -13,7 +13,7 @@
 #include "ImageLoader.hpp"
 #include "ProfilePopout.hpp"
 #include "ImageViewer.hpp"
-#include "PinnedMessageViewer.hpp"
+#include "PinList.hpp"
 #include "MemberList.hpp"
 #include "LogonDialog.hpp"
 #include "QRCodeDialog.hpp"
@@ -609,6 +609,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			Snowflake sf = *(Snowflake*) lParam;
 			g_pMessageList->OnUpdateEmoji(sf);
+			PinList::OnUpdateEmoji(sf);
 			break;
 		}
 		case WM_UPDATEUSER:
@@ -617,6 +618,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pMessageList->OnUpdateAvatar(sf);
 			g_pMemberList->OnUpdateAvatar(sf);
 			g_pChannelView->OnUpdateAvatar(sf);
+			PinList::OnUpdateAvatar(sf);
 
 			if (ProfilePopout::GetUser() == sf)
 				ProfilePopout::Update();
@@ -649,7 +651,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			ImagePlace pl = *(ImagePlace*)lParam;
 			g_pMessageList->OnUpdateEmbed(pl.key);
-			
+			PinList::OnUpdateEmbed(pl.key);
 			break;
 		}
 		case WM_REPAINTPROFILE:
