@@ -382,9 +382,9 @@ IDI_HEADER_4            ICON                    "../res/icons/icon_header_4.ico"
 
 IDI_HEADER_5            ICON                    "../res/icons/icon_header_5.ico"
 
-IDI_BOOST               ICON                    "C:\\DiscordMessenger\\dm\\res\\icons\\icon_boost.ico"
+IDI_BOOST               ICON                    "../res/icons/icon_boost.ico"
 
-IDI_BOOST_2K            ICON                    "C:\\DiscordMessenger\\dm\\res\\icons\\icon_boost_2k.ico"
+IDI_BOOST_2K            ICON                    "../res/icons/icon_boost_2k.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -921,13 +921,13 @@ END
 // AVI
 //
 
-IDR_AVI_DOWNLOAD_HC     AVI                     "../res/animations\\download_hc.avi"
+IDR_AVI_DOWNLOAD_HC     AVI                     "../res/animations/download_hc.avi"
 
-IDR_AVI_DOWNLOAD_LC     AVI                     "../res/animations\\download_lc.avi"
+IDR_AVI_DOWNLOAD_LC     AVI                     "../res/animations/download_lc.avi"
 
-IDR_AVI_UPLOAD_HC       AVI                     "../res/animations\\upload_hc.avi"
+IDR_AVI_UPLOAD_HC       AVI                     "../res/animations/upload_hc.avi"
 
-IDR_AVI_UPLOAD_LC       AVI                     "../res/animations\\upload_lc.avi"
+IDR_AVI_UPLOAD_LC       AVI                     "../res/animations/upload_lc.avi"
 
 
 /////////////////////////////////////////////////////////////////////////////
