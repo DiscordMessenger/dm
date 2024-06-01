@@ -1524,6 +1524,10 @@ bool MessageList::IsActionMessage(MessageType::eType msgType)
 		case MessageType::STAGE_END:
 		case MessageType::STAGE_SPEAKER:
 		case MessageType::STAGE_TOPIC:
+		case MessageType::GUILD_BOOST:
+		case MessageType::GUILD_BOOST_TIER_1:
+		case MessageType::GUILD_BOOST_TIER_2:
+		case MessageType::GUILD_BOOST_TIER_3:
 			return true;
 	}
 
@@ -1633,6 +1637,39 @@ void MessageList::DetermineMessageData(
 			clickableString = TEXT("a message");
 			clickableLink = CreateMessageLink(refMsgGuildID, refMsgChannelID, refMsgMessageID);
 			icon = IDI_PIN;
+			break;
+		}
+
+		case MessageType::GUILD_BOOST:
+		{
+			messagePart1 = TEXT("");
+			messagePart2 = TEXT(" has boosted the server!");
+			break;
+		}
+
+		case MessageType::GUILD_BOOST_TIER_1:
+		case MessageType::GUILD_BOOST_TIER_2:
+		case MessageType::GUILD_BOOST_TIER_3:
+		{
+			std::string guildName = "[unknown guild]";
+			Guild* pGld = GetDiscordInstance()->GetGuild(guildID);
+			if (pGld)
+				guildName = pGld->m_name;
+
+			freedStringSpace = ConvertCppStringToTString(" has boosted the server! " + guildName + " has achieved ");
+
+			messagePart1 = TEXT("");
+			messagePart2 = freedStringSpace;
+			messagePart3 = TEXT("!");
+
+			int tier = int(msgType) - int(MessageType::GUILD_BOOST_TIER_1);
+			const LPCTSTR tiers[] = {
+				TEXT("Level 1"),
+				TEXT("Level 2"),
+				TEXT("Level 3"),
+			};
+
+			clickableString = tiers[tier];
 			break;
 		}
 
