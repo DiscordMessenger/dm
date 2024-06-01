@@ -24,6 +24,7 @@ enum eHttpResponseCodes
 
 	HTTP_BADGATEWAY   = 502,
 
+	HTTP_CANCELED     = 998,
 	HTTP_PROGRESS     = 999,
 };
 
@@ -64,8 +65,9 @@ struct NetRequest
 	std::string params = "";
 	std::string authorization = "";
 	std::string additional_data = "";
-	std::vector<uint8_t> params_bytes;
-	size_t m_offset;
+	std::vector<uint8_t> params_bytes; // used only for PUT_OCTETS and PUT_OCTETS_PROGRESS
+	size_t m_offset; // used only for PUT_OCTETS_PROGRESS
+	bool m_bCancelOp = false; // used only for PUT_OCTETS_PROGRESS
 
 	size_t GetOffset() const {
 		return m_offset;

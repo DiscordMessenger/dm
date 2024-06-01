@@ -118,6 +118,7 @@
 #define IDD_DIALOG_UPLOADFILES          410
 #define IDD_DIALOG_QUICK_SWITCHER       411
 #define IDD_DIALOG_CONNECTION           412
+#define IDD_DIALOG_UPLOADING            413
 #define IDR_MAINMENU                    501
 #define IDR_MESSAGE_CONTEXT             502
 #define IDR_GUILD_CONTEXT               503
@@ -298,6 +299,11 @@
 #define IDC_CHECK_UPDATES               872
 #define IDC_EDIT_ABOUTME                873
 #define IDC_DISABLE_FORMATTING          874
+#define IDC_UPLOADING_FILENAME          875
+#define IDC_UPLOADING_PROGRESS          876
+#define IDC_UPLOADING_ETA               878
+#define IDC_UPLOADING_XFERRATE          879
+#define IDC_UPLOADING_ACTION            880
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
 #define ID_FILE_EXIT                    1003
@@ -374,9 +380,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        89
+#define _APS_NEXT_RESOURCE_VALUE        91
 #define _APS_NEXT_COMMAND_VALUE         1069
-#define _APS_NEXT_CONTROL_VALUE         875
+#define _APS_NEXT_CONTROL_VALUE         881
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif
 #endif

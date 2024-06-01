@@ -590,6 +590,21 @@ BEGIN
     LTEXT           "iProgramInCpp cannot see your IP address via the update service.",IDC_STATIC,12,219,231,10
 END
 
+IDD_DIALOG_UPLOADING DIALOGEX 0, 0, 309, 92
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "File Upload"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,252,71,50,14
+    LTEXT           "Uploading:",IDC_UPLOADING_ACTION,7,7,295,8
+    LTEXT           "File Name Here",IDC_UPLOADING_FILENAME,7,17,295,8
+    CONTROL         "",IDC_UPLOADING_PROGRESS,"msctls_progress32",WS_BORDER,7,27,295,14
+    LTEXT           "Estimated time left:",IDC_STATIC,7,45,80,8
+    LTEXT           "ETA HERE",IDC_UPLOADING_ETA,92,45,210,8
+    LTEXT           "Transfer rate",IDC_STATIC,7,56,80,8
+    LTEXT           "ETA HERE",IDC_UPLOADING_XFERRATE,92,56,210,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -691,6 +706,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 234
     END
+
+    IDD_DIALOG_UPLOADING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 85
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -770,6 +793,11 @@ BEGIN
 END
 
 IDD_DIALOG_CONNECTION AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_UPLOADING AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

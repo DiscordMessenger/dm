@@ -994,3 +994,21 @@ int HandleGestureMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, flo
 	(void)mulDeltas;
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
+
+void CenterWindow(HWND hWnd, HWND hRelativeTo)
+{
+	RECT rect1, rect2;
+	GetWindowRect(hWnd, &rect1);
+	GetWindowRect(hRelativeTo, &rect2);
+
+	OffsetRect(&rect1, -rect1.left, -rect1.top);
+	int width = rect1.right - rect1.left, height = rect1.bottom - rect1.top;
+
+	OffsetRect(
+		&rect1,
+		(rect2.left + rect2.right) / 2 - (rect1.right - rect1.left) / 2,
+		(rect2.top + rect2.bottom) / 2 - (rect1.bottom - rect1.top) / 2
+	);
+
+	MoveWindow(hWnd, rect1.left, rect1.top, rect1.right - rect1.left, rect1.bottom - rect1.top, TRUE);
+}

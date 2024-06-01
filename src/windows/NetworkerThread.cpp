@@ -111,6 +111,11 @@ bool NetworkerThread::ProcessResult(NetRequest& req, const httplib::Result& res)
 			return true;
 		}
 	}
+	else if (res.error() == Error::Canceled)
+	{
+		req.result = HTTP_CANCELED;
+		req.response = "Operation cancelled by user";
+	}
 	else if (!res)
 	{
 		req.result = -1;
@@ -151,7 +156,8 @@ public:
         if (data_to_send > 0) {
             sink.write((const char*) &data_[offset], data_to_send);
             offset_ = offset;
-			progfunc(offset_, data_size_);
+			if (!progfunc(offset_, data_size_))
+				return false;
         }
 		else {
 			sink.done();
@@ -347,11 +353,12 @@ bool NetworkerThread::ProgressFunction(NetRequest* pRequest, uint64_t offset, ui
 {
 	assert(length == pRequest->params_bytes.size());
 
+	pRequest->m_bCancelOp = false;
 	pRequest->m_offset = offset;
 	pRequest->result = HTTP_PROGRESS;
 	pRequest->pFunc(pRequest);
 
-	return true;
+	return pRequest->m_bCancelOp;
 }
 
 NetworkerThread::NetworkerThread()

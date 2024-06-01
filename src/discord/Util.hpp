@@ -46,6 +46,7 @@ std::string CreateMessageLink(Snowflake guild, Snowflake channel, Snowflake mess
 float CompareFuzzy(const std::string& item, const char* query); // returns a "closeness" factor, =0 if no match, >0 if match. The closeness is used for sorting matches
 float GetAppVersion();
 std::string GetAppVersionString();
+std::string FormatDuration(int durationSec);
 
 #ifdef USE_DEBUG_PRINTS
 void DbgPrintF(const char* fmt, ...);

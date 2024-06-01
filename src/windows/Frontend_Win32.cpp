@@ -5,6 +5,7 @@
 #include "ProfilePopout.hpp"
 #include "QRCodeDialog.hpp"
 #include "PinList.hpp"
+#include "ProgressDialog.hpp"
 #include "../discord/UpdateChecker.hpp"
 #include "../discord/LocalSettings.hpp"
 
@@ -167,6 +168,10 @@ void Frontend_Win32::OnFailedToSendMessage(Snowflake channel, Snowflake message)
 
 void Frontend_Win32::OnFailedToUploadFile(const std::string& file, int error)
 {
+	// ignore if request was canceled
+	if (error == HTTP_CANCELED)
+		return;
+
 	TCHAR buff[4096];
 	LPTSTR tstr = ConvertCppStringToTString(file);
 	WAsnprintf(buff, _countof(buff), TmGetTString(IDS_FAILED_TO_UPLOAD), tstr, error);
@@ -182,6 +187,21 @@ void Frontend_Win32::OnFailedToCheckForUpdates(int result, const std::string& re
 	free(tstr);
 
 	MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
+}
+
+void Frontend_Win32::OnStartProgress(Snowflake key, const std::string& fileName, bool isUploading)
+{
+	ProgressDialog::Show(fileName, key, isUploading);
+}
+
+bool Frontend_Win32::OnUpdateProgress(Snowflake key, size_t offset, size_t length)
+{
+	return ProgressDialog::Update(key, offset, length);
+}
+
+void Frontend_Win32::OnStopProgress(Snowflake key)
+{
+	ProgressDialog::Done(key);
 }
 
 void Frontend_Win32::OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_t* pData, size_t nSize, const std::string& additData)

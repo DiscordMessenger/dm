@@ -379,6 +379,7 @@
     <ClInclude Include="..\src\windows\TextManager.hpp" />
     <ClInclude Include="..\src\windows\TextToSpeech.hpp" />
     <ClInclude Include="..\src\windows\UploadDialog.hpp" />
+    <ClInclude Include="..\src\windows\ProgressDialog.hpp" />
     <ClInclude Include="..\src\windows\WindowMessages.hpp" />
     <ClInclude Include="..\src\windows\WinUtils.hpp" />
   </ItemGroup>
@@ -431,6 +432,7 @@
     <ClCompile Include="..\src\windows\TextManager.cpp" />
     <ClCompile Include="..\src\windows\TextToSpeech.cpp" />
     <ClCompile Include="..\src\windows\UploadDialog.cpp" />
+    <ClCompile Include="..\src\windows\ProgressDialog.cpp" />
     <ClCompile Include="..\src\windows\WinUtils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

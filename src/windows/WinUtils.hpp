@@ -55,6 +55,7 @@ void DrawBitmap(HDC hdc, HBITMAP bitmap, int x, int y, LPRECT clip = NULL, COLOR
 void FillGradient(HDC hdc, const LPRECT lpRect, int sci1, int sci2, bool vertical);
 void FillGradientColors(HDC hdc, const LPRECT lpRect, COLORREF c1, COLORREF c2, bool vertical);
 bool IsChildOf(HWND child, HWND of);
+void CenterWindow(HWND hWnd, HWND hRelativeTo);
 int GetSystemDpiU();
 int GetSystemDPI(); // cached
 void ForgetSystemDPI();

@@ -470,6 +470,46 @@ std::string GetAppVersionString()
 	return "V1.03";
 }
 
+std::string FormatDuration(int seconds)
+{
+	int minutes = seconds / 60;
+	seconds %= 60;
+	int hours   = minutes / 60;
+	minutes %= 60;
+	int days    = hours / 24;
+	hours %= 24;
+
+	std::string result;
+	if (days) {
+		result += std::to_string(days);
+		if (days == 1) result += " day";
+		else           result += " days";
+	}
+	if (hours) {
+		if (!result.empty()) result += ", ";
+		result += std::to_string(hours);
+		if (hours == 1) result += " hr";
+		else            result += " hrs";
+	}
+	if (minutes) {
+		if (!result.empty()) result += ", ";
+		result += std::to_string(minutes);
+		if (minutes == 1) result += " min";
+		else              result += " mins";
+	}
+	if (seconds) {
+		if (!result.empty()) result += ", ";
+		result += std::to_string(seconds);
+		if (seconds == 1) result += " sec";
+		else              result += " secs";
+	}
+	if (result.empty()) {
+		result = "0 secs";
+	}
+
+	return result;
+}
+
 #ifdef USE_DEBUG_PRINTS
 void DbgPrintF(const char* fmt, ...)
 {

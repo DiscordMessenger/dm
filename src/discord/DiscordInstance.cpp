@@ -2403,10 +2403,11 @@ void DiscordInstance::OnUploadAttachmentFirst(NetRequest* pReq)
 	{
 		// Delete enqueued upload
 		auto iter = ups.find(pReq->key);
+		std::string name = iter->second.m_uploadFileName;
 		if (iter != ups.end())
 			ups.erase(iter);
 
-		GetFrontend()->OnFailedToUploadFile(pReq->additional_data, pReq->result);
+		GetFrontend()->OnFailedToUploadFile(name, pReq->result);
 		return;
 	}
 
@@ -2438,6 +2439,8 @@ void DiscordInstance::OnUploadAttachmentFirst(NetRequest* pReq)
 			pNewData,
 			up.m_data.size()
 		);
+
+		GetFrontend()->OnStartProgress(pReq->key, up.m_uploadFileName, true);
 	}
 }
 
@@ -2452,13 +2455,14 @@ void DiscordInstance::OnUploadAttachmentSecond(NetRequest* pReq)
 	{
 		if (pReq->result == HTTP_PROGRESS) {
 			// N.B. totally safe to access because corresponding networker thread is locked up waiting for us
-			DbgPrintF("Reporting progress: %zu of %zu", pReq->GetOffset(), pReq->GetTotalBytes());
+			pReq->m_bCancelOp = GetFrontend()->OnUpdateProgress(pReq->key, pReq->GetOffset(), pReq->GetTotalBytes());
 			return;
 		}
 
 		// Delete enqueued upload
 		ups.erase(iter);
 		GetFrontend()->OnFailedToUploadFile(pReq->additional_data, pReq->result);
+		GetFrontend()->OnStopProgress(pReq->key);
 		return;
 	}
 
@@ -2489,6 +2493,8 @@ void DiscordInstance::OnUploadAttachmentSecond(NetRequest* pReq)
 		GetToken(),
 		std::to_string(up.m_tempSF)
 	);
+
+	GetFrontend()->OnStopProgress(pReq->key);
 
 	// typing indicator goes away when a message is received, so allow sending one in like 100ms
 	m_lastTypingSent = GetTimeMs() - TYPING_INTERVAL + 100;
