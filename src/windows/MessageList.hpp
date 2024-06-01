@@ -401,6 +401,7 @@ public:
 		LPCTSTR strDateEdit,
 		LPCTSTR strReplyMsg,
 		LPCTSTR strReplyAuth,
+		bool isAuthorBot,
 		const RECT& msgRect,
 		int& height,
 		int& authheight,
@@ -490,7 +491,7 @@ private:
 
 	void AdjustHeightInfo(const MessageItem& msg, int& height, int& textheight, int& authheight, int& replyheight, int& attachheight, int& embedheight);
 	void OpenAttachment( AttachmentItem* pItem );
-	void OpenInteractable( InteractableItem* pItem );
+	void OpenInteractable( InteractableItem* pItem, MessageItem* pMsg );
 
 	void DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem& attachItem, RECT& attachRect);
 	void DrawImageAttachment(HDC hdc, RECT& paintRect, AttachmentItem& attachItem, RECT& attachRect);

@@ -240,8 +240,8 @@ int64_t GetIntFromString(const std::string& str)
 
 bool GetFieldSafeBool(nlohmann::json& j, const std::string& key, bool default1)
 {
-	if (j.contains(key) && j.is_boolean())
-		return j["key"];
+	if (j.contains(key) && j[key].is_boolean())
+		return j[key];
 	return default1;
 }
 

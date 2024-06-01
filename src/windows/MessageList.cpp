@@ -381,6 +381,7 @@ void MessageList::MeasureMessage(
 	LPCTSTR strDateEdit,
 	LPCTSTR strReplyMsg,
 	LPCTSTR strReplyAuth,
+	bool isAuthorBot,
 	const RECT& msgRect,
 	int& textheight,
 	int& authheight,
@@ -407,6 +408,7 @@ void MessageList::MeasureMessage(
 		rc = rcCommon1;
 		DrawText(hdc, strAuth, -1, &rc, DT_CALCRECT | DT_NOPREFIX);
 		authheight = rc.bottom - rc.top, authwidth = rc.right - rc.left;
+		if (isAuthorBot) authwidth += GetSystemMetrics(SM_CXSMICON) + ScaleByDPI(4);
 	}
 	else {
 		authwidth = authheight = 0;
@@ -1302,7 +1304,7 @@ void MessageList::OpenAttachment(AttachmentItem* pItem)
 	DownloadFileDialog(GetParent(m_hwnd), url, pAttach->m_fileName);
 }
 
-void MessageList::OpenInteractable(InteractableItem* pItem)
+void MessageList::OpenInteractable(InteractableItem* pItem, MessageItem* pMsg)
 {
 	switch (pItem->m_type)
 	{
@@ -1341,6 +1343,9 @@ void MessageList::OpenInteractable(InteractableItem* pItem)
 			sf = pItem->m_affected;
 			switch (mentType) {
 				case '@': {
+					if (pMsg->m_msg.IsWebHook())
+						break;
+
 					RECT rect;
 					GetWindowRect(m_hwnd, &rect);
 					ProfilePopout::Show(sf, m_guildID, rect.left + pItem->m_rect.right + 10, rect.top + pItem->m_rect.top);
@@ -1797,9 +1802,6 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 	const bool isCompact = IsCompact();
 
 	Snowflake authorID = refMsg.m_author_snowflake;
-	Profile* pf = nullptr;
-	if (authorID)
-		pf = GetProfileCache()->LookupProfile(authorID, "", "", "", false);
 
 	// Draw the corner piece
 	const int offset2 = isCompact ? 0 : pfpOffset;
@@ -1840,7 +1842,8 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 			int pfpY = rcReply.top + (rcReply.bottom - rcReply.top - pfpSize) / 2;
 			DrawIconEx(hdc, pfpX - pfpBordOffX, pfpY - pfpBordOffY, g_ProfileBorderIcon, pfpBordSize, pfpBordSize, 0, NULL, DI_COMPAT | DI_NORMAL);
 			bool hasAlpha = false;
-			HBITMAP hbm = GetAvatarCache()->GetBitmap(pf->m_avatarlnk, hasAlpha);
+			GetAvatarCache()->AddImagePlace(refMsg.m_avatar, eImagePlace::AVATARS, refMsg.m_avatar, refMsg.m_author_snowflake);
+			HBITMAP hbm = GetAvatarCache()->GetBitmap(refMsg.m_avatar, hasAlpha);
 
 			RECT& raRect = item.m_refAvatarRect;
 			raRect.left   = pfpX;
@@ -1855,7 +1858,11 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 			SetRectEmpty(&item.m_refAvatarRect);
 		}
 
-		nameClr = GetNameColor(pf, m_guildID);
+		if (!refMsg.m_webhook_id) {
+			Profile* pf = GetProfileCache()->LookupProfile(authorID, "", "", "", false);
+			if (pf)
+				nameClr = GetNameColor(pf, m_guildID);
+		}
 	}
 
 	if (nameClr == CLR_NONE)
@@ -2317,7 +2324,15 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		rc.left += authorOffset;
 		rc.right += authorOffset;
 		if (inView)
+		{
 			DrawText(hdc, strAuth, -1, &rc, DT_NOPREFIX | DT_NOCLIP);
+			if (item.m_msg.m_bIsAuthorBot)
+			{
+				int sm = GetSystemMetrics(SM_CXSMICON);
+				HICON hic = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_BOT)), IMAGE_ICON, sm, sm, LR_SHARED);
+				DrawIconEx(hdc, rc.left + auth_wid + ScaleByDPI(4), rc.top + (auth_hei - sm) / 2, hic, sm, sm, 0, NULL, DI_COMPAT | DI_NORMAL);
+			}
+		}
 
 		if (old != CLR_NONE) {
 			SetTextColor(hdc, old);
@@ -2559,8 +2574,8 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			{
 				// draw the avatar
 				bool hasAlpha = false;
-				Profile* pf = GetProfileCache()->LookupProfile(item.m_msg.m_author_snowflake, "", "", "", false);
-				HBITMAP hbm = GetAvatarCache()->GetBitmap(pf->m_avatarlnk, hasAlpha);
+				GetAvatarCache()->AddImagePlace(item.m_msg.m_avatar, eImagePlace::AVATARS, item.m_msg.m_avatar, item.m_msg.m_author_snowflake);
+				HBITMAP hbm = GetAvatarCache()->GetBitmap(item.m_msg.m_avatar, hasAlpha);
 				DrawBitmap(hdc, hbm, pfRect.left, pfRect.top, &pfRect, CLR_NONE, GetProfilePictureSize(), 0, hasAlpha);
 			}
 		}
@@ -3158,7 +3173,8 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					RECT rect;
 					GetWindowRect(hWnd, &rect);
 
-					ProfilePopout::Show(authorSF, pThis->m_guildID, rect.left + msg->m_authorRect.right + 10, rect.top + msg->m_authorRect.top);
+					if (!msg->m_msg.IsWebHook())
+						ProfilePopout::Show(authorSF, pThis->m_guildID, rect.left + msg->m_authorRect.right + 10, rect.top + msg->m_authorRect.top);
 				}
 
 				for (auto& att : msg->m_attachmentData)
@@ -3172,7 +3188,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				for (auto& intd : msg->m_interactableData)
 				{
 					if (PtInRect(&intd.m_rect, pt)) {
-						pThis->OpenInteractable(&intd);
+						pThis->OpenInteractable(&intd, &*msg);
 						break;
 					}
 				}
@@ -3488,6 +3504,9 @@ void MessageList::UpdateMembers(std::set<Snowflake>& mems)
 
 	for (auto& msg : m_messages)
 	{
+		if (msg.m_msg.m_author_snowflake == 0 || msg.m_msg.IsWebHook())
+			continue;
+
 		auto iter = mems.find(msg.m_msg.m_author_snowflake);
 		if (iter == mems.end())
 			continue; // no need to refresh
@@ -3521,6 +3540,7 @@ void MessageList::UpdateMembers(std::set<Snowflake>& mems)
 			msg.m_dateEdited,
 			msg.m_replyMsg,
 			msg.m_replyAuth,
+			msg.m_msg.m_bIsAuthorBot,
 			msg.m_messageRect,
 			height,
 			authHeight,
@@ -4029,6 +4049,7 @@ void MessageList::DetermineMessageMeasurements(MessageItem& mi, HDC _hdc, LPRECT
 		strDateEdit,
 		strReplyMsg,
 		strReplyAuth,
+		mi.m_msg.m_bIsAuthorBot,
 		rect,
 		mi.m_textHeight,
 		mi.m_authHeight,

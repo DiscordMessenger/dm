@@ -71,13 +71,29 @@ void ReferenceMessage::Load(nlohmann::json& data, Snowflake guild)
 	Json& author = data["author"];
 	Snowflake messageId = GetSnowflake(data, "id");
 	Snowflake authorId = 0;
+	std::string authorName = "";
+	std::string userName = "", avatar = "";
+	bool isBot = false;
+
+	m_webhook_id = GetSnowflake(data, "webhook_id");
 
 	if (author.is_object())
 	{
 		authorId = GetSnowflake(author, "id");
-		Profile* pf = GetProfileCache()->LoadProfile(authorId, author);
-		m_author = pf->GetName(guild);
+		authorName = GetGlobalName(author);
+		userName = GetUsername(author);
+		avatar = GetFieldSafe(author, "avatar");
+		isBot = GetFieldSafeBool(author, "bot", false);
+
+		m_author = authorName;
+		m_avatar = avatar;
+		m_bIsAuthorBot = isBot;
+
 		m_author_snowflake = authorId;
+		if (authorId && !m_webhook_id) {
+			Profile* pf = GetProfileCache()->LookupProfile(authorId, userName, authorName, avatar, false);
+			m_author = pf->GetName(guild);
+		}
 	}
 	
 	m_snowflake = messageId;
@@ -194,13 +210,15 @@ void Message::Load(Json& data, Snowflake guild)
 	Snowflake authorId = m_author_snowflake;
 	std::string authorName = m_author;
 	std::string userName = "", avatar = "";
-	
+	bool isBot = false;
+
 	if (author.is_object())
 	{
 		authorId = GetSnowflake(author, "id");
 		authorName = GetGlobalName(author);
 		userName = GetUsername(author);
 		avatar = GetFieldSafe(author, "avatar");
+		isBot = GetFieldSafeBool(author, "bot", false);
 	}
 
 	if (data.contains("content"))
@@ -215,6 +233,9 @@ void Message::Load(Json& data, Snowflake guild)
 	if (data.contains("type"))
 		m_type = (MessageType::eType)data["type"];
 
+	if (data.contains("webhook_id"))
+		m_webhookId = GetSnowflake(data, "webhook_id");
+
 	auto& member = data["member"];
 	if (member.is_object() && guild)
 		authorId = GetDiscordInstance()->ParseGuildMember(guild, member, authorId);
@@ -222,10 +243,18 @@ void Message::Load(Json& data, Snowflake guild)
 	if (data.contains("nonce"))
 		m_anchor = GetIntFromString(data["nonce"]);
 
-	Profile* pf = GetProfileCache()->LookupProfile(authorId, userName, authorName, avatar, false);
 	m_snowflake = messageId;
 	m_author_snowflake = authorId;
-	m_author = pf->GetName(guild);
+
+	m_author = authorName;
+	m_avatar = avatar;
+	m_bIsAuthorBot = isBot;
+
+	if (authorId && !IsWebHook()) {
+		Profile* pf = GetProfileCache()->LookupProfile(authorId, userName, authorName, avatar, false);
+		m_author = pf->GetName(guild);
+		m_avatar = pf->m_avatarlnk;
+	}
 
 	if (data["attachments"].is_array())
 	{

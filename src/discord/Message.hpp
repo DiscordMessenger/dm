@@ -14,12 +14,15 @@ struct ReferenceMessage
 	MessageType::eType m_type = MessageType::DEFAULT;
 	Snowflake m_snowflake = 0;
 	Snowflake m_author_snowflake = 0;
+	Snowflake m_webhook_id = 0;
 	std::string m_message;
 	std::string m_author;
+	std::string m_avatar;
 	bool m_bHasAttachments = false;
 	bool m_bHasComponents = false;
 	bool m_bHasEmbeds = false;
 	bool m_bMentionsAuthor = false;
+	bool m_bIsAuthorBot = false;
 	std::set<Snowflake> m_userMentions;
 
 	void Load(nlohmann::json& msgData, Snowflake guild);
@@ -90,6 +93,7 @@ public:
 	Snowflake m_author_snowflake = 0;
 	std::string m_message = "";
 	std::string m_author = "";
+	std::string m_avatar = "";
 	Snowflake m_anchor = 0; // for gap messages
 	Snowflake m_nonce = 0; // to create messages
 	std::vector<Attachment> m_attachments;
@@ -104,11 +108,13 @@ public:
 	std::set<Snowflake> m_roleMentions;
 	bool m_bMentionedEveryone = false;
 	bool m_bHaveReferencedMessage = false;
+	bool m_bIsAuthorBot = false;
 	Snowflake m_refMessageGuild = 0;
 	Snowflake m_refMessageChannel = 0;
 	Snowflake m_refMessageSnowflake = 0;
 	ReferenceMessage m_referencedMessage;
 	std::vector<RichEmbed> m_embeds;
+	Snowflake m_webhookId = 0;
 
 public:
 	Message() {}
@@ -120,6 +126,10 @@ public:
 
 	bool IsLoadGap() const {
 		return m_type == MessageType::GAP_UP || m_type == MessageType::GAP_DOWN || m_type == MessageType::GAP_AROUND;
+	}
+
+	bool IsWebHook() const {
+		return m_webhookId != 0;
 	}
 
 public:

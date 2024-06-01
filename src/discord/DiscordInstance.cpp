@@ -512,7 +512,7 @@ void DiscordInstance::HandleRequest(void* pRequestPtr)
 		case HTTP_BADGATEWAY:
 		case HTTP_UNSUPPMEDIA:
 		{
-			DbgPrintF("Resource %s not loaded due to error %d", pRequest->url, pRequest->result);
+			DbgPrintF("Resource %s not loaded due to error %d", pRequest->url.c_str(), pRequest->result);
 
 			if (pRequest->itype == IMAGE || pRequest->itype == IMAGE_ATTACHMENT) {
 				GetFrontend()->OnAttachmentFailed(pRequest->itype == IMAGE, pRequest->additional_data);
