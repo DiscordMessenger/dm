@@ -72,6 +72,8 @@ extern int g_latestSSLError; // HACK -- defined by the NetworkerThread.  Used to
 void Frontend_Win32::OnGenericError(const std::string& message)
 {
 	std::string newMsg = message;
+
+	// TODO HACK: remove soon
 	if (g_latestSSLError) {
 		char buff[128];
 		snprintf(buff, sizeof buff, "\n\nAdditionally, an SSL error code of 0x%x was provided.  Consider sending this to iProgramInCpp!", g_latestSSLError);
@@ -80,17 +82,17 @@ void Frontend_Win32::OnGenericError(const std::string& message)
 	}
 
 	LPCTSTR pMsgBoxText = ConvertCppStringToTString(newMsg);
-	MessageBox(g_Hwnd, pMsgBoxText, TEXT("Discord Messenger Error"), MB_OK | MB_ICONERROR);
+	MessageBox(g_Hwnd, pMsgBoxText, TmGetTString(IDS_ERROR), MB_OK | MB_ICONERROR);
 	free((void*)pMsgBoxText);
 	pMsgBoxText = NULL;
 }
 
 void Frontend_Win32::OnJsonException(const std::string& message)
 {
-	std::string err("Json Exception!\n\nMessage: ");
+	std::string err(TmGetString(IDS_JSON_EXCEPTION));
 	err += message;
 	LPCTSTR pMsgBoxText = ConvertCppStringToTString(err);
-	MessageBox(g_Hwnd, pMsgBoxText, TEXT("Discord Messenger Error"), MB_OK | MB_ICONERROR);
+	MessageBox(g_Hwnd, pMsgBoxText, TmGetTString(IDS_ERROR), MB_OK | MB_ICONERROR);
 	free((void*)pMsgBoxText);
 	pMsgBoxText = NULL;
 }
@@ -120,8 +122,8 @@ void Frontend_Win32::OnProtobufError(Protobuf::ErrorCode code)
 {
 	char buff[512];
 	buff[511] = 0;
-	snprintf(buff, sizeof buff - 1, "Error while loading settings data, got error code %d from protobuf implementation.", code);
-	MessageBoxA(g_Hwnd, buff, "Settings error", MB_ICONERROR);
+	snprintf(buff, sizeof buff - 1, TmGetString(IDS_PROTOBUF_ERROR).c_str(), code);
+	MessageBoxA(g_Hwnd, buff, TmGetString(IDS_ERROR).c_str(), MB_ICONERROR);
 }
 
 void Frontend_Win32::OnRequestDone(NetRequest* pRequest)
@@ -221,6 +223,7 @@ void Frontend_Win32::OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_
 	FILE* f = fopen(final_path.c_str(), "wb");
 	if (!f) {
 		DbgPrintW("ERROR: Could not open %s for writing", final_path.c_str());
+		// TODO: error message
 		return;
 	}
 
@@ -353,33 +356,20 @@ void Frontend_Win32::OnWebsocketFail(int gatewayID, int errorCode, const std::st
 	WAsnprintf(
 		buffer,
 		_countof(buffer),
-		TEXT("ERROR: Could not connect to the websocket gateway.\nConnection was closed with code: %d\n\nMessage: %s"),
+		TmGetTString(IDS_CANNOT_CONNECT_WS),
 		errorCode,
 		msg
 	);
 	free(msg);
 
 	if (isTLSError) {
-		_tcscat(
-			buffer,
-			TEXT("\n\nWARNING: Your connection may not be private\n\nDiscord Messenger could not verify that it is connecting to a Websocket service ")
-			TEXT("required to use Discord Messenger in real time.")
-			TEXT("\n\nThis could be because:")
-			TEXT("\no   Your computer does not trust the certificate that the gateway has declared because it is wrong,")
-			TEXT("\no   Your computer does not trust the certificate that the gateway has declared because it doesn't trust the root certificate,")
-			TEXT("\no   Your computer does not trust the certificate that the gateway has declared because your date and time are incorrect,")
-			TEXT("\no   The website reported a protocol which the client is outdated for and cannot handle, or")
-			TEXT("\no   SOMEONE IS EAVESDROPPING ON YOU RIGHT NOW! (man-in-the-middle attack)")
-			TEXT("\n\nIt is not recommended to proceed if you see this error. Please ensure you can connect to Discord using a ")
-			TEXT("capable device on the same network as this one.  If you are able to connect, export the root certificate from ")
-			TEXT("discord.com on that device and import it into Windows, if the OS supports it.")
-			TEXT("\n\nYou may also disable SSL server verification, and then restart the application. However, you have to ")
-			TEXT("take into account the risks that this entails.")
-		);
+		_tcscat(buffer, TEXT("\n\n"));
+		_tcscat(buffer, TmGetTString(IDS_SSL_ERROR_WS));
+		_tcscat(buffer, TmGetTString(IDS_SSL_ERROR_2));
 	}
 
 	if (mayRetry) {
-		_tcscat(buffer, TEXT("\n\nClick Retry to try connecting again, or Cancel to quit."));
+		_tcscat(buffer, TmGetTString(IDS_CANNOT_CONNECT_WS_2));
 	}
 
 	int flags = (mayRetry ? MB_RETRYCANCEL : MB_OK) | (isTLSError ? MB_ICONWARNING : MB_ICONERROR);

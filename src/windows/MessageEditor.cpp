@@ -689,7 +689,7 @@ MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
 	newThis->m_send_hwnd = CreateWindowEx(
 		0,
 		TEXT("BUTTON"),
-		TEXT("Send"),
+		TmGetTString(IDS_SEND_MESSAGE),
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 		width - sendButtonWidth,
 		(height - sendButtonHeight) / 2,
@@ -702,13 +702,15 @@ MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
 	);
 
 	// Add the mention items
-	LPCTSTR editingText = TEXT("Editing Message");
-	newThis->m_editingMessage_hwnd = CreateWindow(WC_STATIC, editingText,          WS_CHILD | SS_SIMPLE | SS_CENTERIMAGE, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEEDITINGLBL,  g_hInstance, NULL);
-	newThis->m_mentionText_hwnd    = CreateWindow(WC_STATIC, TEXT("Replying to"),  WS_CHILD | SS_SIMPLE | SS_CENTERIMAGE, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYTO,     g_hInstance, NULL);
-	newThis->m_mentionName_hwnd    = CreateWindow(WC_STATIC, TEXT("UserNameHere"), WS_CHILD | SS_SIMPLE | SS_CENTERIMAGE, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYUSER,   g_hInstance, NULL);
-	newThis->m_mentionCheck_hwnd   = CreateWindow(WC_BUTTON, TEXT("Mention"),      WS_CHILD | BS_AUTOCHECKBOX,            0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEMENTCHECK,   g_hInstance, NULL);
-	newThis->m_mentionCancel_hwnd  = CreateWindow(WC_BUTTON, TEXT(""),             WS_CHILD | BS_PUSHBUTTON | BS_ICON,    0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYCANCEL, g_hInstance, NULL);
-	newThis->m_mentionJump_hwnd    = CreateWindow(WC_BUTTON, TEXT(""),             WS_CHILD | BS_PUSHBUTTON | BS_ICON,    0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYJUMP,   g_hInstance, NULL);
+	LPCTSTR editingText  = TmGetTString(IDS_EDITING_MESSAGE);
+	LPCTSTR replyingText = TmGetTString(IDS_REPLYING_TO_MESSAGE);
+	LPCTSTR mentionText  = TmGetTString(IDS_MENTION);
+	newThis->m_editingMessage_hwnd = CreateWindow(WC_STATIC, editingText,  WS_CHILD | SS_SIMPLE | SS_CENTERIMAGE, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEEDITINGLBL,  g_hInstance, NULL);
+	newThis->m_mentionText_hwnd    = CreateWindow(WC_STATIC, replyingText, WS_CHILD | SS_SIMPLE | SS_CENTERIMAGE, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYTO,     g_hInstance, NULL);
+	newThis->m_mentionName_hwnd    = CreateWindow(WC_STATIC, TEXT("UNH"),  WS_CHILD | SS_SIMPLE | SS_CENTERIMAGE, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYUSER,   g_hInstance, NULL);
+	newThis->m_mentionCheck_hwnd   = CreateWindow(WC_BUTTON, mentionText,  WS_CHILD | BS_AUTOCHECKBOX,            0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEMENTCHECK,   g_hInstance, NULL);
+	newThis->m_mentionCancel_hwnd  = CreateWindow(WC_BUTTON, TEXT(""),     WS_CHILD | BS_PUSHBUTTON | BS_ICON,    0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYCANCEL, g_hInstance, NULL);
+	newThis->m_mentionJump_hwnd    = CreateWindow(WC_BUTTON, TEXT(""),     WS_CHILD | BS_PUSHBUTTON | BS_ICON,    0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYJUMP,   g_hInstance, NULL);
 
 	// Add icon buttons
 	newThis->m_btnUpload_hwnd = CreateWindow(WC_BUTTON, TEXT(""), WS_CHILD | BS_PUSHBUTTON | BS_ICON, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEUPLOAD, g_hInstance, NULL);
@@ -718,11 +720,11 @@ MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
 	HGDIOBJ objOld = SelectObject(hdc, g_SendButtonFont);
 
 	RECT rcMeasure{};
-	DrawText(hdc, TEXT("Mention"), -1, &rcMeasure, DT_CALCRECT);
+	DrawText(hdc, mentionText, -1, &rcMeasure, DT_CALCRECT);
 	newThis->m_mentionTextWidth = rcMeasure.right - rcMeasure.left + 1;
 
 	SetRectEmpty(&rcMeasure);
-	DrawText(hdc, TEXT("Replying to "), -1, &rcMeasure, DT_CALCRECT);
+	DrawText(hdc, replyingText, -1, &rcMeasure, DT_CALCRECT);
 	newThis->m_replyToTextWidth = rcMeasure.right - rcMeasure.left + 1;
 
 	SelectObject(hdc, objOld);

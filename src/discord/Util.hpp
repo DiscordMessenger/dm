@@ -47,6 +47,7 @@ float CompareFuzzy(const std::string& item, const char* query); // returns a "cl
 float GetAppVersion();
 std::string GetAppVersionString();
 std::string FormatDuration(int durationSec);
+std::string Format(const char* fmt, ...);
 
 #ifdef USE_DEBUG_PRINTS
 void DbgPrintF(const char* fmt, ...);

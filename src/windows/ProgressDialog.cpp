@@ -95,7 +95,7 @@ BOOL ProgressDialog::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 	{
 		case WM_INITDIALOG: {
-			SetWindowText(hWnd, m_bDirection ? TEXT("File Upload") : TEXT("File Download"));
+			SetWindowText(hWnd, TmGetTString(m_bDirection ? IDS_FILE_UPLOAD : IDS_FILE_DOWNLOAD));
 
 			LONG_PTR lp = GetWindowLongPtr(hWnd, GWLP_WNDPROC);
 			SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)&WndProc);
@@ -106,8 +106,8 @@ BOOL ProgressDialog::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SetDlgItemText(hWnd, IDC_UPLOADING_FILENAME, fileName);
 			free(fileName);
 
-			SetDlgItemText(hWnd, IDC_UPLOADING_ETA, TEXT("Calculating..."));
-			SetDlgItemText(hWnd, IDC_UPLOADING_ACTION, m_bDirection ? TEXT("Uploading:") : TEXT("Downloading:"));
+			SetDlgItemText(hWnd, IDC_UPLOADING_ETA, TmGetTString(IDS_CALCULATING));
+			SetDlgItemText(hWnd, IDC_UPLOADING_ACTION, TmGetTString(m_bDirection ? IDS_UPLOADING : IDS_DOWNLOADING));
 
 			SendMessage(GetDlgItem(hWnd, IDC_UPLOADING_PROGRESS), PBM_SETRANGE, 0, MAKELPARAM(0, 1000));
 			SendMessage(GetDlgItem(hWnd, IDC_UPLOADING_PROGRESS), PBM_SETPOS, 0, 0);
@@ -158,17 +158,17 @@ BOOL ProgressDialog::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			std::string etaStr;
 			if (bytesPerSec) {
 				uint64_t eta = bytesPerSec ? (uint64_t(m_length - m_offset) / bytesPerSec) : 0;
-				etaStr = FormatDuration(eta) + " (" + strProgress + " uploaded)";
+				etaStr = Format(TmGetString(IDS_ETA_STRING).c_str(), FormatDuration(eta).c_str(), strProgress.c_str());
 			}
 			else {
-				etaStr = "Calculating...";
+				etaStr = TmGetString(IDS_CALCULATING);
 			}
 
 			LPTSTR tstr = ConvertCppStringToTString(etaStr);
 			SetDlgItemText(hWnd, IDC_UPLOADING_ETA, tstr);
 			free(tstr);
 
-			std::string transferRate = bytesPerSec ? (std::to_string(bytesPerSec / 1024) + " KB/Sec") : "Calculating...";
+			std::string transferRate = bytesPerSec ? Format(TmGetString(IDS_KB_PER_SEC).c_str(), bytesPerSec / 1024) : TmGetString(IDS_CALCULATING);
 			tstr = ConvertCppStringToTString(transferRate);
 			SetDlgItemText(hWnd, IDC_UPLOADING_XFERRATE, tstr);
 			free(tstr);
@@ -184,7 +184,7 @@ BOOL ProgressDialog::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case WM_COMMAND:
 			if (wParam == IDCANCEL) {
-				SetDlgItemText(hWnd, IDC_UPLOADING_ETA, TEXT("Cancelling..."));
+				SetDlgItemText(hWnd, IDC_UPLOADING_ETA, TmGetTString(IDS_CANCELLING));
 				m_bCanceling = true;
 			}
 			break;

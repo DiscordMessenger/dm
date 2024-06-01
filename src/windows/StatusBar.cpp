@@ -216,9 +216,9 @@ void StatusBar::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 	{
 		TypingUser& tu = m_typingUsers[i];
 		if (i != 0) {
-			LPTSTR separator;
+			LPCTSTR separator;
 			if (i == sz - 1)
-				separator = TEXT(" and ");
+				separator = TmGetTString(IDS_AND);
 			else
 				separator = TEXT(", ");
 
@@ -249,7 +249,7 @@ void StatusBar::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 	if (sz != 0)
 	{
 		SelectObject(hdc, g_TypingRegFont);
-		LPCTSTR typingEnd = sz == 1 ? TEXT(" is typing...") : TEXT(" are typing...");
+		LPCTSTR typingEnd = TmGetTString(sz == 1 ? IDS_IS_TYPING : IDS_ARE_TYPING);
 		DrawText(hdc, typingEnd, -1, &rc, DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE);
 	}
 

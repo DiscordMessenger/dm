@@ -1624,17 +1624,17 @@ void MessageList::DetermineMessageData(
 				break;
 			}
 
-			messagePart1 = TEXT("Welcome to the beginning of the ");
-			messagePart2 = TEXT(" channel.");
+			messagePart1 = TmGetTString(IDS_WELCOME_TO_START_1);
+			messagePart2 = TmGetTString(IDS_WELCOME_TO_START_2);
 			break;
 		}
 
 		case MessageType::CHANNEL_PINNED_MESSAGE:
 		{
 			messagePart1 = TEXT("");
-			messagePart2 = TEXT(" pinned ");
-			messagePart3 = TEXT(" to this channel.");
-			clickableString = TEXT("a message");
+			messagePart2 = TmGetTString(IDS_PINNED_1);
+			messagePart3 = TmGetTString(IDS_PINNED_3);
+			clickableString = TmGetTString(IDS_PINNED_2);
 			clickableLink = CreateMessageLink(refMsgGuildID, refMsgChannelID, refMsgMessageID);
 			icon = IDI_PIN;
 			break;
@@ -1643,7 +1643,7 @@ void MessageList::DetermineMessageData(
 		case MessageType::GUILD_BOOST:
 		{
 			messagePart1 = TEXT("");
-			messagePart2 = TEXT(" has boosted the server!");
+			messagePart2 = TmGetTString(IDS_BOOSTED_GUILD);
 			icon = IDI_BOOST;
 			break;
 		}
@@ -1657,20 +1657,15 @@ void MessageList::DetermineMessageData(
 			if (pGld)
 				guildName = pGld->m_name;
 
-			freedStringSpace = ConvertCppStringToTString(" has boosted the server! " + guildName + " has achieved ");
+			freedStringSpace = ConvertCppStringToTString(TmGetString(IDS_BOOSTED_GUILD) + guildName + TmGetString(IDS_BOOSTED_ACHIEVED));
 
 			messagePart1 = TEXT("");
 			messagePart2 = freedStringSpace;
 			messagePart3 = TEXT("!");
 
 			int tier = int(msgType) - int(MessageType::GUILD_BOOST_TIER_1);
-			const LPCTSTR tiers[] = {
-				TEXT("Level 1"),
-				TEXT("Level 2"),
-				TEXT("Level 3"),
-			};
+			clickableString = TmGetTString(IDS_BOOSTED_TIER_1 + tier);
 
-			clickableString = tiers[tier];
 			icon = IDI_BOOST;
 			break;
 		}
@@ -1679,7 +1674,7 @@ void MessageList::DetermineMessageData(
 		{
 			freedStringSpace = ConvertCppStringToTString(content);
 			messagePart1 = TEXT("");
-			messagePart2 = TEXT(" started ");
+			messagePart2 = TmGetTString(IDS_STAGE_STARTED);
 			clickableString = freedStringSpace;
 			break;
 		}
@@ -1688,7 +1683,7 @@ void MessageList::DetermineMessageData(
 		{
 			freedStringSpace = ConvertCppStringToTString(content);
 			messagePart1 = TEXT("");
-			messagePart2 = TEXT(" ended ");
+			messagePart2 = TmGetTString(IDS_STAGE_ENDED);
 			clickableString = freedStringSpace;
 			break;
 		}
@@ -1697,7 +1692,7 @@ void MessageList::DetermineMessageData(
 		{
 			freedStringSpace = ConvertCppStringToTString(content);
 			messagePart1 = TEXT("");
-			messagePart2 = TEXT(" changed the Stage topic: ");
+			messagePart2 = TmGetTString(IDS_STAGE_TOPIC);
 			clickableString = freedStringSpace;
 			break;
 		}
@@ -1705,7 +1700,7 @@ void MessageList::DetermineMessageData(
 		case MessageType::STAGE_SPEAKER:
 		{
 			messagePart1 = TEXT("");
-			messagePart2 = TEXT(" is now a speaker.");
+			messagePart2 = TmGetTString(IDS_STAGE_SPEAKER);
 			break;
 		}
 
@@ -1717,19 +1712,19 @@ void MessageList::DetermineMessageData(
 
 			if (msgType == MessageType::RECIPIENT_ADD) {
 				icon = IDI_USER_JOIN;
-				messagePart2 = TEXT(" added ");
-				messagePart3 = TEXT(" to the group.");
+				messagePart2 = TmGetTString(IDS_GROUP_JOIN_1);
+				messagePart3 = TmGetTString(IDS_GROUP_JOIN_2);
 				clickableString = TEXT("who?");
 			}
 			else if (clickableSF == authorId) {
 				icon = IDI_USER_LEAVE;
-				messagePart2 = TEXT(" left the group.");
+				messagePart2 = TmGetTString(IDS_GROUP_SELF_REMOVE);
 				break;
 			}
 			else {
 				icon = IDI_USER_LEAVE;
-				messagePart2 = TEXT(" removed ");
-				messagePart3 = TEXT(" from the group.");
+				messagePart2 = TmGetTString(IDS_GROUP_REMOVE_1);
+				messagePart3 = TmGetTString(IDS_GROUP_REMOVE_2);
 				clickableString = TEXT("who?");
 			}
 			
@@ -1746,7 +1741,7 @@ void MessageList::DetermineMessageData(
 			freedStringSpace = ConvertCppStringToTString(content);
 
 			messagePart1 = TEXT("");
-			messagePart2 = TEXT(" has changed the channel name: ");
+			messagePart2 = TmGetTString(IDS_CHANNEL_RENAME);
 			clickableString = freedStringSpace;
 			break;
 		}
@@ -1795,7 +1790,7 @@ LRESULT MessageList::OpenLinkMsgBoxHook(int code, WPARAM wParam, LPARAM lParam)
 
 			HWND item = GetDlgItem(hWnd, IDOK);
 			if (item)
-				SetWindowText(item, TEXT("Yep!"));
+				SetWindowText(item, TmGetTString(IDS_EXCITED_YES));
 		}
 		
 		LRESULT res = CallNextHookEx(g_MsgBoxHookTemp, code, wParam, lParam);
@@ -2847,7 +2842,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (amount != 1)
 			{
-				MessageBox(g_Hwnd, TEXT("I currently only take one file at a time!"), TmGetTString(IDS_PROGRAM_NAME), MB_ICONWARNING | MB_OK);
+				MessageBox(g_Hwnd, TmGetTString(IDS_CANT_UPLOAD_SEVERAL), TmGetTString(IDS_PROGRAM_NAME), MB_ICONWARNING | MB_OK);
 				DragFinish(hDrop);
 				return 0;
 			}

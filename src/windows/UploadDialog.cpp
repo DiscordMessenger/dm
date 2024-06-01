@@ -309,7 +309,7 @@ void UploadDialogShow2()
 	ofn.nMaxFileTitle  = MAX_FILE;
 	ofn.lpstrFileTitle = buffer2;
 	ofn.lpstrFilter    = TEXT("All files\0*.*\0\0");
-	ofn.lpstrTitle     = TEXT("Upload file");
+	ofn.lpstrTitle     = TmGetTString(IDS_FILE_UPLOAD);
 
 	if (!GetOpenFileName(&ofn)) {
 		// maybe they cancelled. hope there's no error!

@@ -549,23 +549,26 @@ void LaunchURL(const std::string& link)
 {
 	LPTSTR tstr = ConvertCppStringToTString(link);
 	INT_PTR res = (INT_PTR) ShellExecute(g_Hwnd, TEXT("open"), tstr, NULL, NULL, SW_SHOWNORMAL);
-	free(tstr);
 
-	if (res > 32) return; // was fine
+	if (res > 32) {
+		free(tstr);
+		return; // was fine
+	}
 
 	TCHAR buff[4096];
 	switch (res)
 	{
 		case 0:
-			WAsnprintf(buff, _countof(buff), TEXT("Whoa, like, can't launch the URL " ASCIIZ_STR_FMT "!  Yer outa memory, duuude!"), link.c_str());
+			WAsnprintf(buff, _countof(buff), TmGetTString(IDS_CANT_LAUNCH_URL_MEM), tstr);
 			break;
 
 		default:
-			WAsnprintf(buff, _countof(buff), TEXT("Can't launch URL " ASCIIZ_STR_FMT ", ShellExecute returned error %d.  Look \"ShellExecute error %d\" if you care."), link.c_str(), res, res);
+			WAsnprintf(buff, _countof(buff), TmGetTString(IDS_CANT_LAUNCH_URL_ERR), tstr, res, res);
 			break;
 	}
 
-	MessageBox(g_Hwnd, buff, TEXT("Whoops"), MB_ICONERROR | MB_OK);
+	free(tstr);
+	MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
 }
 
 bool IsChildOf(HWND child, HWND of)

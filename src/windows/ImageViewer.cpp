@@ -110,7 +110,7 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 			BITMAP bm;
 			memset(&bm, 0, sizeof(bm));
 			if (!GetObject(hbm, sizeof(BITMAP), &bm)) {
-				MessageBox(hWnd, TEXT("Could not show bitmap!  Windows API mismatch?"), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR);
+				MessageBox(hWnd, TmGetTString(IDS_CANT_SHOW_BITMAP), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR);
 				break;
 			}
 

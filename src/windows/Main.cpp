@@ -83,7 +83,7 @@ void SetupCachePathIfNeeded()
 	}
 	else
 	{
-		MessageBox(g_Hwnd, TEXT("Discord Messenger could not locate your Application Data directory. The application cannot save caches of images."), TEXT("Discord Messenger - Non Critical Error"), MB_OK | MB_ICONERROR);
+		MessageBox(g_Hwnd, TmGetTString(IDS_NO_APPDATA), TmGetTString(IDS_NON_CRITICAL_ERROR), MB_OK | MB_ICONERROR);
 		SetBasePath("");
 	}
 
@@ -92,7 +92,7 @@ void SetupCachePathIfNeeded()
 
 	return;
 _failure:
-	MessageBox(g_Hwnd, TEXT("Discord Messenger could not create \"DiscordMessenger\\cache\" in your Application Data directory. The application cannot save caches of images."), TEXT("Discord Messenger - Non Critical Error"), MB_OK | MB_ICONERROR);
+	MessageBox(g_Hwnd, TmGetTString(IDS_NO_CACHE_DIR), TmGetTString(IDS_NON_CRITICAL_ERROR), MB_OK | MB_ICONERROR);
 
 	SetBasePath("");
 
@@ -359,32 +359,15 @@ int OnSSLError(const std::string& url)
 {
 	LPTSTR urlt = ConvertCppStringToTString(url);
 	static TCHAR buffer[8192];
-	_tcscpy(buffer, TEXT("WARNING:  Your connection may not be private\n\nDiscord Messenger could not verify that it is connecting to the following URL: "));
+	_tcscat(buffer, TmGetTString(IDS_SSL_ERROR_1));
 	_tcscat(buffer, urlt);
-	_tcscat(buffer,
-		TEXT("\n\nThis could be because:")
-		TEXT("\no   Your computer does not trust the certificate that the service has declared because it is wrong,")
-		TEXT("\no   Your computer does not trust the certificate that the service has declared because it doesn't trust the root certificate,")
-		TEXT("\no   Your computer does not trust the certificate that the service has declared because your date and time are incorrect,")
-		TEXT("\no   The website reported a protocol which the client is outdated for and cannot handle, or")
-		TEXT("\no   SOMEONE IS EAVESDROPPING ON YOU RIGHT NOW! (man-in-the-middle attack)")
-		TEXT("\n\nIt is not recommended to proceed if you see this error. Please ensure you can connect to the URL using a ")
-		TEXT("capable device on the same network as this one.  If you are able to connect, export the root certificate from ")
-		TEXT("that device and import it into Windows, so that you won't get this error again.")
-		TEXT("\n\nYou may also disable SSL server verification, and then restart the application. However, you have to ")
-		TEXT("take into account the risks that this entails.")
-		TEXT("\n\nUse one of the following buttons to determine how to proceed:")
-		TEXT("\no   ABORT: Declare this HTTP request a failure.")
-		TEXT("\no   RETRY: Retry this HTTP request.  Keep in mind that you will need to restart the app if you have installed a new certificate.")
-		TEXT("\no   IGNORE: This error and future SSL errors will be ignored.  This option is RISKY because it could expose you to man-in-the-middle attacks. ")
-		TEXT("If you wish to enable SSL server verification again after clicking Ignore, you can go to the File > Preferences menu, Connection tab, and check ")
-		TEXT("the relevant checkbox.")
-	);
+	_tcscat(buffer, TmGetTString(IDS_SSL_ERROR_2));
+	_tcscat(buffer, TmGetTString(IDS_SSL_ERROR_3));
 	free(urlt);
 
 	size_t l = _tcslen(buffer);
 
-	return MessageBox(g_Hwnd, buffer, TEXT("Discord Messenger - SECURITY ALERT"), MB_ABORTRETRYIGNORE | MB_ICONWARNING);
+	return MessageBox(g_Hwnd, buffer, TmGetTString(IDS_SSL_ERROR_TITLE), MB_ABORTRETRYIGNORE | MB_ICONWARNING);
 }
 
 BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -473,7 +456,7 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			HBITMAP hbm = NULL;
 			HDC hdc = NULL;
 			BYTE* pBytes = nullptr;
-			LPTSTR fileName = nullptr;
+			LPCTSTR fileName = nullptr;
 			std::vector<uint8_t> data;
 			bool isClipboardClosed = false;
 			bool hadToUseLegacyBitmap = false;
@@ -557,7 +540,7 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			CloseClipboard(); isClipboardClosed = true;
 
-			fileName = TEXT("unknown.png");
+			fileName = TmGetTString(IDS_UNKNOWN_FILE_NAME);
 			UploadDialogShowWithFileData(data.data(), data.size(), fileName);
 
 		_fail:
@@ -631,7 +614,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_FORCERESTART:
 		{
-			MessageBox(hWnd, TEXT("The application will now restart due to a change in the configuration."), TEXT("Setting Modification"), MB_OK | MB_ICONINFORMATION);
+			MessageBox(hWnd, TmGetTString(IDS_RESTART_CONFIG_CHANGE), TmGetTString(IDS_PROGRAM_NAME), MB_OK | MB_ICONINFORMATION);
 			if (InSendMessage())
 				ReplyMessage(0);
 			SendMessage(hWnd, WM_DESTROY, 0, 0);

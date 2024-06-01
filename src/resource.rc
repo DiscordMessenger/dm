@@ -1068,6 +1068,81 @@ BEGIN
     IDS_FAILED_TO_UPLOAD    "Error! Can't upload file %s, got error %d."
     IDS_SAVED_UPDATE        "Your downloaded file was saved at the following path: %s."
     IDS_MAY_CONTAIN_TOKEN   "This message may contain a Discord authentication token, which may grant an attacker access to your account. Are you sure you want to send it?"
+    IDS_CANT_UPLOAD_SEVERAL "Hey! I currently only take one file at a time."
+    IDS_WELCOME_TO_START_1  "Welcome to the beginning of the "
+    IDS_WELCOME_TO_START_2  " channel."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_PINNED_1            " pinned "
+    IDS_PINNED_2            "a message"
+    IDS_PINNED_3            " to this channel."
+    IDS_BOOSTED_GUILD       " has boosted the server! "
+    IDS_BOOSTED_ACHIEVED    " has achieved "
+    IDS_BOOSTED_TIER_1      "Level 1"
+    IDS_BOOSTED_TIER_2      "Level 2"
+    IDS_BOOSTED_TIER_3      "Level 3"
+    IDS_STAGE_STARTED       " started "
+    IDS_STAGE_ENDED         " ended "
+    IDS_STAGE_TOPIC         " changed the Stage topic: "
+    IDS_STAGE_SPEAKER       " is now a speaker."
+    IDS_GROUP_JOIN_1        " added "
+    IDS_GROUP_JOIN_2        " to the group."
+    IDS_GROUP_REMOVE_1      " removed "
+    IDS_GROUP_REMOVE_2      " from the group."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_CHANNEL_RENAME      " has changed the channel name: "
+    IDS_GROUP_SELF_REMOVE   " left the group."
+    IDS_EXCITED_YES         "Yep!"
+    IDS_CANT_LAUNCH_URL_MEM "Whoa, like, can't launch the URL %s! Yer' outta memory, duuude!"
+    IDS_CANT_LAUNCH_URL_ERR "Can't launch URL %s. ShellExecute returned error %d.  Look up ""ShellExecute error %d"" if you care."
+    IDS_SSL_ERROR_1         "WARNING:  Your connection may not be private\n\nDiscord Messenger could not verify that it is connecting to the following URL: "
+    IDS_SSL_ERROR_2         "\n\nThis could be because:\no   Your computer does not trust the certificate that the service has declared because it is wrong,\no   Your computer does not trust the certificate that the service has declared because it doesn't trust the root certificate,\no   Your computer does not trust the certificate that the service has declared because your date and time are incorrect,\no   The website reported a protocol which the client is outdated for and cannot handle, or\no   SOMEONE IS EAVESDROPPING ON YOU RIGHT NOW! (man-in-the-middle attack)\n\nIt is not recommended to proceed if you see this error. Please ensure you can connect to the URL using a capable device on the same network as this one.  If you are able to connect, export the root certificate from that device and import it into Windows, so that you won't get this error again.\n\nYou may also disable SSL server verification, and then restart the application. However, you have to take into account the risks that this entails."
+    IDS_SSL_ERROR_TITLE     "Discord Messenger - SECURITY ALERT"
+    IDS_UNKNOWN_FILE_NAME   "unknown.png"
+    IDS_RESTART_CONFIG_CHANGE 
+                            "Discord Messenger will now restart due to a change in configuration."
+    IDS_NO_APPDATA          "Discord Messenger could not locate your Application Data directory.  The application cannot cache images or save your configuration."
+    IDS_NO_CACHE_DIR        "Discord Messenger could not create ""DiscordMessenger\\cache"" in your Application Data directory. The application cannot store caches of images."
+    IDS_NON_CRITICAL_ERROR  "Discord Messenger - Non-critical Error"
+    IDS_ERROR               "Discord Messenger Error"
+    IDS_JSON_EXCEPTION      "A bug has occurred and Discord Messenger failed to parse a piece of JSON received from the server.\n\nMessage:"
+    IDS_PROTOBUF_ERROR      "Cannot load settings information from Discord. Got error code %d from protobuf."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_CANNOT_CONNECT_WS   "ERROR: Could not connect to the websocket gateway.\nConnection was closed with code: %d\n\nMessage: %s"
+    IDS_SSL_ERROR_WS        "WARNING: Your connection may not be private\n\nDiscord Messenger could not verify that it is connecting to the WebSocket service required to use Discord Messenger in real time."
+    IDS_SSL_ERROR_3         "\n\nUse one of the following buttons to determine how to proceed:\no   ABORT: Declare this HTTP request a failure.\no   RETRY: Retry this HTTP request.  Keep in mind that you will need to restart the app if you have installed a new certificate.\no   IGNORE: This error and future SSL errors will be ignored.  This option is RISKY because it could expose you to man-in-the-middle attacks. If you wish to enable SSL server verification again after clicking Ignore, you can go to the File > Preferences menu, Connection tab, and check the relevant checkbox."
+    IDS_IS_TYPING           " is typing..."
+    IDS_ARE_TYPING          " are typing..."
+    IDS_CANNOT_CONNECT_WS_2 "\n\nClick Retry to try connecting again, or Cancel to quit."
+    IDS_AND                 " and "
+    IDS_LOG_OUT_MESSAGE     "Are you sure you want to log out?\n\nThis won't revoke your token, so you can log in with the same token again."
+    IDS_CERT_SETTING_CONFIRM 
+                            "WARNING:\n\nYou are about to change the TLS certificate verification setting. This may expose you to MITM (man-in-the-middle) attacks. It is recommended you instead import the required certificates into Windows.\n\nAre you sure you want to do this? (you can re-enable it anytime in the preferences menu)"
+    IDS_CANCELLING          "Cancelling..."
+    IDS_CALCULATING         "Calculating..."
+    IDS_ETA_STRING          "%s (%s uploaded)"
+    IDS_KB_PER_SEC          "%zu KB/Sec"
+    IDS_FILE_DOWNLOAD       "File Download"
+    IDS_FILE_UPLOAD         "File Upload"
+    IDS_DOWNLOADING         "Downloading:"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_UPLOADING           "Uploading:"
+    IDS_EDITING_MESSAGE     "Editing message"
+    IDS_REPLYING_TO_MESSAGE "Replying to "
+    IDS_MENTION             "Mention"
+    IDS_SEND_MESSAGE        "Send"
+    IDS_CANT_SHOW_BITMAP    "Can't show bitmap! Windows API mismatch?"
 END
 
 #endif    // English (United States) resources

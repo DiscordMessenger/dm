@@ -510,6 +510,20 @@ std::string FormatDuration(int seconds)
 	return result;
 }
 
+std::string Format(const char* fmt, ...)
+{
+	va_list vl;
+	va_start(vl, fmt);
+
+	char pos[2048];
+	vsnprintf(pos, sizeof pos, fmt, vl);
+	pos[sizeof pos - 1] = 0;
+
+	va_end(vl);
+
+	return std::string(pos);
+}
+
 #ifdef USE_DEBUG_PRINTS
 void DbgPrintF(const char* fmt, ...)
 {

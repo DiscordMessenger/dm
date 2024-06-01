@@ -211,9 +211,7 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 							break;
 						}
 						case IDC_LOG_OUT: {
-							if (MessageBox(hWnd,
-								TEXT("Are you sure you want to log out?\n\nThis won't revoke your token, so you can log in with the same token again."),
-								TmGetTString(IDS_PROGRAM_NAME), MB_YESNO | MB_ICONQUESTION) == IDYES)
+							if (MessageBox(hWnd, TmGetTString(IDS_LOG_OUT_MESSAGE), TmGetTString(IDS_PROGRAM_NAME), MB_YESNO | MB_ICONQUESTION) == IDYES)
 							{
 								// Log them out!
 								EndDialog(hWnd, 0);
@@ -312,14 +310,7 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 						{
 							bool state = IsDlgButtonChecked(hWnd, IDC_ENABLE_TLS_CHECKS);
 							if (!state) {
-								if (MessageBox(
-										hWnd,
-										TEXT("WARNING:\n\nYou are about to change the TLS certificate verification setting. This may expose you to MITM (man-in-the-middle) ")
-										TEXT("attacks. It is recommended you instead import the required certificates into Windows.\n\nAre you sure you want to do this? ")
-										TEXT("(you can re-enable it anytime in the preferences menu)"),
-										TmGetTString(IDS_PROGRAM_NAME),
-										MB_ICONWARNING | MB_YESNO
-									) != IDYES)
+								if (MessageBox(hWnd, TmGetTString(IDS_CERT_SETTING_CONFIRM), TmGetTString(IDS_PROGRAM_NAME), MB_ICONWARNING | MB_YESNO) != IDYES)
 								{
 									CheckDlgButton(hWnd, IDC_ENABLE_TLS_CHECKS, BST_CHECKED);
 									break;
