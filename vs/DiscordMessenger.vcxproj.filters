@@ -369,6 +369,12 @@
     <Image Include="..\res\bitmaps\target.bmp">
       <Filter>Resource Files\Resources\Bitmaps</Filter>
     </Image>
+    <Image Include="..\res\icons\icon_boost.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
+    </Image>
+    <Image Include="..\res\icons\icon_boost_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\res\cursors\cur_zoomout.cur">

@@ -1644,6 +1644,7 @@ void MessageList::DetermineMessageData(
 		{
 			messagePart1 = TEXT("");
 			messagePart2 = TEXT(" has boosted the server!");
+			icon = IDI_BOOST;
 			break;
 		}
 
@@ -1670,6 +1671,7 @@ void MessageList::DetermineMessageData(
 			};
 
 			clickableString = tiers[tier];
+			icon = IDI_BOOST;
 			break;
 		}
 
@@ -2458,7 +2460,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		int offs = 0;
 		if (icon) {
 			int iconY = rca.top + (rca.bottom - rca.top) / 2 - actionIconSize / 2;
-			HICON hicon = LoadIcon(g_hInstance, MAKEINTRESOURCE(icon));
+			HICON hicon = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(icon), IMAGE_ICON, actionIconSize, actionIconSize, LR_SHARED | LR_CREATEDIBSECTION);
 			DrawIconEx(hdc, rca.left, iconY, hicon, actionIconSize, actionIconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
 			offs = actionIconSize + ScaleByDPI(4);
 		}

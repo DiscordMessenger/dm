@@ -92,6 +92,9 @@
 #define IDR_AVI_DOWNLOAD_LC             92
 #define IDR_AVI_UPLOAD_HC               93
 #define IDR_AVI_UPLOAD_LC               94
+#define IDI_BOOST                       95
+#define IDI_ICON2                       96
+#define IDI_BOOST_2K                    96
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -386,7 +389,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        95
+#define _APS_NEXT_RESOURCE_VALUE        97
 #define _APS_NEXT_COMMAND_VALUE         1069
 #define _APS_NEXT_CONTROL_VALUE         882
 #define _APS_NEXT_SYMED_VALUE           40000

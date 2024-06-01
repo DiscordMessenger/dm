@@ -225,6 +225,8 @@
     <Image Include="..\res\icons\icon_add.ico" />
     <Image Include="..\res\icons\icon_balloon.ico" />
     <Image Include="..\res\icons\icon_balloon_block.ico" />
+    <Image Include="..\res\icons\icon_boost.ico" />
+    <Image Include="..\res\icons\icon_boost_2k.ico" />
     <Image Include="..\res\icons\icon_bot.ico" />
     <Image Include="..\res\icons\icon_bot_2k.ico" />
     <Image Include="..\res\icons\icon_cancel.ico" />
