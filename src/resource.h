@@ -88,6 +88,10 @@
 #define IDI_HEADER_3                    86
 #define IDI_HEADER_4                    87
 #define IDI_HEADER_5                    88
+#define IDR_AVI_DOWNLOAD_HC             91
+#define IDR_AVI_DOWNLOAD_LC             92
+#define IDR_AVI_UPLOAD_HC               93
+#define IDR_AVI_UPLOAD_LC               94
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -304,6 +308,8 @@
 #define IDC_UPLOADING_ETA               878
 #define IDC_UPLOADING_XFERRATE          879
 #define IDC_UPLOADING_ACTION            880
+#define IDC_ANIMATE1                    881
+#define IDC_PROGRESS_ANIMATE            881
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
 #define ID_FILE_EXIT                    1003
@@ -380,9 +386,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        91
+#define _APS_NEXT_RESOURCE_VALUE        95
 #define _APS_NEXT_COMMAND_VALUE         1069
-#define _APS_NEXT_CONTROL_VALUE         881
+#define _APS_NEXT_CONTROL_VALUE         882
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif
 #endif

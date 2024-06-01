@@ -52,6 +52,9 @@
     <Filter Include="Resource Files\Resources\Cursors">
       <UniqueIdentifier>{64b163e1-8714-4745-acb7-a73a12b8a7f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Resources\Animations">
+      <UniqueIdentifier>{54d34c5a-4006-4852-a568-70c3248b47d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\res\bitmaps\bmp_voice.bmp">
@@ -373,6 +376,18 @@
     </None>
     <None Include="..\res\cursors\cur_zoomin.cur">
       <Filter>Resource Files\Resources\Cursors</Filter>
+    </None>
+    <None Include="..\res\animations\upload_lc.avi">
+      <Filter>Resource Files\Resources\Animations</Filter>
+    </None>
+    <None Include="..\res\animations\download_hc.avi">
+      <Filter>Resource Files\Resources\Animations</Filter>
+    </None>
+    <None Include="..\res\animations\download_lc.avi">
+      <Filter>Resource Files\Resources\Animations</Filter>
+    </None>
+    <None Include="..\res\animations\upload_hc.avi">
+      <Filter>Resource Files\Resources\Animations</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

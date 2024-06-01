@@ -112,6 +112,22 @@ BOOL ProgressDialog::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SendMessage(GetDlgItem(hWnd, IDC_UPLOADING_PROGRESS), PBM_SETRANGE, 0, MAKELPARAM(0, 1000));
 			SendMessage(GetDlgItem(hWnd, IDC_UPLOADING_PROGRESS), PBM_SETPOS, 0, 0);
 
+			HDC hdc = GetDC(hWnd);
+			int bpp = GetDeviceCaps(hdc, BITSPIXEL);
+			ReleaseDC(hWnd, hdc);
+
+			int res;
+			bool isHighColor = bpp > 8;
+
+			if (m_bDirection) {
+				res = isHighColor ? IDR_AVI_UPLOAD_HC : IDR_AVI_UPLOAD_LC;
+			}
+			else {
+				res = isHighColor ? IDR_AVI_DOWNLOAD_HC : IDR_AVI_DOWNLOAD_LC;
+			}
+
+			Animate_Open(GetDlgItem(hWnd, IDC_PROGRESS_ANIMATE), MAKEINTRESOURCE(res));
+
 			CenterWindow(hWnd, g_Hwnd);
 			break;
 		}

@@ -313,6 +313,10 @@
     <Image Include="..\res\bitmaps\target.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\res\animations\download_hc.avi" />
+    <None Include="..\res\animations\download_lc.avi" />
+    <None Include="..\res\animations\upload_hc.avi" />
+    <None Include="..\res\animations\upload_lc.avi" />
     <None Include="..\res\cursors\cur_zoomin.cur" />
     <None Include="..\res\cursors\cur_zoomout.cur" />
   </ItemGroup>

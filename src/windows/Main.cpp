@@ -22,6 +22,7 @@
 #include "StatusBar.hpp"
 #include "QuickSwitcher.hpp"
 #include "Frontend_Win32.hpp"
+#include "ProgressDialog.hpp"
 #include "../discord/LocalSettings.hpp"
 #include "../discord/WebsocketClient.hpp"
 #include "../discord/UpdateChecker.hpp"
@@ -1320,6 +1321,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			if (wParam == VK_F8) {
 				GetQRCodeDialog()->Show();
+			}
+			if (wParam == VK_F9) {
+				ProgressDialog::Show("Test!", 1234, true, g_Hwnd);
+			}
+			if (wParam == VK_F10) {
+				ProgressDialog::Show("Test!", 1234, false, g_Hwnd);
 			}
 #endif
 

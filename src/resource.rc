@@ -590,19 +590,20 @@ BEGIN
     LTEXT           "iProgramInCpp cannot see your IP address via the update service.",IDC_STATIC,12,219,231,10
 END
 
-IDD_DIALOG_UPLOADING DIALOGEX 0, 0, 309, 92
+IDD_DIALOG_UPLOADING DIALOGEX 0, 0, 275, 135
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "File Upload"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    PUSHBUTTON      "Cancel",IDCANCEL,252,71,50,14
-    LTEXT           "Uploading:",IDC_UPLOADING_ACTION,7,7,295,8
-    LTEXT           "File Name Here",IDC_UPLOADING_FILENAME,7,17,295,8
-    CONTROL         "",IDC_UPLOADING_PROGRESS,"msctls_progress32",WS_BORDER,7,27,295,14
-    LTEXT           "Estimated time left:",IDC_STATIC,7,45,80,8
-    LTEXT           "Calculating...",IDC_UPLOADING_ETA,92,45,210,8
-    LTEXT           "Transfer rate",IDC_STATIC,7,56,80,8
-    LTEXT           "Calculating...",IDC_UPLOADING_XFERRATE,92,56,210,8
+    PUSHBUTTON      "Cancel",IDCANCEL,218,114,50,14
+    LTEXT           "Uploading:",IDC_UPLOADING_ACTION,6,46,261,12
+    LTEXT           "File Name Here",IDC_UPLOADING_FILENAME,6,58,261,12
+    CONTROL         "",IDC_UPLOADING_PROGRESS,"msctls_progress32",WS_BORDER,6,70,261,12
+    LTEXT           "Estimated time left:",IDC_STATIC,6,88,72,12
+    LTEXT           "Calculating...",IDC_UPLOADING_ETA,78,88,190,12
+    LTEXT           "Transfer rate",IDC_STATIC,6,100,72,12
+    LTEXT           "Calculating...",IDC_UPLOADING_XFERRATE,78,100,190,12
+    CONTROL         "",IDC_PROGRESS_ANIMATE,"SysAnimate32",ACS_CENTER | ACS_TRANSPARENT | ACS_AUTOPLAY | WS_TABSTOP,6,6,264,36
 END
 
 
@@ -710,9 +711,9 @@ BEGIN
     IDD_DIALOG_UPLOADING, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 302
+        RIGHTMARGIN, 268
         TOPMARGIN, 7
-        BOTTOMMARGIN, 85
+        BOTTOMMARGIN, 128
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -909,6 +910,20 @@ BEGIN
     "F",            IDA_SEARCH,             VIRTKEY, CONTROL, NOINVERT
     "V",            IDA_PASTE,              VIRTKEY, CONTROL, NOINVERT
 END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AVI
+//
+
+IDR_AVI_DOWNLOAD_HC     AVI                     "../res/animations\\download_hc.avi"
+
+IDR_AVI_DOWNLOAD_LC     AVI                     "../res/animations\\download_lc.avi"
+
+IDR_AVI_UPLOAD_HC       AVI                     "../res/animations\\upload_hc.avi"
+
+IDR_AVI_UPLOAD_LC       AVI                     "../res/animations\\upload_lc.avi"
 
 
 /////////////////////////////////////////////////////////////////////////////
