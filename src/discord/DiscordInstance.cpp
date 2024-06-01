@@ -2440,7 +2440,7 @@ void DiscordInstance::OnUploadAttachmentFirst(NetRequest* pReq)
 			up.m_data.size()
 		);
 
-		GetFrontend()->OnStartProgress(pReq->key, up.m_uploadFileName, true);
+		GetFrontend()->OnStartProgress(pReq->key, up.m_name, true);
 	}
 }
 
@@ -2451,14 +2451,15 @@ void DiscordInstance::OnUploadAttachmentSecond(NetRequest* pReq)
 	if (iter == ups.end())
 		return;
 
+	if (pReq->result == HTTP_PROGRESS)
+	{
+		// N.B. totally safe to access because corresponding networker thread is locked up waiting for us
+		pReq->m_bCancelOp = GetFrontend()->OnUpdateProgress(pReq->key, pReq->GetOffset(), pReq->GetTotalBytes());
+		return;
+	}
+
 	if (pReq->result != HTTP_OK)
 	{
-		if (pReq->result == HTTP_PROGRESS) {
-			// N.B. totally safe to access because corresponding networker thread is locked up waiting for us
-			pReq->m_bCancelOp = GetFrontend()->OnUpdateProgress(pReq->key, pReq->GetOffset(), pReq->GetTotalBytes());
-			return;
-		}
-
 		// Delete enqueued upload
 		ups.erase(iter);
 		GetFrontend()->OnFailedToUploadFile(pReq->additional_data, pReq->result);

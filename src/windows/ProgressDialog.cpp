@@ -37,7 +37,7 @@ void ProgressDialog::ResetUpdates()
 	}
 }
 
-void ProgressDialog::Show(const std::string& fileName, Snowflake key, bool isUploading)
+void ProgressDialog::Show(const std::string& fileName, Snowflake key, bool isUploading, HWND hWnd)
 {
 	if (m_hwnd) {
 		DbgPrintW("Dropping uploading dialog because it already exists");
@@ -49,7 +49,7 @@ void ProgressDialog::Show(const std::string& fileName, Snowflake key, bool isUpl
 	m_bDirection = isUploading;
 	ResetUpdates();
 
-	DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG_UPLOADING), g_Hwnd, &DlgProc);
+	DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG_UPLOADING), hWnd, &DlgProc);
 }
 
 bool ProgressDialog::Update(Snowflake key, size_t offset, size_t length)
@@ -95,6 +95,8 @@ BOOL ProgressDialog::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 	{
 		case WM_INITDIALOG: {
+			SetWindowText(hWnd, m_bDirection ? TEXT("File Upload") : TEXT("File Download"));
+
 			LONG_PTR lp = GetWindowLongPtr(hWnd, GWLP_WNDPROC);
 			SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)&WndProc);
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, lp);
@@ -150,7 +152,7 @@ BOOL ProgressDialog::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SetDlgItemText(hWnd, IDC_UPLOADING_ETA, tstr);
 			free(tstr);
 
-			std::string transferRate = std::to_string(bytesPerSec / 1024) + " KB/Sec";
+			std::string transferRate = bytesPerSec ? (std::to_string(bytesPerSec / 1024) + " KB/Sec") : "Calculating...";
 			tstr = ConvertCppStringToTString(transferRate);
 			SetDlgItemText(hWnd, IDC_UPLOADING_XFERRATE, tstr);
 			free(tstr);

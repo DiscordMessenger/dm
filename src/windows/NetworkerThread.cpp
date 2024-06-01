@@ -243,7 +243,7 @@ void NetworkerThread::FulfillRequest(NetRequest& req)
 			case NetRequest::PUT_OCTETS_PROGRESS:
 			{
 				using namespace std::placeholders;
-				ProgressContentProvider provider(req.params_bytes.data(), req.params_bytes.size(),std::bind(&NetworkerThread::ProgressFunction, this, &req, _1, _2));
+				ProgressContentProvider provider(req.params_bytes.data(), req.params_bytes.size(), std::bind(&NetworkerThread::ProgressFunction, this, &req, _1, _2));
 				req.result = HTTP_PROGRESS;
 				const Result res = client.Put(path, headers, provider, "application/octet-stream");
 				retry = ProcessResult(req, res);
@@ -252,6 +252,13 @@ void NetworkerThread::FulfillRequest(NetRequest& req)
 			case NetRequest::GET:
 			{
 				const Result res = client.Get(path, headers);
+				retry = ProcessResult(req, res);
+				break;
+			}
+			case NetRequest::GET_PROGRESS:
+			{
+				using namespace std::placeholders;
+				const Result res = client.Get(path, headers, std::bind(&NetworkerThread::ProgressFunction, this, &req, _1, _2));
 				retry = ProcessResult(req, res);
 				break;
 			}
@@ -351,10 +358,12 @@ void NetworkerThread::PrepareQuit()
 
 bool NetworkerThread::ProgressFunction(NetRequest* pRequest, uint64_t offset, uint64_t length)
 {
-	assert(length == pRequest->params_bytes.size());
+	if (pRequest->type == NetRequest::PUT_OCTETS_PROGRESS)
+		assert(length == pRequest->params_bytes.size());
 
 	pRequest->m_bCancelOp = false;
 	pRequest->m_offset = offset;
+	pRequest->m_length = length;
 	pRequest->result = HTTP_PROGRESS;
 	pRequest->pFunc(pRequest);
 

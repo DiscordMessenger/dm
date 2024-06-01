@@ -13,6 +13,7 @@
 #include "NetworkerThread.hpp"
 #include "ImageViewer.hpp"
 #include "TextManager.hpp"
+#include "ProgressDialog.hpp"
 
 #ifndef OLD_WINDOWS
 #include <shlwapi.h>
@@ -593,12 +594,20 @@ void DownloadOnRequestFail(HWND hWnd, NetRequest* pRequest)
 	free(str2);
 
 	MessageBox(hWnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR);
+	ProgressDialog::Done(pRequest->key);
 }
 
 void DownloadFileResponse(NetRequest* pRequest)
 {
 	HWND hWnd = (HWND)pRequest->key;
 
+	if (pRequest->result == HTTP_PROGRESS)
+	{
+		// N.B. totally safe to access because corresponding networker thread is locked up waiting for us
+		pRequest->m_bCancelOp = ProgressDialog::Update(pRequest->key, pRequest->GetOffset(), pRequest->GetTotalBytes());
+		return;
+	}
+	
 	if (pRequest->result != HTTP_OK)
 	{
 		DownloadOnRequestFail(hWnd, pRequest);
@@ -626,6 +635,7 @@ void DownloadFileResponse(NetRequest* pRequest)
 
 	// yay!
 	DbgPrintW("File saved: %s", pRequest->additional_data.c_str());
+	ProgressDialog::Done(pRequest->key);
 	SendMessage(hWnd, WM_IMAGESAVED, 0, (LPARAM)fileName);
 	free(fileName);
 	return;
@@ -641,6 +651,7 @@ _error:
 	free(errorStr);
 	free(fileName);
 	MessageBox(hWnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR);
+	ProgressDialog::Done(pRequest->key);
 	SendMessage(hWnd, WM_IMAGECLEARSAVE, 0, 0);
 	return;
 }
@@ -699,7 +710,7 @@ void DownloadFileDialog(HWND hWnd, const std::string& url, const std::string& fi
 
 	GetHTTPClient()->PerformRequest(
 		true,
-		NetRequest::GET,
+		NetRequest::GET_PROGRESS,
 		url,
 		0,
 		(uint64_t) hWnd,
@@ -710,6 +721,8 @@ void DownloadFileDialog(HWND hWnd, const std::string& url, const std::string& fi
 	);
 
 	SendMessage(hWnd, WM_IMAGESAVING, 0, 0);
+
+	ProgressDialog::Show(fileNameSave, (Snowflake) hWnd, false, hWnd);
 
 _cleanup:
 	free(buff);

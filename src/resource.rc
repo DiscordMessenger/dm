@@ -600,9 +600,9 @@ BEGIN
     LTEXT           "File Name Here",IDC_UPLOADING_FILENAME,7,17,295,8
     CONTROL         "",IDC_UPLOADING_PROGRESS,"msctls_progress32",WS_BORDER,7,27,295,14
     LTEXT           "Estimated time left:",IDC_STATIC,7,45,80,8
-    LTEXT           "ETA HERE",IDC_UPLOADING_ETA,92,45,210,8
+    LTEXT           "Calculating...",IDC_UPLOADING_ETA,92,45,210,8
     LTEXT           "Transfer rate",IDC_STATIC,7,56,80,8
-    LTEXT           "ETA HERE",IDC_UPLOADING_XFERRATE,92,56,210,8
+    LTEXT           "Calculating...",IDC_UPLOADING_XFERRATE,92,56,210,8
 END
 
 

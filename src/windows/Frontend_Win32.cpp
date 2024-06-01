@@ -191,7 +191,7 @@ void Frontend_Win32::OnFailedToCheckForUpdates(int result, const std::string& re
 
 void Frontend_Win32::OnStartProgress(Snowflake key, const std::string& fileName, bool isUploading)
 {
-	ProgressDialog::Show(fileName, key, isUploading);
+	ProgressDialog::Show(fileName, key, isUploading, g_Hwnd);
 }
 
 bool Frontend_Win32::OnUpdateProgress(Snowflake key, size_t offset, size_t length)

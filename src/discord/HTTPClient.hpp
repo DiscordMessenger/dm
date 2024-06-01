@@ -33,7 +33,7 @@ namespace httplib {
 }
 
 //
-// ! - The PUT_OCTETS_PROGRESS HTTP request type is a special one.
+// ! - The PUT_OCTETS_PROGRESS and GET_PROGRESS HTTP request type are special ones.
 // Basically, the pFunc is called for every time that httplib wants
 // to report progress, with a result of HTTP_PROGRESS (999), and then
 // with the actual code.
@@ -54,6 +54,7 @@ struct NetRequest
 		DELETE_, // WinNT defines "DELETE" as a macro... bruh
 		PUT_OCTETS,
 		PUT_OCTETS_PROGRESS, // (!)
+		GET_PROGRESS,
 	};
 	int result = 0;
 	int itype  = 0;
@@ -66,14 +67,15 @@ struct NetRequest
 	std::string authorization = "";
 	std::string additional_data = "";
 	std::vector<uint8_t> params_bytes; // used only for PUT_OCTETS and PUT_OCTETS_PROGRESS
-	size_t m_offset; // used only for PUT_OCTETS_PROGRESS
-	bool m_bCancelOp = false; // used only for PUT_OCTETS_PROGRESS
+	size_t m_offset; // used only for *_PROGRESS
+	size_t m_length; // used only for *_PROGRESS
+	bool m_bCancelOp = false; // used only for *_PROGRESS
 
 	size_t GetOffset() const {
 		return m_offset;
 	}
 	size_t GetTotalBytes() const {
-		return params_bytes.size();
+		return m_length;
 	}
 
 	int Priority() const;

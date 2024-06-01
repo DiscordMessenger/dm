@@ -13,7 +13,7 @@ public:
 	};
 
 public:
-	static void Show(const std::string& fileName, Snowflake key, bool isUploading);
+	static void Show(const std::string& fileName, Snowflake key, bool isUploading, HWND hWnd);
 	static void Done(Snowflake key);
 	static bool Update(Snowflake key, size_t offset, size_t length);
 
