@@ -1520,6 +1520,10 @@ bool MessageList::IsActionMessage(MessageType::eType msgType)
 		case MessageType::LOADING_PINNED_MESSAGES:
 		case MessageType::NO_PINNED_MESSAGES:
 		case MessageType::CHANNEL_HEADER:
+		case MessageType::STAGE_START:
+		case MessageType::STAGE_END:
+		case MessageType::STAGE_SPEAKER:
+		case MessageType::STAGE_TOPIC:
 			return true;
 	}
 
@@ -1629,6 +1633,40 @@ void MessageList::DetermineMessageData(
 			clickableString = TEXT("a message");
 			clickableLink = CreateMessageLink(refMsgGuildID, refMsgChannelID, refMsgMessageID);
 			icon = IDI_PIN;
+			break;
+		}
+
+		case MessageType::STAGE_START:
+		{
+			freedStringSpace = ConvertCppStringToTString(content);
+			messagePart1 = TEXT("");
+			messagePart2 = TEXT(" started ");
+			clickableString = freedStringSpace;
+			break;
+		}
+
+		case MessageType::STAGE_END:
+		{
+			freedStringSpace = ConvertCppStringToTString(content);
+			messagePart1 = TEXT("");
+			messagePart2 = TEXT(" ended ");
+			clickableString = freedStringSpace;
+			break;
+		}
+
+		case MessageType::STAGE_TOPIC:
+		{
+			freedStringSpace = ConvertCppStringToTString(content);
+			messagePart1 = TEXT("");
+			messagePart2 = TEXT(" changed the Stage topic: ");
+			clickableString = freedStringSpace;
+			break;
+		}
+
+		case MessageType::STAGE_SPEAKER:
+		{
+			messagePart1 = TEXT("");
+			messagePart2 = TEXT(" is now a speaker.");
 			break;
 		}
 
