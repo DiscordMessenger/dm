@@ -23,7 +23,8 @@ BOOL LogonDialogOnCommand(HWND hWnd, WPARAM wParam)
 				buff[len] = 0;
 
 				GetLocalSettings()->SetToken(MakeStringFromTString(buff));
-				GetDiscordInstance()->ResetGatewayURL();
+				if (GetDiscordInstance())
+					GetDiscordInstance()->ResetGatewayURL();
 				EndDialog(hWnd, IDOK);
 				return TRUE;
 			}
