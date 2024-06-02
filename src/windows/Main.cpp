@@ -56,35 +56,49 @@ int GetProfilePictureSize()
 	return g_ProfilePictureSize;
 }
 
-void SetupCachePathIfNeeded()
+void FindBasePath()
 {
 	TCHAR pwStr[MAX_PATH];
 	pwStr[0] = 0;
 	LPCTSTR p1 = NULL, p2 = NULL;
-
+	
 	if (SUCCEEDED(ri::SHGetFolderPath(g_Hwnd, CSIDL_APPDATA, NULL, 0, pwStr)))
 	{
 		SetBasePath(MakeStringFromTString(pwStr));
-
-		p1 = ConvertCppStringToTString(GetBasePath());
-		p2 = ConvertCppStringToTString(GetCachePath());
-
-		// if these already exist, it's fine..
-		if (!CreateDirectory(p1, NULL))
-		{
-			if (GetLastError() != ERROR_ALREADY_EXISTS)
-				goto _failure;
-		}
-		if (!CreateDirectory(p2, NULL))
-		{
-			if (GetLastError() != ERROR_ALREADY_EXISTS)
-				goto _failure;
-		}
 	}
 	else
 	{
 		MessageBox(g_Hwnd, TmGetTString(IDS_NO_APPDATA), TmGetTString(IDS_NON_CRITICAL_ERROR), MB_OK | MB_ICONERROR);
-		SetBasePath("");
+		SetBasePath(".");
+	}
+	return;
+_failure:
+	MessageBox(g_Hwnd, TmGetTString(IDS_NO_CACHE_DIR), TmGetTString(IDS_NON_CRITICAL_ERROR), MB_OK | MB_ICONERROR);
+
+	SetBasePath(".");
+
+	if (p1) free((void*)p1);
+	if (p2) free((void*)p2);
+}
+
+void SetupCachePathIfNeeded()
+{
+	FindBasePath();
+
+	LPCTSTR p1 = NULL, p2 = NULL;
+	p1 = ConvertCppStringToTString(GetBasePath());
+	p2 = ConvertCppStringToTString(GetCachePath());
+
+	// if these already exist, it's fine..
+	if (!CreateDirectory(p1, NULL))
+	{
+		if (GetLastError() != ERROR_ALREADY_EXISTS)
+			goto _failure;
+	}
+	if (!CreateDirectory(p2, NULL))
+	{
+		if (GetLastError() != ERROR_ALREADY_EXISTS)
+			goto _failure;
 	}
 
 	if (p1) free((void*)p1);
@@ -93,11 +107,6 @@ void SetupCachePathIfNeeded()
 	return;
 _failure:
 	MessageBox(g_Hwnd, TmGetTString(IDS_NO_CACHE_DIR), TmGetTString(IDS_NON_CRITICAL_ERROR), MB_OK | MB_ICONERROR);
-
-	SetBasePath("");
-
-	if (p1) free((void*)p1);
-	if (p2) free((void*)p2);
 }
 
 DiscordInstance* g_pDiscordInstance;
