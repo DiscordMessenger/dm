@@ -462,12 +462,12 @@ float CompareFuzzy(const std::string& item, const char* query)
 
 float GetAppVersion()
 {
-	return 1.03f;
+	return 1.04f;
 }
 
 std::string GetAppVersionString()
 {
-	return "V1.03";
+	return "V1.04";
 }
 
 std::string FormatDuration(int seconds)
