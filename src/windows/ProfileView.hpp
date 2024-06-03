@@ -19,6 +19,7 @@ public:
 	LPTSTR m_username = NULL;
 	std::string m_avatarLnk = "";
 	eActiveStatus m_activeStatus = STATUS_OFFLINE;
+	bool m_bIsBot = false;
 
 public:
 	ProfileView();
@@ -27,7 +28,7 @@ public:
 	void Update();
 
 	// NOTE: Pointers will be owned by the profile view after this.
-	void SetData(LPTSTR name, LPTSTR username, eActiveStatus astatus, const std::string& avlnk);
+	void SetData(LPTSTR name, LPTSTR username, eActiveStatus astatus, const std::string& avlnk, bool bot);
 
 	void Paint(HDC hdc);
 

@@ -223,13 +223,17 @@ bool ProfilePopout::Layout(HWND hWnd, SIZE& fullSize)
 	place.left -= ScaleByDPI(4);
 	place.top  -= ScaleByDPI(2);
 
+	if (pProf && pProf->m_bIsBot) {
+		place.right += ScaleByDPI(4) + GetSystemMetrics(SM_CXSMICON);
+	}
+
 	m_pProfileView = ProfileView::Create(hWnd, &place, IDC_PROFILE_VIEW, false);
 	if (!m_pProfileView) {
 		free(name);
 		free(userName);
 	}
 	else {
-		m_pProfileView->SetData(name, userName, pProf->m_activeStatus, pProf->m_avatarlnk);
+		m_pProfileView->SetData(name, userName, pProf->m_activeStatus, pProf->m_avatarlnk, pProf->m_bIsBot);
 	}
 
 	// Add pronouns and status if needed

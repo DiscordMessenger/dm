@@ -38,7 +38,7 @@ void ProfileView::Update()
 	InvalidateRect(m_hwnd, NULL, false);
 }
 
-void ProfileView::SetData(LPTSTR name, LPTSTR username, eActiveStatus astatus, const std::string& avlnk)
+void ProfileView::SetData(LPTSTR name, LPTSTR username, eActiveStatus astatus, const std::string& avlnk, bool bot)
 {
 	assert(!m_bAutonomous);
 
@@ -49,6 +49,7 @@ void ProfileView::SetData(LPTSTR name, LPTSTR username, eActiveStatus astatus, c
 	m_username = username;
 	m_avatarLnk = avlnk;
 	m_activeStatus = astatus;
+	m_bIsBot = bot;
 
 	Update();
 }
@@ -62,6 +63,7 @@ void ProfileView::Paint(HDC hdc)
 	bool freeNameAndUserName = false;
 	std::string avatarLink;
 	eActiveStatus activeStatus;
+	bool isBot = false;
 
 	if (m_bAutonomous)
 	{
@@ -82,6 +84,7 @@ void ProfileView::Paint(HDC hdc)
 
 		activeStatus = pf->m_activeStatus;
 		avatarLink = pf->m_avatarlnk;
+		isBot = pf->m_bIsBot;
 		freeNameAndUserName = true;
 	}
 	else
@@ -90,6 +93,7 @@ void ProfileView::Paint(HDC hdc)
 		sUserName = m_username;
 		activeStatus = m_activeStatus;
 		avatarLink = m_avatarLnk;
+		isBot = m_bIsBot;
 		freeNameAndUserName = false;
 	}
 
@@ -123,7 +127,17 @@ void ProfileView::Paint(HDC hdc)
 	rcText = rect;
 	rcText.left = pfpX + pfpBorderSize - ScaleByDPI(6);
 	rcText.top = (rect.top + rect.bottom) / 2 + ScaleByDPI(1);
-	DrawText(hdc, sUserName, -1, &rcText, DT_TOP | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+	RECT rcMeasure = rcText;
+	if (isBot) DrawText(hdc, sUserName, -1, &rcMeasure, DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT);
+	DrawText(hdc, sUserName, -1, &rcText,    DT_SINGLELINE | DT_WORD_ELLIPSIS);
+
+	if (isBot) {
+		int offset = rcMeasure.right - rcMeasure.left + ScaleByDPI(4);
+		int size = GetSystemMetrics(SM_CXSMICON);
+
+		HICON hic = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_BOT)), IMAGE_ICON, size, size, LR_SHARED | LR_CREATEDIBSECTION);
+		DrawIconEx(hdc, rcText.left + offset, rcText.top + (rcMeasure.bottom - rcMeasure.top - size) / 2, hic, size, size, 0, NULL, DI_COMPAT | DI_NORMAL);
+	}
 
 	if (freeNameAndUserName) {
 		free(sName);
