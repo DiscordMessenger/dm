@@ -217,6 +217,25 @@ void DiscordInstance::RequestGuildMembers(Snowflake guild, std::set<Snowflake> m
 	GetWebsocketClient()->SendMsg(m_gatewayConnId, j.dump());
 }
 
+void DiscordInstance::RequestGuildMembers(Snowflake guild, std::string query, bool bLoadPresences, int limit)
+{
+	Json guildIdArray;
+	guildIdArray.push_back(guild);
+
+	Json data;
+	data["query"] = query;
+	data["limit"] = limit;
+	data["user_ids"] = nullptr;
+	data["guild_id"] = guildIdArray;
+	data["presences"] = bLoadPresences;
+
+	Json j;
+	j["op"] = int(GatewayOp::REQUEST_GUILD_MEMBERS);
+	j["d"] = data;
+
+	GetWebsocketClient()->SendMsg(m_gatewayConnId, j.dump());
+}
+
 std::string DiscordInstance::LookupChannelNameGlobally(Snowflake sf)
 {
 	for (auto& gld : m_guilds)
@@ -1377,9 +1396,10 @@ void DiscordInstance::ParseChannel(Channel& c, nlohmann::json& chan, int& num)
 					assert(chan["recipient_ids"].size() > 0);
 					if (chan["recipient_ids"].size() > 0)
 					{
-						c.m_recipient = GetSnowflakeFromJsonObject(chan["recipient_ids"][0]);
+						c.m_recipients.clear();
+						c.m_recipients.push_back(GetSnowflakeFromJsonObject(chan["recipient_ids"][0]));
 
-						Profile* pf = GetProfileCache()->LookupProfile(c.m_recipient, "", "", "", false);
+						Profile* pf = GetProfileCache()->LookupProfile(c.GetDMRecipient(), "", "", "", false);
 						avatar = pf->m_avatarlnk;
 					}
 				}
@@ -1389,7 +1409,8 @@ void DiscordInstance::ParseChannel(Channel& c, nlohmann::json& chan, int& num)
 					if (chan["recipients"].size() > 0)
 					{
 						Json& rec = chan["recipients"][0];
-						c.m_recipient = GetSnowflake(rec, "id");
+						c.m_recipients.clear();
+						c.m_recipients.push_back(GetSnowflake(rec, "id"));
 						avatar = GetFieldSafe(rec, "avatar");
 					}
 				}
@@ -1400,14 +1421,20 @@ void DiscordInstance::ParseChannel(Channel& c, nlohmann::json& chan, int& num)
 			{
 				assert(c.m_channelType == Channel::GROUPDM);
 
-				int recCount = 1;
-				if (chan["recipient_ids"].is_array())
-					recCount += chan["recipient_ids"].size();
-				if (chan["recipients"].is_array())
-					recCount += chan["recipients"].size();
+				c.m_recipients.clear();
 
-				assert(recCount != 0);
-				c.m_recipientCount = recCount;
+				if (chan["recipient_ids"].is_array()) {
+					for (auto& rec : chan["recipient_ids"]) {
+						c.m_recipients.push_back(GetSnowflakeFromJsonObject(rec));
+					}
+				}
+				if (chan["recipients"].is_array()) {
+					for (auto& rec : chan["recipients"]) {
+						Snowflake theirID = GetSnowflake(rec, "id");
+						c.m_recipients.push_back(theirID);
+						GetProfileCache()->LoadProfile(theirID, rec);
+					}
+				}
 
 				c.m_avatarLnk = GetFieldSafe(chan, "icon");
 
@@ -2165,6 +2192,10 @@ Snowflake DiscordInstance::ParseGuildMember(Snowflake guild, nlohmann::json& mem
 	gm.m_joinedAt = ParseTime(GetFieldSafe(memb, "joined_at"));
 	gm.m_bIsLoadedFromChunk = true;
 	gm.m_groupId = 0; // to be filled in by the group layout
+
+	Guild* pGuild = GetGuild(guild);
+	if (pGuild)
+		pGuild->AddKnownMember(pf->m_snowflake);
 
 	// TODO: Not sure if this is the guild specific or global status. Probably guild specific
 	if (!pres.is_null()) {

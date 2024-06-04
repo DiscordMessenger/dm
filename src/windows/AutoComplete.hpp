@@ -25,7 +25,7 @@ struct AutoCompleteMatch
 class AutoComplete
 {
 public:
-	typedef void(*LookUpFunction) (const std::string& lookup, char query, std::vector<AutoCompleteMatch>& matchesFound);
+	typedef void(*LookUpFunction) (void* context, const std::string& lookup, char query, std::vector<AutoCompleteMatch>& matchesFound);
 
 public:
 	AutoComplete() {};
@@ -52,6 +52,9 @@ public:
 
 	// Sets the lookup function used by the autocomplete window.
 	void SetLookup(LookUpFunction function);
+
+	// Sets the lookup context passed in as parameter to the lookup function.
+	void SetLookupContext(void* context);
 
 	// Checks if this is active.
 	bool IsActive() const
@@ -92,4 +95,5 @@ private:
 	std::vector<AutoCompleteMatch> m_matches;
 
 	LookUpFunction m_lookup;
+	void* m_pLookupContext = NULL;
 };

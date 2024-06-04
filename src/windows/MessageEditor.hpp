@@ -39,6 +39,7 @@ private:
 	COLORREF m_userNameColor = CLR_NONE;
 	bool m_bWasUploadingAllowed = false;
 	AutoComplete m_autoComplete;
+	uint64_t m_lastRemoteQuery = 0;
 
 	static WNDPROC m_editWndProc;
 	static bool m_shiftHeld;
@@ -70,7 +71,8 @@ private:
 	void UpdateCommonButtonsShown();
 	bool IsUploadingAllowed();
 	void OnUpdateText();
-	static void AutoCompleteLookup(const std::string& keyWord, char query, std::vector<AutoCompleteMatch>& matches);
+	void AutoCompleteLookup(const std::string& keyWord, char query, std::vector<AutoCompleteMatch>& matches);
+	static void _AutoCompleteLookup(void* context, const std::string& keyWord, char query, std::vector<AutoCompleteMatch>& matches);
 
 public:
 	static LRESULT CALLBACK EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

@@ -388,7 +388,7 @@ void ChannelView::AddChannel(const Channel & ch)
 	m_idToIdx[cmem.m_snowflake] = index;
 
 	if (ch.m_channelType == Channel::DM)
-		m_idToIdx[ch.m_recipient] = index;
+		m_idToIdx[ch.GetDMRecipient()] = index;
 
 	if (TreeMode())
 	{
@@ -723,7 +723,7 @@ LRESULT ChannelView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			std::string statusText = "";
 			if (pChan->m_channelType == Channel::DM)
 			{
-				Profile* pf = GetProfileCache()->LookupProfile(pChan->m_recipient, "", "", "", false);
+				Profile* pf = GetProfileCache()->LookupProfile(pChan->GetDMRecipient(), "", "", "", false);
 				DrawActivityStatus(hdc, rcItem.left + ScaleByDPI(6), rcItem.top + ScaleByDPI(4), pf->m_activeStatus);
 				statusText = pf->m_status;
 
@@ -733,7 +733,7 @@ LRESULT ChannelView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 				assert(pChan->m_channelType == Channel::GROUPDM);
 
-				statusText = std::to_string(pChan->m_recipientCount) + " members";
+				statusText = std::to_string(pChan->GetRecipientCount() + 1) + " members";
 			}
 			
 			// compute data necessary to draw the text

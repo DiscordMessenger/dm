@@ -742,5 +742,8 @@
     <ClCompile Include="..\src\windows\AutoComplete.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\discord\Profile.cpp">
+      <Filter>Source Files\Discord</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

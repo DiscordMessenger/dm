@@ -301,6 +301,9 @@ public:
 	// Fetch guild members in specified guild.
 	void RequestGuildMembers(Snowflake guild, std::set<Snowflake> members, bool bLoadPresences = false);
 
+	// Fetch guild members in specified guild.
+	void RequestGuildMembers(Snowflake guild, std::string query, bool bLoadPresences = false, int limit = 10);
+
 	// Fetch pinned messages in a specified channel.
 	void RequestPinnedMessages(Snowflake channel);
 

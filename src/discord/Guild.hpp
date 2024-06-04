@@ -65,6 +65,8 @@ struct Guild
 
 	Snowflake m_ownerId = 0;
 
+	std::set<Snowflake> m_knownMembers;
+
 	int m_order = 0;
 
 	bool operator<(const Guild& other) const {
@@ -73,10 +75,8 @@ struct Guild
 		return m_snowflake < other.m_snowflake;
 	}
 
-	Channel* GetChannel(Snowflake sf)
-	{
-		for (auto& ch : m_channels)
-		{
+	Channel* GetChannel(Snowflake sf) {
+		for (auto& ch : m_channels) {
 			if (ch.m_snowflake == sf)
 				return &ch;
 		}
@@ -97,4 +97,8 @@ struct Guild
 	uint64_t ComputeBasePermissions(Snowflake member);
 
 	bool IsFirstChannel(Snowflake channel);
+
+	void AddKnownMember(Snowflake sf) {
+		m_knownMembers.insert(sf);
+	}
 };

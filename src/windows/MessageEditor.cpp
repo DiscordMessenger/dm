@@ -10,6 +10,9 @@
 #define T_MESSAGE_EDITOR_CLASS TEXT("DMMessageEditorClass")
 #define T_MESSAGE_EDITOR_AUTOCOMPLETE_CLASS TEXT("DMMessageEditorAutoCompleteClass")
 
+// allow a query every 50 ms, to not saturate Discord's servers
+constexpr uint64_t QUERY_RATE = 50;
+
 WNDPROC MessageEditor::m_editWndProc;
 bool MessageEditor::m_shiftHeld;
 
@@ -368,13 +371,79 @@ void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std:
 				if (chan.IsCategory() || chan.IsVoice() || chan.IsDM())
 					continue;
 
-				float fzm = CompareFuzzy(chan.m_name, word.c_str());
+				float fzm = word.empty() ? 1.0f : CompareFuzzy(chan.m_name, word.c_str());
 				if (fzm != 0.0f)
 					matches.push_back(AutoCompleteMatch(chan.m_name, fzm));
 			}
 			break;
 		}
+		case '@':
+		{
+			Guild* pGld = GetDiscordInstance()->GetCurrentGuild();
+			if (!pGld)
+				break;
+
+			if (pGld->m_snowflake == 0)
+			{
+				// can do that in DM channels, but have to do it a bit differently.
+				Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+				if (!pChan)
+					break;
+
+				for (auto& recid : pChan->m_recipients)
+				{
+					Profile* pf = GetProfileCache()->LookupProfile(recid, "", "", "", false);
+					if (!pf)
+						continue;
+
+					float fm = word.empty() ? 1.0f : pf->FuzzyMatch(word.c_str(), 0);
+					if (fm != 0.0f) {
+						// Add user name instead, since that's the one that will be resolved
+						matches.push_back(AutoCompleteMatch(pf->GetUsername(), fm));
+					}
+				}
+			}
+			else
+			{
+				// Scan for guild members.
+				for (auto& recid : pGld->m_knownMembers)
+				{
+					Profile* pf = GetProfileCache()->LookupProfile(recid, "", "", "", false);
+					if (!pf)
+						continue;
+
+					float fm = word.empty() ? 1.0f : pf->FuzzyMatch(word.c_str(), pGld->m_snowflake);
+					if (fm != 0.0f) {
+						// Add user name instead, since that's the one that will be resolved
+						matches.push_back(AutoCompleteMatch(pf->GetUsername(), fm));
+					}
+				}
+			}
+
+			if (word.empty())
+				break;
+
+			// send a query to Discord if needed
+			if (m_lastRemoteQuery + QUERY_RATE < GetTimeMs())
+			{
+				// query now!
+				Snowflake guildID = GetDiscordInstance()->GetCurrentGuildID();
+
+				if (guildID)
+					GetDiscordInstance()->RequestGuildMembers(guildID, word, true);
+
+				m_lastRemoteQuery = GetTimeMs();
+			}
+
+			break;
+		}
 	}
+}
+
+void MessageEditor::_AutoCompleteLookup(void* context, const std::string& keyWord, char query, std::vector<AutoCompleteMatch>& matches)
+{
+	MessageEditor* pEditor = (MessageEditor*) context;
+	pEditor->AutoCompleteLookup(keyWord, query, matches);
 }
 
 void MessageEditor::OnUpdateText()
@@ -791,7 +860,8 @@ MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
 
 	newThis->m_autoComplete.SetEdit(newThis->m_edit_hwnd);
 	newThis->m_autoComplete.SetFont(g_SendButtonFont);
-	newThis->m_autoComplete.SetLookup(&AutoCompleteLookup);
+	newThis->m_autoComplete.SetLookup(&_AutoCompleteLookup);
+	newThis->m_autoComplete.SetLookupContext(newThis);
 
 	return newThis;
 }

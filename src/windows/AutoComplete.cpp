@@ -114,11 +114,7 @@ void AutoComplete::Hide()
 
 	assert(!m_listHwnd);
 
-	m_matches.clear();
-	m_startAt = 0;
 	m_bHadFirstArrowPress = false;
-	m_bReachedMaxSizeX = false;
-	m_bReachedMaxSizeY = false;
 }
 
 void AutoComplete::Commit()
@@ -199,7 +195,7 @@ void AutoComplete::_Update(LPCTSTR message, int length)
 	std::string stuff = MakeStringFromTString(message);
 
 	m_matches.clear();
-	m_lookup(stuff, query, m_matches);
+	m_lookup(m_pLookupContext, stuff, query, m_matches);
 
 	std::sort(m_matches.begin(), m_matches.end());
 
@@ -290,6 +286,11 @@ void AutoComplete::SetFont(HFONT hFont)
 void AutoComplete::SetLookup(LookUpFunction function)
 {
 	m_lookup = function;
+}
+
+void AutoComplete::SetLookupContext(void* context)
+{
+	m_pLookupContext = context;
 }
 
 bool AutoComplete::InitializeClass()

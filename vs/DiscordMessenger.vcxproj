@@ -407,6 +407,7 @@
     <ClCompile Include="..\src\discord\LocalSettings.cpp" />
     <ClCompile Include="..\src\discord\Message.cpp" />
     <ClCompile Include="..\src\discord\MessageCache.cpp" />
+    <ClCompile Include="..\src\discord\Profile.cpp" />
     <ClCompile Include="..\src\discord\ProfileCache.cpp" />
     <ClCompile Include="..\src\discord\SettingsManager.cpp" />
     <ClCompile Include="..\src\discord\UpdateChecker.cpp" />
