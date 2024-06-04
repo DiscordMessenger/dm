@@ -23,6 +23,7 @@
 #include "QuickSwitcher.hpp"
 #include "Frontend_Win32.hpp"
 #include "ProgressDialog.hpp"
+#include "AutoComplete.hpp"
 #include "../discord/LocalSettings.hpp"
 #include "../discord/WebsocketClient.hpp"
 #include "../discord/UpdateChecker.hpp"
@@ -990,6 +991,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GuildHeader::InitializeClass();
 			GuildLister::InitializeClass();
 			MemberList ::InitializeClass();
+			AutoComplete::InitializeClass();
 			MessageEditor::InitializeClass();
 			LoadingMessage::InitializeClass();
 

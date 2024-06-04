@@ -4,21 +4,7 @@
 #include <string>
 #include <vector>
 #include "Main.hpp"
-
-struct AutoCompleteMatch
-{
-	std::string str;
-	float fuzzy = 0;
-	AutoCompleteMatch(const std::string& s, float fuz) : str(s), fuzzy(fuz) {}
-
-	bool operator<(const AutoCompleteMatch& oth) const
-	{
-		if (fuzzy != oth.fuzzy)
-			return fuzzy < oth.fuzzy;
-
-		return strcmp(str.c_str(), oth.str.c_str()) < 0;
-	}
-};
+#include "AutoComplete.hpp"
 
 class MessageEditor
 {
@@ -52,10 +38,7 @@ private:
 	Snowflake m_replyMessage = 0; // Or edited message ID
 	COLORREF m_userNameColor = CLR_NONE;
 	bool m_bWasUploadingAllowed = false;
-	bool m_bReachedMaxSizeX = false;
-	bool m_bReachedMaxSizeY = false;
-	bool m_bHadFirstArrowPress = false; // HACK: need to repeat the key press because the first ever press is dropped
-	int m_autoCompleteStart = 0; // place where autocompletion starts
+	AutoComplete m_autoComplete;
 
 	static WNDPROC m_editWndProc;
 	static bool m_shiftHeld;
@@ -87,18 +70,10 @@ private:
 	void UpdateCommonButtonsShown();
 	bool IsUploadingAllowed();
 	void OnUpdateText();
-	void UpdateAutocompleteIfNeeded(LPTSTR message);
-	void HideAutocomplete();
-	void ShowAutocomplete(const std::vector<std::string>& autoCompletions, POINT pt);
-	bool IsAutocompleteActive() const;
-	int GetAutocompleteSelectedIndex() const;
-	void AutocompleteUp();
-	void AutocompleteDown();
-	void PerformAutocomplete();
+	static void AutoCompleteLookup(const std::string& keyWord, char query, std::vector<AutoCompleteMatch>& matches);
 
 public:
 	static LRESULT CALLBACK EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static LRESULT CALLBACK CompWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void InitializeClass();
 

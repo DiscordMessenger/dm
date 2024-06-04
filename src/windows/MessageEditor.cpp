@@ -147,148 +147,6 @@ bool MessageEditor::IsUploadingAllowed()
 	return pChan->HasPermission(PERM_ATTACH_FILES);
 }
 
-void MessageEditor::HideAutocomplete()
-{
-	if (m_autoComplete_hwnd)
-	{
-		BOOL b = DestroyWindow(m_autoComplete_hwnd);
-		assert(b && "This window was already destroyed?");
-		m_autoComplete_hwnd = NULL;
-		m_autoCompleteList_hwnd = NULL;
-	}
-
-	m_autocompleteResults.clear();
-	m_autoCompleteStart = 0;
-	m_bHadFirstArrowPress = false;
-	m_bReachedMaxSizeX = false;
-	m_bReachedMaxSizeY = false;
-}
-
-void MessageEditor::ShowAutocomplete(const std::vector<std::string>& autoCompletions, POINT pt)
-{
-	bool oldReachedMaxX = m_bReachedMaxSizeX;
-	bool oldReachedMaxY = m_bReachedMaxSizeY;
-	if (autoCompletions.empty())
-	{
-		HideAutocomplete();
-		return;
-	}
-
-	// Calculate the height of all the entries.
-	HDC hdc = GetDC(m_hwnd);
-	HGDIOBJ old = SelectObject(hdc, g_MessageTextFont);
-	int height = 0;
-	int width = 0;
-	const int maxHeight = ScaleByDPI(200);
-	const int maxWidth = ScaleByDPI(200);
-	m_bReachedMaxSizeX = false;
-	m_bReachedMaxSizeY = false;
-	for (auto& entry : autoCompletions)
-	{
-		RECT rcMeasure{};
-		LPTSTR tstr = ConvertCppStringToTString(entry);
-		DrawText(hdc, tstr, -1, &rcMeasure, DT_SINGLELINE | DT_CALCRECT);
-		free(tstr);
-		height += rcMeasure.bottom - rcMeasure.top + ScaleByDPI(4);
-
-		int newWidth = rcMeasure.right - rcMeasure.left + ScaleByDPI(4);
-		width = std::max(width, newWidth);
-
-		if (width > maxWidth) {
-			m_bReachedMaxSizeX = true;
-			width = maxWidth;
-		}
-
-		if (height > maxHeight) {
-			m_bReachedMaxSizeY = true;
-			height = maxHeight;
-		}
-	}
-	SelectObject(hdc, old);
-	ReleaseDC(m_hwnd, hdc);
-
-	// If reachedMaxSize is different, dismiss the old autocomplete window first and recreate:
-	if (m_bReachedMaxSizeX != oldReachedMaxX || m_bReachedMaxSizeY != oldReachedMaxY)
-		HideAutocomplete();
-
-	constexpr int style = WS_POPUP | WS_BORDER;
-	width += ScaleByDPI(8);
-
-	width += m_bReachedMaxSizeY ? GetSystemMetrics(SM_CXVSCROLL) : 0;
-	height += m_bReachedMaxSizeX ? GetSystemMetrics(SM_CYHSCROLL) : 0;
-
-	RECT rc{ pt.x, pt.y - height, pt.x + width, pt.y };
-	AdjustWindowRect(&rc, style, FALSE);
-
-	m_autocompleteResults = autoCompletions;
-
-	if (!m_autoComplete_hwnd)
-	{
-		// Create the window, the list window will be created by it
-		m_autoComplete_hwnd = CreateWindowEx(
-			WS_EX_NOACTIVATE,
-			T_MESSAGE_EDITOR_AUTOCOMPLETE_CLASS,
-			TEXT(""),
-			style,
-			rc.left,
-			rc.top,
-			rc.right - rc.left,
-			rc.bottom - rc.top,
-			m_parent_hwnd,
-			NULL,
-			g_hInstance,
-			this
-		);
-
-		ShowWindow(m_autoComplete_hwnd, SW_SHOWNOACTIVATE);
-		SendMessage(m_autoComplete_hwnd, WM_UPDATECOMPITEMS, 0, 0);
-
-		m_bHadFirstArrowPress = false;
-	}
-	else
-	{
-		MoveWindow(m_autoComplete_hwnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
-		SendMessage(m_autoComplete_hwnd, WM_UPDATECOMPITEMS, 0, 0);
-	}
-}
-
-bool MessageEditor::IsAutocompleteActive() const
-{
-	return m_autoComplete_hwnd != NULL;
-}
-
-int MessageEditor::GetAutocompleteSelectedIndex() const
-{
-	if (!IsAutocompleteActive()) return -1;
-
-	return (int) SendMessage(m_autoComplete_hwnd, WM_GETCOMPINDEX, 0, 0);
-}
-
-void MessageEditor::PerformAutocomplete()
-{
-	if (!IsAutocompleteActive())
-		return;
-
-	int index = GetAutocompleteSelectedIndex();
-	if (index < 0 || index >= int(m_autocompleteResults.size()))
-		return;
-
-	const std::string& match = m_autocompleteResults[index];
-
-	// Append this string to the text.
-	LPTSTR tstr = ConvertCppStringToTString(match);
-
-	// Stolen from https://cboard.cprogramming.com/windows-programming/55742-appending-text-edit-control-post389162.html#post389162 cheers!
-	int length = GetWindowTextLength(m_edit_hwnd);
-	SendMessage(m_edit_hwnd, EM_SETSEL, m_autoCompleteStart, length);
-	SendMessage(m_edit_hwnd, EM_REPLACESEL, 0, (LPARAM)tstr);
-	SendMessage(m_edit_hwnd, WM_VSCROLL, SB_BOTTOM, (LPARAM)NULL);
-
-	free(tstr);
-
-	HideAutocomplete();
-}
-
 void MessageEditor::Expand(int Amount)
 {
 	if (Amount == 0)
@@ -494,56 +352,8 @@ void MessageEditor::StopEdit()
 	}
 }
 
-void MessageEditor::UpdateAutocompleteIfNeeded(LPTSTR message)
+void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std::vector<AutoCompleteMatch>& matches)
 {
-	LPTSTR initialMessage = message;
-	if (GetFocus() != m_edit_hwnd)
-		return;
-
-	std::vector<std::string> results;
-	std::vector<AutoCompleteMatch> matches;
-
-	size_t msgLen = _tcslen(message);
-	if (msgLen > INT_MAX || msgLen == 0) {
-		HideAutocomplete();
-		return;
-	}
-	
-	size_t autoStart = SIZE_MAX;
-
-	for (size_t i = msgLen - 1; i >= 0; )
-	{
-		// If a space, break.  We've searched the entirety of this word.
-		TCHAR c = message[i];
-		if (c == (TCHAR) ' ')
-			break;
-
-		if ((c == (TCHAR) '@' || c == (TCHAR) '#' || c == (TCHAR) ':') &&
-			(i == 0 || message[i - 1] == ' '))
-		{
-			// Start auto-completion here.
-			autoStart = i;
-			break;
-		}
-
-		if (i == 0)
-			break;
-		--i;
-	}
-	
-	if (autoStart == SIZE_MAX) {
-		HideAutocomplete();
-		return;
-	}
-
-	message += autoStart;
-
-	// take the query
-	char query = (char)*message; message++;
-
-	// and the actual name
-	std::string stuff = MakeStringFromTString(message);
-
 	switch (query)
 	{
 		case '#': // CHANNELS
@@ -558,27 +368,13 @@ void MessageEditor::UpdateAutocompleteIfNeeded(LPTSTR message)
 				if (chan.IsCategory() || chan.IsVoice() || chan.IsDM())
 					continue;
 
-				float fzm = CompareFuzzy(chan.m_name, stuff.c_str());
+				float fzm = CompareFuzzy(chan.m_name, word.c_str());
 				if (fzm != 0.0f)
 					matches.push_back(AutoCompleteMatch(chan.m_name, fzm));
 			}
 			break;
 		}
 	}
-
-	std::sort(matches.begin(), matches.end());
-
-	for (auto& match : matches)
-		results.push_back(match.str);
-
-	POINT pt {};
-	if (!GetCaretPos(&pt))
-		return;
-
-	ClientToScreen(m_edit_hwnd, &pt);
-
-	m_autoCompleteStart = int(message - initialMessage);
-	ShowAutocomplete(results, pt);
 }
 
 void MessageEditor::OnUpdateText()
@@ -611,9 +407,8 @@ void MessageEditor::OnUpdateText()
 
 	SendMessage(g_Hwnd, WM_UPDATEMESSAGELENGTH, 0, (LPARAM)actualLength);
 
-	UpdateAutocompleteIfNeeded(tchr);
+	m_autoComplete.Update(tchr, length);
 	delete[] tchr;
-
 }
 
 LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -638,29 +433,11 @@ LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		case WM_KEYUP:
 		case WM_KEYDOWN:
 		{
+			if (pThis->m_autoComplete.HandleKeyMessage(uMsg, wParam, lParam))
+				return 0;
+
 			if (wParam == VK_SHIFT)
 				m_shiftHeld = uMsg == WM_KEYDOWN;
-
-			if (pThis->m_autoCompleteList_hwnd && (wParam == VK_UP || wParam == VK_DOWN)) {
-				// forward
-				SendMessage(pThis->m_autoCompleteList_hwnd, uMsg, wParam, lParam);
-
-				if (!pThis->m_bHadFirstArrowPress)
-				{
-					pThis->m_bHadFirstArrowPress = true;
-
-					if (uMsg == WM_KEYDOWN) {
-						SendMessage(pThis->m_autoCompleteList_hwnd, WM_KEYUP, wParam, 3 << 30);
-						SendMessage(pThis->m_autoCompleteList_hwnd, uMsg, wParam, lParam);
-					}
-					else {
-						SendMessage(pThis->m_autoCompleteList_hwnd, WM_KEYDOWN, wParam, 0);
-						SendMessage(pThis->m_autoCompleteList_hwnd, uMsg, wParam, lParam);
-					}
-				}
-
-				return 0;
-			}
 
 			break;
 		}
@@ -694,18 +471,14 @@ LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		}
 		case WM_CHAR:
 		{
+			if (pThis->m_autoComplete.HandleCharMessage(uMsg, wParam, lParam))
+				return 0;
+
 			if (!GetDiscordInstance()->GetCurrentChannel())
 				break;
 
 			if (!GetDiscordInstance()->GetCurrentChannel()->HasPermission(PERM_SEND_MESSAGES))
 				break;
-
-			if ((wParam == '\r' || wParam == '\t') && pThis->IsAutocompleteActive())
-			{
-				// trigger the autocomplete instead
-				pThis->PerformAutocomplete();
-				return 0;
-			}
 
 			if (wParam == '\r' && !m_shiftHeld)
 			{
@@ -722,96 +495,6 @@ LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 	}
 
 	return m_editWndProc(hWnd, uMsg, wParam, lParam);
-}
-
-LRESULT MessageEditor::CompWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	constexpr int idList = 1;
-
-	MessageEditor* pThis = (MessageEditor*) GetWindowLongPtr(hWnd, GWLP_USERDATA);
-
-	switch (uMsg)
-	{
-		case WM_NCCREATE:
-		{
-			CREATESTRUCT* cs = (CREATESTRUCT*)lParam;
-			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)cs->lpCreateParams);
-			break;
-		}
-		case WM_CREATE:
-		{
-			HWND hList = CreateWindow(
-				WC_LISTVIEW,
-				NULL,
-				WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_NOCOLUMNHEADER | LVS_SINGLESEL | LVS_SHOWSELALWAYS,
-				0, 0, 1, 1,
-				hWnd,
-				(HMENU)idList,
-				g_hInstance,
-				NULL
-			);
-
-			pThis->m_autoCompleteList_hwnd = hList;
-			if (!hList)
-				break;
-
-			SetWindowFont(hList, g_MessageTextFont, FALSE);
-			break;
-		}
-		case WM_SIZE:
-		{
-			HWND hList = GetDlgItem(hWnd, idList);
-			if (!hList)
-				break;
-
-			MoveWindow(hList, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), TRUE);
-			ListView_DeleteColumn(hList, 0);
-
-			TCHAR colText[] = TEXT("NAME");
-			LVCOLUMN lvc;
-			ZeroMemory(&lvc, sizeof lvc);
-			lvc.mask = LVCF_TEXT | LVCF_WIDTH;
-			lvc.pszText = colText;
-			lvc.cx = GET_X_LPARAM(lParam);
-			ListView_InsertColumn(hList, 0, &lvc);
-			break;
-		}
-		case WM_GETCOMPINDEX:
-		{
-			HWND hList = GetDlgItem(hWnd, idList);
-			if (!hList)
-				return -1;
-			return ListView_GetNextItem(hList, -1, LVNI_SELECTED);
-		}
-		case WM_UPDATECOMPITEMS:
-		{
-			HWND hList = GetDlgItem(hWnd, idList);
-			if (!hList)
-				break;
-
-			ListView_DeleteAllItems(hList);
-
-			int i = 0;
-			for (auto& entry : pThis->m_autocompleteResults)
-			{
-				LPTSTR str = ConvertCppStringToTString(entry);
-
-				LVITEM lvi;
-				ZeroMemory(&lvi, sizeof lvi);
-				lvi.mask = LVIF_TEXT;
-				lvi.pszText = str;
-				lvi.iItem = i++;
-
-				ListView_InsertItem(hList, &lvi);
-				free(str);
-			}
-
-			ListView_SetItemState(hList, 0, LVIS_SELECTED, LVIS_SELECTED);
-			break;
-		}
-	}
-
-	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 void MessageEditor::Layout()
@@ -1011,15 +694,6 @@ void MessageEditor::InitializeClass()
 	wc.lpfnWndProc   = MessageEditor::WndProc;
 
 	RegisterClass(&wc);
-
-	ZeroMemory(&wc, sizeof wc);
-	wc.lpszClassName = T_MESSAGE_EDITOR_AUTOCOMPLETE_CLASS;
-	wc.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
-	wc.style         = 0;
-	wc.hCursor       = LoadCursor (0, IDC_ARROW);
-	wc.lpfnWndProc   = MessageEditor::CompWndProc;
-
-	RegisterClass(&wc);
 }
 
 MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
@@ -1120,6 +794,10 @@ MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
 	SendMessage(newThis->m_editingMessage_hwnd, WM_SETFONT, (WPARAM)g_SendButtonFont, TRUE);
 	SendMessage(newThis->m_mentionName_hwnd,    WM_SETFONT, (WPARAM)g_AuthorTextFont, TRUE);
 	SendMessage(newThis->m_mentionCheck_hwnd,   WM_SETFONT, (WPARAM)g_SendButtonFont, TRUE);
+
+	newThis->m_autoComplete.SetEdit(newThis->m_edit_hwnd);
+	newThis->m_autoComplete.SetFont(g_SendButtonFont);
+	newThis->m_autoComplete.SetLookup(&AutoCompleteLookup);
 
 	return newThis;
 }
