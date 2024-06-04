@@ -151,6 +151,35 @@ int StringCompareCaseInsens(const char* s1, const char* s2)
 	return tolower(*s1) - tolower(*s2);
 }
 
+int StringCompareCaseInsensLimited(const char* s1, const char* s2, size_t n)
+{
+	while (n > 0 && tolower(*s1) == tolower(*s2)) {
+		n--;
+		if (*s1 == '\0') break;
+		s1++, s2++;
+	}
+
+	if (n == 0)
+		return 0;
+	return tolower(*s1) - tolower(*s2);
+}
+
+bool BeginsWith(const std::string& what, const std::string& with)
+{
+	if (what.size() < with.size())
+		return false;
+
+	return strncmp(what.c_str(), with.c_str(), with.size());
+}
+
+bool BeginsWithCaseInsens(const std::string& what, const std::string& with)
+{
+	if (what.size() < with.size())
+		return false;
+
+	return StringCompareCaseInsensLimited(what.c_str(), with.c_str(), with.size()) == 0;
+}
+
 bool EndsWith(const std::string& what, const std::string& with)
 {
 	if (what.size() < with.size())
