@@ -64,6 +64,7 @@ private:
 	void Hide();
 	void Commit();
 	int GetSelectionIndex();
+	LRESULT HandleCustomDraw(HWND hWnd, NMLVCUSTOMDRAW* pInfo);
 
 	// The private function of ::Update(). Here the textInEditControl MUST be valid. 
 	void _Update(LPCTSTR textInEditControl, int length);

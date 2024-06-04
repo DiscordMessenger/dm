@@ -324,7 +324,7 @@ LRESULT CALLBACK AutoComplete::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 			HWND hList = CreateWindow(
 				WC_LISTVIEW,
 				NULL,
-				WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_NOCOLUMNHEADER | LVS_SINGLESEL | LVS_SHOWSELALWAYS,
+				WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_NOCOLUMNHEADER | LVS_SINGLESEL,
 				0, 0, 1, 1,
 				hWnd,
 				(HMENU)idList,
@@ -337,6 +337,7 @@ LRESULT CALLBACK AutoComplete::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 				break;
 
 			SetWindowFont(hList, pThis->m_hFont, FALSE);
+			ListView_SetExtendedListViewStyle(hList, LVS_EX_FULLROWSELECT);
 			break;
 		}
 		case WM_SIZE:
@@ -390,14 +391,61 @@ LRESULT CALLBACK AutoComplete::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 			ListView_SetItemState(hList, 0, LVIS_SELECTED, LVIS_SELECTED);
 			break;
 		}
+		case WM_NOTIFY:
+		{
+			NMHDR* phdr = (NMHDR*)lParam;
+			if (phdr->code == UINT(NM_CUSTOMDRAW))
+				return pThis->HandleCustomDraw(hWnd, (NMLVCUSTOMDRAW*)lParam);
+
+			break;
+		}
 		case WM_DESTROY:
 		{
-			BOOL b = DestroyWindow(pThis->m_listHwnd);
-			assert(b && "Was window already destroyed?");
-			pThis->m_listHwnd = NULL;
+			if (pThis->m_listHwnd)
+			{
+				BOOL b = DestroyWindow(pThis->m_listHwnd);
+				assert(b && "Was window already destroyed?");
+				pThis->m_listHwnd = NULL;
+			}
+
+			pThis->m_hwnd = NULL;
 			break;
 		}
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+LRESULT AutoComplete::HandleCustomDraw(HWND hWnd, NMLVCUSTOMDRAW* pInfo)
+{
+	switch (pInfo->nmcd.dwDrawStage)
+	{
+		case CDDS_PREPAINT:
+			return CDRF_NOTIFYITEMDRAW;
+
+		case CDDS_ITEMPREPAINT:
+			return CDRF_NOTIFYSUBITEMDRAW;
+
+		case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
+			HWND hList = m_listHwnd;
+
+			int idx = pInfo->nmcd.dwItemSpec;
+			int sta = ListView_GetItemState(hList, idx, LVIS_SELECTED);
+
+			if (sta & LVIS_SELECTED) {
+				pInfo->clrTextBk = GetSysColor(COLOR_HIGHLIGHT);
+				pInfo->clrText = GetSysColor(COLOR_HIGHLIGHTTEXT);
+			}
+			else {
+				pInfo->clrTextBk = GetSysColor(COLOR_WINDOW);
+				pInfo->clrText = GetSysColor(COLOR_MENUTEXT);
+			}
+
+			return CDRF_NEWFONT;
+		}
+
+		default:DbgPrintW("Unhandled draw stage %d", pInfo->nmcd.dwDrawStage);
+	}
+
+	return CDRF_DODEFAULT;
 }

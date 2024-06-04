@@ -418,14 +418,8 @@ LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 	switch (uMsg)
 	{
-		case WM_NCCREATE:
-		{
-			LRESULT lrs = m_editWndProc(hWnd, uMsg, wParam, lParam);
-			return lrs;
-		}
 		case WM_DESTROY:
 		{
-			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) NULL);
 			SetWindowLongPtr(hWnd, GWLP_WNDPROC,  (LONG_PTR) m_editWndProc);
 			pThis->m_edit_hwnd = NULL;
 			break;
