@@ -1029,3 +1029,73 @@ void CenterWindow(HWND hWnd, HWND hRelativeTo)
 
 	MoveWindow(hWnd, rect1.left, rect1.top, rect1.right - rect1.left, rect1.bottom - rect1.top, TRUE);
 }
+
+#ifndef MINGW_SPECIFIC_HACKS
+#include <mutex>
+using Wmutex = std::mutex;
+#else
+#include <iprog/mutex.hpp>
+using Wmutex = iprog::mutex;
+#endif
+
+static const LPCTSTR* s_msgBoxText;
+static const int*     s_msgBoxIDReplaced;
+
+static Wmutex s_msgBoxMutex;
+static int    s_msgBoxCount;
+static HHOOK  s_msgBoxHook;
+
+LRESULT CALLBACK MessageBoxHookFunc(int code, WPARAM wParam, LPARAM lParam)
+{
+	if (code == HC_ACTION)
+	{
+		CWPRETSTRUCT* cwp = (CWPRETSTRUCT*)lParam;
+
+		if (cwp->message == WM_INITDIALOG) {
+			HWND hWnd = cwp->hwnd;
+
+			for (int i = 0; i < s_msgBoxCount; i++) {
+				SetDlgItemText(hWnd, s_msgBoxIDReplaced[i], s_msgBoxText[i]);
+			}
+			s_msgBoxCount = 0;
+		}
+		
+		LRESULT res = CallNextHookEx(s_msgBoxHook, code, wParam, lParam);
+
+		if (cwp->message == WM_INITDIALOG) {
+			// just unhook the hook, we don't care about overriding any other behavior
+			UnhookWindowsHookEx(s_msgBoxHook);
+			s_msgBoxHook = NULL;
+
+			// mutex was locked before the MessageBox call!
+#pragma warning(push)
+#pragma warning(disable : 26110)
+			s_msgBoxMutex.unlock();
+#pragma warning(pop)
+		}
+
+		return res;
+	}
+
+	return CallNextHookEx(s_msgBoxHook, code, wParam, lParam);
+}
+
+// This calls MessageBox() with the important difference that one of the buttons (specified by overID)
+// will have its text changed via a hook.
+int MessageBoxHooked(HWND hWnd, LPCTSTR title, LPCTSTR caption, int flags, int overCount, const int* overID, const LPCTSTR* overText)
+{
+	s_msgBoxMutex.lock(); // will be unlocked in MessageBox's hook
+
+	s_msgBoxCount = overCount;
+	s_msgBoxText = overText;
+	s_msgBoxIDReplaced = overID;
+
+	s_msgBoxHook = SetWindowsHookEx(WH_CALLWNDPROCRET, MessageBoxHookFunc, NULL, GetCurrentThreadId());
+
+	return MessageBox(hWnd, title, caption, flags);
+}
+
+int MessageBoxHooked(HWND hWnd, LPCTSTR title, LPCTSTR caption, int flags, int overID, LPCTSTR overText)
+{
+	return MessageBoxHooked(hWnd, title, caption, flags, 1, &overID, &overText);
+}

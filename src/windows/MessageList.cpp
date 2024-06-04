@@ -1777,54 +1777,19 @@ void MessageList::DetermineMessageData(
 	}
 }
 
-static HHOOK g_MsgBoxHookTemp = NULL;
-
-LRESULT MessageList::OpenLinkMsgBoxHook(int code, WPARAM wParam, LPARAM lParam)
-{
-	if (code == HC_ACTION)
-	{
-		CWPRETSTRUCT* cwp = (CWPRETSTRUCT*)lParam;
-
-		if (cwp->message == WM_INITDIALOG) {
-			HWND hWnd = cwp->hwnd;
-
-			HWND item = GetDlgItem(hWnd, IDOK);
-			if (item)
-				SetWindowText(item, TmGetTString(IDS_EXCITED_YES));
-		}
-		
-		LRESULT res = CallNextHookEx(g_MsgBoxHookTemp, code, wParam, lParam);
-
-		if (cwp->message == WM_NCDESTROY) {
-			UnhookWindowsHookEx(g_MsgBoxHookTemp);
-			g_MsgBoxHookTemp = NULL;
-		}
-
-		return res;
-	}
-
-	return CallNextHookEx(g_MsgBoxHookTemp, code, wParam, lParam);
-}
-
 void MessageList::ConfirmOpenLink(const std::string& link)
 {
 	bool trust = GetLocalSettings()->CheckTrustedDomain(link);
 
 	if (!trust)
 	{
-		if (g_MsgBoxHookTemp) {
-			UnhookWindowsHookEx(g_MsgBoxHookTemp);
-			g_MsgBoxHookTemp = NULL;
-		}
-
-		g_MsgBoxHookTemp = SetWindowsHookEx(WH_CALLWNDPROCRET, MessageList::OpenLinkMsgBoxHook, NULL, GetCurrentThreadId());
-
-		TCHAR buffer[8192];
+		static TCHAR buffer[8192];
 		LPTSTR tstr = ConvertCppStringToTString(link);
 		WAsnprintf(buffer, _countof(buffer), TmGetTString(IDS_LINK_CONFIRM), tstr);
+		buffer[_countof(buffer) - 1] = 0;
 		free(tstr);
 
-		if (MessageBox(g_Hwnd, buffer, TmGetTString(IDS_HOLD_UP_CONFIRM), MB_ICONWARNING | MB_OKCANCEL) != IDOK)
+		if (MessageBoxHooked(g_Hwnd, buffer, TmGetTString(IDS_HOLD_UP_CONFIRM), MB_ICONWARNING | MB_OKCANCEL, IDOK, TmGetTString(IDS_EXCITED_YES)) != IDOK)
 			return;
 	}
 

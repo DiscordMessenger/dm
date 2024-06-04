@@ -536,8 +536,6 @@ private:
 
 	static COLORREF DrawMentionBackground(HDC hdc, RECT& rc, COLORREF chosenBkColor);
 
-	static LRESULT CALLBACK OpenLinkMsgBoxHook(int code, WPARAM wParam, LPARAM lParam);
-
 	// called by OnUpdateEmoji
 	static void InvalidateEmote(void* context, const Rect& rc);
 };
