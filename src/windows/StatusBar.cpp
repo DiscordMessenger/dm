@@ -209,6 +209,7 @@ void StatusBar::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 
 	int mode = SetBkMode(hdc, TRANSPARENT);
 	HGDIOBJ gdiObjOld = SelectObject(hdc, g_TypingBoldFont);
+	COLORREF textOld = SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
 
 	m_typing_status_rect = rc;
 
@@ -253,6 +254,7 @@ void StatusBar::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 		DrawText(hdc, typingEnd, -1, &rc, DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE);
 	}
 
+	SetTextColor(hdc, textOld);
 	SelectObject(hdc, gdiObjOld);
 	SetBkMode(lpDIS->hDC, mode);
 }
