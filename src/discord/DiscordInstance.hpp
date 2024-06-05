@@ -438,11 +438,11 @@ DiscordInstance* GetDiscordInstance();
 
 int64_t GetIntFromString(const std::string& str);
 
-Snowflake GetSnowflake(nlohmann::json& j, const std::string& key);
+Snowflake GetSnowflake(const nlohmann::json& j, const std::string& key);
 
 // Fetches a key
-std::string GetFieldSafe(nlohmann::json& j, const std::string& key);
+std::string GetFieldSafe(const nlohmann::json& j, const std::string& key);
 
-int GetFieldSafeInt(nlohmann::json& j, const std::string& key);
+int GetFieldSafeInt(const nlohmann::json& j, const std::string& key);
 
 #define TYPING_INTERVAL 10000 // 10 sec

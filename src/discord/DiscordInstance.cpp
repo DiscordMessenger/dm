@@ -1748,6 +1748,15 @@ void DiscordInstance::ParseAndAddGuild(nlohmann::json& elem)
 		g.m_roles[role.m_id] = role;
 	}
 
+	// parse emoji
+	Json& emojis = elem["emojis"];
+	for (auto& emojij : emojis)
+	{
+		Emoji emoji;
+		emoji.Load(emojij);
+		g.m_emoji[emoji.m_id] = emoji;
+	}
+
 	// Check if the guild already exists.  If it does, replace its contents.
 	// I'm not totally sure why discord sends a GUILD_CREATE event.  Perhaps
 	// the server I was testing with is considered a "lazy guild"?
@@ -1809,7 +1818,6 @@ static std::string GetStatusFromActivities(Json& activities)
 
 void DiscordInstance::HandleREADY_SUPPLEMENTAL(Json& j)
 {
-	std::string str = j.dump();
 	Json& data = j["d"];
 
 	std::vector<Snowflake> guildsVec;

@@ -7,6 +7,7 @@
 #include <nlohmann/json.h>
 #include "Snowflake.hpp"
 #include "Channel.hpp"
+#include "Emoji.hpp"
 
 // obscenely high numbers s.t. that they show last
 #define GROUP_ONLINE  9000000000000000000LL
@@ -60,6 +61,7 @@ struct Guild
 	Snowflake m_currentChannel = 0;
 
 	std::map<Snowflake, GuildRole> m_roles;
+	std::map<Snowflake, Emoji> m_emoji;
 	std::vector<Snowflake> m_members;
 	int m_memberCount = 0, m_onlineCount = 0;
 
