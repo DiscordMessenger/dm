@@ -783,9 +783,14 @@ void DiscordInstance::StartGatewaySession()
 
 std::string DiscordInstance::TransformMention(const std::string& source, Snowflake guild, Snowflake channel)
 {
+	if (source.empty())
+		return source;
+
 	// Look for people with that name in the guild's known list
 	std::string longestMatchStr;
 	Snowflake longestMatchID = 0;
+
+	char firstChar = source[0];
 
 	if (guild)
 	{
@@ -793,19 +798,42 @@ std::string DiscordInstance::TransformMention(const std::string& source, Snowfla
 		if (!pGuild)
 			return source;
 
-		for (auto pfid : pGuild->m_knownMembers)
+		switch (firstChar)
 		{
-			Profile* pf = GetProfileCache()->LookupProfile(pfid, "", "", "", false);
-			std::string uname = "@" + pf->GetUsername();
-			if (!BeginsWith(source, uname))
-				continue;
+			case '@':
+				// Look for people whose user names the source starts with.
+				for (auto pfid : pGuild->m_knownMembers)
+				{
+					Profile* pf = GetProfileCache()->LookupProfile(pfid, "", "", "", false);
+					std::string uname = "@" + pf->GetUsername();
+					if (!BeginsWith(source, uname))
+						continue;
 
-			assert(uname.size() <= source.size());
-			if (longestMatchStr.size() >= uname.size())
-				continue;
+					assert(uname.size() <= source.size());
+					if (longestMatchStr.size() >= uname.size())
+						continue;
 
-			longestMatchStr = uname;
-			longestMatchID = pf->m_snowflake;
+					longestMatchStr = uname;
+					longestMatchID = pf->m_snowflake;
+				}
+				break;
+
+			case '#':
+				// Look for channels whose names the source starts with.
+				for (auto& chan : pGuild->m_channels)
+				{
+					std::string cname = "#" + chan.m_name;
+					if (!BeginsWith(source, cname))
+						continue;
+
+					assert(cname.size() <= source.size());
+					if (longestMatchStr.size() >= cname.size())
+						continue;
+
+					longestMatchStr = cname;
+					longestMatchID = chan.m_snowflake;
+				}
+				break;
 		}
 	}
 	else
@@ -814,18 +842,25 @@ std::string DiscordInstance::TransformMention(const std::string& source, Snowfla
 		if (!pChan)
 			return source;
 
-		for (auto pfid : pChan->m_recipients)
+		switch (firstChar)
 		{
-			Profile* pf = GetProfileCache()->LookupProfile(pfid, "", "", "", false);
-			std::string uname = "@" + pf->GetUsername();
-			if (!BeginsWith(source, uname))
-				continue;
+			case '@':
+				// Look for recipients in this DM/group DM.
+				for (auto pfid : pChan->m_recipients)
+				{
+					Profile* pf = GetProfileCache()->LookupProfile(pfid, "", "", "", false);
+					std::string uname = "@" + pf->GetUsername();
+					if (!BeginsWith(source, uname))
+						continue;
 
-			if (longestMatchStr.size() >= uname.size())
-				continue;
+					if (longestMatchStr.size() >= uname.size())
+						continue;
 
-			longestMatchStr = uname;
-			longestMatchID = pf->m_snowflake;
+					longestMatchStr = uname;
+					longestMatchID = pf->m_snowflake;
+				}
+				break;
+			// Note: don't handle channel mentions, you have to add those by ID like <#idhere>
 		}
 	}
 
@@ -833,20 +868,27 @@ std::string DiscordInstance::TransformMention(const std::string& source, Snowfla
 		return source;
 	
 	assert(source.substr(0, longestMatchStr.size()) == longestMatchStr);
-	return "<@" + std::to_string(longestMatchID) + ">" + source.substr(longestMatchStr.size());
+
+	std::string
+	str  = "<";
+	str += firstChar;
+	str += std::to_string(longestMatchID);
+	str += ">";
+	str += source.substr(longestMatchStr.size());
+	return str;
 }
 
 std::string DiscordInstance::ResolveMentions(const std::string& str, Snowflake guild, Snowflake channel)
 {
-	bool hasAt = false;
+	bool hasMent = false;
 	for (char c : str) {
-		if (c == '@') {
-			hasAt = true;
+		if (c == '@' || c == '#') {
+			hasMent = true;
 			break;
 		}
 	}
 
-	if (!hasAt)
+	if (!hasMent)
 		return str;
 
 	// look for each word with an @
@@ -855,18 +897,18 @@ std::string DiscordInstance::ResolveMentions(const std::string& str, Snowflake g
 
 	for (size_t i = 0; i < str.size(); )
 	{
-		if (str[i] != '@')
+		if (str[i] != '@' && str[i] != '#')
 		{
 			finalStr += str[i];
 			i++;
 			continue;
 		}
 
-		// Have an @, search for another @ because that denotes the beginning of another mention.
-		// I'd break it at spaces too, but some user names also start with spaces.
+		// Have an @ or #, search for another @ or #, because that denotes the beginning of
+		// another mention. I'd break it at spaces too, but some user names also start with spaces.
 		size_t j;
 		for (j = i + 1; j < str.size(); j++) {
-			if (str[j] == '@')
+			if (str[j] == '@' || str[j] == '#')
 				break;
 		}
 

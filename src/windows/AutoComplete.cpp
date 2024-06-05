@@ -1,6 +1,8 @@
 #include "AutoComplete.hpp"
 #include "Main.hpp"
 
+std::set<AutoComplete*> AutoComplete::m_activeAutocompletes;
+
 #define T_AUTOCOMPLETE_CLASS TEXT("DMAutoComplete")
 
 enum {
@@ -19,6 +21,11 @@ AutoComplete::~AutoComplete()
 	}
 
 	assert(!m_listHwnd);
+
+	// Erase ourselves from the list of active autocomplete windows, if needed.
+	auto it = m_activeAutocompletes.find(this);
+	if (it != m_activeAutocompletes.end())
+		m_activeAutocompletes.erase(it);
 }
 
 void AutoComplete::ShowOrMove(POINT pt)
@@ -113,6 +120,9 @@ void AutoComplete::ShowOrMove(POINT pt)
 		SendMessage(m_hwnd, WM_UPDATECOMPITEMS, 0, 0);
 
 		m_bHadFirstArrowPress = false;
+
+		// Add ourselves to the list of active autocomplete windows.
+		m_activeAutocompletes.insert(this);
 	}
 	else
 	{
@@ -133,6 +143,11 @@ void AutoComplete::Hide()
 	assert(!m_listHwnd);
 
 	m_bHadFirstArrowPress = false;
+
+	// Erase ourselves from the list of active autocomplete windows.
+	auto it = m_activeAutocompletes.find(this);
+	if (it != m_activeAutocompletes.end())
+		m_activeAutocompletes.erase(it);
 }
 
 void AutoComplete::Commit()
@@ -322,6 +337,28 @@ bool AutoComplete::InitializeClass()
 	wc.lpfnWndProc   = AutoComplete::WndProc;
 
 	return RegisterClass(&wc);
+}
+
+void AutoComplete::DismissAutoCompleteWindowsIfNeeded(HWND updated)
+{
+	const auto& active = AutoComplete::GetActive();
+	bool isFine = false;
+
+	for (const auto& ac : active)
+	{
+		if (updated == ac->GetHWND() || IsChildOf(updated, ac->GetHWND())) {
+			isFine = true;
+			break;
+		}
+	}
+
+	if (isFine)
+		return;
+
+	// Create a copy to prevent the set from being mutated while worked on
+	std::set<AutoComplete*> activeCopy = active;
+	for (const auto& acc : activeCopy)
+		acc->Hide();
 }
 
 LRESULT CALLBACK AutoComplete::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

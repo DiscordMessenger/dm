@@ -65,15 +65,22 @@ public:
 	// Sets the lookup context passed in as parameter to the lookup function.
 	void SetLookupContext(void* context);
 
+	// Hides the autocomplete window.
+	void Hide();
+
 	// Checks if this is active.
 	bool IsActive() const
 	{
 		return m_hwnd != NULL;
 	}
 
+	HWND GetHWND() const
+	{
+		return m_hwnd;
+	}
+
 private:
 	void ShowOrMove(POINT pt);
-	void Hide();
 	void Commit();
 	int GetSelectionIndex();
 	LRESULT HandleCustomDraw(HWND hWnd, NMLVCUSTOMDRAW* pInfo);
@@ -86,6 +93,13 @@ private:
 
 public:
 	static bool InitializeClass();
+
+	static const std::set<AutoComplete*>& GetActive()
+	{
+		return m_activeAutocompletes;
+	}
+
+	static void DismissAutoCompleteWindowsIfNeeded(HWND updated);
 
 private:
 	HWND m_hwnd = NULL;
@@ -110,4 +124,7 @@ private:
 
 	TCHAR m_dispInfoBuffer1[256];
 	TCHAR m_dispInfoBuffer2[256];
+
+private:
+	static std::set<AutoComplete*> m_activeAutocompletes;
 };
