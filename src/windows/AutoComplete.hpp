@@ -11,23 +11,29 @@ struct AutoCompleteMatch
 {
 	std::string str;
 	std::string substr;
+	std::string displaystr;
 	float fuzzy = 0;
 
 	AutoCompleteMatch() {}
 
-	AutoCompleteMatch(const std::string& s, const std::string& ss, float fuz):
-		str(s), substr(ss), fuzzy(fuz) {}
+	AutoCompleteMatch(const std::string& s, const std::string& ss, float fuz, const std::string& ds = "") :
+		str(s), substr(ss), fuzzy(fuz), displaystr(ds) {}
 
 	bool operator<(const AutoCompleteMatch& oth) const
 	{
 		if (fuzzy != oth.fuzzy)
 			return fuzzy > oth.fuzzy;
 
-		int scr = strcmp(str.c_str(), oth.str.c_str());
-		if (scr != 0)
-			return scr < 0;
-
+		int scr;
+		scr = strcmp(str.c_str(), oth.str.c_str());
+		if (scr != 0) return scr < 0;
+		scr = strcmp(displaystr.c_str(), oth.displaystr.c_str());
+		if (scr != 0) return scr < 0;
 		return strcmp(substr.c_str(), oth.substr.c_str());
+	}
+
+	const std::string& GetDisplayString() const {
+		return displaystr.empty() ? str : displaystr;
 	}
 };
 

@@ -537,7 +537,7 @@ LRESULT AutoComplete::HandleGetDispInfo(HWND hWnd, NMLVDISPINFO* pInfo)
 	{
 		case COL_NAME:
 		{
-			ConvertCppStringToTCharArray(match.str, m_dispInfoBuffer1, _countof(m_dispInfoBuffer1));
+			ConvertCppStringToTCharArray(match.GetDisplayString(), m_dispInfoBuffer1, _countof(m_dispInfoBuffer1));
 			pInfo->item.pszText = m_dispInfoBuffer1;
 			break;
 		}

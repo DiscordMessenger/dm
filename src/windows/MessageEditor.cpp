@@ -350,6 +350,31 @@ void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std:
 {
 	switch (query)
 	{
+		case ':': // EMOJI
+		{
+			Guild* pGld = GetDiscordInstance()->GetCurrentGuild();
+			if (!pGld)
+				break;
+
+			// TODO: For now, you can't do that in a DM channel. You will be able
+			// to when we add Unicode emoji support though.
+			if (pGld->m_snowflake == 0)
+				break;
+
+			for (const auto& em : pGld->m_emoji)
+			{
+				float fzm = word.empty() ? 1.0f : CompareFuzzy(em.second.m_name, word.c_str());
+				if (fzm != 0.0f) {
+					std::string str = em.second.m_name + ":";
+					matches.push_back(AutoCompleteMatch(str, "", fzm, ":" + str));
+				}
+			}
+
+			// TODO: Nitro emoji support
+			// TODO: Global emoji support
+
+			break;
+		}
 		case '#': // CHANNELS
 		{
 			Guild* pGld = GetDiscordInstance()->GetCurrentGuild();
@@ -368,7 +393,7 @@ void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std:
 			}
 			break;
 		}
-		case '@':
+		case '@': // USERS
 		{
 			Guild* pGld = GetDiscordInstance()->GetCurrentGuild();
 			if (!pGld)
