@@ -788,6 +788,7 @@ std::string DiscordInstance::TransformMention(const std::string& source, Snowfla
 
 	// Look for people with that name in the guild's known list
 	std::string longestMatchStr;
+	std::string longestMatchMeta;
 	Snowflake longestMatchID = 0;
 
 	char firstChar = source[0];
@@ -820,7 +821,7 @@ std::string DiscordInstance::TransformMention(const std::string& source, Snowfla
 
 			case '#':
 				// Look for channels whose names the source starts with.
-				for (auto& chan : pGuild->m_channels)
+				for (const auto& chan : pGuild->m_channels)
 				{
 					std::string cname = "#" + chan.m_name;
 					if (!BeginsWith(source, cname))
@@ -832,6 +833,24 @@ std::string DiscordInstance::TransformMention(const std::string& source, Snowfla
 
 					longestMatchStr = cname;
 					longestMatchID = chan.m_snowflake;
+				}
+				break;
+
+			case ':':
+				// Look for server emojis whose names the source starts with.
+				for (const auto& em : pGuild->m_emoji)
+				{
+					std::string ename = ":" + em.second.m_name + ":";
+					if (!BeginsWith(source, ename))
+						continue;
+
+					assert(ename.size() <= source.size());
+					if (longestMatchStr.size() >= ename.size())
+						continue;
+
+					longestMatchStr = ename;
+					longestMatchID = em.first;
+					longestMatchMeta = ":" + em.second.m_name;
 				}
 				break;
 		}
@@ -871,6 +890,7 @@ std::string DiscordInstance::TransformMention(const std::string& source, Snowfla
 
 	std::string
 	str  = "<";
+	str += longestMatchMeta;
 	str += firstChar;
 	str += std::to_string(longestMatchID);
 	str += ">";
@@ -882,7 +902,7 @@ std::string DiscordInstance::ResolveMentions(const std::string& str, Snowflake g
 {
 	bool hasMent = false;
 	for (char c : str) {
-		if (c == '@' || c == '#') {
+		if (c == '@' || c == '#' || c == ':') {
 			hasMent = true;
 			break;
 		}
@@ -897,19 +917,31 @@ std::string DiscordInstance::ResolveMentions(const std::string& str, Snowflake g
 
 	for (size_t i = 0; i < str.size(); )
 	{
-		if (str[i] != '@' && str[i] != '#')
+		if (str[i] != '@' && str[i] != '#' && str[i] != ':')
 		{
 			finalStr += str[i];
 			i++;
 			continue;
 		}
 
-		// Have an @ or #, search for another @ or #, because that denotes the beginning of
+		char firstChr = str[i];
+
+		// Have an @, #, or :, search for another such symbol, because that denotes the beginning of
 		// another mention. I'd break it at spaces too, but some user names also start with spaces.
 		size_t j;
 		for (j = i + 1; j < str.size(); j++) {
-			if (str[j] == '@' || str[j] == '#')
+			if (str[j] == '@' || str[j] == '#' || str[j] == ':')
 				break;
+		}
+
+		if (firstChr == ':') {
+			if (j == str.size() || str[j] != ':') {
+				// not a valid emoji, just skip this guy
+				finalStr += str.substr(i, j - i);
+				i = j;
+				continue;
+			}
+			else j++;
 		}
 
 		std::string addition = TransformMention(str.substr(i, j - i), guild, channel);
