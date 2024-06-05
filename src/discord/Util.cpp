@@ -169,7 +169,7 @@ bool BeginsWith(const std::string& what, const std::string& with)
 	if (what.size() < with.size())
 		return false;
 
-	return strncmp(what.c_str(), with.c_str(), with.size());
+	return strncmp(what.c_str(), with.c_str(), with.size()) == 0;
 }
 
 bool BeginsWithCaseInsens(const std::string& what, const std::string& with)

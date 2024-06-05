@@ -65,6 +65,6 @@ struct Profile
 		return gm.m_status;
 	}
 
-	std::string GetUsername() const;
+	const std::string& GetUsername() const { return m_name; }
 	float FuzzyMatch(const char* check, Snowflake guild) const;
 };

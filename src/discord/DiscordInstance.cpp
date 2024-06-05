@@ -781,6 +781,103 @@ void DiscordInstance::StartGatewaySession()
 	m_gatewayConnId = connID;
 }
 
+std::string DiscordInstance::TransformMention(const std::string& source, Snowflake guild, Snowflake channel)
+{
+	// Look for people with that name in the guild's known list
+	std::string longestMatchStr;
+	Snowflake longestMatchID = 0;
+
+	if (guild)
+	{
+		Guild* pGuild = GetGuild(guild);
+		if (!pGuild)
+			return source;
+
+		for (auto pfid : pGuild->m_knownMembers)
+		{
+			Profile* pf = GetProfileCache()->LookupProfile(pfid, "", "", "", false);
+			std::string uname = "@" + pf->GetUsername();
+			if (!BeginsWith(source, uname))
+				continue;
+
+			assert(uname.size() <= source.size());
+			if (longestMatchStr.size() >= uname.size())
+				continue;
+
+			longestMatchStr = uname;
+			longestMatchID = pf->m_snowflake;
+		}
+	}
+	else
+	{
+		Channel* pChan = m_dmGuild.GetChannel(channel);
+		if (!pChan)
+			return source;
+
+		for (auto pfid : pChan->m_recipients)
+		{
+			Profile* pf = GetProfileCache()->LookupProfile(pfid, "", "", "", false);
+			std::string uname = "@" + pf->GetUsername();
+			if (!BeginsWith(source, uname))
+				continue;
+
+			if (longestMatchStr.size() >= uname.size())
+				continue;
+
+			longestMatchStr = uname;
+			longestMatchID = pf->m_snowflake;
+		}
+	}
+
+	if (longestMatchID == 0)
+		return source;
+	
+	assert(source.substr(0, longestMatchStr.size()) == longestMatchStr);
+	return "<@" + std::to_string(longestMatchID) + ">" + source.substr(longestMatchStr.size());
+}
+
+std::string DiscordInstance::ResolveMentions(const std::string& str, Snowflake guild, Snowflake channel)
+{
+	bool hasAt = false;
+	for (char c : str) {
+		if (c == '@') {
+			hasAt = true;
+			break;
+		}
+	}
+
+	if (!hasAt)
+		return str;
+
+	// look for each word with an @
+	std::string finalStr = "";
+	finalStr.reserve(str.size() * 2);
+
+	for (size_t i = 0; i < str.size(); )
+	{
+		if (str[i] != '@')
+		{
+			finalStr += str[i];
+			i++;
+			continue;
+		}
+
+		// Have an @, search for another @ because that denotes the beginning of another mention.
+		// I'd break it at spaces too, but some user names also start with spaces.
+		size_t j;
+		for (j = i + 1; j < str.size(); j++) {
+			if (str[j] == '@')
+				break;
+		}
+
+		std::string addition = TransformMention(str.substr(i, j - i), guild, channel);
+		finalStr += addition;
+		i = j;
+	}
+
+	return finalStr;
+}
+
 typedef void(DiscordInstance::*DispatchFunction)(Json& j);
 
 std::map <std::string, DispatchFunction> g_dispatchFunctions;
@@ -878,10 +975,12 @@ void DiscordInstance::SendHeartbeat()
 	GetWebsocketClient()->SendMsg(m_gatewayConnId, j.dump());
 }
 
-bool DiscordInstance::EditMessageInCurrentChannel(const std::string& msg, Snowflake msgId)
+bool DiscordInstance::EditMessageInCurrentChannel(const std::string& msg_, Snowflake msgId)
 {
 	if (!GetCurrentChannel() || !GetCurrentGuild())
 		return false;
+
+	std::string msg = ResolveMentions(msg_, m_CurrentGuild, m_CurrentChannel);
 
 	Channel* pChan = GetCurrentChannel();
 	
@@ -919,10 +1018,12 @@ bool DiscordInstance::EditMessageInCurrentChannel(const std::string& msg, Snowfl
 	return true;
 }
 
-bool DiscordInstance::SendMessageToCurrentChannel(const std::string& msg, Snowflake& tempSf, Snowflake replyTo, bool mentionReplied)
+bool DiscordInstance::SendMessageToCurrentChannel(const std::string& msg_, Snowflake& tempSf, Snowflake replyTo, bool mentionReplied)
 {
 	if (!GetCurrentChannel() || !GetCurrentGuild())
 		return false;
+
+	std::string msg = ResolveMentions(msg_, m_CurrentGuild, m_CurrentChannel);
 
 	Channel* pChan = GetCurrentChannel();
 	tempSf = CreateTemporarySnowflake();
@@ -2536,7 +2637,7 @@ void DiscordInstance::OnUploadAttachmentSecond(NetRequest* pReq)
 }
 
 bool DiscordInstance::SendMessageAndAttachmentToCurrentChannel(
-	const std::string& msg,
+	const std::string& msg_,
 	Snowflake& tempSf,
 	uint8_t* attData,
 	size_t attSize,
@@ -2544,6 +2645,8 @@ bool DiscordInstance::SendMessageAndAttachmentToCurrentChannel(
 {
 	if (!GetCurrentChannel() || !GetCurrentGuild())
 		return false;
+
+	std::string msg = ResolveMentions(msg_, m_CurrentGuild, m_CurrentChannel);
 
 	Channel* pChan = GetCurrentChannel();
 	tempSf = CreateTemporarySnowflake();

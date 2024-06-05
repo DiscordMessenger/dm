@@ -319,6 +319,9 @@ public:
 	// Start a new gateway session.
 	void StartGatewaySession();
 
+	// Resolve user mentions.
+	std::string ResolveMentions(const std::string& str, Snowflake guild, Snowflake channel);
+
 	// Send a message to the current channel.
 	bool SendMessageToCurrentChannel(const std::string& msg, Snowflake& tempSf, Snowflake reply = 0, bool mentionReplied = true);
 
@@ -402,6 +405,7 @@ private:
 	void OnUploadAttachmentFirst(NetRequest* pReq);
 	void OnUploadAttachmentSecond(NetRequest* pReq);
 	void SearchSubGuild(std::vector<QuickMatch>& matches, Guild* pGuild, int matchFlags, const char* query);
+	std::string TransformMention(const std::string& source, Snowflake guild, Snowflake channel);
 
 	// handle functions
 	void HandleREADY(nlohmann::json& j);
