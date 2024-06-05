@@ -22,8 +22,6 @@ private:
 	HWND m_mentionCancel_hwnd = NULL;
 	HWND m_mentionJump_hwnd   = NULL;
 	HWND m_editingMessage_hwnd = NULL;
-	HWND m_autoComplete_hwnd     = NULL;
-	HWND m_autoCompleteList_hwnd = NULL;
 	int m_expandedBy = 0;
 	int m_lineHeight = 0;
 	int m_initialHeight = 0;
@@ -33,13 +31,16 @@ private:
 	int m_textLength = 0;
 	bool m_bReplying = false;
 	bool m_bEditing = false;
-	std::vector<std::string> m_autocompleteResults;
 	std::string m_replyName; // Or edited message contents
 	Snowflake m_replyMessage = 0; // Or edited message ID
 	COLORREF m_userNameColor = CLR_NONE;
 	bool m_bWasUploadingAllowed = false;
+
 	AutoComplete m_autoComplete;
+	bool m_bDidMemberLookUpRecently = false;
+	Snowflake m_previousQueriesActiveOnGuild = 0;
 	uint64_t m_lastRemoteQuery = 0;
+	std::set<std::string> m_previousQueries;
 
 	static WNDPROC m_editWndProc;
 	static bool m_shiftHeld;
@@ -54,6 +55,7 @@ public:
 	void StartEdit(Snowflake messageID);
 	void StopEdit();
 	void Layout();
+	void OnLoadedMemberChunk();
 
 	Snowflake ReplyingTo() const {
 		return m_replyMessage;

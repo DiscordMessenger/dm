@@ -10,8 +10,8 @@
 #define T_MESSAGE_EDITOR_CLASS TEXT("DMMessageEditorClass")
 #define T_MESSAGE_EDITOR_AUTOCOMPLETE_CLASS TEXT("DMMessageEditorAutoCompleteClass")
 
-// allow a query every 50 ms, to not saturate Discord's servers
-constexpr uint64_t QUERY_RATE = 50;
+constexpr uint64_t QUERY_RATE = 100;
+constexpr int MAX_MEMBERS_IN_AUTOCOMPLETE = 10;
 
 WNDPROC MessageEditor::m_editWndProc;
 bool MessageEditor::m_shiftHeld;
@@ -72,14 +72,6 @@ MessageEditor::MessageEditor()
 
 MessageEditor::~MessageEditor()
 {
-	if (m_autoComplete_hwnd)
-	{
-		DestroyWindow(m_autoComplete_hwnd);
-		// assert(b && "Was window destroyed?"); <-- apparently it is being destroyed by the main BEFORE child controls?
-		// what the hell.
-		m_autoComplete_hwnd = NULL;
-		m_autoCompleteList_hwnd = NULL;
-	}
 	if (m_hwnd)
 	{
 		BOOL b = DestroyWindow(m_hwnd);
@@ -94,7 +86,6 @@ MessageEditor::~MessageEditor()
 		m_editingMessage_hwnd = NULL;
 	}
 
-	assert(!m_autoCompleteList_hwnd);
 	assert(!m_send_hwnd);
 	assert(!m_btnUpload_hwnd);
 	assert(!m_mentionText_hwnd);
@@ -373,7 +364,7 @@ void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std:
 
 				float fzm = word.empty() ? 1.0f : CompareFuzzy(chan.m_name, word.c_str());
 				if (fzm != 0.0f)
-					matches.push_back(AutoCompleteMatch(chan.m_name, fzm));
+					matches.push_back(AutoCompleteMatch(chan.m_name, "", fzm));
 			}
 			break;
 		}
@@ -382,6 +373,8 @@ void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std:
 			Guild* pGld = GetDiscordInstance()->GetCurrentGuild();
 			if (!pGld)
 				break;
+
+			bool trimmed = false;
 
 			if (pGld->m_snowflake == 0)
 			{
@@ -399,7 +392,7 @@ void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std:
 					float fm = word.empty() ? 1.0f : pf->FuzzyMatch(word.c_str(), 0);
 					if (fm != 0.0f) {
 						// Add user name instead, since that's the one that will be resolved
-						matches.push_back(AutoCompleteMatch(pf->GetUsername(), fm));
+						matches.push_back(AutoCompleteMatch(pf->GetUsername(), pf->GetName(0), fm));
 					}
 				}
 			}
@@ -415,8 +408,16 @@ void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std:
 					float fm = word.empty() ? 1.0f : pf->FuzzyMatch(word.c_str(), pGld->m_snowflake);
 					if (fm != 0.0f) {
 						// Add user name instead, since that's the one that will be resolved
-						matches.push_back(AutoCompleteMatch(pf->GetUsername(), fm));
+						matches.push_back(AutoCompleteMatch(pf->GetUsername(), pf->GetName(pGld->m_snowflake), fm));
 					}
+				}
+
+				// NOTE: Now we need to trim.
+				std::sort(matches.begin(), matches.end());
+
+				if (matches.size() > MAX_MEMBERS_IN_AUTOCOMPLETE) {
+					matches.resize(MAX_MEMBERS_IN_AUTOCOMPLETE);
+					trimmed = true;
 				}
 			}
 
@@ -424,15 +425,23 @@ void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std:
 				break;
 
 			// send a query to Discord if needed
-			if (m_lastRemoteQuery + QUERY_RATE < GetTimeMs())
+			Snowflake guildID = GetDiscordInstance()->GetCurrentGuildID();
+			if (guildID == 0)
+				break;
+
+			if (m_previousQueriesActiveOnGuild != guildID) {
+				m_previousQueriesActiveOnGuild = guildID;
+				m_previousQueries.clear();
+			}
+
+			// .insert().second returns true IF and only IF the item was actually inserted
+			uint64_t time = GetTimeMs();
+			if (m_lastRemoteQuery + QUERY_RATE <= time && m_previousQueries.insert(word).second && !trimmed)
 			{
 				// query now!
-				Snowflake guildID = GetDiscordInstance()->GetCurrentGuildID();
-
-				if (guildID)
-					GetDiscordInstance()->RequestGuildMembers(guildID, word, true);
-
-				m_lastRemoteQuery = GetTimeMs();
+				GetDiscordInstance()->RequestGuildMembers(guildID, word, true);
+				m_bDidMemberLookUpRecently = true;
+				m_lastRemoteQuery = time;
 			}
 
 			break;
@@ -478,6 +487,15 @@ void MessageEditor::OnUpdateText()
 
 	m_autoComplete.Update(tchr, length);
 	delete[] tchr;
+}
+
+void MessageEditor::OnLoadedMemberChunk()
+{
+	if (!m_bDidMemberLookUpRecently)
+		return;
+
+	m_bDidMemberLookUpRecently = false;
+	m_autoComplete.Update();
 }
 
 LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

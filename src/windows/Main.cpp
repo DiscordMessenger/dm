@@ -926,6 +926,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			g_pMessageList->UpdateMembers(*memsToUpdate);
 			g_pMemberList ->UpdateMembers(*memsToUpdate);
+			g_pMessageEditor->OnLoadedMemberChunk();
 
 			break;
 		}

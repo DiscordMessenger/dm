@@ -4,8 +4,8 @@
 std::string Profile::GetUsername() const
 {
 	std::string un = m_name;
-	if (m_discrim)
-		un += "#" + FormatDiscrim(m_discrim);
+	//if (m_discrim) -- already set when profile is loaded
+	//	un += "#" + FormatDiscrim(m_discrim);
 	return un;
 }
 

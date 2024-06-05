@@ -357,21 +357,22 @@ INT_PTR QuickSwitcher::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			width = rect.right - rect.left - GetSystemMetrics(SM_CXVSCROLL);
 
 			// Add columns
+			int c1w, c2w;
 			LVCOLUMN col{};
 			col.mask = LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
 			col.pszText = TEXT("Channel");
-			col.cx = MulDiv(width, 50, 100);
+			col.cx = c1w = MulDiv(width, 50, 100);
 			col.iSubItem = 0;
 			col.fmt = LVCFMT_LEFT;
 			ListView_InsertColumn(hList, COL_CHANNEL_NAME, &col);
 
 			col.pszText = TEXT("Category");
-			col.cx = MulDiv(width, 20, 100);
+			col.cx = c2w = MulDiv(width, 20, 100);
 			col.fmt = LVCFMT_RIGHT;
 			ListView_InsertColumn(hList, COL_CATEGORY_NAME, &col);
 
 			col.pszText = TEXT("Server");
-			col.cx = MulDiv(width, 30, 100);
+			col.cx = width - c1w - c2w;
 			col.fmt = LVCFMT_RIGHT;
 			ListView_InsertColumn(hList, COL_GUILD_NAME, &col);
 

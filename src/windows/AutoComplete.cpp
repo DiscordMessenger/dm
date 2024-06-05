@@ -3,6 +3,11 @@
 
 #define T_AUTOCOMPLETE_CLASS TEXT("DMAutoComplete")
 
+enum {
+	COL_NAME,
+	COL_SUBNAME,
+};
+
 AutoComplete::~AutoComplete()
 {
 	if (m_hwnd)
@@ -18,7 +23,6 @@ AutoComplete::~AutoComplete()
 
 void AutoComplete::ShowOrMove(POINT pt)
 {
-	bool oldReachedMaxX = m_bReachedMaxSizeX;
 	bool oldReachedMaxY = m_bReachedMaxSizeY;
 
 	if (m_matches.empty())
@@ -32,25 +36,36 @@ void AutoComplete::ShowOrMove(POINT pt)
 	HGDIOBJ old = SelectObject(hdc, g_MessageTextFont);
 	int height = 0;
 	int width = 0;
+	int widthCol1 = 0;
+	int widthCol2 = 0;
 	const int maxHeight = ScaleByDPI(200);
 	const int maxWidth = ScaleByDPI(200);
-	m_bReachedMaxSizeX = false;
 	m_bReachedMaxSizeY = false;
 	for (auto& entry : m_matches)
 	{
 		RECT rcMeasure{};
+		RECT rcMeasureSub{};
+
+		// measure string
 		LPTSTR tstr = ConvertCppStringToTString(entry.str);
 		DrawText(hdc, tstr, -1, &rcMeasure, DT_SINGLELINE | DT_CALCRECT);
 		free(tstr);
+
+		// measure substring if not blank
+		if (!entry.substr.empty())
+		{
+			tstr = ConvertCppStringToTString(entry.substr);
+			DrawText(hdc, tstr, -1, &rcMeasureSub, DT_SINGLELINE | DT_CALCRECT);
+			free(tstr);
+		}
+
 		height += rcMeasure.bottom - rcMeasure.top + ScaleByDPI(4);
 
-		int newWidth = rcMeasure.right - rcMeasure.left + ScaleByDPI(4);
-		width = std::max(width, newWidth);
+		int newC1Width = rcMeasure.right - rcMeasure.left + ScaleByDPI(12);
+		int newC2Width = entry.substr.empty() ? 0 : (rcMeasureSub.right - rcMeasureSub.left + ScaleByDPI(12));
 
-		if (width > maxWidth) {
-			m_bReachedMaxSizeX = true;
-			width = maxWidth;
-		}
+		widthCol1 = std::max(widthCol1, std::min(maxWidth, newC1Width));
+		widthCol2 = std::max(widthCol2, std::min(maxWidth, newC2Width));
 
 		if (height > maxHeight) {
 			m_bReachedMaxSizeY = true;
@@ -60,15 +75,18 @@ void AutoComplete::ShowOrMove(POINT pt)
 	SelectObject(hdc, old);
 	ReleaseDC(m_hwnd, hdc);
 
+	width = widthCol1 + widthCol2;
+
+	m_widthColumn1 = widthCol1;
+	m_widthColumn2 = widthCol2;
+
 	// If reachedMaxSize is different, dismiss the old autocomplete window first and recreate:
-	if (m_bReachedMaxSizeX != oldReachedMaxX || m_bReachedMaxSizeY != oldReachedMaxY)
+	if (m_bReachedMaxSizeY != oldReachedMaxY)
 		Hide();
 
 	constexpr int style = WS_POPUP | WS_BORDER;
-	width += ScaleByDPI(8);
 
 	width += m_bReachedMaxSizeY ? GetSystemMetrics(SM_CXVSCROLL) : 0;
-	height += m_bReachedMaxSizeX ? GetSystemMetrics(SM_CYHSCROLL) : 0;
 
 	RECT rc{ pt.x, pt.y - height, pt.x + width, pt.y };
 	AdjustWindowRect(&rc, style, FALSE);
@@ -349,14 +367,27 @@ LRESULT CALLBACK AutoComplete::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 
 			MoveWindow(hList, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), TRUE);
 			ListView_DeleteColumn(hList, 0);
+			ListView_DeleteColumn(hList, 0);
 
 			TCHAR colText[] = TEXT("NAME");
 			LVCOLUMN lvc;
 			ZeroMemory(&lvc, sizeof lvc);
 			lvc.mask = LVCF_TEXT | LVCF_WIDTH;
 			lvc.pszText = colText;
-			lvc.cx = GET_X_LPARAM(lParam);
-			ListView_InsertColumn(hList, 0, &lvc);
+			lvc.cx = pThis->m_widthColumn1;
+			ListView_InsertColumn(hList, COL_NAME, &lvc);
+
+			if (pThis->m_widthColumn2)
+			{
+				TCHAR colTextSub[] = TEXT("SUBNAME");
+				LVCOLUMN lvc;
+				ZeroMemory(&lvc, sizeof lvc);
+				lvc.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
+				lvc.pszText = colTextSub;
+				lvc.cx = pThis->m_widthColumn2;
+				lvc.fmt = LVCFMT_RIGHT;
+				ListView_InsertColumn(hList, COL_SUBNAME, &lvc);
+			}
 			break;
 		}
 		case WM_GETCOMPINDEX:
@@ -375,18 +406,15 @@ LRESULT CALLBACK AutoComplete::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 			ListView_DeleteAllItems(hList);
 
 			int i = 0;
-			for (auto& entry : pThis->m_matches)
+			for (const auto& entry : pThis->m_matches)
 			{
-				LPTSTR str = ConvertCppStringToTString(entry.str);
-
 				LVITEM lvi;
 				ZeroMemory(&lvi, sizeof lvi);
 				lvi.mask = LVIF_TEXT;
-				lvi.pszText = str;
-				lvi.iItem = i++;
-
+				lvi.pszText  = LPSTR_TEXTCALLBACK;
+				lvi.iItem    = i;
 				ListView_InsertItem(hList, &lvi);
-				free(str);
+				i++;
 			}
 
 			ListView_SetItemState(hList, 0, LVIS_SELECTED, LVIS_SELECTED);
@@ -395,9 +423,15 @@ LRESULT CALLBACK AutoComplete::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		case WM_NOTIFY:
 		{
 			NMHDR* phdr = (NMHDR*)lParam;
-			if (phdr->code == UINT(NM_CUSTOMDRAW))
-				return pThis->HandleCustomDraw(hWnd, (NMLVCUSTOMDRAW*)lParam);
 
+			switch (phdr->code)
+			{
+				case NM_CUSTOMDRAW:
+					return pThis->HandleCustomDraw(hWnd, (NMLVCUSTOMDRAW*)lParam);
+
+				case LVN_GETDISPINFO:
+					return pThis->HandleGetDispInfo(hWnd, (NMLVDISPINFO*) lParam);
+			}
 			break;
 		}
 		case WM_DESTROY:
@@ -437,6 +471,10 @@ LRESULT AutoComplete::HandleCustomDraw(HWND hWnd, NMLVCUSTOMDRAW* pInfo)
 				pInfo->clrTextBk = GetSysColor(COLOR_HIGHLIGHT);
 				pInfo->clrText = GetSysColor(COLOR_HIGHLIGHTTEXT);
 			}
+			else if (pInfo->iSubItem == COL_SUBNAME) {
+				pInfo->clrTextBk = GetSysColor(COLOR_WINDOW);
+				pInfo->clrText = GetSysColor(COLOR_GRAYTEXT);
+			}
 			else {
 				pInfo->clrTextBk = GetSysColor(COLOR_WINDOW);
 				pInfo->clrText = GetSysColor(COLOR_MENUTEXT);
@@ -449,4 +487,30 @@ LRESULT AutoComplete::HandleCustomDraw(HWND hWnd, NMLVCUSTOMDRAW* pInfo)
 	}
 
 	return CDRF_DODEFAULT;
+}
+
+LRESULT AutoComplete::HandleGetDispInfo(HWND hWnd, NMLVDISPINFO* pInfo)
+{
+	if (pInfo->item.iItem < 0 || pInfo->item.iItem >= int(m_matches.size()))
+		return S_OK;
+
+	AutoCompleteMatch& match = m_matches[pInfo->item.iItem];
+
+	switch (pInfo->item.iSubItem)
+	{
+		case COL_NAME:
+		{
+			ConvertCppStringToTCharArray(match.str, m_dispInfoBuffer1, _countof(m_dispInfoBuffer1));
+			pInfo->item.pszText = m_dispInfoBuffer1;
+			break;
+		}
+		case COL_SUBNAME:
+		{
+			ConvertCppStringToTCharArray(match.substr, m_dispInfoBuffer2, _countof(m_dispInfoBuffer2));
+			pInfo->item.pszText = m_dispInfoBuffer2;
+			break;
+		}
+	}
+
+	return S_OK;
 }

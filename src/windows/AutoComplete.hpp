@@ -10,15 +10,24 @@
 struct AutoCompleteMatch
 {
 	std::string str;
+	std::string substr;
 	float fuzzy = 0;
-	AutoCompleteMatch(const std::string& s, float fuz) : str(s), fuzzy(fuz) {}
+
+	AutoCompleteMatch() {}
+
+	AutoCompleteMatch(const std::string& s, const std::string& ss, float fuz):
+		str(s), substr(ss), fuzzy(fuz) {}
 
 	bool operator<(const AutoCompleteMatch& oth) const
 	{
 		if (fuzzy != oth.fuzzy)
-			return fuzzy < oth.fuzzy;
+			return fuzzy > oth.fuzzy;
 
-		return strcmp(str.c_str(), oth.str.c_str()) < 0;
+		int scr = strcmp(str.c_str(), oth.str.c_str());
+		if (scr != 0)
+			return scr < 0;
+
+		return strcmp(substr.c_str(), oth.substr.c_str());
 	}
 };
 
@@ -68,6 +77,7 @@ private:
 	void Commit();
 	int GetSelectionIndex();
 	LRESULT HandleCustomDraw(HWND hWnd, NMLVCUSTOMDRAW* pInfo);
+	LRESULT HandleGetDispInfo(HWND hWnd, NMLVDISPINFO* pInfo);
 
 	// The private function of ::Update(). Here the textInEditControl MUST be valid. 
 	void _Update(LPCTSTR textInEditControl, int length);
@@ -87,7 +97,8 @@ private:
 
 	HFONT m_hFont = NULL;
 
-	bool m_bReachedMaxSizeX = false;
+	int m_widthColumn1 = 0;
+	int m_widthColumn2 = 0;
 	bool m_bReachedMaxSizeY = false;
 	bool m_bHadFirstArrowPress = false;
 	int m_startAt = 0; // place where auto-completion starts.
@@ -96,4 +107,7 @@ private:
 
 	LookUpFunction m_lookup;
 	void* m_pLookupContext = NULL;
+
+	TCHAR m_dispInfoBuffer1[256];
+	TCHAR m_dispInfoBuffer2[256];
 };
