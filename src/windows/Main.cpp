@@ -933,7 +933,14 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			ForgetSystemDPI();
 			g_ProfilePictureSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF);
 
-			GetWebsocketClient()->Init();
+			try {
+				GetWebsocketClient()->Init();
+			}
+			catch (...) {
+				MessageBox(hWnd, TmGetTString(IDS_CANNOT_INIT_WS), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
+				g_bQuittingEarly = true;
+				break;
+			}
 
 			if (GetLocalSettings()->IsFirstStart())
 			{

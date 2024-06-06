@@ -1143,6 +1143,7 @@ BEGIN
     IDS_MENTION             "Mention"
     IDS_SEND_MESSAGE        "Send"
     IDS_CANT_SHOW_BITMAP    "Can't show bitmap! Windows API mismatch?"
+    IDS_CANNOT_INIT_WS      "The WebSocket client could not be initialized.\n\nDiscord Messenger will now exit."
 END
 
 #endif    // English (United States) resources

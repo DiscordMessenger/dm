@@ -287,6 +287,7 @@
 #define IDS_MENTION                     755
 #define IDS_SEND_MESSAGE                756
 #define IDS_CANT_SHOW_BITMAP            757
+#define IDS_CANNOT_INIT_WS              758
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803
