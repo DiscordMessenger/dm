@@ -41,10 +41,15 @@ Profile* ProfileCache::LookupProfile(Snowflake user, const std::string& username
 	return pProf;
 }
 
-Profile* ProfileCache::LoadProfile(Snowflake user, nlohmann::json& jx)
+Profile* ProfileCache::LoadProfile(Snowflake user, const nlohmann::json& jx)
 {
-	std::string str = jx.dump();
-	DbgPrintF("Loading profile for user %lld: %s", user, str.c_str());
+	if (!user) {
+		user = GetSnowflake(jx, "id");
+		if (!user) {
+			DbgPrintF("Dropping profile data with no user id: %s", jx.dump().c_str());
+			return nullptr;
+		}
+	}
 
 	Profile* pf = LookupProfile(user, "", "", "", false);
 
@@ -58,7 +63,7 @@ Profile* ProfileCache::LoadProfile(Snowflake user, nlohmann::json& jx)
 	if (iter != m_processingRequests.end())
 		m_processingRequests.erase(iter);
 
-	auto& userData = jx.contains("user") ? jx["user"] : jx;
+	const auto& userData = jx.contains("user") ? jx["user"] : jx;
 
 	pf->m_snowflake  = user;
 	pf->m_name       = GetUsername(userData);

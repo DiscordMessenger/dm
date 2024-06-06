@@ -40,26 +40,31 @@ struct Profile
 	{
 	}
 
-	bool HasGuildMemberProfile(Snowflake guild) {
+	bool HasGuildMemberProfile(Snowflake guild) const {
 		auto fnd = m_guildMembers.find(guild);
 		return fnd != m_guildMembers.end();
 	}
 
-	std::string GetName(Snowflake guild) {
-		if (!HasGuildMemberProfile(guild))
+	std::string GetName(Snowflake guild) const {
+		auto it = m_guildMembers.find(guild);
+		if (it == m_guildMembers.end())
 			return m_globalName;
-		GuildMember& gm = m_guildMembers[guild];
+		const GuildMember& gm = it->second;
 		if (gm.m_nick.empty())
 			return m_globalName;
 		return gm.m_nick;
 	}
 
-	std::string GetStatus(Snowflake guild) {
-		if (!HasGuildMemberProfile(guild))
+	std::string GetStatus(Snowflake guild) const {
+		auto it = m_guildMembers.find(guild);
+		if (it == m_guildMembers.end())
 			return m_status;
-		GuildMember& gm = m_guildMembers[guild];
+		const GuildMember& gm = it->second;
 		if (gm.m_nick.empty())
 			return m_status;
 		return gm.m_status;
 	}
+
+	const std::string& GetUsername() const { return m_name; }
+	float FuzzyMatch(const char* check, Snowflake guild) const;
 };

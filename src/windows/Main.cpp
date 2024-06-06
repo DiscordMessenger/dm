@@ -23,6 +23,7 @@
 #include "QuickSwitcher.hpp"
 #include "Frontend_Win32.hpp"
 #include "ProgressDialog.hpp"
+#include "AutoComplete.hpp"
 #include "../discord/LocalSettings.hpp"
 #include "../discord/WebsocketClient.hpp"
 #include "../discord/UpdateChecker.hpp"
@@ -925,6 +926,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			g_pMessageList->UpdateMembers(*memsToUpdate);
 			g_pMemberList ->UpdateMembers(*memsToUpdate);
+			g_pMessageEditor->OnLoadedMemberChunk();
 
 			break;
 		}
@@ -990,6 +992,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GuildHeader::InitializeClass();
 			GuildLister::InitializeClass();
 			MemberList ::InitializeClass();
+			AutoComplete::InitializeClass();
 			MessageEditor::InitializeClass();
 			LoadingMessage::InitializeClass();
 
@@ -1063,6 +1066,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_CLOSE:
 			KillImageViewer();
 			ProfilePopout::Dismiss();
+			AutoComplete::DismissAutoCompleteWindowsIfNeeded(hWnd);
 			g_pLoadingMessage->Hide();
 			break;
 
@@ -1074,6 +1078,11 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			ProfilePopout::Dismiss();
 			ProperlySizeControls(hWnd);
+			break;
+		}
+		case WM_MOVE: {
+			ProfilePopout::Dismiss();
+			AutoComplete::DismissAutoCompleteWindowsIfNeeded(hWnd);
 			break;
 		}
 		case WM_COMMAND:
@@ -1329,6 +1338,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (wParam == WA_INACTIVE && (HWND) lParam != ProfilePopout::GetHWND())
 				ProfilePopout::Dismiss();
 
+			if (wParam == WA_INACTIVE)
+				AutoComplete::DismissAutoCompleteWindowsIfNeeded((HWND) lParam);
+
 			break;
 		}
 		case WM_IMAGESAVED:
@@ -1346,10 +1358,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			);
 			break;
 		}
-
-		case WM_MOVE:
-			ProfilePopout::Dismiss();
-			break;
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -1573,13 +1581,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 		while (GetMessage(&msg, NULL, 0, 0) > 0)
 		{
-			if (IsWindow(ProfilePopout::GetHWND()) && IsDialogMessage(ProfilePopout::GetHWND(), &msg))
-				continue;
-
-			if (hAccTable &&
-				TranslateAccelerator(g_Hwnd, hAccTable, &msg))
-				continue;
-
 			//
 			// Hack.  This inspects ALL messages, including ones delivered to children
 			// of the main window.  This is fine, since that means that I won't have to
@@ -1589,15 +1590,30 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 			// ProfilePopout::m_hwnd, IsDialogMessage has already called its dialogproc,
 			// and returned false, therefore we wouldn't even get here.
 			//
-			if (msg.message == WM_LBUTTONDOWN ||
-				msg.message == WM_RBUTTONDOWN ||
-				msg.message == WM_MBUTTONDOWN ||
-				msg.message == WM_XBUTTONDOWN)
+			switch (msg.message)
 			{
-				// If the focus isn't sent to a child of the profile popout, dismiss the latter
-				if (!IsChildOf(msg.hwnd, ProfilePopout::GetHWND()))
-					ProfilePopout::Dismiss();
+				case WM_LBUTTONDOWN:
+				case WM_RBUTTONDOWN:
+				case WM_MBUTTONDOWN:
+					// If the focus isn't sent to a child of the profile popout, dismiss the latter
+					if (!IsChildOf(msg.hwnd, ProfilePopout::GetHWND()))
+						ProfilePopout::Dismiss();
+
+					// fallthrough
+
+				case WM_WINDOWPOSCHANGED:
+				case WM_MOVE:
+				case WM_SIZE:
+					AutoComplete::DismissAutoCompleteWindowsIfNeeded(msg.hwnd);
+					break;
 			}
+
+			if (IsWindow(ProfilePopout::GetHWND()) && IsDialogMessage(ProfilePopout::GetHWND(), &msg))
+				continue;
+
+			if (hAccTable &&
+				TranslateAccelerator(g_Hwnd, hAccTable, &msg))
+				continue;
 
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);

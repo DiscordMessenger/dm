@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "Main.hpp"
+#include "AutoComplete.hpp"
 
 class MessageEditor
 {
@@ -12,6 +13,7 @@ public:
 	HWND m_edit_hwnd = NULL;
 
 private:
+	HWND m_parent_hwnd = NULL;
 	HWND m_send_hwnd = NULL;
 	HWND m_btnUpload_hwnd = NULL;
 	HWND m_mentionText_hwnd   = NULL;
@@ -34,6 +36,12 @@ private:
 	COLORREF m_userNameColor = CLR_NONE;
 	bool m_bWasUploadingAllowed = false;
 
+	AutoComplete m_autoComplete;
+	bool m_bDidMemberLookUpRecently = false;
+	Snowflake m_previousQueriesActiveOnGuild = 0;
+	uint64_t m_lastRemoteQuery = 0;
+	std::set<std::string> m_previousQueries;
+
 	static WNDPROC m_editWndProc;
 	static bool m_shiftHeld;
 	
@@ -47,6 +55,7 @@ public:
 	void StartEdit(Snowflake messageID);
 	void StopEdit();
 	void Layout();
+	void OnLoadedMemberChunk();
 
 	Snowflake ReplyingTo() const {
 		return m_replyMessage;
@@ -64,10 +73,10 @@ private:
 	void UpdateCommonButtonsShown();
 	bool IsUploadingAllowed();
 	void OnUpdateText();
+	void AutoCompleteLookup(const std::string& keyWord, char query, std::vector<AutoCompleteMatch>& matches);
+	static void _AutoCompleteLookup(void* context, const std::string& keyWord, char query, std::vector<AutoCompleteMatch>& matches);
 
 public:
-	static WNDCLASS g_ProfileViewClass;
-
 	static LRESULT CALLBACK EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void InitializeClass();

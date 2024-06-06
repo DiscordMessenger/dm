@@ -34,12 +34,11 @@ struct Channel
 	Snowflake m_lastViewedMsg = 0; // The last message that was read in this channel.
 	Snowflake m_parentCateg = 0;
 	Snowflake m_parentGuild = 0;
-	Snowflake m_recipient = 0; // valid only for DM channels
+	std::vector<Snowflake> m_recipients; // valid only for DM and group DM channels
 	std::string m_name = "";
 	std::string m_topic = "";
 	std::string m_avatarLnk = ""; // valid only for DM channels
 	int m_pos = 0;
-	int m_recipientCount = 0; // valid only for GROUPDM channels
 	std::map<Snowflake, Overwrite> m_overwrites;
 	uint64_t m_currentUserPerms = 0;
 	bool m_bCurrentUserPermsCalculated = false;
@@ -122,5 +121,17 @@ struct Channel
 			case TEXT:  return "#";
 			default:    return "";
 		}
+	}
+
+	// Gets the recipient count of a DM or group DM channel.  Note that the current
+	// user is not included in this count.
+	int GetRecipientCount() const {
+		return int(m_recipients.size());
+	}
+
+	Snowflake GetDMRecipient() const {
+		if (m_recipients.empty())
+			return 0;
+		return m_recipients[0];
 	}
 };

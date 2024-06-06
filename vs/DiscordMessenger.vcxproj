@@ -334,6 +334,7 @@
     <ClInclude Include="..\src\discord\DiscordAPI.hpp" />
     <ClInclude Include="..\src\discord\DiscordInstance.hpp" />
     <ClInclude Include="..\src\discord\DiscordRequest.hpp" />
+    <ClInclude Include="..\src\discord\Emoji.hpp" />
     <ClInclude Include="..\src\discord\FormattedText.hpp" />
     <ClInclude Include="..\src\discord\Frontend.hpp" />
     <ClInclude Include="..\src\discord\Guild.hpp" />
@@ -356,6 +357,7 @@
     <ClInclude Include="..\src\discord\WebsocketClient.hpp" />
     <ClInclude Include="..\src\resource.h" />
     <ClInclude Include="..\src\windows\AboutDialog.hpp" />
+    <ClInclude Include="..\src\windows\AutoComplete.hpp" />
     <ClInclude Include="..\src\windows\AvatarCache.hpp" />
     <ClInclude Include="..\src\windows\ChannelView.hpp" />
     <ClInclude Include="..\src\windows\Config.hpp" />
@@ -400,18 +402,21 @@
     <ClCompile Include="..\src\discord\Channel.cpp" />
     <ClCompile Include="..\src\discord\DiscordAPI.cpp" />
     <ClCompile Include="..\src\discord\DiscordInstance.cpp" />
+    <ClCompile Include="..\src\discord\Emoji.cpp" />
     <ClCompile Include="..\src\discord\FormattedText.cpp" />
     <ClCompile Include="..\src\discord\Guild.cpp" />
     <ClCompile Include="..\src\discord\HTTPClient.cpp" />
     <ClCompile Include="..\src\discord\LocalSettings.cpp" />
     <ClCompile Include="..\src\discord\Message.cpp" />
     <ClCompile Include="..\src\discord\MessageCache.cpp" />
+    <ClCompile Include="..\src\discord\Profile.cpp" />
     <ClCompile Include="..\src\discord\ProfileCache.cpp" />
     <ClCompile Include="..\src\discord\SettingsManager.cpp" />
     <ClCompile Include="..\src\discord\UpdateChecker.cpp" />
     <ClCompile Include="..\src\discord\Util.cpp" />
     <ClCompile Include="..\src\discord\WebsocketClient.cpp" />
     <ClCompile Include="..\src\windows\AboutDialog.cpp" />
+    <ClCompile Include="..\src\windows\AutoComplete.cpp" />
     <ClCompile Include="..\src\windows\AvatarCache.cpp" />
     <ClCompile Include="..\src\windows\ChannelView.cpp" />
     <ClCompile Include="..\src\windows\Frontend_Win32.cpp" />

@@ -14,7 +14,7 @@ public:
 	// Username and globalname are filled in to create a default profile if the profile is not cached.
 	// Returns NULL if the Discord servers have reported that the user does not exist.
 	Profile* LookupProfile(Snowflake user, const std::string& username, const std::string& globalName, const std::string& avatarLink, bool bRequestServer = true);
-	Profile* LoadProfile(Snowflake user, nlohmann::json& j);
+	Profile* LoadProfile(Snowflake user, const nlohmann::json& j);
 
 	void ClearAll();
 

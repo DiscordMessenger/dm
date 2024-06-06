@@ -1,3 +1,4 @@
+#include <climits>
 #include "Config.hpp"
 #include "MessageEditor.hpp"
 #include "MessageList.hpp"
@@ -7,6 +8,10 @@
 #include "../discord/LocalSettings.hpp"
 
 #define T_MESSAGE_EDITOR_CLASS TEXT("DMMessageEditorClass")
+#define T_MESSAGE_EDITOR_AUTOCOMPLETE_CLASS TEXT("DMMessageEditorAutoCompleteClass")
+
+constexpr uint64_t QUERY_RATE = 100;
+constexpr int MAX_MEMBERS_IN_AUTOCOMPLETE = 10;
 
 WNDPROC MessageEditor::m_editWndProc;
 bool MessageEditor::m_shiftHeld;
@@ -81,6 +86,7 @@ MessageEditor::~MessageEditor()
 		m_editingMessage_hwnd = NULL;
 	}
 
+	assert(!m_send_hwnd);
 	assert(!m_btnUpload_hwnd);
 	assert(!m_mentionText_hwnd);
 	assert(!m_mentionName_hwnd);
@@ -340,6 +346,140 @@ void MessageEditor::StopEdit()
 	}
 }
 
+void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std::vector<AutoCompleteMatch>& matches)
+{
+	switch (query)
+	{
+		case ':': // EMOJI
+		{
+			Guild* pGld = GetDiscordInstance()->GetCurrentGuild();
+			if (!pGld)
+				break;
+
+			// TODO: For now, you can't do that in a DM channel. You will be able
+			// to when we add Unicode emoji support though.
+			if (pGld->m_snowflake == 0)
+				break;
+
+			for (const auto& em : pGld->m_emoji)
+			{
+				float fzm = word.empty() ? 1.0f : CompareFuzzy(em.second.m_name, word.c_str());
+				if (fzm != 0.0f) {
+					std::string str = em.second.m_name + ":";
+					matches.push_back(AutoCompleteMatch(str, "", fzm, ":" + str));
+				}
+			}
+
+			// TODO: Nitro emoji support
+			// TODO: Global emoji support
+
+			break;
+		}
+		case '#': // CHANNELS
+		{
+			Guild* pGld = GetDiscordInstance()->GetCurrentGuild();
+			if (!pGld)
+				break;
+			if (pGld->m_snowflake == 0)
+				break; // can't do that in a DM channel
+
+			for (auto& chan : pGld->m_channels) {
+				if (chan.IsCategory() || chan.IsVoice() || chan.IsDM())
+					continue;
+
+				float fzm = word.empty() ? 1.0f : CompareFuzzy(chan.m_name, word.c_str());
+				if (fzm != 0.0f)
+					matches.push_back(AutoCompleteMatch(chan.m_name, "", fzm));
+			}
+			break;
+		}
+		case '@': // USERS
+		{
+			Guild* pGld = GetDiscordInstance()->GetCurrentGuild();
+			if (!pGld)
+				break;
+
+			bool trimmed = false;
+
+			if (pGld->m_snowflake == 0)
+			{
+				// can do that in DM channels, but have to do it a bit differently.
+				Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+				if (!pChan)
+					break;
+
+				for (auto& recid : pChan->m_recipients)
+				{
+					Profile* pf = GetProfileCache()->LookupProfile(recid, "", "", "", false);
+					if (!pf)
+						continue;
+
+					float fm = word.empty() ? 1.0f : pf->FuzzyMatch(word.c_str(), 0);
+					if (fm != 0.0f) {
+						// Add user name instead, since that's the one that will be resolved
+						matches.push_back(AutoCompleteMatch(pf->GetUsername(), pf->GetName(0), fm));
+					}
+				}
+			}
+			else
+			{
+				// Scan for guild members.
+				for (auto& recid : pGld->m_knownMembers)
+				{
+					Profile* pf = GetProfileCache()->LookupProfile(recid, "", "", "", false);
+					if (!pf)
+						continue;
+
+					float fm = word.empty() ? 1.0f : pf->FuzzyMatch(word.c_str(), pGld->m_snowflake);
+					if (fm != 0.0f) {
+						// Add user name instead, since that's the one that will be resolved
+						matches.push_back(AutoCompleteMatch(pf->GetUsername(), pf->GetName(pGld->m_snowflake), fm));
+					}
+				}
+
+				// NOTE: Now we need to trim.
+				std::sort(matches.begin(), matches.end());
+
+				if (matches.size() > MAX_MEMBERS_IN_AUTOCOMPLETE) {
+					matches.resize(MAX_MEMBERS_IN_AUTOCOMPLETE);
+					trimmed = true;
+				}
+			}
+
+			if (word.empty())
+				break;
+
+			// send a query to Discord if needed
+			Snowflake guildID = GetDiscordInstance()->GetCurrentGuildID();
+			if (guildID == 0)
+				break;
+
+			if (m_previousQueriesActiveOnGuild != guildID) {
+				m_previousQueriesActiveOnGuild = guildID;
+				m_previousQueries.clear();
+			}
+
+			// .insert().second returns true IF and only IF the item was actually inserted
+			uint64_t time = GetTimeMs();
+			if (m_lastRemoteQuery + QUERY_RATE <= time && m_previousQueries.insert(word).second && !trimmed)
+			{
+				// query now!
+				GetDiscordInstance()->RequestGuildMembers(guildID, word, true);
+				m_bDidMemberLookUpRecently = true;
+				m_lastRemoteQuery = time;
+			}
+
+			break;
+		}
+	}
+}
+
+void MessageEditor::_AutoCompleteLookup(void* context, const std::string& keyWord, char query, std::vector<AutoCompleteMatch>& matches)
+{
+	MessageEditor* pEditor = (MessageEditor*) context;
+	pEditor->AutoCompleteLookup(keyWord, query, matches);
+}
+
 void MessageEditor::OnUpdateText()
 {
 	EditWndProc(m_edit_hwnd, WM_UPDATETEXTSIZE, 0, 0);
@@ -368,7 +508,19 @@ void MessageEditor::OnUpdateText()
 			actualLength--;
 	}
 
-	SendMessage(g_Hwnd, WM_UPDATEMESSAGELENGTH, 0, (LPARAM) actualLength);
+	SendMessage(g_Hwnd, WM_UPDATEMESSAGELENGTH, 0, (LPARAM)actualLength);
+
+	m_autoComplete.Update(tchr, length);
+	delete[] tchr;
+}
+
+void MessageEditor::OnLoadedMemberChunk()
+{
+	if (!m_bDidMemberLookUpRecently)
+		return;
+
+	m_bDidMemberLookUpRecently = false;
+	m_autoComplete.Update();
 }
 
 LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -378,28 +530,21 @@ LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 	switch (uMsg)
 	{
-		case WM_NCCREATE:
-		{
-			LRESULT lrs = m_editWndProc(hWnd, uMsg, wParam, lParam);
-			return lrs;
-		}
 		case WM_DESTROY:
 		{
-			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) NULL);
 			SetWindowLongPtr(hWnd, GWLP_WNDPROC,  (LONG_PTR) m_editWndProc);
 			pThis->m_edit_hwnd = NULL;
 			break;
 		}
 		case WM_KEYUP:
-		{
-			if (wParam == VK_SHIFT)
-				m_shiftHeld = false;
-			break;
-		}
 		case WM_KEYDOWN:
 		{
+			if (pThis->m_autoComplete.HandleKeyMessage(uMsg, wParam, lParam))
+				return 0;
+
 			if (wParam == VK_SHIFT)
-				m_shiftHeld = true;
+				m_shiftHeld = uMsg == WM_KEYDOWN;
+
 			break;
 		}
 		case WM_UPDATETEXTSIZE:
@@ -432,6 +577,9 @@ LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		}
 		case WM_CHAR:
 		{
+			if (pThis->m_autoComplete.HandleCharMessage(uMsg, wParam, lParam))
+				return 0;
+
 			if (!GetDiscordInstance()->GetCurrentChannel())
 				break;
 
@@ -661,6 +809,7 @@ MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
 	int sendButtonWidth = 1, sendButtonHeight = 1;
 	int width = pRect->right - pRect->left, height = pRect->bottom - pRect->top;
 
+	newThis->m_parent_hwnd = hwnd;
 	newThis->m_hwnd = CreateWindowEx(
 		0,
 		T_MESSAGE_EDITOR_CLASS,
@@ -751,6 +900,11 @@ MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
 	SendMessage(newThis->m_editingMessage_hwnd, WM_SETFONT, (WPARAM)g_SendButtonFont, TRUE);
 	SendMessage(newThis->m_mentionName_hwnd,    WM_SETFONT, (WPARAM)g_AuthorTextFont, TRUE);
 	SendMessage(newThis->m_mentionCheck_hwnd,   WM_SETFONT, (WPARAM)g_SendButtonFont, TRUE);
+
+	newThis->m_autoComplete.SetEdit(newThis->m_edit_hwnd);
+	newThis->m_autoComplete.SetFont(g_SendButtonFont);
+	newThis->m_autoComplete.SetLookup(&_AutoCompleteLookup);
+	newThis->m_autoComplete.SetLookupContext(newThis);
 
 	return newThis;
 }

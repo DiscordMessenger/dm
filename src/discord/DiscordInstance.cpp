@@ -217,6 +217,25 @@ void DiscordInstance::RequestGuildMembers(Snowflake guild, std::set<Snowflake> m
 	GetWebsocketClient()->SendMsg(m_gatewayConnId, j.dump());
 }
 
+void DiscordInstance::RequestGuildMembers(Snowflake guild, std::string query, bool bLoadPresences, int limit)
+{
+	Json guildIdArray;
+	guildIdArray.push_back(guild);
+
+	Json data;
+	data["query"] = query;
+	data["limit"] = limit;
+	data["user_ids"] = nullptr;
+	data["guild_id"] = guildIdArray;
+	data["presences"] = bLoadPresences;
+
+	Json j;
+	j["op"] = int(GatewayOp::REQUEST_GUILD_MEMBERS);
+	j["d"] = data;
+
+	GetWebsocketClient()->SendMsg(m_gatewayConnId, j.dump());
+}
+
 std::string DiscordInstance::LookupChannelNameGlobally(Snowflake sf)
 {
 	for (auto& gld : m_guilds)
@@ -762,6 +781,177 @@ void DiscordInstance::StartGatewaySession()
 	m_gatewayConnId = connID;
 }
 
+std::string DiscordInstance::TransformMention(const std::string& source, Snowflake guild, Snowflake channel)
+{
+	if (source.empty())
+		return source;
+
+	// Look for people with that name in the guild's known list
+	std::string longestMatchStr;
+	std::string longestMatchMeta;
+	Snowflake longestMatchID = 0;
+
+	char firstChar = source[0];
+
+	if (guild)
+	{
+		Guild* pGuild = GetGuild(guild);
+		if (!pGuild)
+			return source;
+
+		switch (firstChar)
+		{
+			case '@':
+				// Look for people whose user names the source starts with.
+				for (auto pfid : pGuild->m_knownMembers)
+				{
+					Profile* pf = GetProfileCache()->LookupProfile(pfid, "", "", "", false);
+					std::string uname = "@" + pf->GetUsername();
+					if (!BeginsWith(source, uname))
+						continue;
+
+					assert(uname.size() <= source.size());
+					if (longestMatchStr.size() >= uname.size())
+						continue;
+
+					longestMatchStr = uname;
+					longestMatchID = pf->m_snowflake;
+				}
+				break;
+
+			case '#':
+				// Look for channels whose names the source starts with.
+				for (const auto& chan : pGuild->m_channels)
+				{
+					std::string cname = "#" + chan.m_name;
+					if (!BeginsWith(source, cname))
+						continue;
+
+					assert(cname.size() <= source.size());
+					if (longestMatchStr.size() >= cname.size())
+						continue;
+
+					longestMatchStr = cname;
+					longestMatchID = chan.m_snowflake;
+				}
+				break;
+
+			case ':':
+				// Look for server emojis whose names the source starts with.
+				for (const auto& em : pGuild->m_emoji)
+				{
+					std::string ename = ":" + em.second.m_name + ":";
+					if (!BeginsWith(source, ename))
+						continue;
+
+					assert(ename.size() <= source.size());
+					if (longestMatchStr.size() >= ename.size())
+						continue;
+
+					longestMatchStr = ename;
+					longestMatchID = em.first;
+					longestMatchMeta = ":" + em.second.m_name;
+				}
+				break;
+		}
+	}
+	else
+	{
+		Channel* pChan = m_dmGuild.GetChannel(channel);
+		if (!pChan)
+			return source;
+
+		switch (firstChar)
+		{
+			case '@':
+				// Look for recipients in this DM/group DM.
+				for (auto pfid : pChan->m_recipients)
+				{
+					Profile* pf = GetProfileCache()->LookupProfile(pfid, "", "", "", false);
+					std::string uname = "@" + pf->GetUsername();
+					if (!BeginsWith(source, uname))
+						continue;
+
+					if (longestMatchStr.size() >= uname.size())
+						continue;
+
+					longestMatchStr = uname;
+					longestMatchID = pf->m_snowflake;
+				}
+				break;
+			// Note: don't handle channel mentions, you have to add those by ID like <#idhere>
+		}
+	}
+
+	if (longestMatchID == 0)
+		return source;
+	
+	assert(source.substr(0, longestMatchStr.size()) == longestMatchStr);
+
+	std::string
+	str  = "<";
+	str += longestMatchMeta;
+	str += firstChar;
+	str += std::to_string(longestMatchID);
+	str += ">";
+	str += source.substr(longestMatchStr.size());
+	return str;
+}
+
+std::string DiscordInstance::ResolveMentions(const std::string& str, Snowflake guild, Snowflake channel)
+{
+	bool hasMent = false;
+	for (char c : str) {
+		if (c == '@' || c == '#' || c == ':') {
+			hasMent = true;
+			break;
+		}
+	}
+
+	if (!hasMent)
+		return str;
+
+	// look for each word with an @
+	std::string finalStr = "";
+	finalStr.reserve(str.size() * 2);
+
+	for (size_t i = 0; i < str.size(); )
+	{
+		if (str[i] != '@' && str[i] != '#' && str[i] != ':')
+		{
+			finalStr += str[i];
+			i++;
+			continue;
+		}
+
+		char firstChr = str[i];
+
+		// Have an @, #, or :, search for another such symbol, because that denotes the beginning of
+		// another mention. I'd break it at spaces too, but some user names also start with spaces.
+		size_t j;
+		for (j = i + 1; j < str.size(); j++) {
+			if (str[j] == '@' || str[j] == '#' || str[j] == ':')
+				break;
+		}
+
+		if (firstChr == ':') {
+			if (j == str.size() || str[j] != ':') {
+				// not a valid emoji, just skip this guy
+				finalStr += str.substr(i, j - i);
+				i = j;
+				continue;
+			}
+			else j++;
+		}
+
+		std::string addition = TransformMention(str.substr(i, j - i), guild, channel);
+		finalStr += addition;
+		i = j;
+	}
+
+	return finalStr;
+}
+
 typedef void(DiscordInstance::*DispatchFunction)(Json& j);
 
 std::map <std::string, DispatchFunction> g_dispatchFunctions;
@@ -859,10 +1049,12 @@ void DiscordInstance::SendHeartbeat()
 	GetWebsocketClient()->SendMsg(m_gatewayConnId, j.dump());
 }
 
-bool DiscordInstance::EditMessageInCurrentChannel(const std::string& msg, Snowflake msgId)
+bool DiscordInstance::EditMessageInCurrentChannel(const std::string& msg_, Snowflake msgId)
 {
 	if (!GetCurrentChannel() || !GetCurrentGuild())
 		return false;
+
+	std::string msg = ResolveMentions(msg_, m_CurrentGuild, m_CurrentChannel);
 
 	Channel* pChan = GetCurrentChannel();
 	
@@ -900,10 +1092,12 @@ bool DiscordInstance::EditMessageInCurrentChannel(const std::string& msg, Snowfl
 	return true;
 }
 
-bool DiscordInstance::SendMessageToCurrentChannel(const std::string& msg, Snowflake& tempSf, Snowflake replyTo, bool mentionReplied)
+bool DiscordInstance::SendMessageToCurrentChannel(const std::string& msg_, Snowflake& tempSf, Snowflake replyTo, bool mentionReplied)
 {
 	if (!GetCurrentChannel() || !GetCurrentGuild())
 		return false;
+
+	std::string msg = ResolveMentions(msg_, m_CurrentGuild, m_CurrentChannel);
 
 	Channel* pChan = GetCurrentChannel();
 	tempSf = CreateTemporarySnowflake();
@@ -1377,9 +1571,10 @@ void DiscordInstance::ParseChannel(Channel& c, nlohmann::json& chan, int& num)
 					assert(chan["recipient_ids"].size() > 0);
 					if (chan["recipient_ids"].size() > 0)
 					{
-						c.m_recipient = GetSnowflakeFromJsonObject(chan["recipient_ids"][0]);
+						c.m_recipients.clear();
+						c.m_recipients.push_back(GetSnowflakeFromJsonObject(chan["recipient_ids"][0]));
 
-						Profile* pf = GetProfileCache()->LookupProfile(c.m_recipient, "", "", "", false);
+						Profile* pf = GetProfileCache()->LookupProfile(c.GetDMRecipient(), "", "", "", false);
 						avatar = pf->m_avatarlnk;
 					}
 				}
@@ -1389,7 +1584,8 @@ void DiscordInstance::ParseChannel(Channel& c, nlohmann::json& chan, int& num)
 					if (chan["recipients"].size() > 0)
 					{
 						Json& rec = chan["recipients"][0];
-						c.m_recipient = GetSnowflake(rec, "id");
+						c.m_recipients.clear();
+						c.m_recipients.push_back(GetSnowflake(rec, "id"));
 						avatar = GetFieldSafe(rec, "avatar");
 					}
 				}
@@ -1400,14 +1596,20 @@ void DiscordInstance::ParseChannel(Channel& c, nlohmann::json& chan, int& num)
 			{
 				assert(c.m_channelType == Channel::GROUPDM);
 
-				int recCount = 1;
-				if (chan["recipient_ids"].is_array())
-					recCount += chan["recipient_ids"].size();
-				if (chan["recipients"].is_array())
-					recCount += chan["recipients"].size();
+				c.m_recipients.clear();
 
-				assert(recCount != 0);
-				c.m_recipientCount = recCount;
+				if (chan["recipient_ids"].is_array()) {
+					for (auto& rec : chan["recipient_ids"]) {
+						c.m_recipients.push_back(GetSnowflakeFromJsonObject(rec));
+					}
+				}
+				if (chan["recipients"].is_array()) {
+					for (auto& rec : chan["recipients"]) {
+						Snowflake theirID = GetSnowflake(rec, "id");
+						c.m_recipients.push_back(theirID);
+						GetProfileCache()->LoadProfile(theirID, rec);
+					}
+				}
 
 				c.m_avatarLnk = GetFieldSafe(chan, "icon");
 
@@ -1578,6 +1780,15 @@ void DiscordInstance::ParseAndAddGuild(nlohmann::json& elem)
 		g.m_roles[role.m_id] = role;
 	}
 
+	// parse emoji
+	Json& emojis = elem["emojis"];
+	for (auto& emojij : emojis)
+	{
+		Emoji emoji;
+		emoji.Load(emojij);
+		g.m_emoji[emoji.m_id] = emoji;
+	}
+
 	// Check if the guild already exists.  If it does, replace its contents.
 	// I'm not totally sure why discord sends a GUILD_CREATE event.  Perhaps
 	// the server I was testing with is considered a "lazy guild"?
@@ -1639,7 +1850,6 @@ static std::string GetStatusFromActivities(Json& activities)
 
 void DiscordInstance::HandleREADY_SUPPLEMENTAL(Json& j)
 {
-	std::string str = j.dump();
 	Json& data = j["d"];
 
 	std::vector<Snowflake> guildsVec;
@@ -2166,6 +2376,10 @@ Snowflake DiscordInstance::ParseGuildMember(Snowflake guild, nlohmann::json& mem
 	gm.m_bIsLoadedFromChunk = true;
 	gm.m_groupId = 0; // to be filled in by the group layout
 
+	Guild* pGuild = GetGuild(guild);
+	if (pGuild)
+		pGuild->AddKnownMember(pf->m_snowflake);
+
 	// TODO: Not sure if this is the guild specific or global status. Probably guild specific
 	if (!pres.is_null()) {
 		if (pres.contains("status")) {
@@ -2505,7 +2719,7 @@ void DiscordInstance::OnUploadAttachmentSecond(NetRequest* pReq)
 }
 
 bool DiscordInstance::SendMessageAndAttachmentToCurrentChannel(
-	const std::string& msg,
+	const std::string& msg_,
 	Snowflake& tempSf,
 	uint8_t* attData,
 	size_t attSize,
@@ -2513,6 +2727,8 @@ bool DiscordInstance::SendMessageAndAttachmentToCurrentChannel(
 {
 	if (!GetCurrentChannel() || !GetCurrentGuild())
 		return false;
+
+	std::string msg = ResolveMentions(msg_, m_CurrentGuild, m_CurrentChannel);
 
 	Channel* pChan = GetCurrentChannel();
 	tempSf = CreateTemporarySnowflake();

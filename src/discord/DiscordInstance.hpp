@@ -301,6 +301,9 @@ public:
 	// Fetch guild members in specified guild.
 	void RequestGuildMembers(Snowflake guild, std::set<Snowflake> members, bool bLoadPresences = false);
 
+	// Fetch guild members in specified guild.
+	void RequestGuildMembers(Snowflake guild, std::string query, bool bLoadPresences = false, int limit = 10);
+
 	// Fetch pinned messages in a specified channel.
 	void RequestPinnedMessages(Snowflake channel);
 
@@ -315,6 +318,9 @@ public:
 
 	// Start a new gateway session.
 	void StartGatewaySession();
+
+	// Resolve user mentions.
+	std::string ResolveMentions(const std::string& str, Snowflake guild, Snowflake channel);
 
 	// Send a message to the current channel.
 	bool SendMessageToCurrentChannel(const std::string& msg, Snowflake& tempSf, Snowflake reply = 0, bool mentionReplied = true);
@@ -399,6 +405,7 @@ private:
 	void OnUploadAttachmentFirst(NetRequest* pReq);
 	void OnUploadAttachmentSecond(NetRequest* pReq);
 	void SearchSubGuild(std::vector<QuickMatch>& matches, Guild* pGuild, int matchFlags, const char* query);
+	std::string TransformMention(const std::string& source, Snowflake guild, Snowflake channel);
 
 	// handle functions
 	void HandleREADY(nlohmann::json& j);
@@ -431,11 +438,11 @@ DiscordInstance* GetDiscordInstance();
 
 int64_t GetIntFromString(const std::string& str);
 
-Snowflake GetSnowflake(nlohmann::json& j, const std::string& key);
+Snowflake GetSnowflake(const nlohmann::json& j, const std::string& key);
 
 // Fetches a key
-std::string GetFieldSafe(nlohmann::json& j, const std::string& key);
+std::string GetFieldSafe(const nlohmann::json& j, const std::string& key);
 
-int GetFieldSafeInt(nlohmann::json& j, const std::string& key);
+int GetFieldSafeInt(const nlohmann::json& j, const std::string& key);
 
 #define TYPING_INTERVAL 10000 // 10 sec

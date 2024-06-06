@@ -151,6 +151,35 @@ int StringCompareCaseInsens(const char* s1, const char* s2)
 	return tolower(*s1) - tolower(*s2);
 }
 
+int StringCompareCaseInsensLimited(const char* s1, const char* s2, size_t n)
+{
+	while (n > 0 && tolower(*s1) == tolower(*s2)) {
+		n--;
+		if (*s1 == '\0') break;
+		s1++, s2++;
+	}
+
+	if (n == 0)
+		return 0;
+	return tolower(*s1) - tolower(*s2);
+}
+
+bool BeginsWith(const std::string& what, const std::string& with)
+{
+	if (what.size() < with.size())
+		return false;
+
+	return strncmp(what.c_str(), with.c_str(), with.size()) == 0;
+}
+
+bool BeginsWithCaseInsens(const std::string& what, const std::string& with)
+{
+	if (what.size() < with.size())
+		return false;
+
+	return StringCompareCaseInsensLimited(what.c_str(), with.c_str(), with.size()) == 0;
+}
+
 bool EndsWith(const std::string& what, const std::string& with)
 {
 	if (what.size() < with.size())
@@ -185,9 +214,7 @@ int64_t ExtractTimestamp(Snowflake sf)
 	return (sf >> 22) + 1420070400000;
 }
 
-using Json = nlohmann::json;
-
-std::string GetFieldSafe(Json& j, const std::string& key)
+std::string GetFieldSafe(const nlohmann::json& j, const std::string& key)
 {
 	if (j.contains(key) && !j[key].is_null())
 		return j[key];
@@ -195,7 +222,7 @@ std::string GetFieldSafe(Json& j, const std::string& key)
 	return "";
 }
 
-int GetFieldSafeInt(Json& j, const std::string& key)
+int GetFieldSafeInt(const nlohmann::json& j, const std::string& key)
 {
 	if (j.contains(key) && !j[key].is_null())
 		return j[key];
@@ -210,15 +237,15 @@ std::string FormatDiscrim(int discrim)
 	return std::string(chr);
 }
 
-std::string GetGlobalName(Json& j)
+std::string GetGlobalName(const nlohmann::json& j)
 {
 	if (j.contains("global_name") && !j["global_name"].is_null())
-		return j["global_name"];
+		return GetFieldSafe(j, "global_name");
 	else
-		return j["username"];
+		return GetFieldSafe(j, "username");
 }
 
-std::string GetUsername(nlohmann::json& j)
+std::string GetUsername(const nlohmann::json& j)
 {
 	std::string username = GetFieldSafe(j, "username");
 	int discrim = int(GetIntFromString(GetFieldSafe(j, "discriminator")));
@@ -238,14 +265,14 @@ int64_t GetIntFromString(const std::string& str)
 	return t;
 }
 
-bool GetFieldSafeBool(nlohmann::json& j, const std::string& key, bool default1)
+bool GetFieldSafeBool(const nlohmann::json& j, const std::string& key, bool default1)
 {
 	if (j.contains(key) && j[key].is_boolean())
 		return j[key];
 	return default1;
 }
 
-Snowflake GetSnowflakeFromJsonObject(Json& j) {
+Snowflake GetSnowflakeFromJsonObject(const nlohmann::json& j) {
 	if (j.is_number_integer())
 		return Snowflake(int64_t(j));
 	if (j.is_number_unsigned())
@@ -255,10 +282,16 @@ Snowflake GetSnowflakeFromJsonObject(Json& j) {
 	return 0;
 }
 
-Snowflake GetSnowflake(Json& j, const std::string& key)
+Snowflake GetSnowflake(const nlohmann::json& j, const std::string& key)
 {
-	return GetSnowflakeFromJsonObject(j[key]);
+	auto ji = j.find(key);
+	if (ji == j.end())
+		return 0;
+
+	return GetSnowflakeFromJsonObject(ji.value());
 }
+
+using Json = nlohmann::json;
 
 const uint64_t GetTimeMs() noexcept
 {

@@ -7,6 +7,7 @@
 #include <nlohmann/json.h>
 #include "Snowflake.hpp"
 #include "Channel.hpp"
+#include "Emoji.hpp"
 
 // obscenely high numbers s.t. that they show last
 #define GROUP_ONLINE  9000000000000000000LL
@@ -60,10 +61,13 @@ struct Guild
 	Snowflake m_currentChannel = 0;
 
 	std::map<Snowflake, GuildRole> m_roles;
+	std::map<Snowflake, Emoji> m_emoji;
 	std::vector<Snowflake> m_members;
 	int m_memberCount = 0, m_onlineCount = 0;
 
 	Snowflake m_ownerId = 0;
+
+	std::set<Snowflake> m_knownMembers;
 
 	int m_order = 0;
 
@@ -73,10 +77,8 @@ struct Guild
 		return m_snowflake < other.m_snowflake;
 	}
 
-	Channel* GetChannel(Snowflake sf)
-	{
-		for (auto& ch : m_channels)
-		{
+	Channel* GetChannel(Snowflake sf) {
+		for (auto& ch : m_channels) {
 			if (ch.m_snowflake == sf)
 				return &ch;
 		}
@@ -97,4 +99,8 @@ struct Guild
 	uint64_t ComputeBasePermissions(Snowflake member);
 
 	bool IsFirstChannel(Snowflake channel);
+
+	void AddKnownMember(Snowflake sf) {
+		m_knownMembers.insert(sf);
+	}
 };
