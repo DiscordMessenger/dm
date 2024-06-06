@@ -138,7 +138,7 @@ bool FileExists(const std::string& path)
 
 LPTSTR GetTStringFromHResult(HRESULT hr)
 {
-	LPTSTR tstr = NULL;
+	LPCTSTR tstr = NULL;
 	FormatMessage(
 		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
 		NULL,
@@ -161,7 +161,7 @@ LPTSTR GetTStringFromHResult(HRESULT hr)
 	_tcscpy(newStr, tstr);
 
 	if (bFree)
-		LocalFree(tstr);
+		LocalFree((HLOCAL) tstr);
 
 	return newStr;
 }
@@ -210,7 +210,8 @@ LPTSTR ConvertCppStringToTString(const std::string& sstr, size_t* lenOut)
 #ifdef UNICODE
 	size_t convertedChars = MultiByteToWideChar(CP_UTF8, 0, sstr.c_str(), -1, str, sz);
 #else // ANSI
-	strcpy_s(str, sz, sstr.c_str());
+	strncpy(str, sstr.c_str(), sz);
+	str[sz - 1] = 0;
 	size_t convertedChars = sz - 1;
 #endif
 

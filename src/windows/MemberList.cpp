@@ -128,7 +128,7 @@ void MemberList::Update()
 		groupId = LVIF_GROUPID;
 #endif
 
-		TCHAR testStr[] = TEXT("Test");
+		TCHAR testStr[] = TEXT("");
 
 		lvi.mask = LVIF_TEXT | LVIF_STATE | LVIF_COLUMNS | groupId;
 		lvi.stateMask = LVIS_OVERLAYMASK;
@@ -225,6 +225,7 @@ void MemberList::OnUpdateAvatar(Snowflake user, bool bAlsoUpdateText)
 		return;
 
 	// request refresh of the image
+	TCHAR tchr[] = TEXT("");
 	LVITEM lv;
 	lv.mask = LVIF_IMAGE;
 	lv.iImage = 0;
@@ -232,7 +233,7 @@ void MemberList::OnUpdateAvatar(Snowflake user, bool bAlsoUpdateText)
 
 	if (bAlsoUpdateText) {
 		lv.mask |= LVIF_TEXT;
-		lv.pszText = TEXT("");
+		lv.pszText = tchr;
 	}
 
 	ListView_SetItem(m_listHwnd, &lv);
@@ -258,9 +259,10 @@ void MemberList::Initialize()
 	ListView_SetExtendedListViewStyleEx(m_listHwnd, LVS_EX_DOUBLEBUFFER, LVS_EX_DOUBLEBUFFER);
 #endif
 
+	TCHAR nameStr[] = TEXT("Name");
 	LVCOLUMN col{};
 	col.mask = LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
-	col.pszText = TEXT("Name");
+	col.pszText = nameStr;
 	col.cx = ScaleByDPI(MEMBER_LIST_WIDTH - 25);
 	col.iSubItem = 0;
 	col.fmt = LVCFMT_LEFT;

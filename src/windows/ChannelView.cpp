@@ -96,9 +96,10 @@ bool ChannelView::InitListView()
 	ListView_SetExtendedListViewStyleEx(m_listHwnd, LVS_EX_DOUBLEBUFFER, LVS_EX_DOUBLEBUFFER);
 #endif
 
+	TCHAR nameStr[] = TEXT("Name");
 	LVCOLUMN col{};
 	col.mask = LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
-	col.pszText = TEXT("Name");
+	col.pszText = nameStr;
 	col.cx = ScaleByDPI(MEMBER_LIST_WIDTH - 25);
 	col.iSubItem = 0;
 	col.fmt = LVCFMT_LEFT;

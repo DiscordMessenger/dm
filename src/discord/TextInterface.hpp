@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cstring>
 #include "RectAndPoint.hpp"
 
 #ifdef _WIN32
