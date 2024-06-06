@@ -71,7 +71,7 @@ LRESULT QuickSwitcher::TextWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		}
 	}
 
-	return oldWndProc(hWnd, uMsg, wParam, lParam);
+	return CallWindowProc(oldWndProc, hWnd, uMsg, wParam, lParam);
 }
 
 void QuickSwitcher::OnUpdateQuery(HWND hWnd, const std::string& query)
@@ -321,7 +321,7 @@ LRESULT QuickSwitcher::HijackWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 			break;
 	}
 
-	return oldWndProc(hWnd, uMsg, wParam, lParam);
+	return CallWindowProc(oldWndProc, hWnd, uMsg, wParam, lParam);
 }
 
 INT_PTR QuickSwitcher::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

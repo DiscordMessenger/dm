@@ -804,5 +804,5 @@ LRESULT ChannelView::ListWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	}
 	}
 
-	return pView->m_origListWndProc(hWnd, uMsg, wParam, lParam);
+	return CallWindowProc(pView->m_origListWndProc, hWnd, uMsg, wParam, lParam);
 }

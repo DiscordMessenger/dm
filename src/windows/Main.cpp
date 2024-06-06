@@ -72,14 +72,6 @@ void FindBasePath()
 		MessageBox(g_Hwnd, TmGetTString(IDS_NO_APPDATA), TmGetTString(IDS_NON_CRITICAL_ERROR), MB_OK | MB_ICONERROR);
 		SetBasePath(".");
 	}
-	return;
-_failure:
-	MessageBox(g_Hwnd, TmGetTString(IDS_NO_CACHE_DIR), TmGetTString(IDS_NON_CRITICAL_ERROR), MB_OK | MB_ICONERROR);
-
-	SetBasePath(".");
-
-	if (p1) free((void*)p1);
-	if (p2) free((void*)p2);
 }
 
 void SetupCachePathIfNeeded()
@@ -108,6 +100,10 @@ void SetupCachePathIfNeeded()
 	return;
 _failure:
 	MessageBox(g_Hwnd, TmGetTString(IDS_NO_CACHE_DIR), TmGetTString(IDS_NON_CRITICAL_ERROR), MB_OK | MB_ICONERROR);
+	SetBasePath(".");
+
+	if (p1) free((void*)p1);
+	if (p2) free((void*)p2);
 }
 
 DiscordInstance* g_pDiscordInstance;

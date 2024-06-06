@@ -22,7 +22,7 @@
 #include <list>
 #include <map>
 
-#if defined NEW_WINDOWS && !defined MINGW_SPECIFIC_HACKS
+#if defined NEW_WINDOWS && defined UNICODE && !defined MINGW_SPECIFIC_HACKS
 #define USE_SPEECH
 #endif
 

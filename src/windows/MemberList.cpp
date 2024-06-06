@@ -53,7 +53,9 @@ void MemberList::ClearMembers()
 	m_imageIDs.clear();
 	ListView_DeleteAllItems(m_listHwnd);
 	ListView_RemoveAllGroups(m_listHwnd);
+#ifdef UNICODE
 	ListView_EnableGroupView(m_listHwnd, true);
+#endif
 }
 
 void MemberList::SetGuild(Snowflake g)
@@ -98,6 +100,7 @@ void MemberList::Update()
 			// not worth it
 			continue;
 
+#ifdef UNICODE
 		LPTSTR strName = ConvertCppStringToTString(pGuild->GetGroupName(pGroup->m_groupId) + " - " + std::to_string(pGroup->m_groupCount));
 		LVGROUP grpz{};
 		grpz.cbSize = sizeof(LVGROUP);
@@ -106,10 +109,10 @@ void MemberList::Update()
 		grpz.iGroupId = m_nextGroup;
 		ListView_InsertGroup(m_listHwnd, -1, &grpz);
 		free(strName);
-
 		m_groups.push_back(pGroup->m_groupId);
 		m_grpToGrpIdx[pGroup->m_groupId] = m_nextGroup;
 		m_nextGroup++;
+#endif
 	}
 
 	// Now add each non-group member
@@ -120,16 +123,25 @@ void MemberList::Update()
 			continue;
 
 		LVITEM lvi{};
-		lvi.mask = LVIF_TEXT | LVIF_STATE | LVIF_COLUMNS | LVIF_GROUPID;
+		int groupId = 0;
+#ifdef UNICODE
+		groupId = LVIF_GROUPID;
+#endif
+
+		TCHAR testStr[] = TEXT("Test");
+
+		lvi.mask = LVIF_TEXT | LVIF_STATE | LVIF_COLUMNS | groupId;
 		lvi.stateMask = LVIS_OVERLAYMASK;
-		lvi.pszText = TEXT("");
+		lvi.pszText = testStr;
 		lvi.iItem = m_nextItem;
 		lvi.iSubItem = 0;
 		lvi.iImage = 0;
 		lvi.state = 0;
 		lvi.cColumns = _countof(g_columnIndices);
 		lvi.puColumns = g_columnIndices;
+#ifdef UNICODE
 		lvi.iGroupId = m_grpToGrpIdx[pMember->m_groupId];
+#endif
 
 		m_usrToUsrIdx[pMember->m_user] = m_nextItem;
 		m_items.push_back(pMember->m_user);
@@ -139,7 +151,7 @@ void MemberList::Update()
 	}
 
 	// Now restore the position
-	ListView_Scroll(m_listHwnd, 0, si.nPos);
+	//ListView_Scroll(m_listHwnd, 0, si.nPos);
 
 	StopUpdate();
 }
@@ -236,9 +248,11 @@ void MemberList::UpdateMembers(std::set<Snowflake>& mems)
 
 void MemberList::Initialize()
 {
+#ifdef UNICODE
 	m_origListWndProc = (WNDPROC) GetWindowLongPtr(m_listHwnd, GWLP_WNDPROC);
 	SetWindowLongPtr(m_listHwnd, GWLP_USERDATA, (LONG_PTR) this);
 	SetWindowLongPtr(m_listHwnd, GWLP_WNDPROC,  (LONG_PTR) ListWndProc);
+#endif
 
 #ifdef NEW_WINDOWS
 	ListView_SetExtendedListViewStyleEx(m_listHwnd, LVS_EX_DOUBLEBUFFER, LVS_EX_DOUBLEBUFFER);
@@ -276,7 +290,7 @@ LRESULT MemberList::ListWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		}
 	}
 
-	return pList->m_origListWndProc(hWnd, uMsg, wParam, lParam);
+	return CallWindowProc(pList->m_origListWndProc, hWnd, uMsg, wParam, lParam);
 }
 
 LRESULT MemberList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

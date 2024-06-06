@@ -571,7 +571,7 @@ LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		case WM_COPY:
 		case WM_SETTEXT:
 		{
-			LRESULT lres = m_editWndProc(hWnd, uMsg, wParam, lParam);
+			LRESULT lres = CallWindowProc(m_editWndProc, hWnd, uMsg, wParam, lParam);
 			pThis->OnUpdateText();
 			return lres;
 		}
@@ -593,14 +593,14 @@ LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			}
 
 			// Let the edit control modify the text first.
-			LRESULT lres = m_editWndProc(hWnd, uMsg, wParam, lParam);
+			LRESULT lres = CallWindowProc(m_editWndProc, hWnd, uMsg, wParam, lParam);
 			pThis->OnUpdateText();
 			GetDiscordInstance()->Typing();
 			return lres;
 		}
 	}
 
-	return m_editWndProc(hWnd, uMsg, wParam, lParam);
+	return CallWindowProc(m_editWndProc, hWnd, uMsg, wParam, lParam);
 }
 
 void MessageEditor::Layout()

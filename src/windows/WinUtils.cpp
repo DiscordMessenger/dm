@@ -144,7 +144,7 @@ LPTSTR GetTStringFromHResult(HRESULT hr)
 		NULL,
 		hr,
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPWSTR)&tstr,
+		(LPTSTR)&tstr,
 		0,
 		NULL
 	);
@@ -169,7 +169,7 @@ LPTSTR GetTStringFromHResult(HRESULT hr)
 std::string GetStringFromHResult(HRESULT hr)
 {
 	LPTSTR tstr = GetTStringFromHResult(hr);
-	std::string str = MakeStringFromUnicodeString(tstr);
+	std::string str = MakeStringFromTString(tstr);
 	LocalFree(tstr);
 	return str;
 }
@@ -211,6 +211,7 @@ LPTSTR ConvertCppStringToTString(const std::string& sstr, size_t* lenOut)
 	size_t convertedChars = MultiByteToWideChar(CP_UTF8, 0, sstr.c_str(), -1, str, sz);
 #else // ANSI
 	strcpy_s(str, sz, sstr.c_str());
+	size_t convertedChars = sz - 1;
 #endif
 
 	if (lenOut)
@@ -235,8 +236,22 @@ LPTSTR ConvertToTStringAddCR(const std::string& str, size_t* lenOut)
 
 void ConvertCppStringToTCharArray(const std::string& sstr, TCHAR* buff, size_t szMax)
 {
+	if (!szMax)
+		return;
+
+	if (sstr.empty()) {
+		*buff = 0;
+		return;
+	}
+
+#ifdef UNICODE
 	int len = MultiByteToWideChar(CP_UTF8, 0, sstr.c_str(), -1, buff, (int)szMax - 1);
 	buff[szMax - 1] = 0;
+#else
+	strncpy(buff, sstr.c_str(), szMax);
+	buff[szMax - 1] = 0;
+	int len = strlen(buff);
+#endif
 	buff[len] = 0;
 }
 
