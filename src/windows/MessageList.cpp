@@ -6,6 +6,7 @@
 #include "ProfilePopout.hpp"
 #include "ImageViewer.hpp"
 #include "UploadDialog.hpp"
+#include "ImageLoader.hpp"
 #include "../discord/LocalSettings.hpp"
 
 #define STRAVAILABLE(str) ((str) && (str)[0] != 0)
@@ -25,16 +26,6 @@
 static int GetProfileBorderRenderSize()
 {
 	return ScaleByDPI(Supports32BitIcons() ? (PROFILE_PICTURE_SIZE_DEF + 12) : 64);
-}
-
-static COLORREF GetDarkerBackgroundColor()
-{
-	COLORREF crWindow = GetSysColor(COLOR_3DFACE);
-	COLORREF crShadow = GetSysColor(COLOR_SCROLLBAR);
-	int r1 =  crWindow        & 0xFF, r2 =  crShadow        & 0xFF;
-	int g1 = (crWindow >> 8)  & 0xFF, g2 = (crShadow >> 8)  & 0xFF;
-	int b1 = (crWindow >> 16) & 0xFF, b2 = (crShadow >> 16) & 0xFF;
-	return RGB((r1 + r2) / 2, (g1 + g2) / 2, (b1 + b2) / 2);
 }
 
 static void DrawImageSpecial(HDC hdc, HBITMAP hbm, RECT rect, bool hasAlpha)
@@ -72,6 +63,7 @@ static const int g_WelcomeTextCount = _countof(g_WelcomeTextIds);
 
 MessageList::MessageList()
 {
+	m_defaultBackgroundBrush = GetSysColorBrush(COLOR_WINDOW);
 }
 
 MessageList::~MessageList()
@@ -81,6 +73,18 @@ MessageList::~MessageList()
 		BOOL b = DestroyWindow(m_hwnd);
 		assert(b && "was window destroyed?");
 		m_hwnd = NULL;
+	}
+
+	if (m_backgroundImage)
+	{
+		DeleteBitmap(m_backgroundImage);
+		m_backgroundImage = NULL;
+	}
+
+	if (m_backgroundBrush)
+	{
+		DeleteBitmap(m_backgroundBrush);
+		m_backgroundBrush = NULL;
 	}
 }
 
@@ -245,7 +249,7 @@ void RichEmbedItem::Measure(HDC hdc, RECT& messageRect, bool isCompact)
 	SelectObject(hdc, oldObj);
 }
 
-void RichEmbedItem::Draw(HDC hdc, RECT& messageRect)
+void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 {
 	RECT rc = messageRect;
 	rc.right = rc.left + m_size.cx + ScaleByDPI(4);
@@ -256,12 +260,12 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect)
 	RECT rcGradient = rc, rcLine = rc;
 	rcLine.right = rcLine.left + ScaleByDPI(4);
 	rcGradient.left += ScaleByDPI(4);
-	COLORREF oldColor = SetBkColor(hdc, GetDarkerBackgroundColor());
+	COLORREF oldColor = SetBkColor(hdc, pList->GetDarkerBackgroundColor());
 	if (GetLocalSettings()->GetMessageStyle() == MS_GRADIENT) {
 		FillGradientColors(hdc, &rcGradient, GetSysColor(COLOR_WINDOWFRAME), CLR_NONE, true);
 	}
 	else {
-		COLORREF oldClr = ri::SetDCBrushColor(hdc, GetDarkerBackgroundColor());
+		COLORREF oldClr = ri::SetDCBrushColor(hdc, pList->GetDarkerBackgroundColor());
 		FillRect(hdc, &rcGradient, GetStockBrush(DC_BRUSH));
 		ri::SetDCBrushColor(hdc, oldClr);
 	}
@@ -280,7 +284,7 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect)
 	rc.right  -= borderSize;
 	rc.bottom -= borderSize;
 	HGDIOBJ oldObj = SelectObject(hdc, GetStockFont(ANSI_VAR_FONT));
-	COLORREF windowTextColor = GetSysColor(COLOR_WINDOWTEXT);
+	COLORREF windowTextColor = pList->InvertIfNeeded(GetSysColor(COLOR_WINDOWTEXT));
 
 	if (m_providerSize.cy) {
 		SelectObject(hdc, g_ReplyTextFont);
@@ -1051,7 +1055,11 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 
 	m_oldPos = scrollInfo.nPos;
 	
-	if (m_messageSentTo)
+	if (!MayErase())
+	{
+		InvalidateRect(m_hwnd, NULL, FALSE);
+	}
+	else if (m_messageSentTo)
 	{
 		// Send to the message without creating a new gap.
 		m_firstShownMessage = m_messageSentTo;
@@ -1093,6 +1101,11 @@ void MessageList::ProperlyResizeSubWindows()
 	MoveWindow(m_hwnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
 }
 
+bool MessageList::MayErase()
+{
+	return GetLocalSettings()->GetMessageStyle() != MS_IMAGE;
+}
+
 void MessageList::HitTestAuthor(POINT pt, BOOL& hit)
 {
 	auto msg = FindMessageByPointAuthorRect(pt);
@@ -1105,7 +1118,7 @@ void MessageList::HitTestAuthor(POINT pt, BOOL& hit)
 			if (msg2 != m_messages.end())
 			{
 				msg2->m_authorHighlighted = false;
-				InvalidateRect(m_hwnd, &msg2->m_authorRect, false);
+				InvalidateRect(m_hwnd, &msg2->m_authorRect, FALSE);
 			}
 			SetCursor(LoadCursor(NULL, IDC_ARROW));
 		}
@@ -1123,7 +1136,7 @@ void MessageList::HitTestAuthor(POINT pt, BOOL& hit)
 
 	m_highlightedMessage = msg->m_msg.m_snowflake;
 	msg->m_authorHighlighted = true;
-	InvalidateRect(m_hwnd, &msg->m_authorRect, false);
+	InvalidateRect(m_hwnd, &msg->m_authorRect, FALSE);
 	DbgPrintW("Hand!  Profile ID: %lld   Message ID: %lld", msg->m_msg.m_author_snowflake, msg->m_msg.m_snowflake);
 }
 
@@ -1144,7 +1157,7 @@ void MessageList::HitTestAttachments(POINT pt, BOOL& hit)
 						x.m_bHighlighted = false;
 
 						if (!x.m_pAttachment->IsImage())
-							InvalidateRect(m_hwnd, &x.m_textRect, false);
+							InvalidateRect(m_hwnd, &x.m_textRect, FALSE);
 					}
 				}
 			}
@@ -1188,7 +1201,7 @@ void MessageList::HitTestAttachments(POINT pt, BOOL& hit)
 	if (!pAttach->m_pAttachment->IsImage())
 	{
 		if (inText)
-			InvalidateRect(m_hwnd, &pAttach->m_textRect, false);
+			InvalidateRect(m_hwnd, &pAttach->m_textRect, FALSE);
 	}
 	DbgPrintW("Hand!  Attachment ID: %lld   Message ID: %lld", pAttach->m_pAttachment->m_id, msg->m_msg.m_snowflake);
 }
@@ -1209,7 +1222,7 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 					if (x.m_bHighlighted) {
 						x.m_bHighlighted = false;
 						if (x.ShouldInvalidateOnHover())
-							InvalidateRect(m_hwnd, &x.m_rect, false);
+							InvalidateRect(m_hwnd, &x.m_rect, FALSE);
 					}
 				}
 			}
@@ -1249,7 +1262,7 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 		if (pData->m_wordIndex == m_highlightedInteractable) {
 			pData->m_bHighlighted = false;
 			if (pData->ShouldInvalidateOnHover())
-				InvalidateRect(m_hwnd, &pData->m_rect, false);
+				InvalidateRect(m_hwnd, &pData->m_rect, FALSE);
 			break;
 		}
 	}
@@ -1258,7 +1271,7 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 	m_highlightedInteractableMessage = msg->m_msg.m_snowflake;
 	pItem->m_bHighlighted = true;
 	if (pItem->ShouldInvalidateOnHover())
-		InvalidateRect(m_hwnd, &pItem->m_rect, false);
+		InvalidateRect(m_hwnd, &pItem->m_rect, FALSE);
 
 	DbgPrintW("Hand!  Interactable IDX: %zu   Message ID: %lld", pItem->m_wordIndex, msg->m_msg.m_snowflake);
 }
@@ -1903,7 +1916,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 	}
 
 	if (nameClr == CLR_NONE)
-		nameClr = GetSysColor(COLOR_WINDOWTEXT);
+		nameClr = InvertIfNeeded(GetSysColor(COLOR_WINDOWTEXT));
 
 	LPCTSTR strPart1 = TEXT("");
 	LPCTSTR strPart2 = item.m_replyMsg;
@@ -2022,7 +2035,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 	bool isFlashed = (m_emphasizedMessage == item.m_msg.m_snowflake) && (m_flash_counter % 2 != 0);
 
-	COLORREF textColor = GetSysColor(COLOR_WINDOWTEXT), bkgdColor = CLR_NONE;
+	COLORREF textColor = InvertIfNeeded(GetSysColor(COLOR_WINDOWTEXT)), bkgdColor = CLR_NONE;
 
 	RECT rc = msgRect;
 	if (!m_firstShownMessage && rc.bottom > clientRect.top && !item.m_msg.IsLoadGap())
@@ -2048,21 +2061,28 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 		LPTSTR strDateGap = ConvertCppStringToTString("  " + item.m_msg.m_dateOnly + "  ");
 
-		COLORREF clrText = bDrawNewMarker ? NEW_MARKER_COLOR : GetSysColor(COLOR_GRAYTEXT);
+		COLORREF clrText = InvertIfNeeded(bDrawNewMarker ? NEW_MARKER_COLOR : GetSysColor(COLOR_GRAYTEXT));
 		COLORREF oldTextClr = SetTextColor(hdc, clrText);
 		COLORREF oldPenClr = ri::SetDCPenColor(hdc, clrText);
 
-		auto clr = COLOR_3DFACE;
-		if (mStyle == MS_FLATBR) clr = COLOR_WINDOW;
-		else if (mStyle == MS_GRADIENT) {
-			COLORREF c1, c2;
-			c1 = GetSysColor(COLOR_WINDOW); // high
-			c2 = GetSysColor(COLOR_3DFACE); // low
-			if (c1 < c2) clr = COLOR_3DFACE;
-			else         clr = COLOR_WINDOW;
-		}
+		if (mStyle != MS_IMAGE)
+		{
+			auto clr = COLOR_3DFACE;
+			if (mStyle == MS_FLATBR) clr = COLOR_WINDOW;
+			else if (mStyle == MS_GRADIENT) {
+				COLORREF c1, c2;
+				c1 = GetSysColor(COLOR_WINDOW); // high
+				c2 = GetSysColor(COLOR_3DFACE); // low
+				if (c1 < c2) clr = COLOR_3DFACE;
+				else         clr = COLOR_WINDOW;
+			}
 
-		FillRect(hdc, &dgRect, GetSysColorBrush(clr));
+			FillRect(hdc, &dgRect, GetSysColorBrush(clr));
+		}
+		else
+		{
+			FillRect(hdc, &dgRect, m_backgroundBrush);
+		}
 
 		RECT rcMeasure = dgRect;
 		DrawText(hdc, strDateGap, -1, &rcMeasure, DT_CALCRECT | DT_NOPREFIX);
@@ -2567,7 +2587,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			if (oldTextColor != CLR_NONE)
 				SetTextColor(hdc, oldTextColor);
 
-			COLORREF windowTextColor = GetSysColor(COLOR_WINDOWTEXT);
+			COLORREF windowTextColor = InvertIfNeeded(GetSysColor(COLOR_WINDOWTEXT));
 			for (size_t i = 0; i < item.m_interactableData.size(); i++) {
 				InteractableItem& iitem = item.m_interactableData[i];
 
@@ -2644,7 +2664,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		if (eitem.m_size.cx == 0 || eitem.m_size.cy == 0)
 			eitem.Measure(hdc, embedRect, bIsCompact);
 
-		eitem.Draw(hdc, embedRect);
+		eitem.Draw(hdc, embedRect, this);
 
 		for (auto& ii : item.m_interactableData) {
 			if (ii.m_wordIndex - InteractableItem::EMBED_OFFSET != i)
@@ -2755,6 +2775,182 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	}
 }
 
+void MessageList::PaintBackground(HDC hdc, RECT& paintRect, RECT& rcClient)
+{
+	if (GetLocalSettings()->GetMessageStyle() != MS_IMAGE)
+		return;
+
+	if (!m_backgroundBrush)
+		return;
+
+	FillRect(hdc, &paintRect, m_backgroundBrush);
+
+	if (m_backgroundImage)
+	{
+		BITMAP bm{};
+		GetObject(m_backgroundImage, (int)sizeof bm, &bm);
+
+		int x = rcClient.right - bm.bmWidth;
+		int y = rcClient.bottom - bm.bmHeight;
+
+		RECT rcImg = { x, y, rcClient.right, rcClient.bottom };
+		RECT dummy;
+		if (!IntersectRect(&dummy, &rcImg, &paintRect))
+			return;
+
+		DrawBitmap(hdc, m_backgroundImage, x, y);
+	}
+}
+
+void MessageList::Paint(HDC hdc, RECT& paintRect)
+{
+	RECT rect = {};
+	GetClientRect(m_hwnd, &rect);
+	PaintBackground(hdc, paintRect, rect);
+	int windowHeight = rect.bottom - rect.top;
+	int ScrollHeight = 0;
+	SCROLLINFO si;
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_POS | SIF_RANGE;
+	GetScrollInfo(m_hwnd, SB_VERT, &si);
+	ScrollHeight = si.nPos;
+
+	RECT msgRect = rect;
+	msgRect.top -= ScrollHeight;
+
+	if (m_total_height < windowHeight && !m_bIsTopDown) {
+		msgRect.top += windowHeight - m_total_height;
+	}
+
+	msgRect.bottom = msgRect.top;
+
+	eMessageStyle mStyle = GetLocalSettings()->GetMessageStyle();
+
+	int oldBkMode = 0; bool oldBkModeSet = false;
+	COLORREF oldBkColor = CLR_NONE;
+	COLORREF chosenBkColor = CLR_NONE;
+
+	switch (mStyle) {
+		case MS_GRADIENT: {
+			oldBkMode = SetBkMode(hdc, TRANSPARENT);
+			oldBkModeSet = true;
+			chosenBkColor = GetSysColor(COLOR_3DFACE);
+			break;
+		}
+		case MS_FLATBR: {
+			chosenBkColor = GetSysColor(COLOR_WINDOW);
+			oldBkColor = SetBkColor(hdc, chosenBkColor);
+			break;
+		}
+		case MS_IMAGE: {
+			oldBkMode = SetBkMode(hdc, TRANSPARENT);
+			oldBkModeSet = true;
+			chosenBkColor = m_backgroundColor;
+			break;
+		}
+		default: {
+			chosenBkColor = GetSysColor(COLOR_3DFACE);
+			oldBkColor = SetBkColor(hdc, chosenBkColor);
+			break;
+		}
+	}
+
+	DrawingContext mddc(hdc);
+	mddc.SetBackgroundColor(chosenBkColor);
+
+	Snowflake lastDrawnMessage = 0;
+	Snowflake lastKnownMessage = 0;
+	bool isLastKnownMessageGap = false;
+
+	int unreadMarkerState = 0;
+	m_firstShownMessage = 0;
+	for (std::list<MessageItem>::iterator iter = m_messages.begin();
+		iter != m_messages.end();
+		++iter)
+	{
+		bool isActionMessage = IsActionMessage(iter->m_msg.m_type);
+
+		bool needUpdate = false;
+
+		if (!isActionMessage) {
+			if (iter->m_message.Empty())
+				needUpdate = true;
+		}
+		else {
+			if (iter->m_bNeedUpdate)
+				needUpdate = true;
+		}
+
+		if (needUpdate)
+			iter->Update(m_guildID);
+
+		HGDIOBJ gdiObj = SelectObject(hdc, g_MessageTextFont);
+
+		// measure the message text
+		msgRect.bottom = msgRect.top + iter->m_height;
+		iter->m_rect = msgRect;
+
+		lastKnownMessage = iter->m_msg.m_snowflake;
+		isLastKnownMessageGap = iter->m_msg.IsLoadGap();
+
+		bool bDraw = msgRect.top <= rect.bottom && msgRect.bottom > rect.top;
+		bool bDrawNewMarker = false;
+
+		// Observation: We increment unreadMarkerState in this if condition.  If the conditions before aren't true, the variable
+		// isn't incremented. The variable is incremented regardless of bDraw. We just need it to increase when we stumble across
+		// the oldest unread message to know whether and where we should draw the unread marker.
+		if (m_previousLastReadMessage &&
+			iter->m_msg.m_snowflake > m_previousLastReadMessage &&
+			!iter->m_msg.IsLoadGap() &&
+			unreadMarkerState++ == 0 &&
+			bDraw) {
+			bDrawNewMarker = true;
+		}
+
+		if (bDraw)
+		{
+			DrawMessage(hdc, *iter, msgRect, rect, paintRect, mddc, chosenBkColor, bDrawNewMarker);
+			lastDrawnMessage = iter->m_msg.m_snowflake;
+		}
+		else
+		{
+			SetRectEmpty(&iter->m_avatarRect);
+			SetRectEmpty(&iter->m_authorRect);
+			SetRectEmpty(&iter->m_messageRect);
+
+			for (auto& att : iter->m_attachmentData)
+			{
+				SetRectEmpty(&att.m_addRect);
+				SetRectEmpty(&att.m_boxRect);
+				SetRectEmpty(&att.m_textRect);
+			}
+
+			for (auto& inter : iter->m_interactableData)
+				SetRectEmpty(&inter.m_rect);
+		}
+
+		msgRect.top = msgRect.bottom;
+		SelectObject(hdc, gdiObj);
+	}
+
+	Channel* pChan = GetDiscordInstance()->GetChannel(m_channelID);
+
+	if (pChan &&
+		lastDrawnMessage == lastKnownMessage &&
+		!isLastKnownMessageGap &&
+		pChan->m_lastSentMsg != pChan->m_lastViewedMsg &&
+		m_bAcknowledgeNow) {
+		RequestMarkRead();
+		pChan->m_lastViewedMsg = pChan->m_lastSentMsg;
+	}
+
+	if (oldBkModeSet)
+		SetBkMode(hdc, oldBkMode);
+
+	if (oldBkColor != CLR_NONE)
+		SetBkColor(hdc, oldBkColor);
+}
+
 LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	MessageList* pThis = (MessageList*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
@@ -2795,7 +2991,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (itMsg == pThis->m_messages.end())
 				break;
 
-			InvalidateRect(hWnd, &itMsg->m_rect, TRUE);
+			InvalidateRect(hWnd, &itMsg->m_rect, pThis->MayErase());
 			break;
 		}
 		case WM_DROPFILES:
@@ -3169,7 +3365,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 					if (MessageBox(g_Hwnd, xstr, TmGetTString(IDS_CONFIRM_PIN_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES)
 					{
-
+						// TODO
 					}
 
 					free((void*)xstr);
@@ -3276,7 +3472,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			si.fMask = SIF_PAGE;
 			GetScrollInfo(hWnd, SB_VERT, &si);
 
-			InvalidateRect(hWnd, &refreshRect, int(si.nPage) > pThis->m_total_height);
+			InvalidateRect(hWnd, &refreshRect, pThis->MayErase() && int(si.nPage) > pThis->m_total_height);
 
 			break;
 		}
@@ -3309,148 +3505,36 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_PAINT:
 		{
 			PAINTSTRUCT ps = {};
-			RECT rect = {};
 			HDC hdc = BeginPaint(hWnd, &ps);
-			GetClientRect(hWnd, &rect);
-
 			RECT &paintRect = ps.rcPaint;
 
-			int windowHeight = rect.bottom - rect.top;
-			int ScrollHeight = 0;
-			SCROLLINFO si;
-			si.cbSize = sizeof(si);
-			si.fMask = SIF_POS | SIF_RANGE;
-			GetScrollInfo(pThis->m_hwnd, SB_VERT, &si);
-			ScrollHeight = si.nPos;
-
-			RECT msgRect = rect;
-			msgRect.top -= ScrollHeight;
-
-			if (pThis->m_total_height < windowHeight && !pThis->m_bIsTopDown) {
-				msgRect.top += windowHeight - pThis->m_total_height;
-			}
-
-			msgRect.bottom = msgRect.top;
-
-			eMessageStyle mStyle = GetLocalSettings()->GetMessageStyle();
-
-			int oldBkMode = 0; bool oldBkModeSet = false;
-			COLORREF oldBkColor = CLR_NONE;
-			COLORREF chosenBkColor = CLR_NONE;
-
-			switch (mStyle) {
-				case MS_GRADIENT: {
-					oldBkMode = SetBkMode(hdc, TRANSPARENT);
-					oldBkModeSet = true;
-					chosenBkColor = GetSysColor(COLOR_3DFACE);
-					break;
-				}
-				case MS_FLATBR: {
-					chosenBkColor = GetSysColor(COLOR_WINDOW);
-					oldBkColor = SetBkColor(hdc, chosenBkColor);
-					break;
-				}
-				default: {
-					chosenBkColor = GetSysColor(COLOR_3DFACE);
-					oldBkColor = SetBkColor(hdc, chosenBkColor);
-					break;
-				}
-			}
-
-			DrawingContext mddc(hdc);
-			mddc.SetBackgroundColor(chosenBkColor);
-
-			Snowflake lastDrawnMessage = 0;
-			Snowflake lastKnownMessage = 0;
-			bool isLastKnownMessageGap = false;
-
-			int unreadMarkerState = 0;
-			pThis->m_firstShownMessage = 0;
-			for (std::list<MessageItem>::iterator iter = pThis->m_messages.begin();
-				iter != pThis->m_messages.end();
-				++iter)
+			if (GetLocalSettings()->GetMessageStyle() == MS_IMAGE)
 			{
-				bool isActionMessage = IsActionMessage(iter->m_msg.m_type);
+				// Create a DC that we blit to, and then only the finished result goes on screen.
+				RECT rcClient{};
+				GetClientRect(hWnd, &rcClient);
+				
+				// TODO: Surely there's a better way. Surely there's a way to only create paintRect.width * paintRect.height
+				// sized bitmap, and somehow let Windows know that that's the offset we want. But I don't know of that way,
+				// so this'll do for now.
+				HBITMAP hbm = CreateCompatibleBitmap(hdc, rcClient.right, rcClient.bottom);
+				HDC hdcMem = CreateCompatibleDC(hdc);
+				HGDIOBJ old = SelectObject(hdcMem, hbm);
 
-				bool needUpdate = false;
+				// Paint on this object
+				pThis->Paint(hdcMem, paintRect);
 
-				if (!isActionMessage) {
-					if (iter->m_message.Empty())
-						needUpdate = true;
-				}
-				else {
-					if (iter->m_bNeedUpdate)
-						needUpdate = true;
-				}
+				// Ok, now flush to the main screen
+				BitBlt(hdc, paintRect.left, paintRect.top, paintRect.right - paintRect.left, paintRect.bottom - paintRect.top, hdcMem, paintRect.left, paintRect.top, SRCCOPY);
 
-				if (needUpdate)
-					iter->Update(pThis->m_guildID);
-
-				HGDIOBJ gdiObj = SelectObject(hdc, g_MessageTextFont);
-
-				// measure the message text
-				msgRect.bottom = msgRect.top + iter->m_height;
-				iter->m_rect = msgRect;
-
-				lastKnownMessage = iter->m_msg.m_snowflake;
-				isLastKnownMessageGap = iter->m_msg.IsLoadGap();
-
-				bool bDraw = msgRect.top <= rect.bottom && msgRect.bottom > rect.top;
-				bool bDrawNewMarker = false;
-
-				// Observation: We increment unreadMarkerState in this if condition.  If the conditions before aren't true, the variable
-				// isn't incremented. The variable is incremented regardless of bDraw. We just need it to increase when we stumble across
-				// the oldest unread message to know whether and where we should draw the unread marker.
-				if (pThis->m_previousLastReadMessage &&
-					iter->m_msg.m_snowflake > pThis->m_previousLastReadMessage &&
-					!iter->m_msg.IsLoadGap() &&
-					unreadMarkerState++ == 0 &&
-					bDraw) {
-					bDrawNewMarker = true;
-				}
-
-				if (bDraw)
-				{
-					pThis->DrawMessage(hdc, *iter, msgRect, rect, paintRect, mddc, chosenBkColor, bDrawNewMarker);
-					lastDrawnMessage = iter->m_msg.m_snowflake;
-				}
-				else
-				{
-					SetRectEmpty(&iter->m_avatarRect);
-					SetRectEmpty(&iter->m_authorRect);
-					SetRectEmpty(&iter->m_messageRect);
-
-					for (auto& att : iter->m_attachmentData)
-					{
-						SetRectEmpty(&att.m_addRect);
-						SetRectEmpty(&att.m_boxRect);
-						SetRectEmpty(&att.m_textRect);
-					}
-
-					for (auto& inter : iter->m_interactableData)
-						SetRectEmpty(&inter.m_rect);
-				}
-
-				msgRect.top = msgRect.bottom;
-				SelectObject(hdc, gdiObj);
+				// And dispose of the evidence
+				DeleteDC(hdcMem);
+				DeleteBitmap(hbm);
 			}
-
-			Channel* pChan = GetDiscordInstance()->GetChannel(pThis->m_channelID);
-
-			if (pChan &&
-				lastDrawnMessage == lastKnownMessage &&
-				!isLastKnownMessageGap &&
-				pChan->m_lastSentMsg != pChan->m_lastViewedMsg &&
-				pThis->m_bAcknowledgeNow) {
-				pThis->RequestMarkRead();
-				pChan->m_lastViewedMsg = pChan->m_lastSentMsg;
+			else
+			{
+				pThis->Paint(hdc, paintRect);
 			}
-
-			if (oldBkModeSet)
-				SetBkMode(hdc, oldBkMode);
-
-			if (oldBkColor != CLR_NONE)
-				SetBkColor(hdc, oldBkColor);
 
 			EndPaint(hWnd, &ps);
 			break;
@@ -3482,7 +3566,12 @@ void MessageList::UpdateBackgroundBrush()
 	if (mode == MS_FLATBR)
 		bru = COLOR_WINDOW;
 
-	SetClassLongPtr(m_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR) GetSysColorBrush(bru));
+	ReloadBackground();
+
+	if (mode == MS_IMAGE)
+		SetClassLongPtr(m_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR) m_backgroundBrush);
+	else
+		SetClassLongPtr(m_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR) GetSysColorBrush(bru));
 }
 
 bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded)
@@ -3662,7 +3751,7 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 		{
 			// ah screw it
 			// TODO: fix it so it only redraws what's needed
-			InvalidateRect(m_hwnd, NULL, true);
+			InvalidateRect(m_hwnd, NULL, MayErase());
 			return;
 		}
 
@@ -3724,6 +3813,54 @@ void MessageList::EndFlashMessage()
 
 	KillTimer(m_hwnd, m_flash_timer);
 	m_flash_timer = 0;
+}
+
+void MessageList::ReloadBackground()
+{
+	UnloadBackground();
+
+	if (GetLocalSettings()->GetMessageStyle() != MS_IMAGE)
+		return;
+
+	const auto& str = GetLocalSettings()->GetImageBackgroundFileName();
+	if (str.empty())
+	{
+		m_backgroundBrush = m_defaultBackgroundBrush;
+		m_backgroundImage = NULL;
+		return;
+	}
+
+	bool ignoredAlphaChannel = 0;
+	uint32_t firstPixel = 0;
+	m_backgroundImage = ImageLoader::LoadFromFile(str.c_str(), ignoredAlphaChannel, &firstPixel);
+
+	union
+	{
+		uint32_t ui;
+		RGBQUAD rq;
+	}
+	color;
+
+	// HUH: Why does Windows use the byte swapped variant for COLORREFs??
+
+	color.ui = COLORREF(firstPixel);
+	m_backgroundColor = RGB(color.rq.rgbRed, color.rq.rgbGreen, color.rq.rgbBlue);
+	m_backgroundBrush = CreateSolidBrush(m_backgroundColor);
+
+	m_bInvertTextColors = IsColorDark(m_backgroundColor) ^ (!IsColorDark(GetSysColor(COLOR_WINDOWTEXT)));
+}
+
+void MessageList::UnloadBackground()
+{
+	if (m_backgroundImage) {
+		DeleteBitmap(m_backgroundImage);
+		m_backgroundImage = NULL;
+	}
+	if (m_backgroundBrush && m_backgroundBrush != m_defaultBackgroundBrush) {
+		DeleteBrush(m_backgroundBrush);
+		m_backgroundBrush = NULL;
+	}
+	m_bInvertTextColors = false;
 }
 
 std::list<MessageItem>::iterator MessageList::FindMessage(Snowflake sf)
@@ -4270,6 +4407,13 @@ void MessageList::Scroll(int amount, RECT* rcClip, bool shiftAllRects)
 	{
 		for (auto& msg : m_messages)
 			msg.ShiftUp(amount);
+	}
+	
+	if (GetLocalSettings()->GetMessageStyle() == MS_IMAGE)
+	{
+		// nope, just invalidate
+		InvalidateRect(m_hwnd, NULL, FALSE);
+		return;
 	}
 
 	// Note. In the case that any repainting is done, we perform the shifts

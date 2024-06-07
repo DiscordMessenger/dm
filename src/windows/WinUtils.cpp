@@ -1115,3 +1115,12 @@ int MessageBoxHooked(HWND hWnd, LPCTSTR title, LPCTSTR caption, int flags, int o
 {
 	return MessageBoxHooked(hWnd, title, caption, flags, 1, &overID, &overText);
 }
+
+bool IsColorDark(COLORREF cr)
+{
+	uint8_t c1 = cr & 0xFF; cr >>= 8;
+	uint8_t c2 = cr & 0xFF; cr >>= 8;
+	uint8_t c3 = cr & 0xFF;
+	int avg = (c1 + c2 + c3) / 3;
+	return avg <= 128;
+}

@@ -10,6 +10,7 @@ enum eMessageStyle
 	MS_FLAT,
 	MS_GRADIENT,
 	MS_FLATBR,
+	MS_IMAGE,
 
 	MS_MAX,
 };
@@ -100,6 +101,12 @@ public:
 	void SetDisableFormatting(bool b) {
 		m_bDisableFormatting = b;
 	}
+	const std::string& GetImageBackgroundFileName() const {
+		return m_imageBackgroundFileName;
+	}
+	void SetImageBackgroundFileName(const std::string& fn) {
+		m_imageBackgroundFileName = fn;
+	}
 
 private:
 	std::string m_token;
@@ -107,6 +114,7 @@ private:
 	std::string m_discordCdn;
 	std::set<std::string> m_trustedDomains;
 	eMessageStyle m_messageStyle = MS_GRADIENT;
+	std::string m_imageBackgroundFileName = "";
 	bool m_bReplyMentionDefault = true;
 	bool m_bSaveWindowSize = false;
 	bool m_bStartMaximized = false;

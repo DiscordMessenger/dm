@@ -455,9 +455,9 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,45,232,10
     LTEXT           "Disable markdown formatting if:\n- You operate frequently with right-to-left scripts such as Arabic.\n- You are running into performance issues (message channels are taking too long to load, etc)",IDC_STATIC,12,57,232,34
     LTEXT           "Message theme:",IDC_STATIC,12,105,63,13,SS_CENTERIMAGE
-    PUSHBUTTON      "Change...",IDC_ACTIVE_IMAGE_BROWSE,194,122,50,14,WS_DISABLED
-    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,102,122,88,14,ES_AUTOHSCROLL | ES_READONLY | WS_DISABLED
-    LTEXT           "Active image (coming soon):",IDC_STATIC,12,122,89,14,SS_CENTERIMAGE | WS_DISABLED
+    PUSHBUTTON      "Change...",IDC_ACTIVE_IMAGE_BROWSE,194,122,50,14
+    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,57,122,133,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Active image:",IDC_STATIC,12,122,46,14,SS_CENTERIMAGE
     COMBOBOX        IDC_MESSAGE_STYLE,81,105,163,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
@@ -1147,6 +1147,7 @@ BEGIN
     IDS_SEND_MESSAGE        "Send"
     IDS_CANT_SHOW_BITMAP    "Can't show bitmap! Windows API mismatch?"
     IDS_CANNOT_INIT_WS      "The WebSocket client could not be initialized.\n\nDiscord Messenger will now exit."
+    IDS_SELECT_BACKGROUND_IMAGE "Select background image"
 END
 
 #endif    // English (United States) resources

@@ -97,6 +97,7 @@ bool XSetProcessDPIAware();
 
 // Color utils
 COLORREF LerpColor(COLORREF a, COLORREF b, int progMul, int progDiv);
+bool IsColorDark(COLORREF cr);
 
 // Profile utils
 #include "../discord/Profile.hpp"

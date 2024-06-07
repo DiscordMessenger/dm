@@ -124,6 +124,11 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource, bool& hasAlph
 		DbgPrintW("Loading image %s", final_path.c_str());
 		// load that instead.
 		FILE* f = fopen(final_path.c_str(), "rb");
+		if (!f) {
+			SetBitmap(id, HBITMAP_ERROR, false);
+			return GetBitmapSpecial(id, hasAlphaOut);
+		}
+
 		fseek(f, 0, SEEK_END);
 		int sz = int(ftell(f));
 		fseek(f, 0, SEEK_SET);

@@ -5,12 +5,14 @@
 #ifdef NEW_WINDOWS
 #include <uxtheme.h>
 #endif
+#include <commdlg.h>
 
 const eMessageStyle g_indexToMessageStyle[] = {
 	MS_3DFACE,
 	MS_GRADIENT,
 	MS_FLAT,
 	MS_FLATBR,
+	MS_IMAGE,
 };
 
 #define C_PAGES (3)
@@ -156,13 +158,17 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 			CheckDlgButton(hwndDlg, IDC_START_MAXIMIZED,    GetLocalSettings()->GetStartMaximized() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_DISABLE_FORMATTING, GetLocalSettings()->DisableFormatting() ? BST_CHECKED : BST_UNCHECKED);
 
+			LPTSTR tstr = ConvertCppStringToTString(GetLocalSettings()->GetImageBackgroundFileName());
+			SetDlgItemText(hwndDlg, IDC_ACTIVE_IMAGE_EDIT, tstr);
+			free(tstr);
+
 			HWND hCBox = GetDlgItem(hwndDlg, IDC_MESSAGE_STYLE);
 			// NOTE: these must match the order in g_indexToMessageStyle!
 			ComboBox_AddString(hCBox, TEXT("3-D frame"));
 			ComboBox_AddString(hCBox, TEXT("Gradient"));
 			ComboBox_AddString(hCBox, TEXT("Flat color 1 (3-D face color)"));
 			ComboBox_AddString(hCBox, TEXT("Flat color 2 (window color)"));
-			//ComboBox_AddString(hCBox, TEXT("Flat with image background"));
+			ComboBox_AddString(hCBox, TEXT("Flat with image background"));
 
 			// determine message style selection
 			ComboBox_SetCurSel(hCBox, 0);
@@ -275,16 +281,60 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 				{
 					switch (LOWORD(wParam))
 					{
-						case IDC_MESSAGE_STYLE: {
+						case IDC_MESSAGE_STYLE:
+						{
 							if (HIWORD(wParam) != CBN_SELCHANGE)
 								break;
+
 							int sel = ComboBox_GetCurSel((HWND) lParam);
 							if (sel == CB_ERR || sel < 0 || sel >= int(_countof(g_indexToMessageStyle)))
 								break;
-							GetLocalSettings()->SetMessageStyle(g_indexToMessageStyle[sel]);
+
+							eMessageStyle style = g_indexToMessageStyle[sel];
+							GetLocalSettings()->SetMessageStyle(style);
+
+							bool enable = style == MS_IMAGE;
+							EnableWindow(GetDlgItem(hWnd, IDC_ACTIVE_IMAGE_BROWSE), enable);
+							EnableWindow(GetDlgItem(hWnd, IDC_ACTIVE_IMAGE_EDIT),   enable);
+
 							SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
 							break;
 						}
+						case IDC_ACTIVE_IMAGE_BROWSE:
+						{
+							const int MAX_FILE = 4096;
+							TCHAR buffer[MAX_FILE];
+							buffer[0] = 0;
+
+						#ifdef WEBP_SUP
+						#define COND_WEBP ";*.webp"
+						#else
+						#define COND_WEBP ""
+						#endif
+
+							OPENFILENAME ofn{};
+							ofn.lStructSize    = sizeof ofn;
+							ofn.hwndOwner      = g_Hwnd;
+							ofn.hInstance      = g_hInstance;
+							ofn.nMaxFile       = MAX_FILE;
+							ofn.lpstrFile      = buffer;
+							ofn.nMaxFileTitle  = 0;
+							ofn.lpstrFileTitle = NULL;
+							ofn.lpstrFilter    = TEXT("Image files\0*.bmp;*.png;*.jpg;*.jpeg;*.gif;*.tga" COND_WEBP "\0\0");
+							ofn.lpstrTitle     = TmGetTString(IDS_SELECT_BACKGROUND_IMAGE);
+
+							if (!GetOpenFileName(&ofn)) {
+								// operation cancelled
+								break;
+							}
+
+							std::string fileName = MakeStringFromTString(ofn.lpstrFile);
+							GetLocalSettings()->SetImageBackgroundFileName(fileName);
+							SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
+							SetDlgItemText(hWnd, IDC_ACTIVE_IMAGE_EDIT, ofn.lpstrFile);
+							break;
+						}
+
 						case IDC_APPEARANCE_COZY:
 							GetSettingsManager()->SetMessageCompact(false);
 							GetSettingsManager()->FlushSettings();

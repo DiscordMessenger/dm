@@ -77,6 +77,9 @@ bool LocalSettings::Load()
 	if (j.contains("DisableFormatting"))
 		m_bDisableFormatting = j["DisableFormatting"];
 
+	if (j.contains("ImageBackgroundFileName"))
+		m_imageBackgroundFileName = j["ImageBackgroundFileName"];
+
 	if (m_bSaveWindowSize)
 	{
 		if (j.contains("WindowWidth"))
@@ -124,6 +127,8 @@ bool LocalSettings::Save()
 	j["EnableTLSVerification"] = m_bEnableTLSVerification;
 	j["DisableFormatting"] = m_bDisableFormatting;
 	j["RemindUpdateCheckOn"] = (long long)(m_remindUpdatesOn);
+	j["ImageBackgroundFileName"] = m_imageBackgroundFileName;
+
 	if (m_bSaveWindowSize) {
 		j["WindowWidth"] = m_width;
 		j["WindowHeight"] = m_height;

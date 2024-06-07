@@ -233,9 +233,7 @@ LRESULT CALLBACK RoleList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		case WM_CREATE: {
 			eMessageStyle style = GetLocalSettings()->GetMessageStyle();
 			switch (style) {
-				case MS_3DFACE:
-				case MS_FLAT:
-				case MS_GRADIENT:
+				default:
 					SetClassLong(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)GetSysColorBrush(COLOR_3DFACE));
 					break;
 				case MS_FLATBR:

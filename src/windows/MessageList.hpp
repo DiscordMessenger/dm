@@ -138,6 +138,8 @@ struct RichEmbedFieldItem
 	void Update();
 };
 
+class MessageList;
+
 class RichEmbedItem
 {
 public:
@@ -177,7 +179,7 @@ public:
 
 	// N.B. For these, the Y height is not used.
 	void Measure(HDC hdc, RECT& messageRect, bool isCompact);
-	void Draw(HDC hdc, RECT& messageRect);
+	void Draw(HDC hdc, RECT& messageRect, MessageList* pList);
 };
 
 class MessageItem
@@ -363,6 +365,12 @@ private:
 	Snowflake m_firstShownMessage = 0;
 	Snowflake m_previousLastReadMessage = 0;
 
+	HBITMAP  m_backgroundImage = NULL;
+	HBRUSH   m_backgroundBrush = NULL;
+	COLORREF m_backgroundColor = 0;
+	HBRUSH   m_defaultBackgroundBrush = NULL;
+	bool     m_bInvertTextColors = false;
+
 	bool m_bAcknowledgeNow = true;
 
 	int m_total_height = 0;
@@ -384,14 +392,34 @@ private:
 	bool IsFlashingMessage() const;
 	void EndFlashMessage();
 
+	void ReloadBackground();
+	void UnloadBackground();
+
 	std::list<MessageItem>::iterator FindMessage(Snowflake sf);
 
 	std::list<MessageItem>::iterator FindMessageByPoint(POINT pt);
 	std::list<MessageItem>::iterator FindMessageByPointAuthorRect(POINT pt);
 
 public:
+	COLORREF GetDarkerBackgroundColor() const
+	{
+		COLORREF crWindow = m_backgroundColor;
+		COLORREF crShadow = ((((m_backgroundColor & 0xFEFEFE) >> 1) + ((m_backgroundColor & 0xFCFCFC) >> 2)) & 0xDFDFDF) + 0x202020;
+		int r1 = crWindow & 0xFF, r2 = crShadow & 0xFF;
+		int g1 = (crWindow >> 8) & 0xFF, g2 = (crShadow >> 8) & 0xFF;
+		int b1 = (crWindow >> 16) & 0xFF, b2 = (crShadow >> 16) & 0xFF;
+		return RGB((r1 + r2) / 2, (g1 + g2) / 2, (b1 + b2) / 2);
+	}
+
+	COLORREF InvertIfNeeded(COLORREF color) const
+	{
+		return m_bInvertTextColors ? (color ^ 0xFFFFFF) : color;
+	}
+
+public:
 	MessageList();
 	~MessageList();
+
 
 	void MeasureMessage(
 		HDC hdc,
@@ -470,14 +498,11 @@ public:
 
 public:
 	static WNDCLASS g_MsgListClass;
-
-
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void InitializeClass();
-
 	static MessageList* Create (HWND hwnd, LPRECT pRect);
-	
 	static bool IsCompact();
+	static bool MayErase();// checks if InvalidateRect or *Rgn should NEVER be passed true
 	
 protected:
 	friend class MessageItem;
@@ -500,6 +525,9 @@ private:
 
 	int DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc);
 	void DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& clientRect, RECT& paintRect, DrawingContext& mddc, COLORREF chosenBkColor, bool drawNewMarker);
+
+	void PaintBackground(HDC hdc, RECT& paintRect, RECT& clientRect);
+	void Paint(HDC hdc, RECT& rcPaint);
 
 	void RequestMarkRead();
 
