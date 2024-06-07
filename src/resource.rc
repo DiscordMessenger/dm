@@ -419,12 +419,12 @@ IDD_DIALOG_MY_ACCOUNT DIALOGEX 0, 0, 260, 242
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    GROUPBOX        "My Account",IDC_MY_ACCOUNT_BOX,6,6,246,53
-    LTEXT           "User Name#Tag",IDC_MY_ACCOUNT_NAME,54,25,190,8
-    LTEXT           "*******@*****.com",IDC_EMAIL_DISPLAY,54,42,126,8
-    LTEXT           "Email:",IDC_EMAIL_TEXT,12,42,20,8
-    PUSHBUTTON      "Reveal Email",IDC_REVEALEMAIL,182,38,64,15
-    GROUPBOX        "Safe direct messaging",IDC_STATIC,6,60,246,90
+    GROUPBOX        "My Account",IDC_MY_ACCOUNT_BOX,6,7,248,52
+    LTEXT           "User Name#Tag",IDC_MY_ACCOUNT_NAME,54,18,194,20,SS_CENTERIMAGE
+    LTEXT           "*******@*****.com",IDC_EMAIL_DISPLAY,54,40,126,14,SS_CENTERIMAGE
+    LTEXT           "Email:",IDC_EMAIL_TEXT,12,40,20,14,SS_CENTERIMAGE
+    PUSHBUTTON      "Reveal Email",IDC_REVEALEMAIL,184,40,64,14
+    GROUPBOX        "Safe direct messaging",IDC_STATIC,6,60,248,90
     LTEXT           "Automatically scan and delete direct messages you receive that contain explicit media content.",IDC_STATIC,12,72,234,18
     CONTROL         "I live on the edge\nTurn this off. Don't scan anything. Go straight to the dark side.",IDC_SDM_LEVEL0,
                     "Button",BS_AUTORADIOBUTTON | BS_MULTILINE,12,126,234,18
@@ -432,11 +432,11 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON | BS_MULTILINE,12,108,234,18
     CONTROL         "Keep me safe\nScan direct messages from everyone.",IDC_SDM_LEVEL2,
                     "Button",BS_AUTORADIOBUTTON | BS_MULTILINE,12,90,234,18
-    GROUPBOX        "Server privacy defaults",IDC_STATIC,6,150,246,42
+    GROUPBOX        "Server privacy defaults",IDC_STATIC,6,150,248,42
     CONTROL         "Allow direct messages from server members.",IDC_ENABLE_DMS,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,12,162,234,8
     LTEXT           "This setting is applied when you join a new server. It does not apply retroactively to your existing servers.",IDC_STATIC,23,171,223,17
-    GROUPBOX        "Log Out",IDC_STATIC,6,192,246,42
+    GROUPBOX        "Log Out",IDC_STATIC,6,192,248,42
     LTEXT           "Click this button to log out.  Discord Messenger will only forget your token, it won't be revoked.",IDC_STATIC,12,200,234,17
     PUSHBUTTON      "Log Out",IDC_LOG_OUT,104,216,50,14
     CONTROL         "",IDC_STATIC_PROFILE_IMAGE,"Static",SS_BITMAP | SS_CENTERIMAGE,12,18,24,22
@@ -446,25 +446,28 @@ IDD_DIALOG_APPEARANCE DIALOGEX 0, 0, 260, 242
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    GROUPBOX        "Message Display",IDC_MDISPLAY_BOX,6,6,245,88
+    GROUPBOX        "Message Display",IDC_MDISPLAY_BOX,6,7,248,87
     CONTROL         "Cozy: Modern, beautiful, and easy on your eyes.",IDC_APPEARANCE_COZY,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,18,232,10
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,18,236,10
     CONTROL         "Compact: Fit more messages on screen at one time. #IRC",IDC_APPEARANCE_COMPACT,
-                    "Button",BS_AUTORADIOBUTTON,12,30,232,10
-    GROUPBOX        "Message List Style",IDC_MSTYLE_BOX,6,95,245,46
-    GROUPBOX        "Window Settings",IDC_STATIC,6,144,245,52
-    CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,156,232,10
-    CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,169,232,10
+                    "Button",BS_AUTORADIOBUTTON,12,30,236,10
+    GROUPBOX        "Message List Style",IDC_MSTYLE_BOX,6,96,248,29
+    GROUPBOX        "Window Settings",IDC_STATIC,6,179,248,55
+    CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,191,236,10
+    CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,204,236,10
     CONTROL         "Disable markdown formatting",IDC_DISABLE_FORMATTING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,45,232,10
-    LTEXT           "Disable markdown formatting if:\n- You operate frequently with right-to-left scripts such as Arabic.\n- You are running into performance issues (message channels are taking too long to load, etc)",IDC_STATIC,12,57,232,34
-    LTEXT           "Message theme:",IDC_STATIC,12,105,63,13,SS_CENTERIMAGE
-    PUSHBUTTON      "Change...",IDC_ACTIVE_IMAGE_BROWSE,194,122,50,14
-    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,60,122,130,14,ES_AUTOHSCROLL | ES_READONLY
-    LTEXT           "Active image:",IDC_STATIC,12,122,46,14,SS_CENTERIMAGE
-    COMBOBOX        IDC_MESSAGE_STYLE,81,105,163,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,45,236,10
+    LTEXT           "Disable markdown formatting if:\n- You operate frequently with right-to-left scripts such as Arabic.\n- You are running into performance issues (message channels are taking too long to load, etc)",IDC_STATIC,12,57,236,34
+    LTEXT           "Message theme:",IDC_STATIC,12,106,53,13,SS_CENTERIMAGE
+    PUSHBUTTON      "Change...",IDC_ACTIVE_IMAGE_BROWSE,198,138,50,14
+    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,49,138,139,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Image:",IDC_STATIC,12,138,37,14,SS_CENTERIMAGE
+    COMBOBOX        IDC_MESSAGE_STYLE,73,106,175,58,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Show scroll bar on server list",IDC_SCROLL_BAR_ON_GUILDS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,182,232,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,218,236,10
+    COMBOBOX        IDC_COMBO_ALIGNMENT,53,156,195,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Aligned to:",IDC_STATIC,12,156,37,12,SS_CENTERIMAGE
+    GROUPBOX        "Message List Watermark",IDC_STATIC,6,127,248,48
 END
 
 IDD_DIALOG_PROFILE_POPOUT DIALOGEX 0, 0, 126, 134
@@ -579,25 +582,25 @@ IDD_DIALOG_CONNECTION DIALOGEX 0, 0, 260, 242
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    GROUPBOX        "Discord API && CDN",IDC_STATIC,6,7,245,128
+    GROUPBOX        "Discord API && CDN",IDC_STATIC,6,7,248,128
     LTEXT           "Discord API URL:",IDC_STATIC,12,20,55,8
     LTEXT           "Discord CDN URL:",IDC_STATIC,12,35,58,8
     EDITTEXT        IDC_EDIT_DISCORDAPI,72,17,174,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_DISCORDCDN,72,33,174,14,ES_AUTOHSCROLL
-    PUSHBUTTON      "Revert to official Discord backend",IDC_REVERTTODEFAULT,11,116,118,14
-    PUSHBUTTON      "Update",IDC_UPDATE,197,116,50,14
-    ICON            IDI_WARNING_IC,IDC_ICON_WARN_CONNECT,11,55,20,20,SS_REALSIZEIMAGE
-    LTEXT           "For security reasons, when you update the URLs that Discord Messenger uses to interface with Discord's backend, you will be logged out. (your token is forgotten but not revoked)",IDC_STATIC,30,54,214,31
-    ICON            IDI_WARNING_IC,IDC_ICON_WARN_WEBSOCKETSTUFF,12,87,20,20,SS_REALSIZEIMAGE
-    LTEXT           "Wondering where the websocket gateway URL is located? Well, Discord Messenger issues a request to API_URL/gateway, which tells it the websocket URL to use.",IDC_STATIC,30,87,214,29
-    GROUPBOX        "Security Settings",IDC_STATIC,6,139,245,48
-    ICON            IDI_WARNING_IC,IDC_ICON_WARN_WEBSOCKETSTUFF2,12,166,20,20,SS_REALSIZEIMAGE
-    LTEXT           "WARNING: Disabling TLS certificate verification could expose you to MITM (man-in-the-middle) attacks via certificate spoofing!",IDC_STATIC,30,165,214,19
+    PUSHBUTTON      "Revert to official Discord backend",IDC_REVERTTODEFAULT,12,116,118,14
+    PUSHBUTTON      "Update",IDC_UPDATE,198,116,50,14
+    ICON            IDI_WARNING_IC,IDC_ICON_WARN_CONNECT,12,55,21,20,SS_REALSIZEIMAGE
+    LTEXT           "For security reasons, when you update the URLs that Discord Messenger uses to interface with Discord's backend, you will be logged out. (your token is forgotten but not revoked)",IDC_STATIC,33,54,215,31
+    ICON            IDI_WARNING_IC,IDC_ICON_WARN_WEBSOCKETSTUFF,12,87,21,20,SS_REALSIZEIMAGE
+    LTEXT           "Wondering where the websocket gateway URL is located? Well, Discord Messenger issues a request to API_URL/gateway, which tells it the websocket URL to use.",IDC_STATIC,33,87,215,29
+    GROUPBOX        "Security Settings",IDC_STATIC,6,139,248,48
+    ICON            IDI_WARNING_IC,IDC_ICON_WARN_WEBSOCKETSTUFF2,12,166,21,20,SS_REALSIZEIMAGE
+    LTEXT           "WARNING: Disabling TLS certificate verification could expose you to MITM (man-in-the-middle) attacks via certificate spoofing!",IDC_STATIC,33,165,215,19
     CONTROL         "Enable TLS certificate verification",IDC_ENABLE_TLS_CHECKS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,151,230,10
-    GROUPBOX        "Check for Updates",IDC_STATIC,6,194,245,40
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,151,230,10
+    GROUPBOX        "Check for Updates",IDC_STATIC,6,194,248,40
     CONTROL         "Check for updates using the GitHub API",IDC_CHECK_UPDATES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,204,232,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,204,236,10
     LTEXT           "iProgramInCpp cannot see your IP address via the update service.",IDC_STATIC,12,219,231,10
 END
 
@@ -654,19 +657,19 @@ BEGIN
     IDD_DIALOG_MY_ACCOUNT, DIALOG
     BEGIN
         LEFTMARGIN, 6
-        RIGHTMARGIN, 251
+        RIGHTMARGIN, 254
         TOPMARGIN, 7
         BOTTOMMARGIN, 234
+        HORZGUIDE, 40
+        HORZGUIDE, 54
     END
 
     IDD_DIALOG_APPEARANCE, DIALOG
     BEGIN
         LEFTMARGIN, 6
-        RIGHTMARGIN, 251
-        VERTGUIDE, 12
-        VERTGUIDE, 244
+        RIGHTMARGIN, 254
         TOPMARGIN, 7
-        BOTTOMMARGIN, 232
+        BOTTOMMARGIN, 234
     END
 
     IDD_DIALOG_PROFILE_POPOUT, DIALOG
@@ -727,7 +730,7 @@ BEGIN
     IDD_DIALOG_CONNECTION, DIALOG
     BEGIN
         LEFTMARGIN, 6
-        RIGHTMARGIN, 251
+        RIGHTMARGIN, 254
         TOPMARGIN, 7
         BOTTOMMARGIN, 234
     END

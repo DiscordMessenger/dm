@@ -375,11 +375,11 @@
     <Image Include="..\res\icons\icon_boost_2k.ico">
       <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
-    <Image Include="..\res\icons\icon_guilds.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="..\res\icons\icon_scroll.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Resources\Icons</Filter>
+    </Image>
+    <Image Include="..\res\icons\icon_guilds.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

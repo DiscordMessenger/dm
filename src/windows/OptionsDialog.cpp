@@ -184,6 +184,24 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 				}
 			}
 
+			hCBox = GetDlgItem(hwndDlg, IDC_COMBO_ALIGNMENT);
+			// NOTE: these must match the order in eImageAlignment!
+			ComboBox_AddString(hCBox, TEXT("Lower right"));
+			ComboBox_AddString(hCBox, TEXT("Upper left"));
+			ComboBox_AddString(hCBox, TEXT("Center"));
+			ComboBox_AddString(hCBox, TEXT("Upper right"));
+			ComboBox_AddString(hCBox, TEXT("Lower left"));
+			ComboBox_AddString(hCBox, TEXT("Upper center"));
+			ComboBox_AddString(hCBox, TEXT("Lower center"));
+			ComboBox_AddString(hCBox, TEXT("Middle left"));
+			ComboBox_AddString(hCBox, TEXT("Middle right"));
+			ComboBox_SetCurSel(hCBox, int(GetLocalSettings()->GetImageAlignment()));
+
+			bool isWatermarkStyle = msgStyle == MS_IMAGE;
+			EnableWindow(GetDlgItem(hwndDlg, IDC_ACTIVE_IMAGE_EDIT),   isWatermarkStyle);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_ACTIVE_IMAGE_BROWSE), isWatermarkStyle);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_COMBO_ALIGNMENT),     isWatermarkStyle);
+
 			break;
 		}
 		case PG_CONNECTION:
@@ -295,10 +313,28 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 							GetLocalSettings()->SetMessageStyle(style);
 
 							bool enable = style == MS_IMAGE;
-							EnableWindow(GetDlgItem(hWnd, IDC_ACTIVE_IMAGE_BROWSE), enable);
 							EnableWindow(GetDlgItem(hWnd, IDC_ACTIVE_IMAGE_EDIT),   enable);
+							EnableWindow(GetDlgItem(hWnd, IDC_ACTIVE_IMAGE_BROWSE), enable);
+							EnableWindow(GetDlgItem(hWnd, IDC_COMBO_ALIGNMENT),     enable);
 
 							SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
+							break;
+						}
+						case IDC_COMBO_ALIGNMENT:
+						{
+							if (HIWORD(wParam) != CBN_SELCHANGE)
+								break;
+
+							int sel = ComboBox_GetCurSel((HWND)lParam);
+							if (sel == CB_ERR || sel < 0 || sel >= int(ALIGN_COUNT))
+								break;
+
+							eImageAlignment align = eImageAlignment(sel);
+							GetLocalSettings()->SetImageAlignment(align);
+
+							if (GetLocalSettings()->GetMessageStyle() == MS_IMAGE)
+								SendMessage(g_Hwnd, WM_REPAINTMSGLIST, 0, 0);
+
 							break;
 						}
 						case IDC_ACTIVE_IMAGE_BROWSE:

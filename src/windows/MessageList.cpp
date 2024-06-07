@@ -1442,6 +1442,8 @@ void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem
 	COLORREF old = CLR_NONE;
 	if (attachItem.m_bHighlighted && inView)
 		old = SetTextColor(hdc, RGB(0, 0, 255));
+	else
+		old = SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
 
 	LPCTSTR name = attachItem.m_nameText;
 	RECT rcMeasure;
@@ -1479,9 +1481,10 @@ void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem
 
 	attachItem.m_textRect = textRect;
 
-	if (attachItem.m_bHighlighted && inView)
-		SetTextColor(hdc, old);
-	
+	uint32_t oc = SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+	if (old == CLR_NONE)
+		old = oc;
+
 	LPCTSTR sizeStr = attachItem.m_sizeText;
 	textRect.top += rcMeasure.bottom;
 	textRect.bottom += rcMeasure.bottom;
@@ -1491,6 +1494,9 @@ void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem
 		SelectObject(hdc, g_DateTextFont);
 		DrawText(hdc, sizeStr, -1, &textRect, DT_NOPREFIX | DT_NOCLIP);
 	}
+
+	if (old != CLR_NONE)
+		SetTextColor(hdc, old);
 
 	int dlIconSize = iconSize / 2;
 
@@ -2790,10 +2796,35 @@ void MessageList::PaintBackground(HDC hdc, RECT& paintRect, RECT& rcClient)
 		BITMAP bm{};
 		GetObject(m_backgroundImage, (int)sizeof bm, &bm);
 
-		int x = rcClient.right - bm.bmWidth;
-		int y = rcClient.bottom - bm.bmHeight;
+		int x = 0, y = 0;
+		// x axis
+		switch (GetLocalSettings()->GetImageAlignment())
+		{
+			case ALIGN_UPPER_LEFT:
+			case ALIGN_MIDDLE_LEFT:
+			case ALIGN_LOWER_LEFT:  x = 0; break;
+			case ALIGN_UPPER_CENTER:
+			case ALIGN_CENTER:
+			case ALIGN_LOWER_CENTER:  x = rcClient.left + (rcClient.right - rcClient.left - bm.bmWidth) / 2; break;
+			case ALIGN_UPPER_RIGHT:
+			case ALIGN_MIDDLE_RIGHT:
+			case ALIGN_LOWER_RIGHT:  x = rcClient.right - bm.bmWidth; break;
+		}
+		// y axis
+		switch (GetLocalSettings()->GetImageAlignment())
+		{
+			case ALIGN_UPPER_LEFT:
+			case ALIGN_UPPER_CENTER:
+			case ALIGN_UPPER_RIGHT:  y = 0; break;
+			case ALIGN_MIDDLE_LEFT:
+			case ALIGN_CENTER:
+			case ALIGN_MIDDLE_RIGHT: y = rcClient.top + (rcClient.bottom - rcClient.top - bm.bmHeight) / 2; break;
+			case ALIGN_LOWER_LEFT:
+			case ALIGN_LOWER_CENTER:
+			case ALIGN_LOWER_RIGHT:  y = rcClient.bottom - bm.bmHeight; break;
+		}
 
-		RECT rcImg = { x, y, rcClient.right, rcClient.bottom };
+		RECT rcImg = { x, y, x + bm.bmWidth, y + bm.bmHeight };
 		RECT dummy;
 		if (!IntersectRect(&dummy, &rcImg, &paintRect))
 			return;

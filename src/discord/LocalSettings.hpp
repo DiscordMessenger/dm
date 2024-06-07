@@ -15,6 +15,20 @@ enum eMessageStyle
 	MS_MAX,
 };
 
+enum eImageAlignment
+{
+	ALIGN_LOWER_RIGHT,
+	ALIGN_UPPER_LEFT,
+	ALIGN_CENTER,
+	ALIGN_UPPER_RIGHT,
+	ALIGN_LOWER_LEFT,
+	ALIGN_UPPER_CENTER,
+	ALIGN_LOWER_CENTER,
+	ALIGN_MIDDLE_LEFT,
+	ALIGN_MIDDLE_RIGHT,
+	ALIGN_COUNT,
+};
+
 class LocalSettings
 {
 public:
@@ -113,6 +127,12 @@ public:
 	void SetImageBackgroundFileName(const std::string& fn) {
 		m_imageBackgroundFileName = fn;
 	}
+	eImageAlignment GetImageAlignment() const {
+		return m_imageAlignment;
+	}
+	void SetImageAlignment(eImageAlignment align) {
+		m_imageAlignment = align;
+	}
 
 private:
 	std::string m_token;
@@ -120,6 +140,7 @@ private:
 	std::string m_discordCdn;
 	std::set<std::string> m_trustedDomains;
 	eMessageStyle m_messageStyle = MS_GRADIENT;
+	eImageAlignment m_imageAlignment = ALIGN_LOWER_RIGHT;
 	std::string m_imageBackgroundFileName = "";
 	bool m_bReplyMentionDefault = true;
 	bool m_bSaveWindowSize = false;
@@ -129,7 +150,7 @@ private:
 	bool m_bAskToCheckUpdates = true;
 	bool m_bEnableTLSVerification = true;
 	bool m_bDisableFormatting = false;
-	bool m_bShowScrollBarOnGuildList = true;
+	bool m_bShowScrollBarOnGuildList = false;
 	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
 	int m_height = 700;
