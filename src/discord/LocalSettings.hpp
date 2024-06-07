@@ -101,6 +101,12 @@ public:
 	void SetDisableFormatting(bool b) {
 		m_bDisableFormatting = b;
 	}
+	bool ShowScrollBarOnGuildList() const {
+		return m_bShowScrollBarOnGuildList;
+	}
+	void SetShowScrollBarOnGuildList(bool b) {
+		m_bShowScrollBarOnGuildList = b;
+	}
 	const std::string& GetImageBackgroundFileName() const {
 		return m_imageBackgroundFileName;
 	}
@@ -123,6 +129,7 @@ private:
 	bool m_bAskToCheckUpdates = true;
 	bool m_bEnableTLSVerification = true;
 	bool m_bDisableFormatting = false;
+	bool m_bShowScrollBarOnGuildList = true;
 	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
 	int m_height = 700;

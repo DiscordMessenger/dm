@@ -1,4 +1,5 @@
 #include "GuildLister.hpp"
+#include "../discord/LocalSettings.hpp"
 
 #define C_GUILD_ICON_WIDTH (PROFILE_PICTURE_SIZE + 4)
 #define C_GUILD_GAP_HEIGHT 5
@@ -15,6 +16,13 @@ WNDCLASS GuildLister::g_GuildListerClass;
 WNDCLASS GuildLister::g_GuildListerParentClass;
 GuildLister::GuildLister() {}
 
+extern int g_GuildListerWidth;
+
+enum {
+	GCMD_MORE,
+	GCMD_BAR,
+};
+
 GuildLister::~GuildLister()
 {
 	if (m_hwnd)
@@ -23,6 +31,11 @@ GuildLister::~GuildLister()
 		assert(b && "was window already destroyed?");
 		m_hwnd = NULL;
 	}
+
+	assert(!m_more_btn_hwnd);
+	assert(!m_bar_btn_hwnd);
+	assert(!m_tooltip_hwnd);
+	assert(!m_scrollable_hwnd);
 }
 
 static int GetProfileBorderRenderSize()
@@ -36,8 +49,32 @@ void GuildLister::ProperlyResizeSubWindows()
 	GetClientRect(m_hwnd, &rect);
 	rect2 = rect;
 
-	MoveWindow(m_scrollable_hwnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
+	int buttonHeight = ScaleByDPI(24);
+
+	bool wasScrollBarVisible = m_bIsScrollBarVisible;
+	m_bIsScrollBarVisible = rect.right - rect.left > g_GuildListerWidth;
+
+	if (wasScrollBarVisible != m_bIsScrollBarVisible) {
+		if (wasScrollBarVisible) {
+			SaveScrollInfo();
+			ShowScrollBar(m_scrollable_hwnd, SB_VERT, FALSE);
+			MoveWindow(m_scrollable_hwnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top - buttonHeight, true);
+		}
+		else {
+			MoveWindow(m_scrollable_hwnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top - buttonHeight, true);
+			ShowScrollBar(m_scrollable_hwnd, SB_VERT, TRUE);
+			RestoreScrollInfo();
+		}
+	}
+	else {
+		MoveWindow(m_scrollable_hwnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top - buttonHeight, true);
+	}
+
 	rect = rect2;
+
+	int buttonWidth = (rect.right - rect.left) / 2;
+	MoveWindow(m_more_btn_hwnd, rect.left, rect.bottom - buttonHeight, buttonWidth, buttonHeight, true);
+	MoveWindow(m_bar_btn_hwnd,  rect.right - buttonWidth, rect.bottom - buttonHeight, buttonWidth, buttonHeight, true);
 }
 
 void GuildLister::ClearTooltips()
@@ -58,7 +95,13 @@ void GuildLister::UpdateTooltips()
 
 	RECT rect = {};
 	GetClientRect(m_scrollable_hwnd, &rect);
-	int y = -m_scroll_pos;
+
+	SCROLLINFO si{};
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_POS;
+	GetScrollInfo(&si);
+
+	int y = -si.nPos;
 	int height = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 
 	TRACKMOUSEEVENT tme;
@@ -111,10 +154,13 @@ void GuildLister::Update()
 {
 	InvalidateRect(m_hwnd, NULL, false);
 	UpdateTooltips();
+	UpdateScrollBar();
 }
 
 void GuildLister::UpdateSelected()
 {
+	UpdateScrollBar();
+
 	auto it = m_iconRects.find(m_selectedGuild);
 	if (it != m_iconRects.end()) {
 		InvalidateRect(m_hwnd, NULL, TRUE);
@@ -125,6 +171,99 @@ void GuildLister::UpdateSelected()
 	if (it != m_iconRects.end()) {
 		InvalidateRect(m_hwnd, NULL, TRUE);
 	}
+}
+
+void GuildLister::UpdateScrollBar()
+{
+	RECT rcClient{};
+	GetClientRect(m_scrollable_hwnd, &rcClient);
+
+	SCROLLINFO si{};
+	si.cbSize = sizeof si;
+	si.fMask = SIF_POS;
+	GetScrollInfo(&si);
+	si.fMask |= SIF_RANGE | SIF_PAGE;
+	si.nMin = 0;
+	si.nMax = GetScrollableHeight();
+	si.nPage = rcClient.bottom - rcClient.top;
+	SetScrollInfo(&si);
+}
+
+void GuildLister::GetScrollInfo(SCROLLINFO* pInfo)
+{
+	if (m_bIsScrollBarVisible) {
+		::GetScrollInfo(m_scrollable_hwnd, SB_VERT, pInfo);
+		return;
+	}
+
+	if (pInfo->fMask & SIF_RANGE) {
+		pInfo->nMin = m_simulatedScrollInfo.nMin;
+		pInfo->nMax = m_simulatedScrollInfo.nMax;
+	}
+
+	if (pInfo->fMask & SIF_PAGE) {
+		pInfo->nPage = m_simulatedScrollInfo.nPage;
+	}
+
+	if (pInfo->fMask & SIF_POS) {
+		pInfo->nPos = m_simulatedScrollInfo.nPos;
+	}
+
+	if (pInfo->fMask & SIF_TRACKPOS) {
+		pInfo->nTrackPos = m_simulatedScrollInfo.nTrackPos;
+	}
+}
+
+void GuildLister::SetScrollInfo(SCROLLINFO* pInfo, bool redraw)
+{
+	if (m_bIsScrollBarVisible) {
+		::SetScrollInfo(m_scrollable_hwnd, SB_VERT, pInfo, redraw);
+		return;
+	}
+
+	SCROLLINFO& si = m_simulatedScrollInfo;
+
+	if (pInfo->fMask & SIF_RANGE) {
+		si.nMin = pInfo->nMin;
+		si.nMax = pInfo->nMax;
+	}
+
+	if (pInfo->fMask & SIF_PAGE) {
+		si.nPage = pInfo->nPage;
+		if (si.nPage < 0) si.nPage = 0;
+		if (si.nPage > si.nMax-si.nMin+1) si.nPage = si.nMax-si.nMin+1;
+	}
+
+	if (pInfo->fMask & SIF_POS) {
+		int& pos = m_simulatedScrollInfo.nPos;
+		pos = pInfo->nPos;
+
+		if (pos < si.nMin)
+			pos = si.nMin;
+		if (pos > si.nMax - std::max(si.nPage - 1, 0U))
+			pos = si.nMax - std::max(si.nPage - 1, 0U);
+	}
+}
+
+void GuildLister::SaveScrollInfo()
+{
+	SCROLLINFO& si = m_simulatedScrollInfo;
+	si.cbSize = sizeof m_simulatedScrollInfo;
+	si.fMask = SIF_ALL;
+	::GetScrollInfo(m_scrollable_hwnd, SB_VERT, &si);
+}
+
+void GuildLister::RestoreScrollInfo()
+{
+	RECT rcClient{};
+	GetClientRect(m_scrollable_hwnd, &rcClient);
+	SCROLLINFO& si = m_simulatedScrollInfo;
+	si.cbSize = sizeof si;
+	si.fMask = SIF_ALL;
+	si.nMin = 0;
+	si.nMax = GetScrollableHeight();
+	si.nPage = rcClient.bottom - rcClient.top;
+	::SetScrollInfo(m_scrollable_hwnd, SB_VERT, &m_simulatedScrollInfo, TRUE);
 }
 
 void GuildLister::OnScroll()
@@ -280,6 +419,22 @@ LRESULT CALLBACK GuildLister::ParentWndProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 
 			break;
 		}
+		case WM_COMMAND:
+		{
+			switch (LOWORD(wParam))
+			{
+				case GCMD_MORE:
+					DbgPrintW("More. TODO");
+					break;
+
+				case GCMD_BAR:
+					GetLocalSettings()->SetShowScrollBarOnGuildList(
+						!GetLocalSettings()->ShowScrollBarOnGuildList()
+					);
+					SendMessage(g_Hwnd, WM_REPOSITIONEVERYTHING, 0, 0);
+					break;
+			}
+		}
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -393,6 +548,7 @@ std::string MakeIconStringFromName(const std::string& name)
 
 LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	SCROLLINFO si{};
 	GuildLister* pThis = (GuildLister*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 
 	switch (uMsg)
@@ -407,6 +563,23 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_CREATE:
 		{
+			si.cbSize = sizeof si;
+			si.nPos = 0;
+			si.nMin = 0;
+			si.nMax = 0;
+
+			break;
+		}
+		case WM_DESTROY:
+		{
+			DestroyWindow(pThis->m_scrollable_hwnd);
+			DestroyWindow(pThis->m_tooltip_hwnd);
+			DestroyWindow(pThis->m_more_btn_hwnd);
+			DestroyWindow(pThis->m_bar_btn_hwnd);
+			pThis->m_scrollable_hwnd = NULL;
+			pThis->m_tooltip_hwnd    = NULL;
+			pThis->m_more_btn_hwnd   = NULL;
+			pThis->m_bar_btn_hwnd    = NULL;
 			break;
 		}
 		case WM_LBUTTONDOWN:
@@ -420,7 +593,12 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			GetClientRect(hWnd, &rect);
 			POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 			Snowflake selected = 2;
-			int y = -pThis->m_scroll_pos;
+
+			si.cbSize = sizeof(si);
+			si.fMask = SIF_POS;
+			pThis->GetScrollInfo(&si);
+
+			int y = -si.nPos;
 			int height = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 
 			TRACKMOUSEEVENT tme;
@@ -469,20 +647,73 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			GetClientRect(hWnd, &rect);
 			short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 
-			int max = GetScrollableHeight() - (rect.bottom - rect.top);
+			si.cbSize = sizeof(si);
+			si.fMask = SIF_TRACKPOS | SIF_POS | SIF_RANGE;
+			pThis->GetScrollInfo(&si);
+			si.nTrackPos = si.nPos - (zDelta / 3);
+			if (si.nTrackPos < si.nMin) si.nTrackPos = si.nMin;
+			if (si.nTrackPos > si.nMax) si.nTrackPos = si.nMax;
+			pThis->SetScrollInfo(&si, false);
 
-			int oldScroll = pThis->m_scroll_pos;
+			wParam = SB_THUMBTRACK;
+			goto VscrollLabel;
+		}
+		case WM_VSCROLL:
+		{
+			si.cbSize = sizeof(si);
+			si.fMask = SIF_ALL;
+			pThis->GetScrollInfo(&si);
 
-			pThis->m_scroll_pos -= zDelta / 3;
-			if (pThis->m_scroll_pos > max)
-				pThis->m_scroll_pos = max;
-			if (pThis->m_scroll_pos < 0)
-				pThis->m_scroll_pos = 0;
+		VscrollLabel:;
+			int diffUpDown = 0;
 
-			WindowScroll(pThis->m_scrollable_hwnd, pThis->m_scroll_pos - oldScroll);
+			RECT rect;
+			GetClientRect(hWnd, &rect);
 
-			pThis->OnScroll();
+			int scrollBarWidth = GetSystemMetrics(SM_CXVSCROLL);
 
+			TEXTMETRIC tm;
+			HDC hdc = GetDC(hWnd);
+			GetTextMetrics(hdc, &tm);
+			ReleaseDC(hWnd, hdc);
+
+			int yChar = tm.tmHeight + tm.tmExternalLeading;
+
+			switch (LOWORD(wParam))
+			{
+				case SB_ENDSCROLL:
+					// nPos is correct
+					break;
+				case SB_THUMBTRACK:
+					si.nPos = si.nTrackPos;
+					break;
+				case SB_LINEUP:
+					si.nPos -= yChar;
+					break;
+				case SB_LINEDOWN:
+					si.nPos += yChar;
+					break;
+				case SB_PAGEUP:
+					si.nPos -= si.nPage;
+					break;
+				case SB_PAGEDOWN:
+					si.nPos += si.nPage;
+					break;
+				case SB_TOP:
+					si.nPos = si.nMin;
+					break;
+				case SB_BOTTOM:
+					si.nPos = si.nMax;
+					break;
+			}
+
+			pThis->SetScrollInfo(&si);
+			pThis->GetScrollInfo(&si);
+
+			diffUpDown = si.nPos - pThis->m_oldPos;
+			pThis->m_oldPos = si.nPos;
+
+			WindowScroll(hWnd, diffUpDown);
 			break;
 		}
 		case WM_LBUTTONUP:
@@ -491,7 +722,12 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 			RECT rect = {};
 			GetClientRect(hWnd, &rect);
-			int y = -pThis->m_scroll_pos;
+
+			si.cbSize = sizeof(si);
+			si.fMask = SIF_POS;
+			pThis->GetScrollInfo(&si);
+
+			int y = -si.nPos;
 			int height = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 			POINT oript = pt;
 
@@ -576,7 +812,11 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			RECT rect = {};
 			GetClientRect(hWnd, &rect);
 
-			int y = -pThis->m_scroll_pos;
+			si.cbSize = sizeof(si);
+			si.fMask = SIF_POS;
+			pThis->GetScrollInfo(&si);
+
+			int y = -si.nPos;
 			RECT initialRect = rect;
 			initialRect.bottom = y;
 
@@ -654,6 +894,11 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			EndPaint(hWnd, &ps);
 			break;
 		}
+		case WM_SIZE:
+		{
+			pThis->UpdateScrollBar();
+			break;
+		}
 		case WM_GESTURE:
 		{
 			HandleGestureMessage(hWnd, uMsg, wParam, lParam, 3.0f);
@@ -669,6 +914,7 @@ void GuildLister::InitializeClass()
 	WNDCLASS& wc1 = g_GuildListerParentClass;
 
 	wc1.lpszClassName = T_GUILD_LISTER_PARENT_CLASS;
+	wc1.hbrBackground = g_backgroundBrush;
 	wc1.style         = 0;
 	wc1.hCursor       = LoadCursor(0, IDC_ARROW);
 	wc1.lpfnWndProc   = GuildLister::ParentWndProc;
@@ -697,13 +943,15 @@ GuildLister* GuildLister::Create(HWND hwnd, LPRECT pRect)
 	flagsex |= WS_EX_CLIENTEDGE;
 #endif
 
+	newThis->m_bIsScrollBarVisible = false;
+
 	newThis->m_hwnd = CreateWindowEx(
 		flagsex, T_GUILD_LISTER_PARENT_CLASS, NULL, WS_CHILD | WS_VISIBLE,
 		pRect->left, pRect->top, width, height, hwnd, (HMENU)CID_GUILDLISTER, g_hInstance, newThis
 	);
 
 	newThis->m_scrollable_hwnd = CreateWindowEx(
-		0, T_GUILD_LISTER_CLASS, NULL, WS_CHILD | WS_VISIBLE,
+		0, T_GUILD_LISTER_CLASS, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL,
 		0, 0, width - 4, height - 4, newThis->m_hwnd, (HMENU)1, g_hInstance, newThis
 	);
 
@@ -711,6 +959,23 @@ GuildLister* GuildLister::Create(HWND hwnd, LPRECT pRect)
 		WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
 		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, newThis->m_scrollable_hwnd, NULL, g_hInstance, NULL
 	);
+
+	newThis->m_more_btn_hwnd = CreateWindow(
+		WC_BUTTON, TEXT(""), BS_PUSHBUTTON | BS_ICON | WS_CHILD | WS_VISIBLE,
+		0, 0, 1, 1, newThis->m_hwnd, (HMENU) GCMD_MORE, g_hInstance, NULL
+	);
+
+	newThis->m_bar_btn_hwnd = CreateWindow(
+		WC_BUTTON, TEXT(""), BS_PUSHBUTTON | BS_ICON | WS_CHILD | WS_VISIBLE,
+		0, 0, 1, 1, newThis->m_hwnd, (HMENU) GCMD_BAR, g_hInstance, NULL
+	);
+
+	ShowScrollBar(newThis->m_scrollable_hwnd, SB_VERT, false);
+
+	// TODO: other icons
+	int smcx = GetSystemMetrics(SM_CXSMICON);
+	SendMessage(newThis->m_more_btn_hwnd, BM_SETIMAGE, (WPARAM) IMAGE_ICON, (LPARAM) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_GUILDS), IMAGE_ICON, smcx, smcx, LR_SHARED | LR_CREATEDIBSECTION));
+	SendMessage(newThis->m_bar_btn_hwnd,  BM_SETIMAGE, (WPARAM) IMAGE_ICON, (LPARAM) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_SCROLL), IMAGE_ICON, smcx, smcx, LR_SHARED | LR_CREATEDIBSECTION));
 
 	SetWindowPos(newThis->m_tooltip_hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 	

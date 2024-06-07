@@ -3118,7 +3118,6 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			wParam = SB_THUMBTRACK;
 			goto _lbl;
-			break;
 		}
 		case WM_GESTURE:
 		{

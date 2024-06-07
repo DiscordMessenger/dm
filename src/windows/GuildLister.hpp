@@ -20,8 +20,12 @@ public:
 	HWND m_hwnd            = NULL;
 	HWND m_scrollable_hwnd = NULL;
 	HWND m_tooltip_hwnd    = NULL;
+	HWND m_more_btn_hwnd   = NULL;
+	HWND m_bar_btn_hwnd    = NULL;
 
-	int m_scroll_pos = 0;
+	bool m_bIsScrollBarVisible = false;
+	SCROLLINFO m_simulatedScrollInfo{};
+	int m_oldPos = 0;
 
 	Snowflake m_rightClickedGuild = 0;
 	Snowflake m_selectedGuild = 0; // kept in store to ensure that things don't flicker too much
@@ -38,10 +42,15 @@ public:
 	void UpdateTooltips();
 	void Update();
 	void UpdateSelected();
+	void UpdateScrollBar();
 	void OnScroll();
 	void ShowMenu(Snowflake guild, POINT pt);
 	void AskLeave(Snowflake guild);
 	void RedrawIconForGuild(Snowflake guild);
+	void GetScrollInfo(SCROLLINFO* pInfo);
+	void SetScrollInfo(SCROLLINFO* pInfo, bool redraw = true);
+	void SaveScrollInfo();
+	void RestoreScrollInfo();
 
 private:
 	void DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, const std::string& textOver, bool hasAlpha);

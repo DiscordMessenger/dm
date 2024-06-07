@@ -77,6 +77,9 @@ bool LocalSettings::Load()
 	if (j.contains("DisableFormatting"))
 		m_bDisableFormatting = j["DisableFormatting"];
 
+	if (j.contains("ShowScrollBarOnGuildList"))
+		m_bShowScrollBarOnGuildList = j["ShowScrollBarOnGuildList"];
+
 	if (j.contains("ImageBackgroundFileName"))
 		m_imageBackgroundFileName = j["ImageBackgroundFileName"];
 
@@ -126,6 +129,7 @@ bool LocalSettings::Save()
 	j["CheckUpdates"] = m_bCheckUpdates;
 	j["EnableTLSVerification"] = m_bEnableTLSVerification;
 	j["DisableFormatting"] = m_bDisableFormatting;
+	j["ShowScrollBarOnGuildList"] = m_bShowScrollBarOnGuildList;
 	j["RemindUpdateCheckOn"] = (long long)(m_remindUpdatesOn);
 	j["ImageBackgroundFileName"] = m_imageBackgroundFileName;
 

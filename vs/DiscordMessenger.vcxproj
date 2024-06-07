@@ -379,6 +379,7 @@
     <Image Include="..\res\icons\icon_file_2k.ico" />
     <Image Include="..\res\icons\icon_groupdm.ico" />
     <Image Include="..\res\icons\icon_groupdm_2k.ico" />
+    <Image Include="..\res\icons\icon_guilds.ico" />
     <Image Include="..\res\icons\icon_header_1.ico" />
     <Image Include="..\res\icons\icon_header_2.ico" />
     <Image Include="..\res\icons\icon_header_3.ico" />
@@ -415,6 +416,7 @@
     <Image Include="..\res\icons\icon_profile_border_sel_2k.ico" />
     <Image Include="..\res\icons\icon_reply_line.ico" />
     <Image Include="..\res\icons\icon_reply_line_2k.ico" />
+    <Image Include="..\res\icons\icon_scroll.ico" />
     <Image Include="..\res\icons\icon_send.ico" />
     <Image Include="..\res\icons\icon_send_2k.ico" />
     <Image Include="..\res\icons\icon_server.ico" />

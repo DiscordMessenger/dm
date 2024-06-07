@@ -94,6 +94,11 @@
 #define IDR_AVI_UPLOAD_LC               94
 #define IDI_BOOST                       95
 #define IDI_BOOST_2K                    96
+#define IDD_GUILD_CHOOSER               101
+#define IDD_DIALOG_GUILD_CHOOSER        101
+#define IDI_GUILDS                      103
+#define IDI_ICON2                       104
+#define IDI_SCROLL                      104
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -351,6 +356,7 @@
 #define IDC_SAVE_WINDOW_SIZE            859
 #define IDC_START_MAXIMIZED             860
 #define IDC_QUICK_QUERY                 861
+#define IDC_SCROLL_BAR_ON_GUILDS        861
 #define IDC_CHANNEL_LIST                862
 #define IDC_QUICK_GROUP                 863
 #define IDC_EDIT_DISCORDAPI             864
@@ -375,6 +381,7 @@
 #define IDC_ACTIVE_IMAGE_BROWSE         884
 #define IDC_ACTIVE_IMAGE_EDIT           886
 #define IDC_COMBOBOXEX1                 887
+#define IDC_GUILD_LIST                  888
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
 #define ID_FILE_EXIT                    1003
@@ -451,9 +458,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        101
+#define _APS_NEXT_RESOURCE_VALUE        105
 #define _APS_NEXT_COMMAND_VALUE         1069
-#define _APS_NEXT_CONTROL_VALUE         888
+#define _APS_NEXT_CONTROL_VALUE         889
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif
 #endif

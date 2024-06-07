@@ -386,6 +386,10 @@ IDI_BOOST               ICON                    "../res/icons/icon_boost.ico"
 
 IDI_BOOST_2K            ICON                    "../res/icons/icon_boost_2k.ico"
 
+IDI_GUILDS              ICON                    "../res/icons/icon_guilds.ico"
+
+IDI_SCROLL              ICON                    "../res/icons/icon_scroll.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -448,17 +452,19 @@ BEGIN
     CONTROL         "Compact: Fit more messages on screen at one time. #IRC",IDC_APPEARANCE_COMPACT,
                     "Button",BS_AUTORADIOBUTTON,12,30,232,10
     GROUPBOX        "Message List Style",IDC_MSTYLE_BOX,6,95,245,46
-    GROUPBOX        "Window Settings",IDC_STATIC,6,144,245,38
+    GROUPBOX        "Window Settings",IDC_STATIC,6,144,245,52
     CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,156,232,10
-    CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,168,232,10
+    CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,169,232,10
     CONTROL         "Disable markdown formatting",IDC_DISABLE_FORMATTING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,45,232,10
     LTEXT           "Disable markdown formatting if:\n- You operate frequently with right-to-left scripts such as Arabic.\n- You are running into performance issues (message channels are taking too long to load, etc)",IDC_STATIC,12,57,232,34
     LTEXT           "Message theme:",IDC_STATIC,12,105,63,13,SS_CENTERIMAGE
     PUSHBUTTON      "Change...",IDC_ACTIVE_IMAGE_BROWSE,194,122,50,14
-    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,57,122,133,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,60,122,130,14,ES_AUTOHSCROLL | ES_READONLY
     LTEXT           "Active image:",IDC_STATIC,12,122,46,14,SS_CENTERIMAGE
     COMBOBOX        IDC_MESSAGE_STYLE,81,105,163,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Show scroll bar on server list",IDC_SCROLL_BAR_ON_GUILDS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,182,232,10
 END
 
 IDD_DIALOG_PROFILE_POPOUT DIALOGEX 0, 0, 126, 134
@@ -611,6 +617,17 @@ BEGIN
     CONTROL         "",IDC_PROGRESS_ANIMATE,"SysAnimate32",ACS_CENTER | ACS_TRANSPARENT | ACS_AUTOPLAY | WS_TABSTOP,6,6,264,36
 END
 
+IDD_DIALOG_GUILD_CHOOSER DIALOGEX 0, 0, 309, 251
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Server Chooser"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Go!",IDOK,198,230,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,252,230,50,14
+    LTEXT           "Here are all the guilds you're in. Select one below:",IDC_STATIC,7,7,295,8
+    CONTROL         "",IDC_GUILD_LIST,"SysListView32",LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,19,295,208
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -722,6 +739,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 128
     END
+
+    IDD_DIALOG_GUILD_CHOOSER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 244
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -806,6 +831,11 @@ BEGIN
 END
 
 IDD_DIALOG_UPLOADING AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_GUILD_CHOOSER AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

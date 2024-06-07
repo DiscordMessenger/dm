@@ -41,6 +41,7 @@ int g_GuildHeaderHeight;
 int g_GuildListerWidth;
 int g_MemberListWidth;
 int g_MessageEditorHeight;
+int g_GuildListerWidth2;
 
 StatusBar  * g_pStatusBar;
 MessageList* g_pMessageList;
@@ -240,13 +241,24 @@ void ProperlySizeControls(HWND hWnd)
 	g_MemberListWidth      = ScaleByDPI(MEMBER_LIST_WIDTH);
 	g_MessageEditorHeight  = ScaleByDPI(MESSAGE_EDITOR_HEIGHT);
 
+	int guildListerWidth = g_GuildListerWidth;
+	int channelViewListWidth = g_ChannelViewListWidth;
+	if (GetLocalSettings()->ShowScrollBarOnGuildList()) {
+		int offset = GetSystemMetrics(SM_CXVSCROLL);
+		guildListerWidth += offset;
+		channelViewListWidth -= offset;
+	}
+
+	bool bRepaintGuildHeader = g_GuildListerWidth2 != guildListerWidth;
+	g_GuildListerWidth2 = guildListerWidth;
+
 	bool bRepaint = true;
 
 	// Create a message list
-	rect.left += g_GuildListerWidth + scaled10;
+	rect.left += guildListerWidth + scaled10;
 	rect.bottom -= g_MessageEditorHeight + g_pMessageEditor->ExpandedBy() + scaled10;
 	rect.top += g_GuildHeaderHeight;
-	if (g_bChannelListVisible) rect.left += g_ChannelViewListWidth + scaled10;
+	if (g_bChannelListVisible) rect.left += channelViewListWidth + scaled10;
 	if (g_bMemberListVisible) rect.right -= g_MemberListWidth + scaled10;
 	MoveWindow(hWndMsg, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
 
@@ -257,33 +269,33 @@ void ProperlySizeControls(HWND hWnd)
 	MoveWindow(hWndMel, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
 	rect = rect2;
 
-	rect.left += g_GuildListerWidth + scaled10;
-	rect.right = rect.left + g_ChannelViewListWidth;
+	rect.left += guildListerWidth + scaled10;
+	rect.right = rect.left + channelViewListWidth;
 	rect.bottom -= g_BottomBarHeight;
 	rect.top += g_GuildHeaderHeight;
 	MoveWindow(hWndChv, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
 	rect = rect2;
 
-	rect.left += g_GuildListerWidth + scaled10;
+	rect.left += guildListerWidth + scaled10;
 	rect.top = rect.bottom - g_BottomBarHeight + scaled10;
-	rect.right = rect.left + g_ChannelViewListWidth;
+	rect.right = rect.left + channelViewListWidth;
 	MoveWindow(hWndPfv, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
 	rect = rect2;
 
-	rect.left   = scaled10 + g_GuildListerWidth + scaled10;
+	rect.left   = scaled10 + guildListerWidth + scaled10;
 	rect.top    = rect.bottom - g_MessageEditorHeight - g_pMessageEditor->ExpandedBy();
-	if (g_bChannelListVisible) rect.left += g_ChannelViewListWidth + scaled10;
+	if (g_bChannelListVisible) rect.left += channelViewListWidth + scaled10;
 	if (g_bMemberListVisible) rect.right -= g_MemberListWidth + scaled10;
 	int textInputHeight = rect.bottom - rect.top, textInputWidth = rect.right - rect.left;
 	MoveWindow(hWndTin, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
 	rect = rect2;
 
-	rect.left += g_GuildListerWidth + scaled10;
+	rect.left += guildListerWidth + scaled10;
 	rect.bottom = rect.top + g_GuildHeaderHeight - scaled10;
-	MoveWindow(hWndGuh, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, FALSE);
+	MoveWindow(hWndGuh, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaintGuildHeader);
 	rect = rect2;
 
-	rect.right = rect.left + g_GuildListerWidth;
+	rect.right = rect.left + guildListerWidth;
 	MoveWindow(hWndGul, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
 	rect = rect2;
 
@@ -1080,6 +1092,11 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetLocalSettings()->SetWindowSize(UnscaleByDPI(width), UnscaleByDPI(height));
 
 			ProfilePopout::Dismiss();
+			ProperlySizeControls(hWnd);
+			break;
+		}
+		case WM_REPOSITIONEVERYTHING:
+		{
 			ProperlySizeControls(hWnd);
 			break;
 		}
