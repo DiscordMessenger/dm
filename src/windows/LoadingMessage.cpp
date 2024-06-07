@@ -131,13 +131,15 @@ LRESULT CALLBACK LoadingMessage::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 			textRect.top += MulDiv(textRect.bottom - textRect.top, 3, 4);
 			HGDIOBJ old = SelectObject(hdc, g_AuthorTextFont);
 			COLORREF oldClr = SetBkColor(hdc, GetSysColor(COLOR_3DFACE));
-			
+			COLORREF oldTClr = SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+
 			DrawText(hdc, TEXT("Please wait, connecting to Discord..."), -1, &textRect, DT_CENTER);
 
-			int iconSize = GetSystemMetrics(SM_CXICON) * 2;
 			SelectObject(hdc, old);
+			SetTextColor(hdc, oldTClr);
 			SetBkColor(hdc, oldClr);
 
+			int iconSize = GetSystemMetrics(SM_CXICON) * 2;
 			int x = (rect.right - rect.left - iconSize) / 2;
 			int y = (textRect.top - rect.top - iconSize) / 2;
 			DrawIconEx(hdc, x, y, pThis->m_icon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
