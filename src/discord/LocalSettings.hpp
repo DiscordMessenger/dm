@@ -10,6 +10,8 @@ enum eMessageStyle
 	MS_FLAT,
 	MS_GRADIENT,
 	MS_FLATBR,
+
+	MS_MAX,
 };
 
 class LocalSettings

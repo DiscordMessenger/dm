@@ -444,20 +444,21 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     GROUPBOX        "Message Display",IDC_MDISPLAY_BOX,6,6,245,88
     CONTROL         "Cozy: Modern, beautiful, and easy on your eyes.",IDC_APPEARANCE_COZY,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,18,174,10
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,18,232,10
     CONTROL         "Compact: Fit more messages on screen at one time. #IRC",IDC_APPEARANCE_COMPACT,
-                    "Button",BS_AUTORADIOBUTTON,12,30,201,10
-    GROUPBOX        "Message Style",IDC_MSTYLE_BOX,6,95,245,66
-    CONTROL         "3-D Frame",IDC_RADIO_3D_FRAME,"Button",BS_AUTORADIOBUTTON | WS_GROUP,12,106,49,10
-    CONTROL         "Gradient",IDC_RADIO_GRADIENT,"Button",BS_AUTORADIOBUTTON,12,119,43,10
-    CONTROL         "Flat Color 1",IDC_RADIO_FLAT_1,"Button",BS_AUTORADIOBUTTON,12,132,53,10
-    CONTROL         "Flat Color 2",IDC_RADIO_FLAT_2,"Button",BS_AUTORADIOBUTTON,12,145,53,10
-    GROUPBOX        "Window Settings",IDC_STATIC,6,161,245,38
-    CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,172,72,10
-    CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,184,67,10
+                    "Button",BS_AUTORADIOBUTTON,12,30,232,10
+    GROUPBOX        "Message List Style",IDC_MSTYLE_BOX,6,95,245,46
+    GROUPBOX        "Window Settings",IDC_STATIC,6,144,245,38
+    CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,156,232,10
+    CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,168,232,10
     CONTROL         "Disable markdown formatting",IDC_DISABLE_FORMATTING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,45,228,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,45,232,10
     LTEXT           "Disable markdown formatting if:\n- You operate frequently with right-to-left scripts such as Arabic.\n- You are running into performance issues (message channels are taking too long to load, etc)",IDC_STATIC,12,57,232,34
+    LTEXT           "Message theme:",IDC_STATIC,12,105,63,13,SS_CENTERIMAGE
+    PUSHBUTTON      "Change...",IDC_ACTIVE_IMAGE_BROWSE,194,122,50,14,WS_DISABLED
+    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,102,122,88,14,ES_AUTOHSCROLL | ES_READONLY | WS_DISABLED
+    LTEXT           "Active image (coming soon):",IDC_STATIC,12,122,89,14,SS_CENTERIMAGE | WS_DISABLED
+    COMBOBOX        IDC_MESSAGE_STYLE,81,105,163,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_DIALOG_PROFILE_POPOUT DIALOGEX 0, 0, 126, 134
@@ -645,6 +646,8 @@ BEGIN
     BEGIN
         LEFTMARGIN, 6
         RIGHTMARGIN, 251
+        VERTGUIDE, 12
+        VERTGUIDE, 244
         TOPMARGIN, 7
         BOTTOMMARGIN, 232
     END

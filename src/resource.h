@@ -370,6 +370,10 @@
 #define IDC_UPLOADING_ACTION            880
 #define IDC_ANIMATE1                    881
 #define IDC_PROGRESS_ANIMATE            881
+#define IDC_MESSAGE_STYLE               882
+#define IDC_ACTIVE_IMAGE_BROWSE         884
+#define IDC_ACTIVE_IMAGE_EDIT           886
+#define IDC_COMBOBOXEX1                 887
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
 #define ID_FILE_EXIT                    1003
@@ -446,9 +450,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        99
+#define _APS_NEXT_RESOURCE_VALUE        101
 #define _APS_NEXT_COMMAND_VALUE         1069
-#define _APS_NEXT_CONTROL_VALUE         882
+#define _APS_NEXT_CONTROL_VALUE         888
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif
 #endif

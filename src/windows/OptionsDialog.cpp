@@ -6,6 +6,13 @@
 #include <uxtheme.h>
 #endif
 
+const eMessageStyle g_indexToMessageStyle[] = {
+	MS_3DFACE,
+	MS_GRADIENT,
+	MS_FLAT,
+	MS_FLATBR,
+};
+
 #define C_PAGES (3)
 
 enum ePage
@@ -145,25 +152,30 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 				GetSettingsManager()->GetMessageCompact() ? IDC_APPEARANCE_COMPACT : IDC_APPEARANCE_COZY
 			);
 
-			int mStyleId = IDC_RADIO_3D_FRAME;
-			switch (GetLocalSettings()->GetMessageStyle())
-			{
-				case MS_3DFACE:   mStyleId = IDC_RADIO_3D_FRAME; break;
-				case MS_FLAT:     mStyleId = IDC_RADIO_FLAT_1;   break;
-				case MS_FLATBR:   mStyleId = IDC_RADIO_FLAT_2;   break;
-				case MS_GRADIENT: mStyleId = IDC_RADIO_GRADIENT; break;
-			}
-
-			CheckRadioButton(
-				hwndDlg,
-				IDC_RADIO_3D_FRAME,
-				IDC_RADIO_FLAT_2,
-				mStyleId
-			);
-
 			CheckDlgButton(hwndDlg, IDC_SAVE_WINDOW_SIZE,   GetLocalSettings()->GetSaveWindowSize() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_START_MAXIMIZED,    GetLocalSettings()->GetStartMaximized() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_DISABLE_FORMATTING, GetLocalSettings()->DisableFormatting() ? BST_CHECKED : BST_UNCHECKED);
+
+			HWND hCBox = GetDlgItem(hwndDlg, IDC_MESSAGE_STYLE);
+			// NOTE: these must match the order in g_indexToMessageStyle!
+			ComboBox_AddString(hCBox, TEXT("3-D frame"));
+			ComboBox_AddString(hCBox, TEXT("Gradient"));
+			ComboBox_AddString(hCBox, TEXT("Flat color 1 (3-D face color)"));
+			ComboBox_AddString(hCBox, TEXT("Flat color 2 (window color)"));
+			//ComboBox_AddString(hCBox, TEXT("Flat with image background"));
+
+			// determine message style selection
+			ComboBox_SetCurSel(hCBox, 0);
+
+			eMessageStyle msgStyle = GetLocalSettings()->GetMessageStyle();
+			for (size_t i = 0; i < _countof(g_indexToMessageStyle); i++)
+			{
+				if (msgStyle == g_indexToMessageStyle[i])
+				{
+					ComboBox_SetCurSel(hCBox, i);
+					break;
+				}
+			}
 
 			break;
 		}
@@ -261,8 +273,18 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 				}
 				case PG_APPEARANCE:
 				{
-					switch (wParam)
+					switch (LOWORD(wParam))
 					{
+						case IDC_MESSAGE_STYLE: {
+							if (HIWORD(wParam) != CBN_SELCHANGE)
+								break;
+							int sel = ComboBox_GetCurSel((HWND) lParam);
+							if (sel == CB_ERR || sel < 0 || sel >= int(_countof(g_indexToMessageStyle)))
+								break;
+							GetLocalSettings()->SetMessageStyle(g_indexToMessageStyle[sel]);
+							SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
+							break;
+						}
 						case IDC_APPEARANCE_COZY:
 							GetSettingsManager()->SetMessageCompact(false);
 							GetSettingsManager()->FlushSettings();
@@ -272,22 +294,6 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 							GetSettingsManager()->SetMessageCompact(true);
 							GetSettingsManager()->FlushSettings();
 							SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
-							break;
-						case IDC_RADIO_3D_FRAME:
-							GetLocalSettings()->SetMessageStyle(MS_3DFACE);
-							SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
-							break;
-						case IDC_RADIO_GRADIENT:
-							GetLocalSettings()->SetMessageStyle(MS_GRADIENT);
-							SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
-							break;
-						case IDC_RADIO_FLAT_1:
-							GetLocalSettings()->SetMessageStyle(MS_FLAT);
-							SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
-							break;
-						case IDC_RADIO_FLAT_2:
-							GetLocalSettings()->SetMessageStyle(MS_FLATBR);
-							SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
 							break;
 						case IDC_DISABLE_FORMATTING:
 							GetLocalSettings()->SetDisableFormatting(IsDlgButtonChecked(hWnd, IDC_DISABLE_FORMATTING));
