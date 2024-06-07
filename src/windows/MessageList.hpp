@@ -401,15 +401,7 @@ private:
 	std::list<MessageItem>::iterator FindMessageByPointAuthorRect(POINT pt);
 
 public:
-	COLORREF GetDarkerBackgroundColor() const
-	{
-		COLORREF crWindow = m_backgroundColor;
-		COLORREF crShadow = ((((m_backgroundColor & 0xFEFEFE) >> 1) + ((m_backgroundColor & 0xFCFCFC) >> 2)) & 0xDFDFDF) + 0x202020;
-		int r1 = crWindow & 0xFF, r2 = crShadow & 0xFF;
-		int g1 = (crWindow >> 8) & 0xFF, g2 = (crShadow >> 8) & 0xFF;
-		int b1 = (crWindow >> 16) & 0xFF, b2 = (crShadow >> 16) & 0xFF;
-		return RGB((r1 + r2) / 2, (g1 + g2) / 2, (b1 + b2) / 2);
-	}
+	COLORREF GetDarkerBackgroundColor() const;
 
 	COLORREF InvertIfNeeded(COLORREF color) const
 	{

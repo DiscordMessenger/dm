@@ -3896,6 +3896,22 @@ std::list<MessageItem>::iterator MessageList::FindMessageByPointAuthorRect(POINT
 	return m_messages.end();
 }
 
+COLORREF MessageList::GetDarkerBackgroundColor() const
+{
+	COLORREF bgColor;
+	auto style = GetLocalSettings()->GetMessageStyle();
+	if (style == MS_IMAGE)
+		bgColor = m_backgroundColor;
+	else if (style == MS_FLATBR)
+		bgColor = GetSysColor(COLOR_WINDOW);
+	else
+		bgColor = GetSysColor(COLOR_3DFACE);
+
+	COLORREF hint = IsColorDark(bgColor) ? 0xFFFFFF : 0x000000;
+
+	return LerpColor(hint, bgColor, 90, 100);
+}
+
 void MessageList::FullRecalcAndRepaint()
 {
 	for (auto& msg : m_messages) {

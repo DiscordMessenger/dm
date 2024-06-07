@@ -121,6 +121,7 @@ void RoleList::DrawRole(HDC hdc, RoleItem* role)
 		case MS_3DFACE:
 			DrawEdge(hdc, &rect, BDR_RAISEDINNER, BF_RECT | BF_MIDDLE | BF_ADJUST);
 		case MS_FLAT:
+		case MS_IMAGE:
 			oldBkColor = SetBkColor(hdc, GetSysColor(COLOR_3DFACE));
 			break;
 		case MS_FLATBR:
