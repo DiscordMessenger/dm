@@ -146,3 +146,4 @@ DiscordInstance* GetDiscordInstance();
 void WantQuit();
 void SetHeartbeatInterval(int timeMs);
 int GetProfilePictureSize();
+HBITMAP GetDefaultBitmap();

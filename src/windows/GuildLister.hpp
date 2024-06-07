@@ -51,6 +51,7 @@ public:
 	void SetScrollInfo(SCROLLINFO* pInfo, bool redraw = true);
 	void SaveScrollInfo();
 	void RestoreScrollInfo();
+	void ShowGuildChooserMenu();
 
 private:
 	void DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, const std::string& textOver, bool hasAlpha);
@@ -61,6 +62,7 @@ public:
 
 	static LRESULT CALLBACK ParentWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static BOOL CALLBACK ChooserDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void InitializeClass();
 
 	static GuildLister* Create(HWND hwnd, LPRECT pRect);

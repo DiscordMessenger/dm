@@ -266,6 +266,11 @@ void GuildLister::RestoreScrollInfo()
 	::SetScrollInfo(m_scrollable_hwnd, SB_VERT, &m_simulatedScrollInfo, TRUE);
 }
 
+void GuildLister::ShowGuildChooserMenu()
+{
+	DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG_GUILD_CHOOSER), g_Hwnd, &ChooserDlgProc);
+}
+
 void GuildLister::OnScroll()
 {
 	UpdateTooltips();
@@ -424,7 +429,7 @@ LRESULT CALLBACK GuildLister::ParentWndProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 			switch (LOWORD(wParam))
 			{
 				case GCMD_MORE:
-					DbgPrintW("More. TODO");
+					pThis->ShowGuildChooserMenu();
 					break;
 
 				case GCMD_BAR:
@@ -907,6 +912,146 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+struct GuildChooserData
+{
+	HIMAGELIST m_imageList;
+	std::vector<Snowflake> m_guildIDs;
+};
+
+BOOL GuildLister::ChooserDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	GuildChooserData* pData = (GuildChooserData*) GetWindowLongPtr(hWnd, GWLP_USERDATA);
+	switch (uMsg)
+	{
+		case WM_NOTIFY:
+		{
+			LPNMHDR nmhdr = (LPNMHDR)lParam;
+			if (nmhdr->idFrom != IDC_GUILD_LIST)
+				break;
+
+			switch (nmhdr->code)
+			{
+				case NM_DBLCLK:
+				{
+					LPNMITEMACTIVATE pAct = (LPNMITEMACTIVATE)nmhdr;
+					int index = pAct->iItem;
+					if (index < 0 || size_t(index) >= pData->m_guildIDs.size())
+						break;
+
+					Snowflake guild = pData->m_guildIDs[index];
+					GetDiscordInstance()->OnSelectGuild(guild);
+					EndDialog(hWnd, TRUE);
+					break;
+				}
+				case LVN_ITEMCHANGED:
+				{
+					HWND lst = GetDlgItem(hWnd, IDC_GUILD_LIST);
+					int item = ListView_GetNextItem(lst, -1, LVNI_SELECTED);
+					EnableWindow(GetDlgItem(hWnd, IDOK), item >= 0 && size_t(item) < pData->m_guildIDs.size());
+					break;
+				}
+			}
+
+			break;
+		}
+		case WM_COMMAND:
+		{
+			switch (LOWORD(wParam))
+			{
+				case IDCANCEL:
+				{
+					EndDialog(hWnd, FALSE);
+					break;
+				}
+				case IDOK:
+				{
+					int index = ListView_GetNextItem(GetDlgItem(hWnd, IDC_GUILD_LIST), -1, LVNI_SELECTED);
+					if (index < 0 || size_t(index) >= pData->m_guildIDs.size())
+						break;
+
+					Snowflake guild = pData->m_guildIDs[index];
+					GetDiscordInstance()->OnSelectGuild(guild);
+					EndDialog(hWnd, TRUE);
+					break;
+				}
+			}
+			break;
+		}
+		case WM_INITDIALOG:
+		{
+			pData = new GuildChooserData;
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) pData);
+
+			HWND hWndList = GetDlgItem(hWnd, IDC_GUILD_LIST);
+
+			HIMAGELIST hImgList = ImageList_Create(
+				GetProfilePictureSize(),
+				GetProfilePictureSize(),
+				ILC_MASK | ILC_COLOR32,
+				32,
+				32
+			);
+
+			pData->m_imageList = hImgList;
+
+			if (!hImgList) {
+				DbgPrintW("hImgList could not be created!");
+				break;
+			}
+
+			ListView_SetImageList(hWndList, hImgList, LVSIL_NORMAL);
+			ListView_SetImageList(hWndList, hImgList, LVSIL_SMALL);
+
+			// add DM guild
+			pData->m_guildIDs.push_back(0);
+
+			int im = ImageList_Add(hImgList, GetDefaultBitmap(), NULL);
+			int index = 0;
+
+			LPTSTR tstr = ConvertCppStringToTString("Direct Messages");
+			LVITEM lvi{};
+			lvi.mask = LVIF_IMAGE | LVIF_TEXT;
+			lvi.pszText = tstr;
+			lvi.iImage = im;
+			lvi.iItem = index++;
+			ListView_InsertItem(hWndList, &lvi);
+			free(tstr);
+
+			const auto& guildList = GetDiscordInstance()->m_guilds;
+			for (const auto& guild : guildList)
+			{
+				HBITMAP hbm = GetDefaultBitmap();
+
+				if (!guild.m_avatarlnk.empty()) {
+					bool unusedHasAlpha = false;
+					hbm = GetAvatarCache()->GetBitmap(guild.m_avatarlnk, unusedHasAlpha);
+				}
+
+				int im = ImageList_Add(hImgList, hbm, NULL);
+
+				LPTSTR tstr = ConvertCppStringToTString(guild.m_name);
+				lvi.pszText = tstr;
+				lvi.iImage = im;
+				lvi.iItem = index++;
+				ListView_InsertItem(hWndList, &lvi);
+
+				pData->m_guildIDs.push_back(guild.m_snowflake);
+			}
+
+			break;
+		}
+		case WM_DESTROY:
+		{
+			ImageList_Destroy(pData->m_imageList);
+			delete pData;
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) NULL);
+			break;
+		}
+	}
+
+	return FALSE;
 }
 
 void GuildLister::InitializeClass()
