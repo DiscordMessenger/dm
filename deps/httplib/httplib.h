@@ -7533,17 +7533,32 @@ bool ssl_connect_or_accept_nonblocking(socket_t sock, SSL *ssl,
 	auto err = SSL_get_error(ssl, res);
 	switch (err) {
 	case SSL_ERROR_WANT_READ:
+		break;
 	  if (select_read(sock, timeout_sec, timeout_usec) > 0) { continue; }
 	  break;
 	case SSL_ERROR_WANT_WRITE:
+		break;
 	  if (select_write(sock, timeout_sec, timeout_usec) > 0) { continue; }
 	  break;
 	default: break;
 	}
 	// To debug an issue, setting a global:
 	g_latestSSLError = err;
-	if (err == SSL_ERROR_SYSCALL) {
-	  g_latestSSLError = 0x80000000 | ERR_get_error(); // hope that OpenSSL doesn't set that 31st bit
+	if (err != SSL_ERROR_SYSCALL) {
+	  char buffer[256];
+	  MessageBox(NULL, TEXT("Yo, you're seeing the hacky handler for SSL_ERROR_SYSCALL. You're about to see the result of ERR_get_error()."), TEXT(""), MB_OK);
+	  int ege = ERR_get_error();
+	  snprintf(buffer, sizeof buffer, "ERR_get_error() returned %d. Now for 'errno'.", ege);
+	  MessageBoxA(NULL, buffer, "", MB_OK);
+	  int errn = errno;
+	  snprintf(buffer, sizeof buffer, "errno is %d. Now for WSAGetLastError()", errn);
+	  MessageBoxA(NULL, buffer, "", MB_OK);
+	  int errnf = WSAGetLastError();
+	  snprintf(buffer, sizeof buffer, "WSAGetLastError() returned %d. Now for GetLastError()", errnf);
+	  MessageBoxA(NULL, buffer, "", MB_OK);
+	  int errnfg = WSAGetLastError();
+	  snprintf(buffer, sizeof buffer, "GetLastError() returned %d. Done", errnfg);
+	  MessageBoxA(NULL, buffer, "", MB_OK);
 	}
 	return false;
   }
