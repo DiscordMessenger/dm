@@ -94,11 +94,11 @@ extern int g_latestSSLError; // HACK - To debug an "SSL connection failed" issue
 #endif
 
 #ifndef CPPHTTPLIB_RECV_BUFSIZ
-#define CPPHTTPLIB_RECV_BUFSIZ size_t(4096u)
+#define CPPHTTPLIB_RECV_BUFSIZ size_t(16384u)
 #endif
 
 #ifndef CPPHTTPLIB_COMPRESSION_BUFSIZ
-#define CPPHTTPLIB_COMPRESSION_BUFSIZ size_t(16384u)
+#define CPPHTTPLIB_COMPRESSION_BUFSIZ size_t(32768u)
 #endif
 
 #ifndef CPPHTTPLIB_THREAD_POOL_COUNT
@@ -2465,7 +2465,7 @@ inline ssize_t select_read(socket_t sock, time_t sec, time_t usec) {
   if (sock >= FD_SETSIZE) { return 1; }
 #endif
 
-  fd_set fds;
+  fd_set fds{};
   FD_ZERO(&fds);
   FD_SET(sock, &fds);
 
@@ -2493,7 +2493,7 @@ inline ssize_t select_write(socket_t sock, time_t sec, time_t usec) {
   if (sock >= FD_SETSIZE) { return 1; }
 #endif
 
-  fd_set fds;
+  fd_set fds{};
   FD_ZERO(&fds);
   FD_SET(sock, &fds);
 
