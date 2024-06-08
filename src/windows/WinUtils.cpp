@@ -1142,43 +1142,51 @@ bool IsIconMostlyBlack(HICON hic)
 	ICONINFO ii{};
 	GetIconInfo(hic, &ii);
 
-	BITMAP bm{};
-	GetObject(ii.hbmColor, sizeof bm, &bm);
-
-	BITMAPINFO bmi;
-	ZeroMemory(&bmi, sizeof(BITMAPINFO));
-	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	bmi.bmiHeader.biWidth = bm.bmWidth;
-	bmi.bmiHeader.biHeight = bm.bmHeight;
-	bmi.bmiHeader.biPlanes = 1;
-	bmi.bmiHeader.biBitCount = 32;
-	bmi.bmiHeader.biCompression = BI_RGB;
-
-	uint32_t* bits = new uint32_t[bm.bmWidth * bm.bmHeight];
-
-	HDC hdc = GetDC(g_Hwnd);
-	if (GetDIBits(hdc, ii.hbmColor, 0, bm.bmHeight, bits, &bmi, DIB_RGB_COLORS))
+	if (ii.hbmColor)
 	{
-		// check!
-		isit = true;
-		size_t pcount = bm.bmWidth * bm.bmHeight;
-		for (size_t i = 0; i < pcount; i++) {
-			uint32_t cr = bits[i];
-			uint8_t b1 = cr & 0xFF; cr >>= 8;
-			uint8_t b2 = cr & 0xFF; cr >>= 8;
-			uint8_t b3 = cr & 0xFF;
-			if ((b1 + b2 + b3) >= 0x24) {
-				// not mostly black
-				isit = false;
-				break;
+		BITMAP bm{};
+		GetObject(ii.hbmColor, sizeof bm, &bm);
+
+		BITMAPINFO bmi;
+		ZeroMemory(&bmi, sizeof(BITMAPINFO));
+		bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		bmi.bmiHeader.biWidth = bm.bmWidth;
+		bmi.bmiHeader.biHeight = bm.bmHeight;
+		bmi.bmiHeader.biPlanes = 1;
+		bmi.bmiHeader.biBitCount = 32;
+		bmi.bmiHeader.biCompression = BI_RGB;
+
+		uint32_t* bits = new uint32_t[bm.bmWidth * bm.bmHeight];
+
+		HDC hdc = GetDC(g_Hwnd);
+		if (GetDIBits(hdc, ii.hbmColor, 0, bm.bmHeight, bits, &bmi, DIB_RGB_COLORS))
+		{
+			// check!
+			isit = true;
+			size_t pcount = bm.bmWidth * bm.bmHeight;
+			for (size_t i = 0; i < pcount; i++) {
+				uint32_t cr = bits[i];
+				uint8_t b1 = cr & 0xFF; cr >>= 8;
+				uint8_t b2 = cr & 0xFF; cr >>= 8;
+				uint8_t b3 = cr & 0xFF;
+				if ((b1 + b2 + b3) >= 0x24) {
+					// not mostly black
+					isit = false;
+					break;
+				}
 			}
 		}
-	}
 
-	ReleaseDC(g_Hwnd, hdc);
-	DeleteBitmap(ii.hbmColor);
-	DeleteBitmap(ii.hbmMask);
-	delete[] bits;
+		ReleaseDC(g_Hwnd, hdc);
+		if (ii.hbmColor) DeleteBitmap(ii.hbmColor);
+		if (ii.hbmMask)  DeleteBitmap(ii.hbmMask);
+		delete[] bits;
+	}
+	else
+	{
+		// it just is.
+		isit = true;
+	}
 
 	m_bMostlyBlack[hic] = isit;
 	return isit;

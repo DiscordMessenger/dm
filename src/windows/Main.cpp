@@ -379,7 +379,7 @@ int OnSSLError(const std::string& url)
 {
 	LPTSTR urlt = ConvertCppStringToTString(url);
 	static TCHAR buffer[8192];
-	_tcscat(buffer, TmGetTString(IDS_SSL_ERROR_1));
+	_tcscpy(buffer, TmGetTString(IDS_SSL_ERROR_1));
 	_tcscat(buffer, urlt);
 	_tcscat(buffer, TmGetTString(IDS_SSL_ERROR_2));
 	_tcscat(buffer, TmGetTString(IDS_SSL_ERROR_3));
