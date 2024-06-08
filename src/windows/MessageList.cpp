@@ -3880,7 +3880,7 @@ void MessageList::ReloadBackground()
 		if (align == ALIGN_UPPER_LEFT || align == ALIGN_MIDDLE_LEFT || align == ALIGN_LOWER_LEFT)
 			xSamp = bm.bmWidth - 1;
 		if (align == ALIGN_UPPER_LEFT || align == ALIGN_UPPER_CENTER || align == ALIGN_UPPER_RIGHT)
-			ySamp = bm.bmWidth - 1;
+			ySamp = bm.bmHeight - 1;
 
 		HDC hdc = GetDC(m_hwnd);
 		HDC hdc2 = CreateCompatibleDC(hdc);
