@@ -2829,7 +2829,7 @@ void MessageList::PaintBackground(HDC hdc, RECT& paintRect, RECT& rcClient)
 		if (!IntersectRect(&dummy, &rcImg, &paintRect))
 			return;
 
-		DrawBitmap(hdc, m_backgroundImage, x, y);
+		DrawBitmap(hdc, m_backgroundImage, x, y, NULL, CLR_NONE, 0, 0, m_bBackgroundHasAlpha);
 	}
 }
 
@@ -3857,39 +3857,57 @@ void MessageList::ReloadBackground()
 	{
 		m_backgroundBrush = m_defaultBackgroundBrush;
 		m_backgroundImage = NULL;
+		m_bDontDeleteBackgroundBrush = true;
 		return;
 	}
 
-	bool ignoredAlphaChannel = 0;
-	uint32_t firstPixel = 0;
-	m_backgroundImage = ImageLoader::LoadFromFile(str.c_str(), ignoredAlphaChannel, &firstPixel);
+	m_backgroundImage = ImageLoader::LoadFromFile(str.c_str(), m_bBackgroundHasAlpha);
 
-	union
+	if (m_bBackgroundHasAlpha)
 	{
-		uint32_t ui;
-		RGBQUAD rq;
+		m_backgroundColor = GetSysColor(COLOR_WINDOW);
+		m_backgroundBrush = GetSysColorBrush(COLOR_WINDOW);
+		m_bDontDeleteBackgroundBrush = true;
 	}
-	color;
+	else
+	{
+		// sample a pixel depending on the alignment
+		BITMAP bm{};
+		GetObject(m_backgroundImage, sizeof bm, &bm);
+		int xSamp = 0, ySamp = 0;
 
-	// HUH: Why does Windows use the byte swapped variant for COLORREFs??
+		auto align = GetLocalSettings()->GetImageAlignment();
+		if (align == ALIGN_UPPER_LEFT || align == ALIGN_MIDDLE_LEFT || align == ALIGN_LOWER_LEFT)
+			xSamp = bm.bmWidth - 1;
+		if (align == ALIGN_UPPER_LEFT || align == ALIGN_UPPER_CENTER || align == ALIGN_UPPER_RIGHT)
+			ySamp = bm.bmWidth - 1;
 
-	color.ui = COLORREF(firstPixel);
-	m_backgroundColor = RGB(color.rq.rgbRed, color.rq.rgbGreen, color.rq.rgbBlue);
-	m_backgroundBrush = CreateSolidBrush(m_backgroundColor);
+		HDC hdc = GetDC(m_hwnd);
+		HDC hdc2 = CreateCompatibleDC(hdc);
+		HGDIOBJ old = SelectObject(hdc2, m_backgroundImage);
+		m_backgroundColor = GetPixel(hdc2, xSamp, ySamp);
+		SelectObject(hdc2, old);
+		DeleteDC(hdc2);
+		ReleaseDC(m_hwnd, hdc);
+
+		m_backgroundBrush = CreateSolidBrush(m_backgroundColor);
+		m_bDontDeleteBackgroundBrush = false;
+	}
 
 	m_bInvertTextColors = IsColorDark(m_backgroundColor) ^ (!IsColorDark(GetSysColor(COLOR_WINDOWTEXT)));
 }
 
 void MessageList::UnloadBackground()
 {
-	if (m_backgroundImage) {
+	if (m_backgroundImage)
 		DeleteBitmap(m_backgroundImage);
-		m_backgroundImage = NULL;
-	}
-	if (m_backgroundBrush && m_backgroundBrush != m_defaultBackgroundBrush) {
+	m_backgroundImage = NULL;
+	
+	if (m_backgroundBrush && !m_bDontDeleteBackgroundBrush)
 		DeleteBrush(m_backgroundBrush);
-		m_backgroundBrush = NULL;
-	}
+	m_backgroundBrush = NULL;
+	m_bDontDeleteBackgroundBrush = true;
+
 	m_bInvertTextColors = false;
 }
 

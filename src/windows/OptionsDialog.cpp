@@ -333,7 +333,7 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 							GetLocalSettings()->SetImageAlignment(align);
 
 							if (GetLocalSettings()->GetMessageStyle() == MS_IMAGE)
-								SendMessage(g_Hwnd, WM_REPAINTMSGLIST, 0, 0);
+								SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
 
 							break;
 						}

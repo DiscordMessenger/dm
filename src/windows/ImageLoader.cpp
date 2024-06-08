@@ -63,7 +63,7 @@ static uint8_t* DecodeWithStbImage(FreeFunction* pFreeFunc, const uint8_t* pData
 
 #endif
 
-HBITMAP ImageLoader::_ConvertToBitmap(const uint8_t* pData, size_t size, bool& outHasAlphaChannel, uint32_t& topLeftPixel, int newWidth, int newHeight)
+HBITMAP ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& outHasAlphaChannel, int newWidth, int newHeight)
 {
 	outHasAlphaChannel = false;
 
@@ -94,8 +94,6 @@ HBITMAP ImageLoader::_ConvertToBitmap(const uint8_t* pData, size_t size, bool& o
 	size_t pixelCount = width * height;
 	uint32_t* pixels = (uint32_t*)pNewData;
 
-	topLeftPixel = 0;
-
 	bool hasAlpha = false;
 	for (size_t i = 0; i < pixelCount; i++)
 	{
@@ -111,9 +109,6 @@ HBITMAP ImageLoader::_ConvertToBitmap(const uint8_t* pData, size_t size, bool& o
 			u.c[1] = uint8_t(int(u.c[1]) * int(u.c[3]) / 255);
 			u.c[2] = uint8_t(int(u.c[2]) * int(u.c[3]) / 255);
 			pixels[i] = u.x;
-		}
-		else if (!topLeftPixel) {
-			topLeftPixel = u.x;
 		}
 	}
 
@@ -315,12 +310,6 @@ _error:
 	return hbm;
 }
 
-HBITMAP ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& outHasAlphaChannel, int newWidth, int newHeight)
-{
-	uint32_t crap;
-	return _ConvertToBitmap(pData, size, outHasAlphaChannel, crap, newWidth, newHeight);
-}
-
 static void ConvertToPNGWriteFunc(void* context, void* data, int size)
 {
 	auto vec = reinterpret_cast<std::vector<uint8_t>*> (context);
@@ -393,7 +382,7 @@ bool ImageLoader::ConvertToPNG(std::vector<uint8_t>* outData, void* pBits, int w
 	return true;
 }
 
-HBITMAP ImageLoader::LoadFromFile(const char* pFileName, bool& hasAlphaOut, uint32_t* outTopLeftPixel)
+HBITMAP ImageLoader::LoadFromFile(const char* pFileName, bool& hasAlphaOut)
 {
 	FILE* f = fopen(pFileName, "rb");
 	if (!f)
@@ -409,15 +398,10 @@ HBITMAP ImageLoader::LoadFromFile(const char* pFileName, bool& hasAlphaOut, uint
 	fclose(f);
 
 	bool hasAlpha = false;
-	uint32_t firstPixel = 0;
-	HBITMAP hbmp = ImageLoader::_ConvertToBitmap(pData, size_t(sz), hasAlpha, firstPixel, 0, 0);
+	HBITMAP hbmp = ImageLoader::ConvertToBitmap(pData, size_t(sz), hasAlpha, 0, 0);
 	if (!hbmp)
 		return NULL;
 
 	hasAlphaOut = hasAlpha;
-
-	if (outTopLeftPixel)
-		*outTopLeftPixel = firstPixel;
-
 	return hbmp;
 }

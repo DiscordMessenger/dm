@@ -11,10 +11,7 @@ public:
 	// false, you shouldn't use AlphaBlend because the channel is most likely filled with zero, which is bad.
 	static HBITMAP ConvertToBitmap(const uint8_t* pData, size_t size, bool& outHasAlphaChannel, int width = 0, int height = 0);
 
-	static HBITMAP LoadFromFile(const char* pFileName, bool& outHasAlphaChannel, uint32_t* outTopLeftPixel = NULL);
+	static HBITMAP LoadFromFile(const char* pFileName, bool& outHasAlphaChannel);
 
 	static bool ConvertToPNG(std::vector<uint8_t>* outData, void* pBits, int width, int height, int widthBytes, int bpp, bool forceOpaque, bool flipVerticallyWhenSaving);
-
-private:
-	static HBITMAP _ConvertToBitmap(const uint8_t* pData, size_t size, bool& outHasAlphaChannel, uint32_t& topLeftPixel, int width, int height);
 };

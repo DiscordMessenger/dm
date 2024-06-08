@@ -370,6 +370,8 @@ private:
 	COLORREF m_backgroundColor = 0;
 	HBRUSH   m_defaultBackgroundBrush = NULL;
 	bool     m_bInvertTextColors = false;
+	bool     m_bBackgroundHasAlpha = false;
+	bool     m_bDontDeleteBackgroundBrush = true;
 
 	bool m_bAcknowledgeNow = true;
 
