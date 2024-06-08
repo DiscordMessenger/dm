@@ -7542,6 +7542,9 @@ bool ssl_connect_or_accept_nonblocking(socket_t sock, SSL *ssl,
 	}
 	// To debug an issue, setting a global:
 	g_latestSSLError = err;
+	if (err == SSL_ERROR_SYSCALL) {
+	  g_latestSSLError = 0x80000000 | ERR_get_error(); // hope that OpenSSL doesn't set that 31st bit
+	}
 	return false;
   }
   return true;
