@@ -42,6 +42,7 @@ int g_GuildListerWidth;
 int g_MemberListWidth;
 int g_MessageEditorHeight;
 int g_GuildListerWidth2;
+int g_ChannelViewListWidth2;
 
 StatusBar  * g_pStatusBar;
 MessageList* g_pMessageList;
@@ -251,6 +252,7 @@ void ProperlySizeControls(HWND hWnd)
 
 	bool bRepaintGuildHeader = g_GuildListerWidth2 != guildListerWidth;
 	g_GuildListerWidth2 = guildListerWidth;
+	g_ChannelViewListWidth2 = channelViewListWidth;
 
 	bool bRepaint = true;
 
@@ -776,7 +778,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_TOGGLECHANNELS:
 		{
 			g_bChannelListVisible ^= 1;
-			int off = ScaleByDPI(10) + g_ChannelViewListWidth;
+			int off = ScaleByDPI(10) + g_ChannelViewListWidth2;
 
 			if (g_bChannelListVisible) {
 				ShowWindow(g_pChannelView->m_hwnd, SW_SHOWNORMAL);

@@ -218,6 +218,7 @@ void GuildLister::SetScrollInfo(SCROLLINFO* pInfo, bool redraw)
 {
 	if (m_bIsScrollBarVisible) {
 		::SetScrollInfo(m_scrollable_hwnd, SB_VERT, pInfo, redraw);
+		::ShowScrollBar(m_scrollable_hwnd, SB_VERT, TRUE);
 		return;
 	}
 

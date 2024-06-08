@@ -1124,3 +1124,87 @@ bool IsColorDark(COLORREF cr)
 	int avg = (c1 + c2 + c3) / 3;
 	return avg <= 128;
 }
+
+bool IsTextColorDark()
+{
+	return IsColorDark(GetSysColor(COLOR_CAPTIONTEXT));
+}
+
+std::map<HICON, bool> m_bMostlyBlack;
+
+bool IsIconMostlyBlack(HICON hic)
+{
+	auto it = m_bMostlyBlack.find(hic);
+	if (it != m_bMostlyBlack.end())
+		return it->second;
+
+	bool isit = false;
+	ICONINFO ii{};
+	GetIconInfo(hic, &ii);
+
+	BITMAP bm{};
+	GetObject(ii.hbmColor, sizeof bm, &bm);
+
+	BITMAPINFO bmi;
+	ZeroMemory(&bmi, sizeof(BITMAPINFO));
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmi.bmiHeader.biWidth = bm.bmWidth;
+	bmi.bmiHeader.biHeight = bm.bmHeight;
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = 32;
+	bmi.bmiHeader.biCompression = BI_RGB;
+
+	uint32_t* bits = new uint32_t[bm.bmWidth * bm.bmHeight];
+
+	HDC hdc = GetDC(g_Hwnd);
+	if (GetDIBits(hdc, ii.hbmColor, 0, bm.bmHeight, bits, &bmi, DIB_RGB_COLORS))
+	{
+		// check!
+		isit = true;
+		size_t pcount = bm.bmWidth * bm.bmHeight;
+		for (size_t i = 0; i < pcount; i++) {
+			uint32_t cr = bits[i];
+			uint8_t b1 = cr & 0xFF; cr >>= 8;
+			uint8_t b2 = cr & 0xFF; cr >>= 8;
+			uint8_t b3 = cr & 0xFF;
+			if ((b1 + b2 + b3) >= 0x24) {
+				// not mostly black
+				isit = false;
+				break;
+			}
+		}
+	}
+
+	ReleaseDC(g_Hwnd, hdc);
+	DeleteBitmap(ii.hbmColor);
+	DeleteBitmap(ii.hbmMask);
+	delete[] bits;
+
+	m_bMostlyBlack[hic] = isit;
+	return isit;
+}
+
+void DrawIconInvert(HDC hdc, HICON hIcon, int x, int y, int sizeX, int sizeY, bool invert)
+{
+	if (!invert) {
+		DrawIconEx(hdc, x, y, hIcon, sizeX, sizeY, 0, NULL, DI_NORMAL | DI_COMPAT);
+		return;
+	}
+
+	HDC hdcMem = CreateCompatibleDC(hdc);
+	HBITMAP hbm = CreateCompatibleBitmap(hdc, sizeX, sizeY);
+	HGDIOBJ oldObj = SelectObject(hdcMem, hbm);
+
+	// take the contents of the HDC there and invert them.
+	BitBlt(hdcMem, 0, 0, sizeX, sizeY, hdc, x, y, NOTSRCCOPY);
+
+	DrawIconEx(hdcMem, 0, 0, hIcon, sizeX, sizeY, 0, NULL, DI_NORMAL | DI_COMPAT);
+
+	// now blit it back out inverted
+	BitBlt(hdc, x, y, sizeX, sizeY, hdcMem, 0, 0, NOTSRCCOPY);
+
+	// clean up
+	SelectObject(hdcMem, oldObj);
+	DeleteBitmap(hbm);
+	DeleteDC(hdcMem);
+}

@@ -213,7 +213,16 @@ void GuildHeader::DrawButton(HDC hdc, Button& button)
 		LineTo  (hdc, exp.left - 1, exp.bottom - 1);
 	}
 
-	DrawIconEx(hdc, iconX, iconY, GetIcon(button.m_iconID, iconSize), iconSize, iconSize, 0, NULL, DI_NORMAL | DI_COMPAT);
+	HICON hicon = GetIcon(button.m_iconID, iconSize);
+	DrawIconInvert(
+		hdc,
+		hicon,
+		iconX,
+		iconY,
+		iconSize,
+		iconSize,
+		IsIconMostlyBlack(hicon) && IsTextColorLight()
+	);
 
 	ri::SetDCPenColor(hdc, oldPen);
 	MoveToEx(hdc, oldPt.x, oldPt.y, NULL);
@@ -457,17 +466,16 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				HICON icon = pThis->GetIconFromType(pChannel->m_channelType);
 				if (icon)
 				{
-					DrawIconEx(
+					DrawIconInvert(
 						hdc,
+						icon,
 						nameRect.left,
 						nameRect.top + (nameRect.bottom - nameRect.top) / 2 - ScaleByDPI(CHANNEL_ICON_SIZE) / 2,
-						icon,
 						ScaleByDPI(CHANNEL_ICON_SIZE),
 						ScaleByDPI(CHANNEL_ICON_SIZE),
-						0,
-						NULL,
-						DI_NORMAL
+						IsIconMostlyBlack(icon) && IsTextColorLight()
 					);
+
 					nameRect.left += ScaleByDPI(CHANNEL_ICON_SIZE) + 2;
 				}
 			}

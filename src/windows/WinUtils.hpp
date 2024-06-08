@@ -80,6 +80,7 @@ int HandleGestureMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, flo
 std::string CutOutURLPath(const std::string& url);
 int MessageBoxHooked(HWND hWnd, LPCTSTR title, LPCTSTR caption, int flags, int overID, LPCTSTR overText);
 int MessageBoxHooked(HWND hWnd, LPCTSTR title, LPCTSTR caption, int flags, int overCount, const int* overID, const LPCTSTR*  overText);
+void DrawIconInvert(HDC hdc, HICON hIcon, int x, int y, int sizeX, int sizeY, bool invert);
 
 #ifdef USE_DEBUG_PRINTS
 void DbgPrintW(const char* fmt, ...);
@@ -98,6 +99,11 @@ bool XSetProcessDPIAware();
 // Color utils
 COLORREF LerpColor(COLORREF a, COLORREF b, int progMul, int progDiv);
 bool IsColorDark(COLORREF cr);
+bool IsTextColorDark();
+bool IsIconMostlyBlack(HICON hic);
+
+#define IsColorLight(cr)   (!IsColorDark(cr))
+#define IsTextColorLight() (!IsTextColorDark())
 
 // Profile utils
 #include "../discord/Profile.hpp"
