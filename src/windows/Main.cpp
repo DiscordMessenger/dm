@@ -206,6 +206,7 @@ void ProperlySizeControls(HWND hWnd)
 {
 	RECT rect = {}, rect2 = {}, rcClient = {}, rcSBar = {};
 	GetClientRect(hWnd, &rect);
+	int clientWidth = rect.right - rect.left;
 	rcClient = rect;
 
 	int scaled10 = ScaleByDPI(10);
@@ -254,6 +255,26 @@ void ProperlySizeControls(HWND hWnd)
 	g_GuildListerWidth2 = guildListerWidth;
 	g_ChannelViewListWidth2 = channelViewListWidth;
 
+	// May need to do some adjustments.
+	bool bFullRepaintProfileView = false;
+	const int minFullWidth = ScaleByDPI(800);
+	if (clientWidth < minFullWidth)
+	{
+		bFullRepaintProfileView = true;
+
+		int widthOfAll3Things =
+			clientWidth
+			- scaled10 * 3 /* Left edge, Right edge, Between GuildLister and the group */
+			- scaled10 * 2 /* Between channelview and messageview, between messageview and memberlist */
+			- g_GuildListerWidth2; /* The guild list itself. So just the channelview, messageview and memberlist summed */
+
+		const int widthOfAll3ThingsAt800px = 694;
+
+		g_ChannelViewListWidth2 = MulDiv(g_ChannelViewListWidth2, widthOfAll3Things, widthOfAll3ThingsAt800px);
+		g_MemberListWidth       = MulDiv(g_MemberListWidth,       widthOfAll3Things, widthOfAll3ThingsAt800px);
+		channelViewListWidth = g_ChannelViewListWidth2;
+	}
+
 	bool bRepaint = true;
 
 	// Create a message list
@@ -281,7 +302,7 @@ void ProperlySizeControls(HWND hWnd)
 	rect.left += guildListerWidth + scaled10;
 	rect.top = rect.bottom - g_BottomBarHeight + scaled10;
 	rect.right = rect.left + channelViewListWidth;
-	MoveWindow(hWndPfv, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
+	MoveWindow(hWndPfv, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
 	rect = rect2;
 
 	rect.left   = scaled10 + guildListerWidth + scaled10;
@@ -305,6 +326,9 @@ void ProperlySizeControls(HWND hWnd)
 	MoveWindow(hWndStb, 0, rcClient.bottom - statusBarHeight, rcClient.right - rcClient.left, statusBarHeight, TRUE);
 	// Erase the old rectangle
 	InvalidateRect(hWnd, &rcSBar, TRUE);
+
+	if (bFullRepaintProfileView)
+		InvalidateRect(hWndPfv, NULL, FALSE);
 
 	g_pStatusBar->UpdateParts(rcClient.right - rcClient.left);
 }

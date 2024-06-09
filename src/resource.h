@@ -94,11 +94,8 @@
 #define IDR_AVI_UPLOAD_LC               94
 #define IDI_BOOST                       95
 #define IDI_BOOST_2K                    96
-#define IDD_GUILD_CHOOSER               101
-#define IDD_DIALOG_GUILD_CHOOSER        101
-#define IDI_GUILDS                      103
-#define IDI_ICON2                       104
-#define IDI_SCROLL                      104
+#define IDI_GUILDS                      97
+#define IDI_SCROLL                      98
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -130,6 +127,7 @@
 #define IDD_DIALOG_QUICK_SWITCHER       411
 #define IDD_DIALOG_CONNECTION           412
 #define IDD_DIALOG_UPLOADING            413
+#define IDD_DIALOG_GUILD_CHOOSER        414
 #define IDR_MAINMENU                    501
 #define IDR_MESSAGE_CONTEXT             502
 #define IDR_GUILD_CONTEXT               503
@@ -460,7 +458,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        105
+#define _APS_NEXT_RESOURCE_VALUE        99
 #define _APS_NEXT_COMMAND_VALUE         1069
 #define _APS_NEXT_CONTROL_VALUE         890
 #define _APS_NEXT_SYMED_VALUE           40000
