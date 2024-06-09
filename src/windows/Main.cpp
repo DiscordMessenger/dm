@@ -1131,6 +1131,13 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			AutoComplete::DismissAutoCompleteWindowsIfNeeded(hWnd);
 			break;
 		}
+		case WM_GETMINMAXINFO: {
+			PMINMAXINFO pMinMaxInfo = (PMINMAXINFO) lParam;
+			// these are the minimums as of now!
+			pMinMaxInfo->ptMinTrackSize.x = ScaleByDPI(640);
+			pMinMaxInfo->ptMinTrackSize.y = ScaleByDPI(400);
+			break;
+		}
 		case WM_COMMAND:
 			return HandleCommand(hWnd, uMsg, wParam, lParam);
 
