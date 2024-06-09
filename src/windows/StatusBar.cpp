@@ -28,6 +28,7 @@ StatusBar* StatusBar::Create(HWND hParent)
         pBar = nullptr;
     }
 
+	SetWindowFont(pBar->m_hwnd, g_MessageTextFont, TRUE);
 	SetWindowLongPtr(pBar->m_hwnd, GWLP_USERDATA, (LONG_PTR) pBar);
     return pBar;
 }

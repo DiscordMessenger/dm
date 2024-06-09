@@ -446,28 +446,30 @@ IDD_DIALOG_APPEARANCE DIALOGEX 0, 0, 260, 242
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    GROUPBOX        "Message Display",IDC_MDISPLAY_BOX,6,7,248,87
+    GROUPBOX        "Message Display",IDC_MDISPLAY_BOX,6,7,248,58
     CONTROL         "Cozy: Modern, beautiful, and easy on your eyes.",IDC_APPEARANCE_COZY,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,18,236,10
     CONTROL         "Compact: Fit more messages on screen at one time. #IRC",IDC_APPEARANCE_COMPACT,
                     "Button",BS_AUTORADIOBUTTON,12,30,236,10
-    GROUPBOX        "Message List Style",IDC_MSTYLE_BOX,6,96,248,29
+    GROUPBOX        "Message List Style",IDC_MSTYLE_BOX,6,98,248,29
     GROUPBOX        "Window Settings",IDC_STATIC,6,179,248,55
     CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,191,236,10
     CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,204,236,10
-    CONTROL         "Disable markdown formatting",IDC_DISABLE_FORMATTING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,45,236,10
-    LTEXT           "Disable markdown formatting if:\n- You operate frequently with right-to-left scripts such as Arabic.\n- You are running into performance issues (message channels are taking too long to load, etc)",IDC_STATIC,12,57,236,34
-    LTEXT           "Message theme:",IDC_STATIC,12,106,53,13,SS_CENTERIMAGE
-    PUSHBUTTON      "Change...",IDC_ACTIVE_IMAGE_BROWSE,198,138,50,14
-    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,53,138,135,14,ES_AUTOHSCROLL | ES_READONLY
-    LTEXT           "Image:",IDC_STATIC,12,138,41,14,SS_CENTERIMAGE
-    COMBOBOX        IDC_MESSAGE_STYLE,73,106,175,128,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Disable markdown formatting (suggested for RTL scripts such as Arabic or in case of performance issues)",IDC_DISABLE_FORMATTING,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,12,43,236,18
+    LTEXT           "Message theme:",IDC_STATIC,12,109,53,13,SS_CENTERIMAGE
+    PUSHBUTTON      "Change...",IDC_ACTIVE_IMAGE_BROWSE,198,140,50,14
+    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,53,140,135,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Image:",IDC_STATIC,12,140,41,14,SS_CENTERIMAGE
+    COMBOBOX        IDC_MESSAGE_STYLE,73,109,175,128,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Show scroll bar on server list",IDC_SCROLL_BAR_ON_GUILDS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,218,236,10
-    COMBOBOX        IDC_COMBO_ALIGNMENT,53,156,195,78,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Aligned to:",IDC_STATIC,12,156,41,12,SS_CENTERIMAGE
-    GROUPBOX        "Message List Watermark",IDC_STATIC,6,127,248,48
+    COMBOBOX        IDC_COMBO_ALIGNMENT,53,158,195,78,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Aligned to:",IDC_STATIC,12,158,41,12,SS_CENTERIMAGE
+    GROUPBOX        "Message List Watermark",IDC_STATIC,6,129,248,48
+    GROUPBOX        "User Interface Scale",IDC_STATIC,6,67,248,29
+    LTEXT           "Size of UI elements:",IDC_STATIC,12,78,68,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_GUI_SCALE,80,78,168,159,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_DIALOG_PROFILE_POPOUT DIALOGEX 0, 0, 126, 134
@@ -1181,6 +1183,7 @@ BEGIN
     IDS_CANT_SHOW_BITMAP    "Can't show bitmap! Windows API mismatch?"
     IDS_CANNOT_INIT_WS      "The WebSocket client could not be initialized.\n\nDiscord Messenger will now exit."
     IDS_SELECT_BACKGROUND_IMAGE "Select background image"
+    IDS_GUI_SCALE_CHANGED   "You will need to restart Discord Messenger to apply the new UI element size."
 END
 
 #endif    // English (United States) resources

@@ -133,6 +133,12 @@ public:
 	void SetImageAlignment(eImageAlignment align) {
 		m_imageAlignment = align;
 	}
+	int GetUserScale() const {
+		return m_userScale;
+	}
+	void SetUserScale(int userScale) {
+		m_userScale = userScale;
+	}
 
 private:
 	std::string m_token;
@@ -154,6 +160,7 @@ private:
 	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
 	int m_height = 700;
+	int m_userScale = 1000;
 };
 
 LocalSettings* GetLocalSettings();

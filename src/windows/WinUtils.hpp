@@ -59,6 +59,8 @@ void CenterWindow(HWND hWnd, HWND hRelativeTo);
 int GetSystemDpiU();
 int GetSystemDPI(); // cached
 void ForgetSystemDPI();
+void SetUserScale(int scale);
+int ScaleByUser(int x);
 int ScaleByDPI(int pos);
 int UnscaleByDPI(int pos);
 void ScreenToClientRect(HWND hWnd, RECT* rect);

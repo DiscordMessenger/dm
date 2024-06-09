@@ -267,6 +267,8 @@ void MemberList::Initialize()
 	col.iSubItem = 0;
 	col.fmt = LVCFMT_LEFT;
 	ListView_InsertColumn(m_listHwnd, 0, &col);
+
+	SetWindowFont(m_listHwnd, g_MessageTextFont, TRUE);
 }
 
 LRESULT MemberList::ListWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

@@ -1452,6 +1452,8 @@ void InitializeFonts()
 	lf.lfUnderline = false;
 	auto oldWeight = lf.lfWeight;
 
+	lf.lfHeight = ScaleByUser(lf.lfHeight);
+
 	HFONT hf, hfb, hfi, hfbi, hfu, hfbu, hfiu, hfbiu;
 	hf = hfb = hfi = hfbi = hfu = hfbu = hfiu = hfbiu = NULL;
 
@@ -1525,7 +1527,7 @@ void InitializeFonts()
 		// copy all properties except the face name
 		_tcscpy(lfMono.lfFaceName, TEXT("Courier New"));
 		lfMono.lfWidth = 0;
-		lfMono.lfHeight = 12 * GetSystemDPI() / 72;
+		lfMono.lfHeight = ScaleByUser(12 * GetSystemDPI() / 72);
 
 		g_FntMdCode = CreateFontIndirect(&lfMono);
 		if (!g_FntMdCode) {
@@ -1565,6 +1567,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 	SetupCachePathIfNeeded();
 	GetLocalSettings()->Load();
+
+	SetUserScale(GetLocalSettings()->GetUserScale());
 
 	int wndWidth = 0, wndHeight = 0;
 	bool startMaximized = false;

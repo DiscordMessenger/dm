@@ -83,6 +83,8 @@ bool ChannelView::InitTreeView()
 	// It will be destroyed when the window is destroyed.
 	TreeView_SetImageList(hwndTV, himl, TVSIL_NORMAL);
 
+	SetWindowFont(hwndTV, g_MessageTextFont, TRUE);
+
 	return TRUE;
 }
 
@@ -104,6 +106,8 @@ bool ChannelView::InitListView()
 	col.iSubItem = 0;
 	col.fmt = LVCFMT_LEFT;
 	ListView_InsertColumn(m_listHwnd, 0, &col);
+
+	SetWindowFont(m_listHwnd, g_MessageTextFont, TRUE);
 
 	return TRUE;
 }

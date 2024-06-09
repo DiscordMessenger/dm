@@ -67,7 +67,7 @@ void LoadingMessage::DrawLoading(HDC hdc)
 	int iconSizeSm = GetSystemMetrics(SM_CXSMICON);
 
 	// Draw loading bar
-	int dotWidth = iconSizeSm - ScaleByDPI(8);
+	int dotWidth = iconSizeSm / 2;
 	int yLoad = rect.top - ScaleByDPI(12) - iconSizeSm / 2;
 	int xLoad = (rect.right - rect.left - dotWidth * C_NUM_LOADING_DOTS) / 2;
 
@@ -83,7 +83,7 @@ void LoadingMessage::DrawLoading(HDC hdc)
 		DrawIconEx(hdc, xLoad + i * dotWidth - (iconSizeSm - dotWidth) / 2, yLoad, ic, iconSizeSm, iconSizeSm, 0, NULL, DI_COMPAT | DI_NORMAL);
 	}
 
-	m_load_rect = { xLoad, yLoad, xLoad + dotWidth * C_NUM_LOADING_DOTS,yLoad + iconSizeSm };
+	m_load_rect = { xLoad, yLoad, xLoad + dotWidth * C_NUM_LOADING_DOTS, yLoad + iconSizeSm };
 }
 
 LRESULT CALLBACK LoadingMessage::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

@@ -86,6 +86,9 @@ bool LocalSettings::Load()
 	if (j.contains("WatermarkAlignment"))
 		m_imageAlignment = eImageAlignment(int(j["WatermarkAlignment"]));
 
+	if (j.contains("UserScale"))
+		m_userScale = int(j["UserScale"]);
+
 	if (m_bSaveWindowSize)
 	{
 		if (j.contains("WindowWidth"))
@@ -136,6 +139,7 @@ bool LocalSettings::Save()
 	j["RemindUpdateCheckOn"] = (long long)(m_remindUpdatesOn);
 	j["ImageBackgroundFileName"] = m_imageBackgroundFileName;
 	j["WatermarkAlignment"] = int(m_imageAlignment);
+	j["UserScale"] = m_userScale;
 
 	if (m_bSaveWindowSize) {
 		j["WindowWidth"] = m_width;

@@ -20,7 +20,8 @@
 #include "../discord/Util.hpp"
 #endif
 
-#define DEFAULT_DPI (96)
+constexpr int DEFAULT_DPI  = 96;
+constexpr int NORMAL_SCALE = 1000;
 
 extern HWND g_Hwnd; // main.hpp
 extern HINSTANCE g_hInstance; // main.hpp
@@ -53,14 +54,26 @@ void ForgetSystemDPI()
 	g_systemDPICache = 0;
 }
 
+int g_Scale = 100;
+
+void SetUserScale(int scale)
+{
+	g_Scale = scale;
+}
+
+int ScaleByUser(int x)
+{
+	return MulDiv(x, g_Scale, NORMAL_SCALE);
+}
+
 int ScaleByDPI(int pos)
 {
-	return MulDiv( pos, GetSystemDPI(), DEFAULT_DPI );
+	return MulDiv( pos, g_Scale * GetSystemDPI(), NORMAL_SCALE * DEFAULT_DPI );
 }
 
 int UnscaleByDPI(int pos)
 {
-	return MulDiv( pos, DEFAULT_DPI, GetSystemDPI() );
+	return MulDiv( pos, NORMAL_SCALE * DEFAULT_DPI, g_Scale * GetSystemDPI() );
 }
 
 void ScreenToClientRect(HWND hWnd, RECT* rect)

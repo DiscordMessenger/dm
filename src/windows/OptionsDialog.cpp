@@ -15,6 +15,13 @@ const eMessageStyle g_indexToMessageStyle[] = {
 	MS_IMAGE,
 };
 
+const int g_indexToUserInterfaceScale[] = {
+	1000,
+	800,
+	1200,
+	1500,
+};
+
 #define C_PAGES (3)
 
 enum ePage
@@ -173,12 +180,9 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 
 			// determine message style selection
 			ComboBox_SetCurSel(hCBox, 0);
-
 			eMessageStyle msgStyle = GetLocalSettings()->GetMessageStyle();
-			for (size_t i = 0; i < _countof(g_indexToMessageStyle); i++)
-			{
-				if (msgStyle == g_indexToMessageStyle[i])
-				{
+			for (size_t i = 0; i < _countof(g_indexToMessageStyle); i++) {
+				if (msgStyle == g_indexToMessageStyle[i]) {
 					ComboBox_SetCurSel(hCBox, i);
 					break;
 				}
@@ -196,6 +200,22 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 			ComboBox_AddString(hCBox, TEXT("Middle left"));
 			ComboBox_AddString(hCBox, TEXT("Middle right"));
 			ComboBox_SetCurSel(hCBox, int(GetLocalSettings()->GetImageAlignment()));
+
+			hCBox = GetDlgItem(hwndDlg, IDC_COMBO_GUI_SCALE);
+			ComboBox_AddString(hCBox, TEXT("Normal (100%)"));
+			ComboBox_AddString(hCBox, TEXT("Small (80%)"));
+			ComboBox_AddString(hCBox, TEXT("Large (120%)"));
+			ComboBox_AddString(hCBox, TEXT("Extra Large (150%)"));
+
+			// determine user scale selection
+			ComboBox_SetCurSel(hCBox, 0);
+			int userScale = GetLocalSettings()->GetUserScale();
+			for (size_t i = 0; i < _countof(g_indexToUserInterfaceScale); i++) {
+				if (userScale == g_indexToUserInterfaceScale[i]) {
+					ComboBox_SetCurSel(hCBox, i);
+					break;
+				}
+			}
 
 			bool isWatermarkStyle = msgStyle == MS_IMAGE;
 			EnableWindow(GetDlgItem(hwndDlg, IDC_ACTIVE_IMAGE_EDIT),   isWatermarkStyle);
@@ -335,6 +355,19 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 							if (GetLocalSettings()->GetMessageStyle() == MS_IMAGE)
 								SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
 
+							break;
+						}
+						case IDC_COMBO_GUI_SCALE:
+						{
+							if (HIWORD(wParam) != CBN_SELCHANGE)
+								break;
+
+							int sel = ComboBox_GetCurSel((HWND)lParam);
+							if (sel == CB_ERR || sel < 0 || sel >= int(_countof(g_indexToUserInterfaceScale)))
+								break;
+
+							GetLocalSettings()->SetUserScale(g_indexToUserInterfaceScale[sel]);
+							MessageBox(hWnd, TmGetTString(IDS_GUI_SCALE_CHANGED), TmGetTString(IDS_PROGRAM_NAME), MB_OK | MB_ICONINFORMATION);
 							break;
 						}
 						case IDC_ACTIVE_IMAGE_BROWSE:
