@@ -3116,11 +3116,19 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 							ypos2 += msg.m_height;
 						}
 
+						// recalculate the range and page
+						int th = pThis->m_total_height - 1;
+						if (th <= 0)
+							th = 0;
+
+						si.nMin = 0;
+						si.nMax = th;
+						si.nPage = newHeight;
+
 						// scroll to the old position plus the offset
 						si.nTrackPos = position + ypos2 - ypos;
 						if (si.nTrackPos < si.nMin) si.nTrackPos = si.nMin;
 						if (si.nTrackPos > si.nMax) si.nTrackPos = si.nMax;
-						si.fMask &= SIF_POS;
 						wParam = SB_THUMBTRACK;
 						goto _lbl;
 					}
