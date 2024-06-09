@@ -890,8 +890,13 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		// wParam = request code, lParam = Request*
 		case WM_REQUESTDONE:
 		{
-			NetRequest* pReq = (NetRequest*)lParam;
-			GetDiscordInstance()->HandleRequest(pReq);
+			NetRequest cloneReq = * (NetRequest*) lParam;
+
+			// Round-trip time should probably be low to avoid stalling.
+			if (InSendMessage())
+				ReplyMessage(0);
+
+			GetDiscordInstance()->HandleRequest(&cloneReq);
 			break;
 		}
 		case WM_ADDMESSAGE:

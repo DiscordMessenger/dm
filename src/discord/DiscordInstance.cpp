@@ -439,10 +439,8 @@ void DiscordInstance::OnSelectGuild(Snowflake sf, Snowflake chan)
 
 void OnUpdateAvatar(const std::string& resid);
 
-void DiscordInstance::HandleRequest(void* pRequestPtr)
+void DiscordInstance::HandleRequest(NetRequest* pRequest)
 {
-	NetRequest* pRequest = (NetRequest*)pRequestPtr;
-
 	if (pRequest->itype == DiscordRequest::UPLOAD_ATTACHMENT) {
 		OnUploadAttachmentFirst(pRequest);
 		return;

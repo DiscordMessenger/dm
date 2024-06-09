@@ -377,7 +377,7 @@ public:
 		InitDispatchFunctions();
 	}
 
-	void HandleRequest(void* pReq); // actually this expects NetworkerThread::Request*
+	void HandleRequest(NetRequest* pReq);
 
 	void HandleGatewayMessage(const std::string& payload);
 
