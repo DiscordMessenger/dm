@@ -138,7 +138,7 @@ public:
 	void SetDateEdited(const std::string& dateStr);
 	void SetTimeEdited(time_t t);
 
-	bool CheckWasMentioned(Snowflake user, Snowflake guild);
+	bool CheckWasMentioned(Snowflake user, Snowflake guild, bool bSuppressEveryone = false, bool bSuppressRoles = false) const;
 
 	void Load(nlohmann::json& j, Snowflake guild);
 };

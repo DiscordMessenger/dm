@@ -26,6 +26,31 @@ void ChannelOverride::Load(const nlohmann::json& j)
 	m_muteConfig.Load(j, "mute_config");
 }
 
+bool ChannelOverride::IsMuted() const
+{
+	return m_bMuted && (
+		m_muteConfig.m_selectedTimeWindow == -1 ||
+		m_muteConfig.m_endTime > time(NULL)
+	);
+}
+
+const ChannelOverride* GuildSettings::GetOverride(Snowflake channel) const
+{
+	auto it = m_channelOverride.find(channel);
+	if (it == m_channelOverride.end())
+		return nullptr;
+
+	return &it->second;
+}
+
+bool GuildSettings::IsMuted() const
+{
+	return m_bMuted && (
+		m_muteConfig.m_selectedTimeWindow == -1 ||
+		m_muteConfig.m_endTime > time(NULL)
+	);
+}
+
 void GuildSettings::Load(const nlohmann::json& j)
 {
 	m_guildID = GetSnowflake(j, "guild_id");
@@ -63,5 +88,38 @@ void UserGuildSettings::Load(const nlohmann::json& j)
 	if (m_bLoaded && m_version > version)
 		return;
 
+	m_bLoaded = true;
+	m_version = version;
 
+	auto it = j.find("entries");
+	if (it == j.end() || !it->is_array())
+		return;
+
+	for (const auto& entry : *it)
+	{
+		GuildSettings gs;
+		gs.Load(entry);
+		m_guildSettings[gs.m_guildID] = gs;
+	}
+}
+
+void UserGuildSettings::Clear()
+{
+	m_bLoaded = false;
+	m_version = 0;
+	m_guildSettings.clear();
+}
+
+GuildSettings* UserGuildSettings::GetOrCreateSettings(Snowflake guild)
+{
+	return &m_guildSettings[guild];
+}
+
+const GuildSettings* UserGuildSettings::GetSettings(Snowflake guild) const
+{
+	auto it = m_guildSettings.find(guild);
+	if (it == m_guildSettings.end())
+		return nullptr;
+
+	return &it->second;
 }

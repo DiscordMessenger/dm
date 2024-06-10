@@ -37,6 +37,7 @@ struct ChannelOverride
 	MuteConfig m_muteConfig;
 
 	void Load(const nlohmann::json& j);
+	bool IsMuted() const;
 };
 
 struct GuildSettings
@@ -56,6 +57,8 @@ struct GuildSettings
 	std::map<Snowflake, ChannelOverride> m_channelOverride;
 
 	void Load(const nlohmann::json& j);
+	const ChannelOverride* GetOverride(Snowflake channel) const;
+	bool IsMuted() const;
 };
 
 struct UserGuildSettings
@@ -65,4 +68,9 @@ struct UserGuildSettings
 	int m_version = 0;
 
 	void Load(const nlohmann::json& j);
+	void Clear();
+
+	const GuildSettings* GetSettings(Snowflake guild) const;
+
+	GuildSettings* GetOrCreateSettings(Snowflake guild);
 };

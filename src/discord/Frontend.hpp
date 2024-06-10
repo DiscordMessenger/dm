@@ -83,6 +83,9 @@ public:
 	// Quit
 	virtual void RequestQuit() = 0;
 
+	// Queries
+	virtual bool IsWindowMinimized() = 0;
+
 	// User stuff
 	virtual void GetIdentifyProperties(nlohmann::json& j) = 0;
 	virtual std::string GetUserAgent() = 0;

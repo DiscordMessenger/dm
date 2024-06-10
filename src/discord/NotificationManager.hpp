@@ -2,8 +2,7 @@
 
 #include <string>
 #include <list>
-#include <nlohmann/json.h>
-#include "Snowflake.hpp"
+#include "Message.hpp"
 
 class DiscordInstance;
 
@@ -24,10 +23,12 @@ class NotificationManager
 public:
 	NotificationManager(DiscordInstance*);
 
-	void OnMessageCreate(const nlohmann::json& j);
+	void OnMessageCreate(Snowflake guildID, Snowflake channelID, const Message& msg);
 
 
 
+private:
+	bool IsNotificationWorthy(Snowflake guildID, Snowflake channelID, const Message& msg);
 
 private:
 	DiscordInstance* m_pDiscord;

@@ -8,6 +8,7 @@
 #include "Snowflake.hpp"
 #include "Channel.hpp"
 #include "Emoji.hpp"
+#include "UserGuildSettings.hpp"
 
 // obscenely high numbers s.t. that they show last
 #define GROUP_ONLINE  9000000000000000000LL
@@ -68,6 +69,8 @@ struct Guild
 	Snowflake m_ownerId = 0;
 
 	std::set<Snowflake> m_knownMembers;
+
+	eMessageNotifications m_defaultMessageNotifications = NOTIF_ALL_MESSAGES;
 
 	int m_order = 0;
 

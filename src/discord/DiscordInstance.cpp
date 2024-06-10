@@ -1737,6 +1737,9 @@ void DiscordInstance::ParseAndAddGuild(nlohmann::json& elem)
 	else
 		g.m_ownerId = 0;
 
+	// parse default notification settings
+	g.m_defaultMessageNotifications = eMessageNotifications(GetFieldSafeInt(props, "default_message_notifications"));
+
 	// parse avatar
 	g.m_avatarlnk = GetFieldSafe(props, "icon");
 
@@ -1815,6 +1818,7 @@ void DiscordInstance::InitDispatchFunctions()
 	DECL(MESSAGE_DELETE);
 	DECL(MESSAGE_ACK);
 	DECL(USER_SETTINGS_PROTO_UPDATE);
+	DECL(USER_GUILD_SETTINGS_UPDATE);
 	DECL(GUILD_CREATE);
 	DECL(GUILD_DELETE);
 	DECL(CHANNEL_CREATE);
@@ -2053,6 +2057,11 @@ void DiscordInstance::HandleREADY(Json& j)
 
 	// ==== load resume_gateway_url
 	// ==== load user_guild_settings
+	if (data.contains("user_guild_settings") && data["user_guild_settings"].is_object())
+	{
+		m_userGuildSettings.Clear();
+		m_userGuildSettings.Load(data["user_guild_settings"]);
+	}
 	
 	// select the first guild, if possible
 	Snowflake guildsf = 0;
@@ -2107,7 +2116,14 @@ void DiscordInstance::HandleMessageInsertOrUpdate(Json& j, bool bIsUpdate)
 	pChan->m_lastSentMsg = std::max(pChan->m_lastSentMsg, messageId);
 	if (!bIsUpdate)
 	{
-		if (msg.CheckWasMentioned(m_mySnowflake, guildId) && m_CurrentChannel != channelId)
+		bool suppEveryone = false, suppRoles = false;
+		auto pSettings = m_userGuildSettings.GetSettings(guildId);
+		if (pSettings) {
+			suppEveryone = pSettings->m_bSuppressEveryone;
+			suppRoles    = pSettings->m_bSuppressRoles;
+		}
+
+		if (msg.CheckWasMentioned(m_mySnowflake, guildId, suppEveryone, suppRoles) && m_CurrentChannel != channelId)
 			pChan->m_mentionCount++;
 	}
 
@@ -2127,7 +2143,7 @@ void DiscordInstance::HandleMessageInsertOrUpdate(Json& j, bool bIsUpdate)
 		GetFrontend()->UpdateChannelAcknowledge(channelId, pChan->m_lastViewedMsg);
 
 	if (!bIsUpdate)
-		m_notificationManager.OnMessageCreate(data);
+		m_notificationManager.OnMessageCreate(guildId, channelId, msg);
 }
 
 void DiscordInstance::HandleMESSAGE_CREATE(Json& j)
@@ -2162,6 +2178,15 @@ void DiscordInstance::HandleMESSAGE_ACK(nlohmann::json& j)
 	// NOTE: Seems like this version of the read state object has different names for channel ID and message ID.  Also differing versions?
 	// Maybe you're supposed to ignore things with an earlier version?
 	ParseReadStateObject(data, true);
+}
+
+void DiscordInstance::HandleUSER_GUILD_SETTINGS_UPDATE(nlohmann::json& j)
+{
+	Json& data = j["d"];
+	Snowflake guildID = GetSnowflake(data, "guild_id");
+
+	GuildSettings* pSettings = m_userGuildSettings.GetOrCreateSettings(guildID);
+	pSettings->Load(data);
 }
 
 void DiscordInstance::HandleUSER_SETTINGS_PROTO_UPDATE(Json& j)

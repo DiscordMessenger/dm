@@ -17,6 +17,7 @@
 #include "Message.hpp"
 #include "Relationship.hpp"
 #include "NotificationManager.hpp"
+#include "UserGuildSettings.hpp"
 
 struct NetRequest;
 
@@ -189,6 +190,9 @@ public:
 
 	// Relationships
 	std::list<Relationship> m_relationships;
+
+	// User guild settings
+	UserGuildSettings m_userGuildSettings;
 
 	// Notification manager
 	NotificationManager m_notificationManager;
@@ -422,6 +426,7 @@ private:
 	void HandleMESSAGE_DELETE(nlohmann::json& j);
 	void HandleMESSAGE_UPDATE(nlohmann::json& j);
 	void HandleMESSAGE_ACK(nlohmann::json& j);
+	void HandleUSER_GUILD_SETTINGS_UPDATE(nlohmann::json& j);
 	void HandleUSER_SETTINGS_PROTO_UPDATE(nlohmann::json& j);
 	void HandleGUILD_CREATE(nlohmann::json& j);
 	void HandleGUILD_DELETE(nlohmann::json& j);

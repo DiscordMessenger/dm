@@ -41,9 +41,9 @@ void Message::SetTimeEdited(time_t t)
 	m_editedTextCompact = "(edited)";
 }
 
-bool Message::CheckWasMentioned(Snowflake user, Snowflake guild)
+bool Message::CheckWasMentioned(Snowflake user, Snowflake guild, bool bSuppressEveryone, bool bSuppressRoles) const
 {
-	if (m_bMentionedEveryone)
+	if (!bSuppressEveryone && m_bMentionedEveryone)
 		return true;
 
 	if (m_userMentions.find(user) != m_userMentions.end())
@@ -56,10 +56,13 @@ bool Message::CheckWasMentioned(Snowflake user, Snowflake guild)
 	if (!pf->HasGuildMemberProfile(guild))
 		return false;
 
-	GuildMember* gm = &pf->m_guildMembers[guild];
-	for (auto role : gm->m_roles) {
-		if (m_roleMentions.find(role) != m_roleMentions.end())
-			return true;
+	if (!bSuppressRoles)
+	{
+		GuildMember* gm = &pf->m_guildMembers[guild];
+		for (auto role : gm->m_roles) {
+			if (m_roleMentions.find(role) != m_roleMentions.end())
+				return true;
+		}
 	}
 
 	return false;

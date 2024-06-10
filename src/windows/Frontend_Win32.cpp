@@ -395,6 +395,11 @@ void Frontend_Win32::RequestQuit()
 	::WantQuit();
 }
 
+bool Frontend_Win32::IsWindowMinimized()
+{
+	return IsIconic(g_Hwnd);
+}
+
 void Frontend_Win32::GetIdentifyProperties(nlohmann::json& j)
 {
 	j["app_arch"] = "x64";
