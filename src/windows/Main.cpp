@@ -578,7 +578,7 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			// have to force alpha always
 			// have to flip vertically if !hadToUseLegacyBitmap
-			if (!ImageLoader::ConvertToPNG(&data, pBytes, width, height, stride, 32, true, !hadToUseLegacyBitmap)) {
+			if (!ImageLoader::ConvertToPNG(&data, pBytes, width, height, stride, bpp, true, !hadToUseLegacyBitmap)) {
 				DbgPrintW("Cannot convert to PNG!");
 				goto _fail;
 			}
