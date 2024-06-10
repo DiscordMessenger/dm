@@ -16,9 +16,11 @@ void NotificationManager::OnMessageCreate(Snowflake guildID, Snowflake channelID
 	Notification notif;
 	notif.m_author = msg.m_author;
 	notif.m_contents = msg.m_message;
+	notif.m_avatarLnk = msg.m_avatar;
 	notif.m_sourceGuild = guildID;
 	notif.m_sourceChannel = channelID;
 	notif.m_sourceMessage = msg.m_snowflake;
+	notif.m_timeReceived = msg.m_dateTime;
 
 	m_notifications.push_front(notif);
 	GetFrontend()->OnNotification();

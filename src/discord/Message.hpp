@@ -109,6 +109,7 @@ public:
 	bool m_bMentionedEveryone = false;
 	bool m_bHaveReferencedMessage = false;
 	bool m_bIsAuthorBot = false;
+	bool m_bRead = false; // valid only for the notification viewer messages
 	Snowflake m_refMessageGuild = 0;
 	Snowflake m_refMessageChannel = 0;
 	Snowflake m_refMessageSnowflake = 0;

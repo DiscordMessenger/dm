@@ -1,5 +1,6 @@
 #include "GuildHeader.hpp"
 #include "PinList.hpp"
+#include "NotificationViewer.hpp"
 
 #define GUILD_HEADER_COLOR   COLOR_ACTIVECAPTION
 #define GUILD_HEADER_COLOR_2 COLOR_GRADIENTACTIVECAPTION
@@ -8,6 +9,7 @@
 #define IDTB_MEMBERS  (1000) // Show list of members
 #define IDTB_PINS     (1001) // Show pinned messages
 #define IDTB_CHANNELS (1002) // Hide channel list
+#define IDTB_NOTIFS   (1003) // Show notifications
 
 WNDCLASS GuildHeader::g_GuildHeaderClass;
 
@@ -34,9 +36,10 @@ GuildHeader::GuildHeader()
 	m_dmIcon      = LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_DM)));
 	m_groupDmIcon = LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM)));
 
-	m_buttons.push_back(Button(IDTB_MEMBERS,  DMIC(IDI_MEMBERS),    BUTTON_RIGHT));
-	m_buttons.push_back(Button(IDTB_PINS,     DMIC(IDI_PIN),        BUTTON_RIGHT));
-	m_buttons.push_back(Button(IDTB_CHANNELS, DMIC(IDI_SHIFT_LEFT), BUTTON_GUILD_RIGHT));
+	m_buttons.push_back(Button(IDTB_MEMBERS,  DMIC(IDI_MEMBERS),      BUTTON_RIGHT));
+	m_buttons.push_back(Button(IDTB_PINS,     DMIC(IDI_PIN),          BUTTON_RIGHT));
+	m_buttons.push_back(Button(IDTB_NOTIFS,   DMIC(IDI_NOTIFICATION), BUTTON_RIGHT));
+	m_buttons.push_back(Button(IDTB_CHANNELS, DMIC(IDI_SHIFT_LEFT),   BUTTON_GUILD_RIGHT));
 }
 
 std::string GuildHeader::GetGuildName()
@@ -524,6 +527,15 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					};
 					ClientToScreen(hWnd, &pt);
 					PinList::Show(pChan->m_snowflake, pGuild->m_snowflake, pt.x, pt.y, true);
+					break;
+				}
+				case IDTB_NOTIFS: {
+					POINT pt = {
+						pThis->m_buttons[lParam].m_rect.right,
+						pThis->m_buttons[lParam].m_rect.bottom
+					};
+					ClientToScreen(hWnd, &pt);
+					NotificationViewer::Show(pt.x, pt.y, true);
 					break;
 				}
 				case IDTB_MEMBERS:

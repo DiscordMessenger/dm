@@ -412,6 +412,8 @@ void MessageList::MeasureMessage(
 		rc = rcCommon1;
 		DrawText(hdc, strAuth, -1, &rc, DT_CALCRECT | DT_NOPREFIX);
 		authheight = rc.bottom - rc.top, authwidth = rc.right - rc.left;
+		if (authheight == 0)
+			authheight = DrawText(hdc, TEXT("Wp"), -1, &rc, DT_CALCRECT | DT_NOPREFIX);
 		if (isAuthorBot) authwidth += GetSystemMetrics(SM_CXSMICON) + ScaleByDPI(4);
 	}
 	else {
@@ -1538,6 +1540,7 @@ bool MessageList::IsActionMessage(MessageType::eType msgType)
 		case MessageType::CANT_VIEW_MSG_HISTORY:
 		case MessageType::LOADING_PINNED_MESSAGES:
 		case MessageType::NO_PINNED_MESSAGES:
+		case MessageType::NO_NOTIFICATIONS:
 		case MessageType::CHANNEL_HEADER:
 		case MessageType::STAGE_START:
 		case MessageType::STAGE_END:
@@ -1563,6 +1566,7 @@ bool MessageList::IsClientSideMessage(MessageType::eType msgType)
 		case MessageType::CANT_VIEW_MSG_HISTORY:
 		case MessageType::LOADING_PINNED_MESSAGES:
 		case MessageType::NO_PINNED_MESSAGES:
+		case MessageType::NO_NOTIFICATIONS:
 		case MessageType::CHANNEL_HEADER:
 			return true;
 	}
@@ -1791,6 +1795,11 @@ void MessageList::DetermineMessageData(
 
 		case MessageType::NO_PINNED_MESSAGES:
 			messagePart1 = TmGetTString(IDS_NO_PINNED_MESSAGES);
+			messagePart2 = TEXT("");
+			break;
+
+		case MessageType::NO_NOTIFICATIONS:
+			messagePart1 = TmGetTString(IDS_NO_NOTIFICATIONS);
 			messagePart2 = TEXT("");
 			break;
 	}
@@ -2041,7 +2050,11 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 	bool isFlashed = (m_emphasizedMessage == item.m_msg.m_snowflake) && (m_flash_counter % 2 != 0);
 
-	COLORREF textColor = InvertIfNeeded(GetSysColor(COLOR_WINDOWTEXT)), bkgdColor = CLR_NONE;
+	COLORREF chosenTextColor = GetSysColor(COLOR_WINDOWTEXT);
+	if (item.m_msg.m_bRead)
+		chosenTextColor = GetSysColor(COLOR_3DSHADOW);
+
+	COLORREF textColor = InvertIfNeeded(chosenTextColor), bkgdColor = CLR_NONE;
 
 	RECT rc = msgRect;
 	if (!m_firstShownMessage && rc.bottom > clientRect.top && !item.m_msg.IsLoadGap())

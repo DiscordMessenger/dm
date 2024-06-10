@@ -390,6 +390,10 @@ IDI_GUILDS              ICON                    "../res/icons/icon_guilds.ico"
 
 IDI_SCROLL              ICON                    "../res/icons/icon_scroll.ico"
 
+IDI_NOTIFICATION        ICON                    "../res/icons/icon_notification.ico"
+
+IDI_NOTIFICATION_2K     ICON                    "../res/icons/icon_notification_2k.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -633,6 +637,15 @@ BEGIN
     CONTROL         "",IDC_GUILD_LIST,"SysListView32",LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,7,19,271,158
 END
 
+IDD_DIALOG_NOTIFICATIONS DIALOGEX 0, 0, 281, 254
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Notifications"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_MESSAGE_LIST,"Static",SS_BLACKRECT,7,27,267,220
+    LTEXT           "Here are your recent notifications for this session.\nClick on a message to jump to it.",IDC_STATIC,7,7,267,17
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -752,6 +765,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 196
     END
+
+    IDD_DIALOG_NOTIFICATIONS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 274
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 247
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -841,6 +862,11 @@ BEGIN
 END
 
 IDD_DIALOG_GUILD_CHOOSER AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_NOTIFICATIONS AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -1184,6 +1210,7 @@ BEGIN
     IDS_CANNOT_INIT_WS      "The WebSocket client could not be initialized.\n\nDiscord Messenger will now exit."
     IDS_SELECT_BACKGROUND_IMAGE "Select background image"
     IDS_GUI_SCALE_CHANGED   "You will need to restart Discord Messenger to apply the new UI element size."
+    IDS_NO_NOTIFICATIONS    "There are no recent notifications. Wumpus isn't here either."
 END
 
 #endif    // English (United States) resources

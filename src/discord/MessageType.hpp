@@ -45,5 +45,6 @@ namespace MessageType
 		UNSENT_MESSAGE,
 		SENDING_MESSAGE,
 		CHANNEL_HEADER,
+		NO_NOTIFICATIONS,
 	};
 }

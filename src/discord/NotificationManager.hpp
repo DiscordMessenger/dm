@@ -2,6 +2,7 @@
 
 #include <string>
 #include <list>
+#include <ctime>
 #include "Message.hpp"
 
 class DiscordInstance;
@@ -10,6 +11,8 @@ struct Notification
 {
 	std::string m_author;
 	std::string m_contents;
+	std::string m_avatarLnk;
+	time_t m_timeReceived = 0;
 	Snowflake m_sourceGuild = 0, m_sourceChannel = 0, m_sourceMessage = 0;
 	bool m_bRead = false;
 };
@@ -20,6 +23,10 @@ public:
 	NotificationManager(DiscordInstance*);
 	void OnMessageCreate(Snowflake guildID, Snowflake channelID, const Message& msg);
 	Notification* GetLatestNotification();
+
+	std::list<Notification>& GetNotifications() {
+		return m_notifications;
+	}
 
 private:
 	bool IsNotificationWorthy(Snowflake guildID, Snowflake channelID, const Message& msg);

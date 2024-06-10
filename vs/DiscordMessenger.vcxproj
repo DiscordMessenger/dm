@@ -406,6 +406,8 @@
     <Image Include="..\res\icons\icon_new_2k.ico" />
     <Image Include="..\res\icons\icon_new_inline.ico" />
     <Image Include="..\res\icons\icon_new_inline_2k.ico" />
+    <Image Include="..\res\icons\icon_notification.ico" />
+    <Image Include="..\res\icons\icon_notification_2k.ico" />
     <Image Include="..\res\icons\icon_offline_small.ico" />
     <Image Include="..\res\icons\icon_online_small.ico" />
     <Image Include="..\res\icons\icon_pin.ico" />
@@ -509,6 +511,7 @@
     <ClInclude Include="..\src\windows\MessageList.hpp" />
     <ClInclude Include="..\src\windows\MissingDefinitions.hpp" />
     <ClInclude Include="..\src\windows\NetworkerThread.hpp" />
+    <ClInclude Include="..\src\windows\NotificationViewer.hpp" />
     <ClInclude Include="..\src\windows\OptionsDialog.hpp" />
     <ClInclude Include="..\src\windows\PinList.hpp" />
     <ClInclude Include="..\src\windows\ProfilePopout.hpp" />
@@ -520,7 +523,7 @@
     <ClInclude Include="..\src\windows\TextInterface_Win32.hpp" />
     <ClInclude Include="..\src\windows\TextManager.hpp" />
     <ClInclude Include="..\src\windows\TextToSpeech.hpp" />
-    <ClInclude Include="..\src\windows\TrayNotification.hpp" />
+    <ClInclude Include="..\src\windows\ShellNotification.hpp" />
     <ClInclude Include="..\src\windows\UploadDialog.hpp" />
     <ClInclude Include="..\src\windows\ProgressDialog.hpp" />
     <ClInclude Include="..\src\windows\WindowMessages.hpp" />
@@ -569,6 +572,7 @@
     <ClCompile Include="..\src\windows\MessageEditor.cpp" />
     <ClCompile Include="..\src\windows\MessageList.cpp" />
     <ClCompile Include="..\src\windows\NetworkerThread.cpp" />
+    <ClCompile Include="..\src\windows\NotificationViewer.cpp" />
     <ClCompile Include="..\src\windows\OptionsDialog.cpp" />
     <ClCompile Include="..\src\windows\PinList.cpp" />
     <ClCompile Include="..\src\windows\ProfilePopout.cpp" />
@@ -580,7 +584,7 @@
     <ClCompile Include="..\src\windows\TextInterface_Win32.cpp" />
     <ClCompile Include="..\src\windows\TextManager.cpp" />
     <ClCompile Include="..\src\windows\TextToSpeech.cpp" />
-    <ClCompile Include="..\src\windows\TrayNotification.cpp" />
+    <ClCompile Include="..\src\windows\ShellNotification.cpp" />
     <ClCompile Include="..\src\windows\UploadDialog.cpp" />
     <ClCompile Include="..\src\windows\ProgressDialog.cpp" />
     <ClCompile Include="..\src\windows\WinUtils.cpp" />

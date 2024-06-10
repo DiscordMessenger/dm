@@ -6,7 +6,7 @@
 #include "QRCodeDialog.hpp"
 #include "PinList.hpp"
 #include "ProgressDialog.hpp"
-#include "TrayNotification.hpp"
+#include "ShellNotification.hpp"
 #include "../discord/UpdateChecker.hpp"
 #include "../discord/LocalSettings.hpp"
 
@@ -209,7 +209,7 @@ void Frontend_Win32::OnStopProgress(Snowflake key)
 
 void Frontend_Win32::OnNotification()
 {
-	GetTrayNotification()->OnNotification();
+	GetShellNotification()->OnNotification();
 }
 
 void Frontend_Win32::OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_t* pData, size_t nSize, const std::string& additData)

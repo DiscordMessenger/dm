@@ -24,7 +24,7 @@
 #include "Frontend_Win32.hpp"
 #include "ProgressDialog.hpp"
 #include "AutoComplete.hpp"
-#include "TrayNotification.hpp"
+#include "ShellNotification.hpp"
 #include "../discord/LocalSettings.hpp"
 #include "../discord/WebsocketClient.hpp"
 #include "../discord/UpdateChecker.hpp"
@@ -1074,7 +1074,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_POSTINIT:
 		{
-			GetTrayNotification()->Initialize();
+			GetShellNotification()->Initialize();
 			break;
 		}
 		case WM_CONNECTERROR:
@@ -1171,7 +1171,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SAFE_DELETE(g_pMessageEditor);
 			SAFE_DELETE(g_pLoadingMessage);
 
-			GetTrayNotification()->Deinitialize();
+			GetShellNotification()->Deinitialize();
 
 			PostQuitMessage(0);
 			break;
@@ -1433,7 +1433,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_NOTIFMANAGERCALLBACK:
 		{
-			GetTrayNotification()->Callback(wParam, lParam);
+			GetShellNotification()->Callback(wParam, lParam);
 			break;
 		}
 	}

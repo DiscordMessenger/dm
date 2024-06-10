@@ -2,10 +2,10 @@
 
 #include <windows.h>
 
-class TrayNotification
+class ShellNotification
 {
 public:
-	~TrayNotification();
+	~ShellNotification();
 	void Initialize();
 	void Deinitialize();
 
@@ -18,6 +18,7 @@ public:
 
 private:
 	bool m_bInitialized = false;
+	bool m_bBalloonActive = false;
 };
 
-TrayNotification* GetTrayNotification();
+ShellNotification* GetShellNotification();

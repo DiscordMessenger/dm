@@ -381,6 +381,12 @@
     <Image Include="..\res\icons\icon_guilds.ico">
       <Filter>Resource Files\Resources\Icons</Filter>
     </Image>
+    <Image Include="..\res\icons\icon_notification_2k.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
+    </Image>
+    <Image Include="..\res\icons\icon_notification.ico">
+      <Filter>Resource Files\Resources\Icons</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\res\cursors\cur_zoomout.cur">
@@ -614,8 +620,11 @@
     <ClInclude Include="..\src\discord\UserGuildSettings.hpp">
       <Filter>Header Files\Discord</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\windows\TrayNotification.hpp">
+    <ClInclude Include="..\src\windows\ShellNotification.hpp">
       <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\NotificationViewer.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -778,7 +787,10 @@
     <ClCompile Include="..\src\discord\UserGuildSettings.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\windows\TrayNotification.cpp">
+    <ClCompile Include="..\src\windows\ShellNotification.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\NotificationViewer.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
   </ItemGroup>

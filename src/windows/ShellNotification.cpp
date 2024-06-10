@@ -1,44 +1,44 @@
-#include "TrayNotification.hpp"
+#include "ShellNotification.hpp"
 #include "Main.hpp"
 
 constexpr int NOTIFICATION_ID = 1000;
 
-// Tray Notification Singleton
-static TrayNotification g_trayNotification;
-TrayNotification* GetTrayNotification() {
-    return &g_trayNotification;
+// Shell Notification Singleton
+static ShellNotification g_ShellNotification;
+ShellNotification* GetShellNotification() {
+	return &g_ShellNotification;
 }
 
-TrayNotification::~TrayNotification()
+ShellNotification::~ShellNotification()
 {
-    assert(!m_bInitialized);
-    Deinitialize();
+	assert(!m_bInitialized);
+	Deinitialize();
 }
 
-void TrayNotification::Initialize()
+void ShellNotification::Initialize()
 {
-    NOTIFYICONDATA d;
-    ZeroMemory(&d, sizeof d);
+	NOTIFYICONDATA d;
+	ZeroMemory(&d, sizeof d);
 
-    d.cbSize = NOTIFYICONDATA_V2_SIZE;
-    d.hWnd   = g_Hwnd;
-    d.uID    = NOTIFICATION_ID;
+	d.cbSize = NOTIFYICONDATA_V2_SIZE;
+	d.hWnd   = g_Hwnd;
+	d.uID    = NOTIFICATION_ID;
 	d.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_SHOWTIP;
-    d.hIcon  = LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)));
+	d.hIcon  = LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)));
 	d.uTimeout = 10000;
-    d.uCallbackMessage = WM_NOTIFMANAGERCALLBACK;
+	d.uCallbackMessage = WM_NOTIFMANAGERCALLBACK;
 	
 	_tcscpy(d.szTip, TmGetTString(IDS_PROGRAM_NAME));
 
-    Shell_NotifyIcon(NIM_ADD, &d);
+	Shell_NotifyIcon(NIM_ADD, &d);
 
-    m_bInitialized = true;
+	m_bInitialized = true;
 }
 
-void TrayNotification::Deinitialize()
+void ShellNotification::Deinitialize()
 {
-    if (!m_bInitialized)
-        return;
+	if (!m_bInitialized)
+		return;
 
 	NOTIFYICONDATA d;
 	ZeroMemory(&d, sizeof d);
@@ -47,10 +47,10 @@ void TrayNotification::Deinitialize()
 	d.hWnd   = g_Hwnd;
 	Shell_NotifyIcon(NIM_DELETE, &d);
 
-    m_bInitialized = false;
+	m_bInitialized = false;
 }
 
-void TrayNotification::OnNotification()
+void ShellNotification::OnNotification()
 {
 	Notification* pNotif = GetNotificationManager()->GetLatestNotification();
 	if (!pNotif) {
@@ -79,7 +79,7 @@ void TrayNotification::OnNotification()
 	d.cbSize = NOTIFYICONDATA_V2_SIZE;
 	d.uID    = NOTIFICATION_ID;
 	d.hWnd   = g_Hwnd;
-	d.uFlags = NIF_INFO;
+	d.uFlags = NIF_INFO | NIF_REALTIME;
 	d.dwInfoFlags = NIIF_USER;
 
 	std::string titleString = pNotif->m_author + " wrote";
@@ -101,12 +101,25 @@ void TrayNotification::OnNotification()
 	Shell_NotifyIcon(NIM_MODIFY, &d);
 }
 
-void TrayNotification::Callback(WPARAM wParam, LPARAM lParam)
+void ShellNotification::Callback(WPARAM wParam, LPARAM lParam)
 {
 	switch (LOWORD(lParam))
 	{
+		case NIN_BALLOONSHOW:
+		{
+			m_bBalloonActive = true;
+			break;
+		}
+		case NIN_BALLOONHIDE:
+		case NIN_BALLOONTIMEOUT:
+		{
+			m_bBalloonActive = false;
+			break;
+		}
+
 		case NIN_BALLOONUSERCLICK:
 		{
+			// TODO: Don't know how to know which one we clicked
 			DbgPrintW("Acknowledge Notification");
 			break;
 		}
