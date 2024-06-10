@@ -83,7 +83,7 @@ LRESULT ProgressDialog::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR) wp);
 
 		case WM_UPDATEUPLOADING:
-			lres = !m_bCanceling;
+			lres = m_bCanceling;
 			break;
 	}
 
