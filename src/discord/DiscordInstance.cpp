@@ -1912,7 +1912,10 @@ void DiscordInstance::HandleREADY(Json& j)
 {
 	GetFrontend()->OnConnected();
 
+#ifdef _DEBUG
 	std::string str = j.dump();
+#endif
+
 	Json& data = j["d"];
 	m_gatewayResumeUrl = data["resume_gateway_url"];
 	m_sessionId = data["session_id"];
@@ -2036,10 +2039,20 @@ void DiscordInstance::HandleREADY(Json& j)
 		m_ackVersion = GetFieldSafeInt(readStateData, "version");
 	}
 
-	// ==== load relationships - friends list
+	// ==== load relationships - friends and blocked
+	if (data.contains("relationships") && data["relationships"].is_array())
+	{
+		auto& rels = data["relationships"];
+		for (auto& elem : rels)
+		{
+			Relationship rel;
+			rel.Load(elem);
+			m_relationships.push_back(rel);
+		}
+	}
+
 	// ==== load resume_gateway_url
 	// ==== load user_guild_settings
-
 	
 	// select the first guild, if possible
 	Snowflake guildsf = 0;
@@ -2092,7 +2105,6 @@ void DiscordInstance::HandleMessageInsertOrUpdate(Json& j, bool bIsUpdate)
 
 	Snowflake oldSentMsg = pChan->m_lastSentMsg;
 	pChan->m_lastSentMsg = std::max(pChan->m_lastSentMsg, messageId);
-
 	if (!bIsUpdate)
 	{
 		if (msg.CheckWasMentioned(m_mySnowflake, guildId) && m_CurrentChannel != channelId)
@@ -2113,6 +2125,9 @@ void DiscordInstance::HandleMessageInsertOrUpdate(Json& j, bool bIsUpdate)
 
 	if (updateAck)
 		GetFrontend()->UpdateChannelAcknowledge(channelId, pChan->m_lastViewedMsg);
+
+	if (!bIsUpdate)
+		m_notificationManager.OnMessageCreate(data);
 }
 
 void DiscordInstance::HandleMESSAGE_CREATE(Json& j)

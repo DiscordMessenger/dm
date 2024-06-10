@@ -605,6 +605,15 @@
     <ClInclude Include="..\src\discord\Emoji.hpp">
       <Filter>Header Files\Discord</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\discord\NotificationManager.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\Relationship.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\UserGuildSettings.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\windows\ProfileView.cpp">
@@ -756,6 +765,15 @@
     </ClCompile>
     <ClCompile Include="..\src\discord\Emoji.cpp">
       <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\NotificationManager.cpp">
+      <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\Relationship.cpp">
+      <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\UserGuildSettings.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

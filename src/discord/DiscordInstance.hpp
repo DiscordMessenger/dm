@@ -15,6 +15,8 @@
 #include "ProfileCache.hpp"
 #include "ScrollDir.hpp"
 #include "Message.hpp"
+#include "Relationship.hpp"
+#include "NotificationManager.hpp"
 
 struct NetRequest;
 
@@ -184,6 +186,12 @@ public:
 
 	// Channel history
 	ChannelHistory m_channelHistory;
+
+	// Relationships
+	std::list<Relationship> m_relationships;
+
+	// Notification manager
+	NotificationManager m_notificationManager;
 
 	// List of channels user cannot view because an HTTPS request related
 	// to them returned a 403.  Frankly this shouldn't be usable, but oh well.
@@ -373,7 +381,7 @@ public:
 	void ResetGatewayURL();
 
 public:
-	DiscordInstance(std::string token) : m_token(token) {
+	DiscordInstance(std::string token) : m_token(token), m_notificationManager(this) {
 		InitDispatchFunctions();
 	}
 
