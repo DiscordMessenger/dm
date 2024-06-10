@@ -13,7 +13,23 @@ void NotificationManager::OnMessageCreate(Snowflake guildID, Snowflake channelID
 	if (!IsNotificationWorthy(guildID, channelID, msg))
 		return;
 
-	DbgPrintF("NEW NOTIFICATION: Guild %lld  Channel %lld  Message %lld : '%s'", guildID, channelID, msg.m_snowflake, msg.m_message.c_str());
+	Notification notif;
+	notif.m_author = msg.m_author;
+	notif.m_contents = msg.m_message;
+	notif.m_sourceGuild = guildID;
+	notif.m_sourceChannel = channelID;
+	notif.m_sourceMessage = msg.m_snowflake;
+
+	m_notifications.push_front(notif);
+	GetFrontend()->OnNotification();
+}
+
+Notification* NotificationManager::GetLatestNotification()
+{
+	if (m_notifications.empty())
+		return nullptr;
+
+	return &m_notifications.front();
 }
 
 bool NotificationManager::IsNotificationWorthy(Snowflake guildID, Snowflake channelID, const Message& msg)
@@ -84,4 +100,13 @@ bool NotificationManager::IsNotificationWorthy(Snowflake guildID, Snowflake chan
 
 	// ok, only mentions. Check if we have been mentioned.
 	return msg.CheckWasMentioned(m_pDiscord->m_mySnowflake, guildID, suppEveryone, suppRoles);
+}
+
+NotificationManager* GetNotificationManager()
+{
+	auto pDiscord = GetDiscordInstance();
+	if (!pDiscord)
+		return nullptr;
+	
+	return &pDiscord->m_notificationManager;
 }

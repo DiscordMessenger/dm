@@ -26,6 +26,7 @@ public:
 	void OnStartProgress(Snowflake key, const std::string& fileName, bool isUploading);
 	bool OnUpdateProgress(Snowflake key, size_t offset, size_t length);
 	void OnStopProgress(Snowflake key);
+	void OnNotification();
 	void OnGenericError(const std::string& message) override;
 	void OnJsonException(const std::string& message) override;
 	void OnCantViewChannel(const std::string& channelName) override;

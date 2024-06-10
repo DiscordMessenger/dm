@@ -520,6 +520,7 @@
     <ClInclude Include="..\src\windows\TextInterface_Win32.hpp" />
     <ClInclude Include="..\src\windows\TextManager.hpp" />
     <ClInclude Include="..\src\windows\TextToSpeech.hpp" />
+    <ClInclude Include="..\src\windows\TrayNotification.hpp" />
     <ClInclude Include="..\src\windows\UploadDialog.hpp" />
     <ClInclude Include="..\src\windows\ProgressDialog.hpp" />
     <ClInclude Include="..\src\windows\WindowMessages.hpp" />
@@ -579,6 +580,7 @@
     <ClCompile Include="..\src\windows\TextInterface_Win32.cpp" />
     <ClCompile Include="..\src\windows\TextManager.cpp" />
     <ClCompile Include="..\src\windows\TextToSpeech.cpp" />
+    <ClCompile Include="..\src\windows\TrayNotification.cpp" />
     <ClCompile Include="..\src\windows\UploadDialog.cpp" />
     <ClCompile Include="..\src\windows\ProgressDialog.cpp" />
     <ClCompile Include="..\src\windows\WinUtils.cpp" />

@@ -24,6 +24,7 @@
 #include "Frontend_Win32.hpp"
 #include "ProgressDialog.hpp"
 #include "AutoComplete.hpp"
+#include "TrayNotification.hpp"
 #include "../discord/LocalSettings.hpp"
 #include "../discord/WebsocketClient.hpp"
 #include "../discord/UpdateChecker.hpp"
@@ -1068,6 +1069,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pLoadingMessage = LoadingMessage::Create(hWnd, &rcLoading);
 
 			SendMessage(hWnd, WM_LOGINAGAIN, 0, 0);
+			PostMessage(hWnd, WM_POSTINIT, 0, 0);
+			break;
+		}
+		case WM_POSTINIT:
+		{
+			GetTrayNotification()->Initialize();
 			break;
 		}
 		case WM_CONNECTERROR:
@@ -1163,6 +1170,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SAFE_DELETE(g_pMemberList);
 			SAFE_DELETE(g_pMessageEditor);
 			SAFE_DELETE(g_pLoadingMessage);
+
+			GetTrayNotification()->Deinitialize();
 
 			PostQuitMessage(0);
 			break;
@@ -1387,6 +1396,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (wParam == VK_F10) {
 				ProgressDialog::Show("Test!", 1234, false, g_Hwnd);
 			}
+			if (wParam == VK_F11) {
+				Message msg;
+				msg.m_author = "Test Author";
+				msg.m_message = "Test message!!";
+				GetNotificationManager()->OnMessageCreate(0, 1, msg);
+			}
 #endif
 
 			break;
@@ -1414,6 +1429,11 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				TmGetTString(IDS_PROGRAM_NAME),
 				MB_ICONINFORMATION | MB_OK
 			);
+			break;
+		}
+		case WM_NOTIFMANAGERCALLBACK:
+		{
+			GetTrayNotification()->Callback(wParam, lParam);
 			break;
 		}
 	}

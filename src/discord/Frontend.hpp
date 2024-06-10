@@ -38,6 +38,7 @@ public:
 	virtual void OnStartProgress(Snowflake key, const std::string& fileName, bool isUploading) = 0;
 	virtual bool OnUpdateProgress(Snowflake key, size_t offset, size_t length) = 0;
 	virtual void OnStopProgress(Snowflake key) = 0;
+	virtual void OnNotification() = 0;
 
 	// Error messages
 	virtual void OnGenericError(const std::string& message) = 0;
