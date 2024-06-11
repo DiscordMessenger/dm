@@ -15,6 +15,7 @@ struct Notification
 	time_t m_timeReceived = 0;
 	Snowflake m_sourceGuild = 0, m_sourceChannel = 0, m_sourceMessage = 0;
 	bool m_bRead = false;
+	bool m_bIsReply = false;
 };
 
 class NotificationManager

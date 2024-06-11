@@ -693,7 +693,13 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 				}
 				DbgPrintF("Processing request %d (%c)", sd, pRequest->additional_data[0]);
 				uint64_t ts = GetTimeUs();
-				GetMessageCache()->ProcessRequest(pRequest->key, sd, (Snowflake)GetIntFromString(pRequest->additional_data.substr(1)), j, pChan->m_name);
+				GetMessageCache()->ProcessRequest(
+					pRequest->key,
+					sd,
+					(Snowflake)GetIntFromString(pRequest->additional_data.substr(1)),
+					j,
+					pChan->GetTypeSymbol() + pChan->m_name
+				);
 				uint64_t te = GetTimeUs();
 				DbgPrintF("Total process took %lld us", te - ts);
 

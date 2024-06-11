@@ -125,7 +125,7 @@ void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, j
 	{
 		msg.m_type = MessageType::CHANNEL_HEADER;
 		msg.m_snowflake = 1;
-		msg.m_author = "#" + channelName;
+		msg.m_author = channelName;
 		m_messages[msg.m_snowflake] = msg;
 	}
 

@@ -297,6 +297,9 @@
 #define IDS_SELECT_BACKGROUND_IMAGE     759
 #define IDS_GUI_SCALE_CHANGED           760
 #define IDS_NO_NOTIFICATIONS            761
+#define IDS_WELCOME_TO_START_DM_1       762
+#define IDS_WELCOME_TO_START_DM_2       763
+#define IDS_WELCOME_TO_START_GROUP      764
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803

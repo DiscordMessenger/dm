@@ -74,12 +74,17 @@ void NotificationViewer::Initialize(HWND hWnd)
 			if (pChan) {
 				if (pChan->m_channelType == Channel::GROUPDM)
 					channelName = "\"" + pChan->m_name + "\"";
+				if (pChan->m_channelType == Channel::DM)
+					channelName = "";
 				else
 					channelName = pChan->GetTypeSymbol() + pChan->m_name;
 			}
 		}
 
-		msg.m_author = notif.m_author + " in " + channelName;
+		msg.m_author = notif.m_author + (notif.m_bIsReply ? " replied" : "");
+		if (channelName.empty()) {
+			msg.m_author += " in " + channelName;
+		}
 		if (notif.m_sourceGuild) {
 			msg.m_author += " (" + guildName + ")";
 		}

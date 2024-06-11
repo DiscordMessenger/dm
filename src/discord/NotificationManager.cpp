@@ -21,6 +21,7 @@ void NotificationManager::OnMessageCreate(Snowflake guildID, Snowflake channelID
 	notif.m_sourceChannel = channelID;
 	notif.m_sourceMessage = msg.m_snowflake;
 	notif.m_timeReceived = msg.m_dateTime;
+	notif.m_bIsReply = msg.m_type == MessageType::REPLY;
 
 	m_notifications.push_front(notif);
 	GetFrontend()->OnNotification();

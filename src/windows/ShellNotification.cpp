@@ -82,7 +82,7 @@ void ShellNotification::OnNotification()
 	d.uFlags = NIF_INFO | NIF_REALTIME;
 	d.dwInfoFlags = NIIF_USER;
 
-	std::string titleString = pNotif->m_author + " wrote";
+	std::string titleString = pNotif->m_author + (pNotif->m_bIsReply ? " replied" : " wrote");
 	if (!channelName.empty())
 		titleString += " in " + channelName;
 	titleString += ":";

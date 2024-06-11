@@ -1211,6 +1211,10 @@ BEGIN
     IDS_SELECT_BACKGROUND_IMAGE "Select background image"
     IDS_GUI_SCALE_CHANGED   "You will need to restart Discord Messenger to apply the new UI element size."
     IDS_NO_NOTIFICATIONS    "There are no recent notifications. Wumpus isn't here either."
+    IDS_WELCOME_TO_START_DM_1 
+                            "This is the beginning of your direct message history with "
+    IDS_WELCOME_TO_START_DM_2 "."
+    IDS_WELCOME_TO_START_GROUP " group."
 END
 
 #endif    // English (United States) resources

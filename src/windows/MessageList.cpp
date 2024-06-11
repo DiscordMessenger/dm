@@ -1647,8 +1647,21 @@ void MessageList::DetermineMessageData(
 				break;
 			}
 
+			if (pChan->m_channelType == Channel::DM) {
+				messagePart1 = TmGetTString(IDS_WELCOME_TO_START_DM_1);
+				messagePart2 = TmGetTString(IDS_WELCOME_TO_START_DM_2);
+				break;
+			}
+
 			messagePart1 = TmGetTString(IDS_WELCOME_TO_START_1);
-			messagePart2 = TmGetTString(IDS_WELCOME_TO_START_2);
+
+			if (pChan->m_channelType == Channel::GROUPDM) {
+				messagePart2 = TmGetTString(IDS_WELCOME_TO_START_GROUP);
+			}
+			else {
+				messagePart2 = TmGetTString(IDS_WELCOME_TO_START_2);
+			}
+
 			break;
 		}
 
