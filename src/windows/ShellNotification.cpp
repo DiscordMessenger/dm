@@ -64,6 +64,15 @@ void ShellNotification::OnNotification()
 		return;
 	}
 
+	// If user is in 'Do Not Disturb' mode, no taskbar notification should be fired.
+	// However, other methods of checking notifications will still work, such as the menu.
+	Profile* pf = GetDiscordInstance()->GetProfile();
+	if (pf)
+	{
+		if (pf->m_activeStatus == STATUS_DND)
+			return;
+	}
+
 	// Find the channel's name
 	std::string channelName = "Unknown";
 	Channel* pChan = GetDiscordInstance()->GetChannelGlobally(pNotif->m_sourceChannel);
