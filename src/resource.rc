@@ -637,13 +637,13 @@ BEGIN
     CONTROL         "",IDC_GUILD_LIST,"SysListView32",LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,7,19,271,158
 END
 
-IDD_DIALOG_NOTIFICATIONS DIALOGEX 0, 0, 347, 238
+IDD_DIALOG_NOTIFICATIONS DIALOGEX 0, 0, 349, 239
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Notifications"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_MESSAGE_LIST,"Static",SS_BLACKRECT,7,26,333,205
-    LTEXT           "Here are your recent notifications for this session.\nClick on a message to jump to it.",IDC_NOTIFICATION_HINT,7,7,333,17
+    CONTROL         "",IDC_MESSAGE_LIST,"Static",SS_BLACKRECT,7,27,335,205
+    LTEXT           "Here are your recent notifications for this session.\nClick on a message to jump to it.",IDC_NOTIFICATION_HINT,7,7,335,17
 END
 
 
@@ -769,9 +769,9 @@ BEGIN
     IDD_DIALOG_NOTIFICATIONS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 340
+        RIGHTMARGIN, 342
         TOPMARGIN, 7
-        BOTTOMMARGIN, 231
+        BOTTOMMARGIN, 232
     END
 END
 #endif    // APSTUDIO_INVOKED

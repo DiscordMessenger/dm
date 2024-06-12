@@ -33,6 +33,8 @@ void NotificationViewer::Initialize(HWND hWnd)
 	}
 	MoveWindow(hWnd, xPos, yPos, width, height, false);
 
+	SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_NOTIFICATION))));
+
 	HWND child = GetDlgItem(hWnd, IDC_MESSAGE_LIST);
 
 	GetWindowRect(child, &rect);

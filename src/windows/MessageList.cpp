@@ -572,7 +572,7 @@ void MessageItem::Update(Snowflake guildID)
 					item.m_affected = sf;
 
 					if (isRole)
-						item.m_text = "@" + GetDiscordInstance()->LookupRoleNameGlobally(sf);
+						item.m_text = "@" + GetDiscordInstance()->LookupRoleName(sf, guildID);
 					else
 						item.m_text = "@" + GetDiscordInstance()->LookupUserNameGlobally(sf, guildID);
 					changed = true;

@@ -25,7 +25,6 @@ void ShellNotification::Initialize()
 	d.uID    = NOTIFICATION_ID;
 	d.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_SHOWTIP;
 	d.hIcon  = LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)));
-	d.uTimeout = 10000;
 	d.uCallbackMessage = WM_NOTIFMANAGERCALLBACK;
 	
 	_tcscpy(d.szTip, TmGetTString(IDS_PROGRAM_NAME));
@@ -50,6 +49,94 @@ void ShellNotification::Deinitialize()
 	m_bInitialized = false;
 }
 
+std::string ShellNotification::StripMentions(Snowflake guildID, const std::string& message)
+{
+	std::string newStr = "";
+
+	for (size_t i = 0; i < message.size(); i++)
+	{
+		if (message[i] != '<')
+		{
+		DefaultHandling:
+			newStr += message[i];
+			continue;
+		}
+
+		size_t mentStart = i;
+		i++;
+
+		for (; i < message.size() && message[i] != '<' && message[i] != '>'; i++);
+
+		if (i == message.size() || message[i] != '>') {
+		ErrorParsing:
+			i = mentStart;
+			goto DefaultHandling;
+		}
+
+		i++;
+		std::string mentStr = message.substr(mentStart, i - mentStart);
+		i--; // go back so that this character is skipped.
+
+		// Now it's time to try to decode that mention.
+		if (mentStr.size() < 4)
+			goto ErrorParsing;
+
+		if (mentStr[0] != '<' || mentStr[mentStr.size() - 1] != '>') {
+			assert(!"Then how did we get here?");
+			goto ErrorParsing;
+		}
+
+		// tear off the '<' and '>'
+		mentStr = mentStr.substr(1, mentStr.size() - 2);
+		std::string resultStr = mentStr;
+
+		char mentType = mentStr[0];
+		switch (mentType)
+		{
+			case '@':
+			{
+				bool isRole = false;
+				bool hasExclam = false;
+
+				if (mentStr[1] == '&')
+					isRole = true;
+				// not totally sure what this does. I only know that certain things use it
+				if (mentStr[1] == '!')
+					hasExclam = true;
+
+				std::string mentDest = mentStr.substr((isRole || hasExclam) ? 2 : 1);
+				Snowflake sf = (Snowflake)GetIntFromString(mentDest);
+
+				if (isRole)
+					resultStr = "@" + GetDiscordInstance()->LookupRoleName(sf, guildID);
+				else
+					resultStr = "@" + GetDiscordInstance()->LookupUserNameGlobally(sf, guildID);
+
+				break;
+			}
+
+			case '#':
+			{
+				std::string mentDest = mentStr.substr(1);
+				Snowflake sf = (Snowflake)GetIntFromString(mentDest);
+				Channel* pChan = GetDiscordInstance()->GetChannelGlobally(sf);
+				if (!pChan)
+					goto ErrorParsing;
+
+				resultStr = pChan->GetTypeSymbol() + pChan->m_name;
+				break;
+			}
+
+			default:
+				goto ErrorParsing;
+		}
+
+		newStr += resultStr;
+	}
+
+	return newStr;
+}
+
 void ShellNotification::ShowBalloon(const std::string& titleString, const std::string& contents)
 {
 	NOTIFYICONDATA d;
@@ -59,6 +146,15 @@ void ShellNotification::ShowBalloon(const std::string& titleString, const std::s
 	d.hWnd   = g_Hwnd;
 	d.uFlags = NIF_INFO | NIF_REALTIME;
 	d.dwInfoFlags = NIIF_USER;
+	d.uTimeout = 5000;
+
+	if (m_bBalloonActive)
+	{
+		_tcscpy(d.szInfo, TEXT(""));
+		_tcscpy(d.szInfoTitle, TEXT(""));
+		Shell_NotifyIcon(NIM_MODIFY, &d);
+		m_bBalloonActive = false;
+	}
 
 	LPTSTR tstr;
 	tstr = ConvertCppStringToTString(titleString);
@@ -111,16 +207,16 @@ void ShellNotification::ShowBalloonForOneNotification(Notification* pNotif)
 		titleString += " in " + channelName;
 	titleString += ":";
 
-	std::string contents = "";
-	contents.reserve(pNotif->m_contents.size() * 2);
+	std::string contents = StripMentions(pNotif->m_sourceGuild, pNotif->m_contents), contents2;
+	contents2.reserve(contents.size() * 2);
 
-	for (char c : pNotif->m_contents) {
+	for (char c : contents) {
 		if (c == '\n')
-			contents += "\r";
-		contents += c;
+			contents2 += "\r";
+		contents2 += c;
 	}
 
-	ShowBalloon(titleString, contents);
+	ShowBalloon(titleString, contents2);
 }
 
 void ShellNotification::ShowBalloonForNotifications(const std::vector<Notification*>& pNotifs)
@@ -133,7 +229,7 @@ void ShellNotification::ShowBalloonForNotifications(const std::vector<Notificati
 		return;
 	}
 
-	std::string title = std::to_string(pNotifs.size()) + " new notifications";
+	std::string title = "You have " + std::to_string(pNotifs.size()) + " new notifications!";
 
 	// Include an excerpt from the first ~5
 	std::string content = "";
@@ -141,13 +237,12 @@ void ShellNotification::ShowBalloonForNotifications(const std::vector<Notificati
 	for (size_t i = 0; i < 5 && i < pNotifs.size(); i++)
 	{
 		Notification* pNotif = pNotifs[i];
-		std::string line = pNotif->m_author + ": " + pNotif->m_contents;
+		std::string line = pNotif->m_author + ": " + StripMentions(pNotif->m_sourceGuild, pNotif->m_contents);
 
 		// remove new lines here
 		for (char& c : line) {
 			if (c == '\n') c = ' ';
 		}
-
 		if (!content.empty())
 			content += "\r\n";
 
@@ -160,11 +255,11 @@ void ShellNotification::ShowBalloonForNotifications(const std::vector<Notificati
 void ShellNotification::OnNotification()
 {
 	// If a balloon is already active, then it'll be bundled in later
-	if (m_bBalloonActive)
-	{
-		m_bAnyNotificationsSinceLastTime = true;
-		return;
-	}
+	//if (m_bBalloonActive)
+	//{
+	//	m_bAnyNotificationsSinceLastTime = true;
+	//	return;
+	//}
 
 	std::vector<Notification*> notifs;
 

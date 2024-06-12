@@ -254,22 +254,33 @@ std::string DiscordInstance::LookupChannelNameGlobally(Snowflake sf)
 #endif
 }
 
-std::string DiscordInstance::LookupRoleNameGlobally(Snowflake sf)
+std::string DiscordInstance::LookupRoleName(Snowflake sf, Snowflake guildID)
 {
-	for (auto& gld : m_guilds)
+	Guild* pGld = GetGuild(guildID);
+	if (pGld)
 	{
-		for (auto& role : gld.m_roles)
+		for (const auto& role : pGld->m_roles)
 		{
 			if (role.first == sf)
 				return role.second.m_name;
 		}
 	}
 
-#ifdef _DEBUG
 	return "deleted-role-" + std::to_string(sf);
-#else
-	return std::to_string(sf);
-#endif
+}
+
+std::string DiscordInstance::LookupRoleNameGlobally(Snowflake sf)
+{
+	for (const auto& gld : m_guilds)
+	{
+		for (const auto& role : gld.m_roles)
+		{
+			if (role.first == sf)
+				return role.second.m_name;
+		}
+	}
+
+	return "deleted-role-" + std::to_string(sf);
 }
 
 std::string DiscordInstance::LookupUserNameGlobally(Snowflake sf, Snowflake gld)

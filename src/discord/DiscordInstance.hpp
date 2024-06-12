@@ -295,6 +295,7 @@ public:
 
 	// Lookup
 	std::string LookupChannelNameGlobally(Snowflake sf);
+	std::string LookupRoleName(Snowflake sf, Snowflake guildID);
 	std::string LookupRoleNameGlobally(Snowflake sf);
 	std::string LookupUserNameGlobally(Snowflake sf, Snowflake gld);
 
