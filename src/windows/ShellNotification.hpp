@@ -2,6 +2,8 @@
 
 #include <windows.h>
 
+#include "../discord/NotificationManager.hpp"
+
 class ShellNotification
 {
 public:
@@ -17,8 +19,14 @@ public:
 	void Callback(WPARAM wParam, LPARAM lParam);
 
 private:
+	void ShowBalloon(const std::string& titleString, const std::string& contents);
+	void ShowBalloonForOneNotification(Notification* pNotif);
+	void ShowBalloonForNotifications(const std::vector<Notification*>& pNotifs);
+
+private:
 	bool m_bInitialized = false;
 	bool m_bBalloonActive = false;
+	bool m_bAnyNotificationsSinceLastTime = false;
 };
 
 ShellNotification* GetShellNotification();

@@ -50,9 +50,32 @@ void ShellNotification::Deinitialize()
 	m_bInitialized = false;
 }
 
-void ShellNotification::OnNotification()
+void ShellNotification::ShowBalloon(const std::string& titleString, const std::string& contents)
 {
-	Notification* pNotif = GetNotificationManager()->GetLatestNotification();
+	NOTIFYICONDATA d;
+	ZeroMemory(&d, sizeof d);
+	d.cbSize = NOTIFYICONDATA_V2_SIZE;
+	d.uID    = NOTIFICATION_ID;
+	d.hWnd   = g_Hwnd;
+	d.uFlags = NIF_INFO | NIF_REALTIME;
+	d.dwInfoFlags = NIIF_USER;
+
+	LPTSTR tstr;
+	tstr = ConvertCppStringToTString(titleString);
+	_tcsncpy(d.szInfoTitle, tstr, _countof(d.szInfoTitle));
+	_tcscpy(d.szInfoTitle + _countof(d.szInfoTitle) - 4, TEXT("..."));
+	free(tstr);
+
+	tstr = ConvertCppStringToTString(contents);
+	_tcsncpy(d.szInfo, tstr, _countof(d.szInfo));
+	_tcscpy(d.szInfo + _countof(d.szInfo) - 4, TEXT("..."));
+	free(tstr);
+
+	Shell_NotifyIcon(NIM_MODIFY, &d);
+}
+
+void ShellNotification::ShowBalloonForOneNotification(Notification* pNotif)
+{
 	if (!pNotif) {
 		DbgPrintW("False alarm, no notification available");
 		return;
@@ -83,31 +106,77 @@ void ShellNotification::OnNotification()
 			channelName = pChan->GetTypeSymbol() + pChan->m_name;
 	}
 
-	NOTIFYICONDATA d;
-	ZeroMemory(&d, sizeof d);
-	d.cbSize = NOTIFYICONDATA_V2_SIZE;
-	d.uID    = NOTIFICATION_ID;
-	d.hWnd   = g_Hwnd;
-	d.uFlags = NIF_INFO | NIF_REALTIME;
-	d.dwInfoFlags = NIIF_USER;
-
 	std::string titleString = pNotif->m_author + (pNotif->m_bIsReply ? " replied" : " wrote");
 	if (!channelName.empty())
 		titleString += " in " + channelName;
 	titleString += ":";
 
-	LPTSTR tstr;
-	tstr = ConvertCppStringToTString(titleString);
-	_tcsncpy(d.szInfoTitle, tstr, _countof(d.szInfoTitle));
-	_tcscpy(d.szInfoTitle + _countof(d.szInfoTitle) - 4, TEXT("..."));
-	free(tstr);
+	std::string contents = "";
+	contents.reserve(pNotif->m_contents.size() * 2);
 
-	tstr = ConvertCppStringToTString(pNotif->m_contents);
-	_tcsncpy(d.szInfo, tstr, _countof(d.szInfo));
-	_tcscpy(d.szInfo + _countof(d.szInfo) - 4, TEXT("..."));
-	free(tstr);
+	for (char c : pNotif->m_contents) {
+		if (c == '\n')
+			contents += "\r";
+		contents += c;
+	}
 
-	Shell_NotifyIcon(NIM_MODIFY, &d);
+	ShowBalloon(titleString, contents);
+}
+
+void ShellNotification::ShowBalloonForNotifications(const std::vector<Notification*>& pNotifs)
+{
+	if (pNotifs.empty())
+		return;
+
+	if (pNotifs.size() == 1) {
+		ShowBalloonForOneNotification(pNotifs[0]);
+		return;
+	}
+
+	std::string title = std::to_string(pNotifs.size()) + " new notifications";
+
+	// Include an excerpt from the first ~5
+	std::string content = "";
+
+	for (size_t i = 0; i < 5 && i < pNotifs.size(); i++)
+	{
+		Notification* pNotif = pNotifs[i];
+		std::string line = pNotif->m_author + ": " + pNotif->m_contents;
+
+		// remove new lines here
+		for (char& c : line) {
+			if (c == '\n') c = ' ';
+		}
+
+		if (!content.empty())
+			content += "\r\n";
+
+		content += line;
+	}
+
+	ShowBalloon(title, content);
+}
+
+void ShellNotification::OnNotification()
+{
+	// If a balloon is already active, then it'll be bundled in later
+	if (m_bBalloonActive)
+	{
+		m_bAnyNotificationsSinceLastTime = true;
+		return;
+	}
+
+	std::vector<Notification*> notifs;
+
+	auto& notifList = GetNotificationManager()->GetNotifications();
+	for (auto it = notifList.begin(); it != notifList.end(); ++it)
+	{
+		if (!it->m_bRead)
+			notifs.push_back(&*it);
+	}
+
+	ShowBalloonForNotifications(notifs);
+	m_bAnyNotificationsSinceLastTime = false;
 }
 
 void ShellNotification::Callback(WPARAM wParam, LPARAM lParam)
@@ -120,9 +189,18 @@ void ShellNotification::Callback(WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		case NIN_BALLOONHIDE:
+		{
+			m_bBalloonActive = false;
+			break;
+		}
 		case NIN_BALLOONTIMEOUT:
 		{
 			m_bBalloonActive = false;
+
+			// If there are any new notifications, update the user about them as well.
+			if (m_bAnyNotificationsSinceLastTime)
+				OnNotification();
+
 			break;
 		}
 
