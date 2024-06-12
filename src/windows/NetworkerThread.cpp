@@ -156,7 +156,7 @@ public:
         if (data_to_send > 0) {
             sink.write((const char*) &data_[offset], data_to_send);
             offset_ = offset;
-			if (progfunc(offset_, data_size_))
+			if (!progfunc(offset_, data_size_))
 				return false;
         }
 		else {
@@ -367,7 +367,8 @@ bool NetworkerThread::ProgressFunction(NetRequest* pRequest, uint64_t offset, ui
 	pRequest->result = HTTP_PROGRESS;
 	pRequest->pFunc(pRequest);
 
-	return pRequest->m_bCancelOp;
+	// Return false if the operation must be cancelled.
+	return !pRequest->m_bCancelOp;
 }
 
 NetworkerThread::NetworkerThread()
