@@ -2051,6 +2051,8 @@ COLORREF RandColor() {
 void MessageList::RequestMarkRead()
 {
 	GetDiscordInstance()->RequestAcknowledgeChannel(m_channelID);
+
+	GetNotificationManager()->MarkNotificationsRead(m_channelID);
 }
 
 void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& clientRect, RECT& paintRect, DrawingContext& mddc, COLORREF chosenBkColor, bool bDrawNewMarker)

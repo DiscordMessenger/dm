@@ -35,6 +35,15 @@ Notification* NotificationManager::GetLatestNotification()
 	return &m_notifications.front();
 }
 
+void NotificationManager::MarkNotificationsRead(Snowflake channelID)
+{
+	for (auto& notification : m_notifications)
+	{
+		if (notification.m_sourceChannel == channelID)
+			notification.m_bRead = true;
+	}
+}
+
 bool NotificationManager::IsNotificationWorthy(Snowflake guildID, Snowflake channelID, const Message& msg)
 {
 	if (msg.m_author_snowflake)

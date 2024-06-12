@@ -24,6 +24,7 @@ public:
 	NotificationManager(DiscordInstance*);
 	void OnMessageCreate(Snowflake guildID, Snowflake channelID, const Message& msg);
 	Notification* GetLatestNotification();
+	void MarkNotificationsRead(Snowflake channelID);
 
 	std::list<Notification>& GetNotifications() {
 		return m_notifications;

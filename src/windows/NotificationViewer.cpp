@@ -62,8 +62,8 @@ void NotificationViewer::Initialize(HWND hWnd)
 		msg.m_message   = notif.m_contents;
 		msg.m_snowflake = notif.m_sourceMessage;
 		msg.m_anchor    = notif.m_sourceChannel;
-		msg.m_dateTime  = notif.m_timeReceived;
 		msg.m_bRead     = notif.m_bRead;
+		msg.SetTime(notif.m_timeReceived);
 
 		// special handling for the author
 		std::string guildName = "Unknown", channelName = "Unknown";
@@ -81,18 +81,50 @@ void NotificationViewer::Initialize(HWND hWnd)
 			}
 		}
 
-		msg.m_author = notif.m_author + (notif.m_bIsReply ? " replied" : "");
-		if (channelName.empty()) {
-			msg.m_author += " in " + channelName;
+		std::string details = "";
+
+		msg.m_author = notif.m_author;
+		
+		details = notif.m_bIsReply ? "replied " : "";
+		if (!channelName.empty()) {
+			details += "in " + channelName + " ";
 		}
 		if (notif.m_sourceGuild) {
-			msg.m_author += " (" + guildName + ")";
+			details += "(" + guildName + ")";
 		}
+
+		msg.m_dateFull    = details + " - " + msg.m_dateFull;
+		msg.m_dateCompact = details + " - " + msg.m_dateCompact;
+		msg.m_dateOnly    = details + " - " + msg.m_dateOnly;
 
 		m_pMessageList->AddMessage(msg);
 	}
 
 	m_bActive = false;
+}
+
+void NotificationViewer::OnResize(HWND hWnd, int newWidth, int newHeight)
+{
+	HWND hLabel = GetDlgItem(hWnd, IDC_NOTIFICATION_HINT);
+	HWND hList = GetDlgItem(hWnd, CID_MESSAGELIST);
+
+	RECT rcLabel{};
+	GetChildRect(hWnd, hLabel, &rcLabel);
+	RECT rcList{};
+	GetChildRect(hWnd, hList, &rcList);
+
+	MoveWindow(hLabel, rcLabel.left, rcLabel.top, newWidth - rcLabel.left * 2, rcLabel.bottom - rcLabel.top, TRUE);
+	InvalidateRect(hLabel, NULL, FALSE);
+
+	MoveWindow(
+		hList,
+		rcList.left,
+		rcList.top,
+		newWidth - rcList.left * 2,
+		newHeight - rcList.top - rcLabel.top,
+		TRUE
+	);
+	InvalidateRect(hList, NULL, FALSE);
 }
 
 void NotificationViewer::OnClickMessage(Snowflake sf)
@@ -124,6 +156,17 @@ BOOL NotificationViewer::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		case WM_INITDIALOG:
 			Initialize(hWnd);
 			return TRUE;
+
+		case WM_SIZE:
+			OnResize(hWnd, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+			break;
+
+		case WM_GETMINMAXINFO:
+		{
+			LPMINMAXINFO lmmi = (LPMINMAXINFO) lParam;
+			lmmi->ptMinTrackSize = { 400, 300 };
+			return TRUE;
+		}
 
 		case WM_COMMAND:
 			if (wParam == IDCANCEL) {
