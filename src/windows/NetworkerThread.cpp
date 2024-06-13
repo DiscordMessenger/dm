@@ -130,10 +130,7 @@ bool NetworkerThread::ProcessResult(NetRequest& req, const httplib::Result& res)
 	else
 	{
 		req.result = res->status;
-		if (res->status == HTTP_OK)
-			req.response = res->body;
-		else
-			req.response = std::string(detail::status_message(res->status));
+		req.response = res->body;
 	}
 
 	// Call the handler function.
@@ -142,6 +139,12 @@ bool NetworkerThread::ProcessResult(NetRequest& req, const httplib::Result& res)
 
 	// Return false to let the runner know that it shouldn't retry.
 	return false;
+}
+
+std::string NetworkerThreadManager::ErrorMessage(int code) const
+{
+	if (code < 0) return "Client Error";
+	return std::string(httplib::detail::status_message(code));
 }
 
 void NetworkerThread::IdleWait()

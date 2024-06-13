@@ -115,6 +115,8 @@ public:
 		size_t stream_size = 0
 	) override;
 
+	std::string ErrorMessage(int errorCode) const;
+
 private:
 	NetworkerThread* m_pNetworkThreads[C_AMT_NETWORKER_THREADS] = { nullptr };
 

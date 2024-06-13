@@ -33,6 +33,11 @@ NetRequest::NetRequest(
 	pFunc = _func;
 }
 
+std::string NetRequest::ErrorMessage() const
+{
+	return GetHTTPClient()->ErrorMessage(result);
+}
+
 void HTTPClient::DefaultRequestHandler(NetRequest* pRequest)
 {
 	GetFrontend()->OnRequestDone(pRequest);

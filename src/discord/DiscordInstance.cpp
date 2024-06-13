@@ -563,7 +563,8 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 					break;
 			}
 
-			str = "The following resource " + pRequest->url + suffix;
+			str = "The following resource " + pRequest->url + suffix + "\n\nAdditionally, the server responded with the following:\n" +
+				pRequest->response;
 			bExitAfterError = false;
 			bShowMessageBox = true;
 			break;
@@ -572,7 +573,7 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 		case HTTP_BADREQUEST:
 		{
 			str = "A bug occurred and the client has sent an invalid request.\n"
-				"The resource in question is: " + pRequest->url + "\n\n";
+				"The resource in question is: " + pRequest->url;
 			bExitAfterError = false;
 			bShowMessageBox = true;
 			break;
@@ -581,7 +582,7 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 		case HTTP_TOOMANYREQS:
 		{
 			str = "You're issuing requests too fast!  Try again later.  Maybe grab a seltzer and calm down.\n"
-				"The resource in question is: " + pRequest->url + "\n\n";
+				"The resource in question is: " + pRequest->url;
 			bExitAfterError = false;
 			bShowMessageBox = true;
 			break;
@@ -592,8 +593,8 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 			break;
 
 		default:
-			str = "Unknown HTTP code " + std::to_string(pRequest->result) + ".\n"
-				"The resource in question is: " + pRequest->url + "\n\n" + pRequest->response;
+			str = "Unknown HTTP code " + std::to_string(pRequest->result) + " (" + pRequest->ErrorMessage() + ".\n"
+				"URL requested: " + pRequest->url + "\n\nResponse:" + pRequest->response;
 			bExitAfterError = false;
 			bShowMessageBox = true;
 			break;

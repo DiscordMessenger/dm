@@ -99,6 +99,8 @@ struct NetRequest
 		uint8_t* _bytes = nullptr,
 		size_t _size = 0
 	);
+
+	std::string ErrorMessage() const;
 };
 
 class HTTPClient
@@ -111,6 +113,7 @@ public:
 	virtual void Kill() = 0;
 	virtual void StopAllRequests() = 0;
 	virtual void PrepareQuit() = 0;
+	virtual std::string ErrorMessage(int code) const = 0;
 
 	// Sends a request via this HTTP client.  If interactive, is prioritized.
 	// Data from stream_bytes is copied if needed.
