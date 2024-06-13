@@ -108,6 +108,12 @@ public:
 	void SetEnableTLSVerification(bool b) {
 		m_bEnableTLSVerification = b;
 	}
+	bool AddExtraHeaders() const {
+		return m_bAddExtraHeaders;
+	}
+	void SetAddExtraHeaders(bool b) {
+		m_bAddExtraHeaders = b;
+	}
 	void StopUpdateCheckTemporarily();
 	bool DisableFormatting() const {
 		return m_bDisableFormatting;
@@ -158,6 +164,7 @@ private:
 	bool m_bDisableFormatting = false;
 	bool m_bShowScrollBarOnGuildList = false;
 	bool m_bCompactMemberList = false;
+	bool m_bAddExtraHeaders = true;
 	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
 	int m_height = 700;

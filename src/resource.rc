@@ -595,10 +595,10 @@ BEGIN
     EDITTEXT        IDC_EDIT_DISCORDCDN,72,33,174,14,ES_AUTOHSCROLL
     PUSHBUTTON      "Revert to official Discord backend",IDC_REVERTTODEFAULT,12,116,118,14
     PUSHBUTTON      "Update",IDC_UPDATE,198,116,50,14
-    ICON            IDI_WARNING_IC,IDC_ICON_WARN_CONNECT,12,55,21,20,SS_REALSIZEIMAGE
+    ICON            IDI_WARNING_IC,IDC_ICON_WARN_CONNECT,12,54,21,20,SS_REALSIZEIMAGE
     LTEXT           "For security reasons, when you update the URLs that Discord Messenger uses to interface with Discord's backend, you will be logged out. (your token is forgotten but not revoked)",IDC_STATIC,33,54,215,31
-    ICON            IDI_WARNING_IC,IDC_ICON_WARN_WEBSOCKETSTUFF,12,87,21,20,SS_REALSIZEIMAGE
-    LTEXT           "Wondering where the websocket gateway URL is located? Well, Discord Messenger issues a request to API_URL/gateway, which tells it the websocket URL to use.",IDC_STATIC,33,87,215,29
+    ICON            IDI_WARNING_IC,IDC_ICON_WARN_WEBSOCKETSTUFF,12,82,21,20,SS_REALSIZEIMAGE
+    LTEXT           "NOTE: Discord Messenger automatically fetches the websocket gateway URL using the API_URL/gateway endpoint.",IDC_STATIC,33,82,214,19
     GROUPBOX        "Security Settings",IDC_STATIC,6,139,248,48
     ICON            IDI_WARNING_IC,IDC_ICON_WARN_WEBSOCKETSTUFF2,12,166,21,20,SS_REALSIZEIMAGE
     LTEXT           "WARNING: Disabling TLS certificate verification could expose you to MITM (man-in-the-middle) attacks via certificate spoofing!",IDC_STATIC,33,165,215,19
@@ -608,6 +608,8 @@ BEGIN
     CONTROL         "Check for updates using the GitHub API",IDC_CHECK_UPDATES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,204,236,10
     LTEXT           "iProgramInCpp cannot see your IP address via the update service.",IDC_STATIC,12,219,231,10
+    CONTROL         "Add extra headers such as X-Super-Properties to HTTP requests.",IDC_TOGGLE_XSUPERPROPS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,104,231,10
 END
 
 IDD_DIALOG_UPLOADING DIALOGEX 0, 0, 275, 135

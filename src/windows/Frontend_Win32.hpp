@@ -60,8 +60,6 @@ public:
 	void RegisterChannelIcon(Snowflake sf, const std::string& avatarlnk) override;
 	void RequestQuit() override;
 	bool IsWindowMinimized() override;
-	void GetIdentifyProperties(nlohmann::json& j) override;
-	std::string GetUserAgent() override;
 	std::string GetDirectMessagesText() override;
 	std::string GetPleaseWaitText() override;
 	std::string GetMonthName(int index) override;

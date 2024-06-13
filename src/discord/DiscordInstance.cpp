@@ -6,6 +6,7 @@
 #include "Util.hpp"
 #include "Frontend.hpp"
 #include "HTTPClient.hpp"
+#include "DiscordClientConfig.hpp"
 
 #define DISCORD_WSS_DETAILS "?encoding=json&v=" DISCORD_API_VERSION
 
@@ -1144,7 +1145,7 @@ void DiscordInstance::HandleGatewayMessage(const std::string& payload)
 			presenceData["since"] = 0;
 			presenceData["status"] = "online";
 
-			GetFrontend()->GetIdentifyProperties(propertiesData);
+			propertiesData = GetClientConfig()->Serialize();
 
 			data["presence"] = presenceData;
 			data["properties"] = propertiesData;

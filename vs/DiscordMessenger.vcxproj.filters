@@ -626,6 +626,9 @@
     <ClInclude Include="..\src\windows\NotificationViewer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\discord\DiscordClientConfig.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\windows\ProfileView.cpp">
@@ -792,6 +795,9 @@
     </ClCompile>
     <ClCompile Include="..\src\windows\NotificationViewer.cpp">
       <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\DiscordClientConfig.cpp">
+      <Filter>Source Files\Discord</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

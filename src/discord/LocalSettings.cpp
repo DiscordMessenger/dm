@@ -116,6 +116,9 @@ bool LocalSettings::Load()
 
 	if (j.contains("RemindUpdateCheckOn"))
 		m_remindUpdatesOn = (time_t) (long long) j["RemindUpdateCheckOn"];
+
+	if (j.contains("AddExtraHeaders"))
+		m_bAddExtraHeaders = j["AddExtraHeaders"];
 	
 	return true;
 }
@@ -144,7 +147,8 @@ bool LocalSettings::Save()
 	j["ImageBackgroundFileName"] = m_imageBackgroundFileName;
 	j["WatermarkAlignment"] = int(m_imageAlignment);
 	j["UserScale"] = m_userScale;
-
+	j["AddExtraHeaders"] = m_bAddExtraHeaders;
+	
 	if (m_bSaveWindowSize) {
 		j["WindowWidth"] = m_width;
 		j["WindowHeight"] = m_height;

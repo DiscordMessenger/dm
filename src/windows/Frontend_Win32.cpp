@@ -10,8 +10,6 @@
 #include "../discord/UpdateChecker.hpp"
 #include "../discord/LocalSettings.hpp"
 
-const std::string g_UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.284 Chrome/120.0.6099.283 Electron/28.2.3 Safari/537.36";
-
 void Frontend_Win32::OnLoginAgain()
 {
 	SendMessage(g_Hwnd, WM_LOGINAGAIN, 0, 0);
@@ -406,23 +404,6 @@ bool Frontend_Win32::IsWindowMinimized()
 	return IsIconic(g_Hwnd);
 }
 
-void Frontend_Win32::GetIdentifyProperties(nlohmann::json& j)
-{
-	j["app_arch"] = "x64";
-	j["browser"] = "Discord Client";
-	j["browser_user_agent"] = g_UserAgent;
-	j["browser_version"] = "28.2.3";
-	j["client_build_number"] = 269579;
-	j["client_event_source"] = nullptr;
-	j["client_version"] = "1.0.284";
-	j["native_build_number"] = 44304;
-	j["os"] = "Windows";
-	j["os_arch"] = "x64";
-	j["os_version"] = "10.0.19044";
-	j["release_channel"] = "canary";
-	j["system_locale"] = "en-US";
-}
-
 #ifdef USE_DEBUG_PRINTS
 
 void DbgPrintWV(const char* fmt, va_list vl)
@@ -448,11 +429,6 @@ void Frontend_Win32::DebugPrint(const char* fmt, va_list vl)
 }
 
 #endif
-
-std::string Frontend_Win32::GetUserAgent()
-{
-	return g_UserAgent;
-}
 
 void Frontend_Win32::SetHeartbeatInterval(int timeMs)
 {
