@@ -968,7 +968,7 @@ std::string DiscordInstance::ResolveMentions(const std::string& str, Snowflake g
 	return finalStr;
 }
 
-std::string DiscordInstance::ReverseMentions(const std::string& message, Snowflake guildID)
+std::string DiscordInstance::ReverseMentions(const std::string& message, Snowflake guildID, bool ttsMode)
 {
 	bool hasMent = false;
 	bool hasOpen = false;
@@ -1045,9 +1045,9 @@ std::string DiscordInstance::ReverseMentions(const std::string& message, Snowfla
 			Snowflake sf = (Snowflake)GetIntFromString(mentDest);
 
 			if (isRole)
-				resultStr = "@" + LookupRoleName(sf, guildID);
+				resultStr = (ttsMode ? "" : "@") + LookupRoleName(sf, guildID);
 			else
-				resultStr = "@" + LookupUserNameGlobally(sf, guildID);
+				resultStr = (ttsMode ? "" : "@") + LookupUserNameGlobally(sf, guildID);
 
 			break;
 		}
@@ -1060,7 +1060,7 @@ std::string DiscordInstance::ReverseMentions(const std::string& message, Snowfla
 			if (!pChan)
 				goto ErrorParsing;
 
-			resultStr = pChan->GetTypeSymbol() + pChan->m_name;
+			resultStr = (ttsMode ? "" : pChan->GetTypeSymbol()) + pChan->m_name;
 			break;
 		}
 
@@ -1094,6 +1094,10 @@ std::string DiscordInstance::ReverseMentions(const std::string& message, Snowfla
 			}
 
 			assert(!resultStr.empty() && resultStr[0] == ':' && resultStr[resultStr.size() - 1] == ':');
+
+			if (ttsMode && resultStr.size() >= 2)
+				resultStr = " emoji " + resultStr.substr(1, resultStr.size() - 2);
+
 			break;
 		}
 

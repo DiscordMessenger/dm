@@ -336,7 +336,7 @@ public:
 	std::string ResolveMentions(const std::string& str, Snowflake guild, Snowflake channel);
 
 	// Transform snowflake mentions into user, channel, or emoji mentions.
-	std::string ReverseMentions(const std::string& message, Snowflake guild);
+	std::string ReverseMentions(const std::string& message, Snowflake guild, bool ttsMode = false);
 
 	// Send a message to the current channel.
 	bool SendMessageToCurrentChannel(const std::string& msg, Snowflake& tempSf, Snowflake reply = 0, bool mentionReplied = true);

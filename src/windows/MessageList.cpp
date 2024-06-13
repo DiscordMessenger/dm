@@ -3315,15 +3315,18 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			bool mayDelete = isThisMyMessage || mayManageMessages;
 			bool mayEdit   = isThisMyMessage;
 			bool mayPin    = mayManageMessages;
+			bool maySpeak  = !IsActionMessage(pRCMsg->m_msg.m_type) && !pRCMsg->m_msg.m_message.empty();
 
 #ifdef OLD_WINDOWS
 			EnableMenuItem(menu, ID_DUMMYPOPUP_DELETEMESSAGE, mayDelete ? MF_ENABLED : MF_GRAYED);
 			EnableMenuItem(menu, ID_DUMMYPOPUP_EDITMESSAGE,   mayEdit   ? MF_ENABLED : MF_GRAYED);
 			EnableMenuItem(menu, ID_DUMMYPOPUP_PINMESSAGE,    mayPin    ? MF_ENABLED : MF_GRAYED);
+			EnableMenuItem(menu, ID_DUMMYPOPUP_SPEAKMESSAGE,  maySpeak  ? MF_ENABLED : MF_GRAYED);
 #else
 			if (!mayDelete) RemoveMenu(menu, ID_DUMMYPOPUP_DELETEMESSAGE, MF_BYCOMMAND);
 			if (!mayEdit)   RemoveMenu(menu, ID_DUMMYPOPUP_EDITMESSAGE,   MF_BYCOMMAND);
 			if (!mayPin)    RemoveMenu(menu, ID_DUMMYPOPUP_PINMESSAGE,    MF_BYCOMMAND);
+			if (!maySpeak)  RemoveMenu(menu, ID_DUMMYPOPUP_SPEAKMESSAGE,  MF_BYCOMMAND);
 #endif
 
 			TrackPopupMenu(menu, TPM_RIGHTBUTTON, xPos, yPos, 0, hWnd, NULL);
@@ -3440,7 +3443,14 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 				case ID_DUMMYPOPUP_SPEAKMESSAGE:
 				{
-					TextToSpeech::Speak(pMsg->m_msg.m_author + " said " + pMsg->m_msg.m_message);
+					if (IsActionMessage(pMsg->m_msg.m_type))
+						break;
+					
+					std::string action = " said ";
+					if (pMsg->m_msg.m_type == MessageType::REPLY)
+						action = " replied to " + pMsg->m_msg.m_referencedMessage.m_author + " ";
+
+					TextToSpeech::Speak(pMsg->m_msg.m_author + action + GetDiscordInstance()->ReverseMentions(pMsg->m_msg.m_message, pThis->m_guildID, true));
 					break;
 				}
 			}
