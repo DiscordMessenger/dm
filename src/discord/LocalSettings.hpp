@@ -157,6 +157,7 @@ private:
 	bool m_bEnableTLSVerification = true;
 	bool m_bDisableFormatting = false;
 	bool m_bShowScrollBarOnGuildList = false;
+	bool m_bCompactMemberList = false;
 	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
 	int m_height = 700;

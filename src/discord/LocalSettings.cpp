@@ -80,6 +80,9 @@ bool LocalSettings::Load()
 	if (j.contains("ShowScrollBarOnGuildList"))
 		m_bShowScrollBarOnGuildList = j["ShowScrollBarOnGuildList"];
 
+	if (j.contains("CompactMemberList"))
+		m_bCompactMemberList = j["CompactMemberList"];
+
 	if (j.contains("ImageBackgroundFileName"))
 		m_imageBackgroundFileName = j["ImageBackgroundFileName"];
 
@@ -136,6 +139,7 @@ bool LocalSettings::Save()
 	j["EnableTLSVerification"] = m_bEnableTLSVerification;
 	j["DisableFormatting"] = m_bDisableFormatting;
 	j["ShowScrollBarOnGuildList"] = m_bShowScrollBarOnGuildList;
+	j["CompactMemberList"] = m_bCompactMemberList;
 	j["RemindUpdateCheckOn"] = (long long)(m_remindUpdatesOn);
 	j["ImageBackgroundFileName"] = m_imageBackgroundFileName;
 	j["WatermarkAlignment"] = int(m_imageAlignment);

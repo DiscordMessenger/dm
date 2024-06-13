@@ -177,9 +177,9 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 		setColor = true;
 	}
 	if (styleFlags & (WORD_MENTION | WORD_EVERYONE)) {
-		oldColor = SetTextColor(context->m_hdc, GetSysColor(COLOR_MENT));
+		oldColor = SetTextColor(context->m_hdc, COLOR_MENT);
 		setColor = true;
-		oldColorBG = SetBkColor(context->m_hdc, LerpColor(context->m_bkColor, GetSysColor(COLOR_MENT), 10, 100));
+		oldColorBG = SetBkColor(context->m_hdc, LerpColor(context->m_bkColor, COLOR_MENT, 10, 100));
 		setColorBG = true;
 	}
 	if (styleFlags & (WORD_CODE | WORD_MLCODE)) {

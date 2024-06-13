@@ -51,6 +51,15 @@ void ShellNotification::Deinitialize()
 
 void ShellNotification::ShowBalloon(const std::string& titleString, const std::string& contents)
 {
+	// If user is in 'Do Not Disturb' mode, no taskbar notification should be fired.
+	// However, other methods of checking notifications will still work, such as the menu.
+	Profile* pf = GetDiscordInstance()->GetProfile();
+	if (pf)
+	{
+		if (pf->m_activeStatus == STATUS_DND)
+			return;
+	}
+
 	NOTIFYICONDATA d;
 	ZeroMemory(&d, sizeof d);
 	d.cbSize = NOTIFYICONDATA_V2_SIZE;
@@ -93,15 +102,6 @@ void ShellNotification::ShowBalloonForOneNotification(Notification* pNotif)
 		DbgPrintW("False alarm, latest notification was already read?");
 		assert(!"pay attention!");
 		return;
-	}
-
-	// If user is in 'Do Not Disturb' mode, no taskbar notification should be fired.
-	// However, other methods of checking notifications will still work, such as the menu.
-	Profile* pf = GetDiscordInstance()->GetProfile();
-	if (pf)
-	{
-		if (pf->m_activeStatus == STATUS_DND)
-			return;
 	}
 
 	// Find the channel's name
