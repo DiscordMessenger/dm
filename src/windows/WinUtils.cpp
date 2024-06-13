@@ -305,7 +305,11 @@ void DrawBitmap(HDC hdc, HBITMAP bitmap, int x, int y, LPRECT clip, COLORREF tra
 {
 	HRGN hrgn = NULL;
 	if (clip) {
-		hrgn = CreateRectRgn(clip->left, clip->top, clip->right, clip->bottom);
+		RECT clipCopy = *clip;
+		POINT vpOrg = {};
+		GetViewportOrgEx(hdc, &vpOrg);
+		OffsetRect(&clipCopy, vpOrg.x, vpOrg.y);
+		hrgn = CreateRectRgn(clipCopy.left, clipCopy.top, clipCopy.right, clipCopy.bottom);
 		SelectClipRgn(hdc, hrgn);
 	}
 
