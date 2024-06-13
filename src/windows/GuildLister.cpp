@@ -163,13 +163,13 @@ void GuildLister::UpdateSelected()
 
 	auto it = m_iconRects.find(m_selectedGuild);
 	if (it != m_iconRects.end()) {
-		InvalidateRect(m_hwnd, NULL, TRUE);
+		InvalidateRect(m_hwnd, &it->second, FALSE);
 	}
 
 	m_selectedGuild = GetDiscordInstance()->GetCurrentGuildID();
 	it = m_iconRects.find(m_selectedGuild);
 	if (it != m_iconRects.end()) {
-		InvalidateRect(m_hwnd, NULL, TRUE);
+		InvalidateRect(m_hwnd, &it->second, FALSE);
 	}
 }
 
@@ -520,8 +520,8 @@ int GuildLister::GetScrollableHeight()
 	std::vector<Snowflake> sf;
 	GetDiscordInstance()->GetGuildIDs(sf, true);
 	//take out gap
-	int pfpSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12) + BORDER_SIZE * 2;
-	return sf.size() * pfpSize - (pfpSize - C_GUILD_GAP_HEIGHT);
+	int pfpSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
+	return sf.size() * pfpSize - pfpSize + C_GUILD_GAP_HEIGHT;
 }
 
 std::string MakeIconStringFromName(const std::string& name)

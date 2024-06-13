@@ -671,13 +671,14 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 
 				m_CurrentChannel = 0;
 
+				GetFrontend()->RepaintGuildList();
+
 				// select the first one, if possible
 				Snowflake guildsf = 0;
 				if (m_guilds.size() > 0)
 					guildsf = m_guilds.front().m_snowflake;
 
 				OnSelectGuild(guildsf);
-
 				break;
 			}
 			case GUILD:
@@ -2093,6 +2094,7 @@ void DiscordInstance::HandleREADY(Json& j)
 		guildsf = m_CurrentGuild;
 	}
 
+	GetFrontend()->RepaintGuildList();
 	OnSelectGuild(guildsf);
 
 	// Doing this because the contents of all channels might be outdated.
