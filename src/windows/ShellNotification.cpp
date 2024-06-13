@@ -49,94 +49,6 @@ void ShellNotification::Deinitialize()
 	m_bInitialized = false;
 }
 
-std::string ShellNotification::StripMentions(Snowflake guildID, const std::string& message)
-{
-	std::string newStr = "";
-
-	for (size_t i = 0; i < message.size(); i++)
-	{
-		if (message[i] != '<')
-		{
-		DefaultHandling:
-			newStr += message[i];
-			continue;
-		}
-
-		size_t mentStart = i;
-		i++;
-
-		for (; i < message.size() && message[i] != '<' && message[i] != '>'; i++);
-
-		if (i == message.size() || message[i] != '>') {
-		ErrorParsing:
-			i = mentStart;
-			goto DefaultHandling;
-		}
-
-		i++;
-		std::string mentStr = message.substr(mentStart, i - mentStart);
-		i--; // go back so that this character is skipped.
-
-		// Now it's time to try to decode that mention.
-		if (mentStr.size() < 4)
-			goto ErrorParsing;
-
-		if (mentStr[0] != '<' || mentStr[mentStr.size() - 1] != '>') {
-			assert(!"Then how did we get here?");
-			goto ErrorParsing;
-		}
-
-		// tear off the '<' and '>'
-		mentStr = mentStr.substr(1, mentStr.size() - 2);
-		std::string resultStr = mentStr;
-
-		char mentType = mentStr[0];
-		switch (mentType)
-		{
-			case '@':
-			{
-				bool isRole = false;
-				bool hasExclam = false;
-
-				if (mentStr[1] == '&')
-					isRole = true;
-				// not totally sure what this does. I only know that certain things use it
-				if (mentStr[1] == '!')
-					hasExclam = true;
-
-				std::string mentDest = mentStr.substr((isRole || hasExclam) ? 2 : 1);
-				Snowflake sf = (Snowflake)GetIntFromString(mentDest);
-
-				if (isRole)
-					resultStr = "@" + GetDiscordInstance()->LookupRoleName(sf, guildID);
-				else
-					resultStr = "@" + GetDiscordInstance()->LookupUserNameGlobally(sf, guildID);
-
-				break;
-			}
-
-			case '#':
-			{
-				std::string mentDest = mentStr.substr(1);
-				Snowflake sf = (Snowflake)GetIntFromString(mentDest);
-				Channel* pChan = GetDiscordInstance()->GetChannelGlobally(sf);
-				if (!pChan)
-					goto ErrorParsing;
-
-				resultStr = pChan->GetTypeSymbol() + pChan->m_name;
-				break;
-			}
-
-			default:
-				goto ErrorParsing;
-		}
-
-		newStr += resultStr;
-	}
-
-	return newStr;
-}
-
 void ShellNotification::ShowBalloon(const std::string& titleString, const std::string& contents)
 {
 	NOTIFYICONDATA d;
@@ -207,7 +119,7 @@ void ShellNotification::ShowBalloonForOneNotification(Notification* pNotif)
 		titleString += " in " + channelName;
 	titleString += ":";
 
-	std::string contents = StripMentions(pNotif->m_sourceGuild, pNotif->m_contents), contents2;
+	std::string contents = GetDiscordInstance()->ReverseMentions(pNotif->m_contents, pNotif->m_sourceGuild), contents2;
 	contents2.reserve(contents.size() * 2);
 
 	for (char c : contents) {
@@ -237,7 +149,7 @@ void ShellNotification::ShowBalloonForNotifications(const std::vector<Notificati
 	for (size_t i = 0; i < 5 && i < pNotifs.size(); i++)
 	{
 		Notification* pNotif = pNotifs[i];
-		std::string line = pNotif->m_author + ": " + StripMentions(pNotif->m_sourceGuild, pNotif->m_contents);
+		std::string line = pNotif->m_author + ": " + GetDiscordInstance()->ReverseMentions(pNotif->m_contents, pNotif->m_sourceGuild);
 
 		// remove new lines here
 		for (char& c : line) {

@@ -332,8 +332,11 @@ public:
 	// Start a new gateway session.
 	void StartGatewaySession();
 
-	// Resolve user mentions.
+	// Transform user, channel, or emoji mentions ("@usernamehere") into snowflake mentions (<@12347689436274>).
 	std::string ResolveMentions(const std::string& str, Snowflake guild, Snowflake channel);
+
+	// Transform snowflake mentions into user, channel, or emoji mentions.
+	std::string ReverseMentions(const std::string& message, Snowflake guild);
 
 	// Send a message to the current channel.
 	bool SendMessageToCurrentChannel(const std::string& msg, Snowflake& tempSf, Snowflake reply = 0, bool mentionReplied = true);

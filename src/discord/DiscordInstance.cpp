@@ -968,6 +968,145 @@ std::string DiscordInstance::ResolveMentions(const std::string& str, Snowflake g
 	return finalStr;
 }
 
+std::string DiscordInstance::ReverseMentions(const std::string& message, Snowflake guildID)
+{
+	bool hasMent = false;
+	bool hasOpen = false;
+	bool hasClose = false;
+	for (char c : message) {
+		if (c == '@' || c == '#' || c == ':')
+			hasMent = true;
+		if (c == '<')
+			hasOpen = true;
+		if (c == '>')
+			hasClose = true;
+		if (hasMent && hasOpen && hasClose)
+			break;
+	}
+
+	if (!hasMent || !hasOpen || !hasClose)
+		// no point
+		return message;
+
+	std::string newStr = "";
+
+	for (size_t i = 0; i < message.size(); i++)
+	{
+		if (message[i] != '<')
+		{
+		DefaultHandling:
+			newStr += message[i];
+			continue;
+		}
+
+		size_t mentStart = i;
+		i++;
+
+		for (; i < message.size() && message[i] != '<' && message[i] != '>'; i++);
+
+		if (i == message.size() || message[i] != '>') {
+		ErrorParsing:
+			i = mentStart;
+			goto DefaultHandling;
+		}
+
+		i++;
+		std::string mentStr = message.substr(mentStart, i - mentStart);
+		i--; // go back so that this character is skipped.
+
+		// Now it's time to try to decode that mention.
+		if (mentStr.size() < 4)
+			goto ErrorParsing;
+
+		if (mentStr[0] != '<' || mentStr[mentStr.size() - 1] != '>') {
+			assert(!"Then how did we get here?");
+			goto ErrorParsing;
+		}
+
+		// tear off the '<' and '>'
+		mentStr = mentStr.substr(1, mentStr.size() - 2);
+		std::string resultStr = mentStr;
+
+		char mentType = mentStr[0];
+		switch (mentType)
+		{
+		case '@':
+		{
+			bool isRole = false;
+			bool hasExclam = false;
+
+			if (mentStr[1] == '&')
+				isRole = true;
+			// not totally sure what this does. I only know that certain things use it
+			if (mentStr[1] == '!')
+				hasExclam = true;
+
+			std::string mentDest = mentStr.substr((isRole || hasExclam) ? 2 : 1);
+			Snowflake sf = (Snowflake)GetIntFromString(mentDest);
+
+			if (isRole)
+				resultStr = "@" + LookupRoleName(sf, guildID);
+			else
+				resultStr = "@" + LookupUserNameGlobally(sf, guildID);
+
+			break;
+		}
+
+		case '#':
+		{
+			std::string mentDest = mentStr.substr(1);
+			Snowflake sf = (Snowflake)GetIntFromString(mentDest);
+			Channel* pChan = GetChannelGlobally(sf);
+			if (!pChan)
+				goto ErrorParsing;
+
+			resultStr = pChan->GetTypeSymbol() + pChan->m_name;
+			break;
+		}
+
+		case ':':
+		{
+			// look for the other :
+			size_t i;
+			for (i = 1; i < mentStr.size(); i++) {
+				if (mentStr[i] == ':')
+					break;
+			}
+			if (i == mentStr.size())
+				goto ErrorParsing;
+
+			std::string mentDest = mentStr.substr(i + 1);
+			Snowflake sf = (Snowflake)GetIntFromString(mentDest);
+			
+			Guild* pGld = GetGuild(guildID);
+			if (!pGld) {
+				// Actually trust the first part, we have no way to check I don't think
+			TrustFirstPart:
+				resultStr = mentStr.substr(0, i + 1);
+			}
+			else {
+				// Look up the name of the emoji in the guild.
+				auto emit = pGld->m_emoji.find(sf);
+				if (emit == pGld->m_emoji.end())
+					goto TrustFirstPart;
+				
+				resultStr = ":" + emit->second.m_name + ":";
+			}
+
+			assert(!resultStr.empty() && resultStr[0] == ':' && resultStr[resultStr.size() - 1] == ':');
+			break;
+		}
+
+		default:
+			goto ErrorParsing;
+		}
+
+		newStr += resultStr;
+	}
+
+	return newStr;
+}
+
 typedef void(DiscordInstance::*DispatchFunction)(Json& j);
 
 std::map <std::string, DispatchFunction> g_dispatchFunctions;

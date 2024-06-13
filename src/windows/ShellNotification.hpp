@@ -11,8 +11,6 @@ public:
 	void Initialize();
 	void Deinitialize();
 
-	std::string StripMentions(Snowflake guildID, const std::string& message);
-
 	// used by Frontend_Win32. Received from DiscordLibrary as a tip
 	// to show the latest notification.
 	void OnNotification();
