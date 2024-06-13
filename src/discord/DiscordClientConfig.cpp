@@ -18,12 +18,12 @@ DiscordClientConfig::DiscordClientConfig()
 	m_browser = "Chrome";
 	m_systemLocale = "en-US";
 	m_timeZone = "Europe/Bucharest"; // TODO: UTC here
-	m_browserVersion = "124.0.0.0";
-	m_browserVersionSimple = "124";
+	m_browserVersion = "125.0.0.0";
+	m_browserVersionSimple = "125";
 	m_webKitVersion = "537.36";
 	m_osVersion = "10";
 	m_releaseChannel = "stable";
-	m_clientBuildNumber = 291963;
+	m_clientBuildNumber = 301663;
 	m_device = "";
 	m_referrer = "";
 	m_referrerCurrent = "";
@@ -43,7 +43,7 @@ DiscordClientConfig::DiscordClientConfig()
 		+ " Edg/"
 		+ m_browserVersion;
 
-	m_secChUa = "\"Chromium\";v=\"" + m_browserVersionSimple + "\", \"Microsoft Edge\";v=\"124\", \"Not-A.Brand\";v=\"99\"";
+	m_secChUa = "\"Chromium\";v=\"" + m_browserVersionSimple + "\", \"Microsoft Edge\";v=\"125\", \"Not-A.Brand\";v=\"99\"";
 
 	// Ok, now serialize it
 	nlohmann::json j = Serialize();
