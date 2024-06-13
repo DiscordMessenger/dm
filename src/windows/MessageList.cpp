@@ -2916,6 +2916,7 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 
 	DrawingContext mddc(hdc);
 	mddc.SetBackgroundColor(chosenBkColor);
+	mddc.SetInvertTextColor(InvertIfNeeded(GetSysColor(COLOR_WINDOWTEXT)));
 
 	Snowflake lastDrawnMessage = 0;
 	Snowflake lastKnownMessage = 0;
@@ -3516,6 +3517,13 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (pThis->m_bManagedByOwner)
 				break;
+
+			if (!MayErase())
+			{
+				refreshRect.bottom = pullDownRect.bottom + height;
+				InvalidateRect(hWnd, NULL, FALSE);
+				break;
+			}
 
 			// do a bitblt to "pull down" the region
 			HDC hdc = GetDC(hWnd);
