@@ -71,7 +71,7 @@ int g_tokenTypeTable[] = {
 static REN::regex g_StrongMatch("(\\*){2}[^\\*\\r\\n].*?(\\*){2}");
 static REN::regex g_ItalicMatch("\\*[^\\*\\r\\n].*?\\*");
 static REN::regex g_UnderlMatch("(_){2}[^_\\r\\n].*?(_){2}");
-static REN::regex g_ItalieMatch("(?=[ \\_\\r\\n])_.*?_(?=[ \\_\\r\\n])");
+static REN::regex g_ItalieMatch("(?=[ \\_\\r\\n])_.*?_(?<=[ \\_\\r\\n])");
 static REN::regex g_QuoteMatch("^> .*?(\n|$)");
 
 // Basic Markdown syntax:
