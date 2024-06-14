@@ -67,4 +67,7 @@ struct Profile
 
 	const std::string& GetUsername() const { return m_name; }
 	float FuzzyMatch(const char* check, Snowflake guild) const;
+
+	// Sends the Discord backend a request to either remove or set the note.
+	void PutNote() const;
 };

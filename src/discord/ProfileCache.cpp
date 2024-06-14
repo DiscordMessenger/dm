@@ -153,6 +153,37 @@ void ProfileCache::RequestExtraData(Snowflake user, Snowflake guild, bool mutual
 	RequestLoadProfile(user, guild, mutualGuilds, mutualFriends);
 }
 
+void ProfileCache::RequestNote(Snowflake user)
+{
+	GetHTTPClient()->PerformRequest(
+		true,
+		NetRequest::GET,
+		GetDiscordAPI() + "users/@me/notes/" + std::to_string(user),
+		DiscordRequest::USER_NOTE,
+		user,
+		"",
+		GetDiscordInstance()->GetToken()
+	);
+}
+
+void ProfileCache::PutNote(Snowflake user, const std::string& note) const
+{
+	// NOTE: Strange how the official discord client just sends a PUT request for blank notes
+	// instead of having a DELETE request to do that.
+	nlohmann::json j;
+	j["note"] = note;
+
+	GetHTTPClient()->PerformRequest(
+		true,
+		NetRequest::PUT_JSON,
+		GetDiscordAPI() + "users/@me/notes/" + std::to_string(user),
+		DiscordRequest::SET_USER_NOTE,
+		user,
+		j.dump(),
+		GetDiscordInstance()->GetToken()
+	);
+}
+
 void ProfileCache::RequestLoadProfile(Snowflake user, Snowflake guild, bool mutualGuilds, bool mutualFriends)
 {
 	if (!user)

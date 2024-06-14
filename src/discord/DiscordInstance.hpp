@@ -210,7 +210,7 @@ public:
 		return m_mySnowflake;
 	}
 
-	std::string GetToken() const {
+	const std::string& GetToken() const {
 		return m_token;
 	}
 
@@ -432,6 +432,7 @@ private:
 	void HandleMESSAGE_ACK(nlohmann::json& j);
 	void HandleUSER_GUILD_SETTINGS_UPDATE(nlohmann::json& j);
 	void HandleUSER_SETTINGS_PROTO_UPDATE(nlohmann::json& j);
+	void HandleUSER_NOTE_UPDATE(nlohmann::json& j);
 	void HandleGUILD_CREATE(nlohmann::json& j);
 	void HandleGUILD_DELETE(nlohmann::json& j);
 	void HandleCHANNEL_CREATE(nlohmann::json& j);

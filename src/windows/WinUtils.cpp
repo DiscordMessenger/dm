@@ -285,6 +285,19 @@ std::string MakeStringFromUnicodeString(LPCWSTR wstr)
 	return final_str;
 }
 
+std::string MakeStringFromEditData(LPCTSTR tstr)
+{
+	std::vector<TCHAR> tch2;
+	const TCHAR* tcString = tstr;
+	for (; *tcString; tcString++) {
+		if (*tcString != '\r')
+			tch2.push_back(*tcString);
+	}
+	tch2.push_back(0);
+
+	return MakeStringFromTString(tch2.data());
+}
+
 std::string CreateChannelLink(Snowflake guild, Snowflake channel)
 {
 	std::string guildStr = std::to_string(guild);

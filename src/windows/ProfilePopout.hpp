@@ -26,6 +26,7 @@ public:
 	static void DeferredShow(const ShowProfilePopoutParams& params);
 
 private:
+	static void FlushNote();
 	static bool Layout(HWND hWnd, SIZE& fullSize);
 	static void Paint(HWND hWnd, HDC hDC);
 	static BOOL CALLBACK Proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

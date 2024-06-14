@@ -55,6 +55,7 @@ struct NetRequest
 		PUT_OCTETS,
 		PUT_OCTETS_PROGRESS, // (!)
 		GET_PROGRESS,
+		PUT_JSON,
 	};
 	int result = 0;
 	int itype  = 0;

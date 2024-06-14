@@ -43,6 +43,16 @@ bool ProfilePopout::Layout(HWND hWnd, SIZE& fullSize)
 
 	if (!pProf->m_bExtraDataFetched) {
 		GetProfileCache()->RequestExtraData(m_user, m_guild);
+		pProf->m_bExtraDataFetched = true;
+	}
+
+	bool bShouldNoteBeEditable = false;
+	if (!pProf->m_bNoteFetched) {
+		GetProfileCache()->RequestNote(m_user);
+		pProf->m_bNoteFetched = true;
+	}
+	else {
+		bShouldNoteBeEditable = true;
 	}
 
 	Guild* gld = GetDiscordInstance()->GetGuild(m_guild);
@@ -430,6 +440,7 @@ bool ProfilePopout::Layout(HWND hWnd, SIZE& fullSize)
 	SetWindowFont(hChild, g_MessageTextFont, TRUE);
 	SetWindowText(hChild, note);
 	MoveWindow(hChild, pos.x + groupBoxBorder, pos.y + rcGroupBox.bottom - groupBoxBorder, inGroupBoxWidth, rcNote.bottom, TRUE);
+	Edit_SetReadOnly(hChild, !bShouldNoteBeEditable);
 
 	pos.y += rcNote.bottom + rcGroupBox.bottom + interItemGap;
 #else
@@ -473,6 +484,31 @@ void ProfilePopout::Paint(HWND hWnd, HDC hdc)
 	DrawEdge(hdc, &rect, EDGE_RAISED, BF_RECT);
 }
 
+void ProfilePopout::FlushNote()
+{
+	Profile* pProf = GetProfileCache()->LookupProfile(m_user, "...", "...", "");
+	if (!pProf)
+		return;
+	if (!pProf->m_bNoteFetched) // note: might be redundant
+		return;
+
+	HWND editHwnd = GetDlgItem(m_hwnd, IDC_NOTE_TEXT);
+	int length = GetWindowTextLength(editHwnd);
+	TCHAR* data = new TCHAR[length + 1];
+	GetWindowText(editHwnd, data, length + 1);
+	std::string noteStr = MakeStringFromEditData(data);
+	delete[] data;
+
+	if (noteStr != pProf->m_note)
+	{
+		// Set the note!
+		pProf->m_note = noteStr;
+
+		// Flush it
+		pProf->PutNote();
+	}
+}
+
 BOOL CALLBACK ProfilePopout::Proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -503,6 +539,8 @@ BOOL CALLBACK ProfilePopout::Proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		}
 
 		case WM_DESTROY:
+			FlushNote();
+
 			m_hwnd = NULL;
 			SAFE_DELETE(m_pRoleList);
 			SAFE_DELETE(m_pProfileView);

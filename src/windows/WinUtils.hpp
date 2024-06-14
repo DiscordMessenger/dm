@@ -31,7 +31,7 @@ struct NetRequest;
 LPTSTR ConvertCppStringToTString(const std::string& str, size_t* lenOut = NULL);
 LPTSTR ConvertToTStringAddCR(const std::string& str, size_t* lenOut = NULL);
 void ConvertCppStringToTCharArray(const std::string& sstr, TCHAR* buff, size_t szMax);
-
+std::string MakeStringFromEditData(LPCTSTR tstr);
 std::string MakeStringFromUnicodeString(LPCWSTR wstr);
 #ifdef UNICODE
 #define MakeStringFromTString(x) MakeStringFromUnicodeString(x)

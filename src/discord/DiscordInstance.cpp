@@ -538,6 +538,10 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 		}
 
 		case HTTP_NOTFOUND:
+			if (pRequest->itype == USER_NOTE)
+				// Just means the note doesn't exist.
+				return;
+
 		case HTTP_BADGATEWAY:
 		case HTTP_UNSUPPMEDIA:
 		{
@@ -573,7 +577,7 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 		case HTTP_BADREQUEST:
 		{
 			str = "A bug occurred and the client has sent an invalid request.\n"
-				"The resource in question is: " + pRequest->url;
+				"The resource in question is: " + pRequest->url + "\n\n" + pRequest->response;
 			bExitAfterError = false;
 			bShowMessageBox = true;
 			break;
@@ -661,6 +665,21 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 					GetFrontend()->RepaintProfile();
 				}
 
+				break;
+			}
+			case USER_NOTE:
+			{
+				Snowflake userSF = GetSnowflake(j, "note_user_id");
+				if (userSF == 0)
+					break;
+
+				Profile* pf = GetProfileCache()->LookupProfile(userSF, "", "", "", false);
+				if (pf) {
+					pf->m_note = GetFieldSafe(j, "note");
+					pf->m_bNoteFetched = true;
+
+					GetFrontend()->UpdateProfilePopout(userSF);
+				}
 				break;
 			}
 			case GUILDS:
@@ -1982,6 +2001,7 @@ void DiscordInstance::InitDispatchFunctions()
 	DECL(MESSAGE_ACK);
 	DECL(USER_SETTINGS_PROTO_UPDATE);
 	DECL(USER_GUILD_SETTINGS_UPDATE);
+	DECL(USER_NOTE_UPDATE);
 	DECL(GUILD_CREATE);
 	DECL(GUILD_DELETE);
 	DECL(CHANNEL_CREATE);
@@ -2351,6 +2371,21 @@ void DiscordInstance::HandleUSER_GUILD_SETTINGS_UPDATE(nlohmann::json& j)
 
 	GuildSettings* pSettings = m_userGuildSettings.GetOrCreateSettings(guildID);
 	pSettings->Load(data);
+}
+
+void DiscordInstance::HandleUSER_NOTE_UPDATE(nlohmann::json& j)
+{
+	Json& data = j["d"];
+	Snowflake uid = GetSnowflake(data, "id");
+	std::string note = GetFieldSafe(data, "note");
+
+	Profile* pf = GetProfileCache()->LookupProfile(uid, "", "", "", false);
+	if (!pf) return;
+
+	pf->m_note = note;
+	pf->m_bNoteFetched = true;
+
+	GetFrontend()->UpdateProfilePopout(uid);
 }
 
 void DiscordInstance::HandleUSER_SETTINGS_PROTO_UPDATE(Json& j)

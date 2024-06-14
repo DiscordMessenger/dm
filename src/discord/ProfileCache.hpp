@@ -30,6 +30,13 @@ public:
 	// Request extra data from a profile.
 	void RequestExtraData(Snowflake user, Snowflake guild = 0, bool mutualGuilds = true, bool mutualFriends = true);
 
+	// Request note data from a profile.
+	void RequestNote(Snowflake user);
+
+protected:
+	friend struct Profile;
+	void PutNote(Snowflake user, const std::string& note) const;
+
 private:
 	void RequestLoadProfile(Snowflake user, Snowflake guild = 0, bool mutualGuilds = true, bool mutualFriends = true);
 

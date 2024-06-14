@@ -253,6 +253,12 @@ void NetworkerThread::FulfillRequest(NetRequest& req)
 				retry = ProcessResult(req, res);
 				break;
 			}
+			case NetRequest::PUT_JSON:
+			{
+				const Result res = client.Put(path, headers, req.params, "application/json");
+				retry = ProcessResult(req, res);
+				break;
+			}
 			case NetRequest::PUT_OCTETS:
 			{
 				const Result res = client.Put(path, headers, (const char*) req.params_bytes.data(), req.params_bytes.size(), "application/octet-stream");

@@ -1230,22 +1230,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			SendMessageParams parms = *((SendMessageParams*)lParam);
 
-			std::string msg;
-
-			// This gets rid of all '\r' characters that the text edit control adds.
-			std::vector<TCHAR> tch2;
-			TCHAR* tcString = parms.m_rawMessage;
-			for (; *tcString; tcString++) {
-				if (*tcString != '\r')
-					tch2.push_back(*tcString);
-			}
-			tch2.push_back(0);
-
-#ifdef UNICODE
-			msg = MakeStringFromUnicodeString(tch2.data());
-#else
-			msg = std::string(tch2.data(), tch2.size());
-#endif
+			std::string msg = MakeStringFromEditData(parms.m_rawMessage);
 
 			if (msg.empty())
 				return 1;
