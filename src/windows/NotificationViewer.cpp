@@ -35,7 +35,12 @@ void NotificationViewer::Initialize(HWND hWnd)
 
 	SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_NOTIFICATION))));
 
-	HWND child = GetDlgItem(hWnd, IDC_MESSAGE_LIST);
+	HWND child = GetDlgItem(hWnd, IDC_NOTIFS_MARK_AS_READ);
+	int sm = GetSystemMetrics(SM_CXSMICON);
+	HICON hico = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_MARK_READ)), IMAGE_ICON, sm, sm, LR_SHARED | LR_CREATEDIBSECTION);
+	SendMessage(child, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hico);
+
+	child = GetDlgItem(hWnd, IDC_MESSAGE_LIST);
 
 	GetWindowRect(child, &rect);
 	ScreenToClientRect(hWnd, &rect);
@@ -108,14 +113,34 @@ void NotificationViewer::Initialize(HWND hWnd)
 void NotificationViewer::OnResize(HWND hWnd, int newWidth, int newHeight)
 {
 	HWND hLabel = GetDlgItem(hWnd, IDC_NOTIFICATION_HINT);
+	HWND hButton = GetDlgItem(hWnd, IDC_NOTIFS_MARK_AS_READ);
 	HWND hList = GetDlgItem(hWnd, CID_MESSAGELIST);
 
 	RECT rcLabel{};
 	GetChildRect(hWnd, hLabel, &rcLabel);
 	RECT rcList{};
 	GetChildRect(hWnd, hList, &rcList);
+	RECT rcButton{};
+	GetChildRect(hWnd, hButton, &rcButton);
 
-	MoveWindow(hLabel, rcLabel.left, rcLabel.top, newWidth - rcLabel.left * 2, rcLabel.bottom - rcLabel.top, TRUE);
+	MoveWindow(
+		hButton,
+		newWidth - rcLabel.left - (rcButton.right - rcButton.left),
+		rcButton.top,
+		rcButton.right - rcButton.left,
+		rcButton.bottom - rcButton.top,
+		TRUE
+	);
+	InvalidateRect(hLabel, NULL, FALSE);
+
+	MoveWindow(
+		hLabel,
+		rcLabel.left,
+		rcLabel.top,
+		newWidth - rcLabel.left * 2 - (rcButton.right - rcButton.left),
+		rcLabel.bottom - rcLabel.top,
+		TRUE
+	);
 	InvalidateRect(hLabel, NULL, FALSE);
 
 	MoveWindow(
@@ -151,6 +176,13 @@ void NotificationViewer::OnClickMessage(Snowflake sf)
 	}
 }
 
+void NotificationViewer::MarkAllAsRead()
+{
+	auto& notifs = GetNotificationManager()->GetNotifications();
+	for (auto& notif : notifs)
+		notif.m_bRead = true;
+}
+
 BOOL NotificationViewer::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -171,6 +203,12 @@ BOOL NotificationViewer::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		}
 
 		case WM_COMMAND:
+			if (wParam == IDC_NOTIFS_MARK_AS_READ) {
+				// Mark all notifications as read and exit.
+				MarkAllAsRead();
+				EndDialog(hWnd, 0);
+				return TRUE;
+			}
 			if (wParam == IDCANCEL) {
 				EndDialog(hWnd, 0);
 				return TRUE;

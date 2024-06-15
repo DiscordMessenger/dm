@@ -15,6 +15,7 @@ private:
 	static void Initialize(HWND hWnd);
 	static void OnResize(HWND hWnd, int newWidth, int newHeight);
 	static void OnClickMessage(Snowflake sf);
+	static void MarkAllAsRead();
 	static BOOL CALLBACK DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	static POINT m_appearXY;

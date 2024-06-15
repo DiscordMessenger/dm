@@ -391,6 +391,8 @@
 #define IDC_COMBO_GUI_SCALE             890
 #define IDC_NOTIFICATION_HINT           891
 #define IDC_TOGGLE_XSUPERPROPS          892
+#define IDC_BUTTON1                     893
+#define IDC_NOTIFS_MARK_AS_READ         893
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
 #define ID_FILE_EXIT                    1003
@@ -469,7 +471,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        101
 #define _APS_NEXT_COMMAND_VALUE         1069
-#define _APS_NEXT_CONTROL_VALUE         893
+#define _APS_NEXT_CONTROL_VALUE         894
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif
 #endif

@@ -645,7 +645,8 @@ CAPTION "Notifications"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_MESSAGE_LIST,"Static",SS_BLACKRECT,7,27,335,205
-    LTEXT           "Here are your recent notifications for this session.\nClick on a message to jump to it.",IDC_NOTIFICATION_HINT,7,7,335,17
+    LTEXT           "Here are your recent notifications for this session.\nClick on a message to jump to it.",IDC_NOTIFICATION_HINT,7,7,315,17
+    DEFPUSHBUTTON   "",IDC_NOTIFS_MARK_AS_READ,324,7,18,15,BS_ICON
 END
 
 
@@ -872,6 +873,7 @@ IDD_DIALOG_NOTIFICATIONS AFX_DIALOG_LAYOUT
 BEGIN
     0,
     0, 0, 100, 100,
+    0, 0, 0, 0,
     0, 0, 0, 0
 END
 
