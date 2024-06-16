@@ -75,6 +75,8 @@ void GuildLister::ProperlyResizeSubWindows()
 	int buttonWidth = (rect.right - rect.left) / 2;
 	MoveWindow(m_more_btn_hwnd, rect.left, rect.bottom - buttonHeight, buttonWidth, buttonHeight, true);
 	MoveWindow(m_bar_btn_hwnd,  rect.right - buttonWidth, rect.bottom - buttonHeight, buttonWidth, buttonHeight, true);
+
+	UpdateTooltips();
 }
 
 void GuildLister::ClearTooltips()
@@ -154,12 +156,12 @@ void GuildLister::Update()
 {
 	InvalidateRect(m_hwnd, NULL, false);
 	UpdateTooltips();
-	UpdateScrollBar();
+	UpdateScrollBar(false);
 }
 
 void GuildLister::UpdateSelected()
 {
-	UpdateScrollBar();
+	UpdateScrollBar(false);
 
 	auto it = m_iconRects.find(m_selectedGuild);
 	if (it != m_iconRects.end()) {
@@ -173,7 +175,7 @@ void GuildLister::UpdateSelected()
 	}
 }
 
-void GuildLister::UpdateScrollBar()
+int GuildLister::UpdateScrollBar(bool setOldPos)
 {
 	RECT rcClient{};
 	GetClientRect(m_scrollable_hwnd, &rcClient);
@@ -182,11 +184,15 @@ void GuildLister::UpdateScrollBar()
 	si.cbSize = sizeof si;
 	si.fMask = SIF_POS;
 	GetScrollInfo(&si);
+	int oldPos = si.nPos;
 	si.fMask |= SIF_RANGE | SIF_PAGE;
 	si.nMin = 0;
 	si.nMax = GetScrollableHeight();
 	si.nPage = rcClient.bottom - rcClient.top;
 	SetScrollInfo(&si);
+	GetScrollInfo(&si);
+	if (setOldPos) m_oldPos = si.nPos;
+	return si.nPos - oldPos;
 }
 
 void GuildLister::GetScrollInfo(SCROLLINFO* pInfo)
@@ -720,6 +726,7 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			pThis->m_oldPos = si.nPos;
 
 			WindowScroll(hWnd, diffUpDown);
+			pThis->UpdateTooltips();
 			break;
 		}
 		case WM_LBUTTONUP:
@@ -902,7 +909,8 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_SIZE:
 		{
-			pThis->UpdateScrollBar();
+			WindowScroll(hWnd, pThis->UpdateScrollBar(true));
+			pThis->UpdateTooltips();
 			break;
 		}
 		case WM_GESTURE:

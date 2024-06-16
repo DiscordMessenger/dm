@@ -42,7 +42,7 @@ public:
 	void UpdateTooltips();
 	void Update();
 	void UpdateSelected();
-	void UpdateScrollBar();
+	int  UpdateScrollBar(bool setOldPos);
 	void OnScroll();
 	void ShowMenu(Snowflake guild, POINT pt);
 	void AskLeave(Snowflake guild);
