@@ -1,6 +1,7 @@
 #include "MemberList.hpp"
 #include "ProfilePopout.hpp"
 #include "../discord/ProfileCache.hpp"
+#include "../discord/LocalSettings.hpp"
 WNDCLASS MemberList::g_MemberListClass;
 
 #define GRPID_ONLINE  (1)
@@ -340,6 +341,14 @@ LRESULT MemberList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_MEASUREITEM: {
 			assert(pList);
 			LPMEASUREITEMSTRUCT lpmis = (LPMEASUREITEMSTRUCT)lParam;
+
+			if (GetLocalSettings()->GetCompactMemberList()) {
+				// adjust the default to be even
+				if (lpmis->itemHeight & 1)
+					lpmis->itemHeight++;
+				break;
+			}
+
 			lpmis->itemHeight = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 			break;
 		}
@@ -349,6 +358,8 @@ LRESULT MemberList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
 			HDC hdc = lpdis->hDC;
 			RECT rcItem = lpdis->rcItem;
+
+			bool compact = GetLocalSettings()->GetCompactMemberList();
 
 			Snowflake user = pList->m_items[lpdis->itemID];
 			Profile* pf = GetProfileCache()->LookupProfile(user, "", "", "", false);
@@ -380,37 +391,59 @@ LRESULT MemberList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				statusTextColor = GetSysColor(COLOR_HIGHLIGHTTEXT);
 			}
 
-			// draw profile picture frame
-			int sz = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
-			int szDraw = GetProfileBorderSize();
-			DrawIconEx(hdc, rcItem.left, rcItem.top, g_ProfileBorderIcon, szDraw, szDraw, 0, NULL, DI_NORMAL | DI_COMPAT);
-			
-			// draw profile picture
-			bool hasAlpha = false;
-			HBITMAP hbm = GetAvatarCache()->GetBitmap(pf->m_avatarlnk, hasAlpha), hbmmask = NULL;
-			DrawBitmap(hdc, hbm, rcItem.left + ScaleByDPI(6), rcItem.top + ScaleByDPI(4), NULL, CLR_NONE, GetProfilePictureSize(), 0, hasAlpha);
+			int textOffset = 0;
+			if (!compact)
+			{
+				// draw profile picture frame
+				int sz = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
+				int szDraw = GetProfileBorderSize();
+				DrawIconEx(hdc, rcItem.left, rcItem.top, g_ProfileBorderIcon, szDraw, szDraw, 0, NULL, DI_NORMAL | DI_COMPAT);
 
-			// draw status indicator
-			DrawActivityStatus(hdc, rcItem.left + ScaleByDPI(6), rcItem.top + ScaleByDPI(4), pf->m_activeStatus);
-			
+				// draw profile picture
+				bool hasAlpha = false;
+				HBITMAP hbm = GetAvatarCache()->GetBitmap(pf->m_avatarlnk, hasAlpha), hbmmask = NULL;
+				DrawBitmap(hdc, hbm, rcItem.left + ScaleByDPI(6), rcItem.top + ScaleByDPI(4), NULL, CLR_NONE, GetProfilePictureSize(), 0, hasAlpha);
+
+				// draw status indicator
+				DrawActivityStatus(hdc, rcItem.left + ScaleByDPI(6), rcItem.top + ScaleByDPI(4), pf->m_activeStatus);
+				textOffset = sz;
+			}
+			else
+			{
+				// draw status indicator, shifted up by 1 pixel because the graphic is actually off-center
+				int statusIconSize = ScaleByDPI(16);
+				int profileSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF);
+				DrawActivityStatus(
+					hdc,
+					rcItem.left - profileSize + statusIconSize,
+					rcItem.top - profileSize + statusIconSize + (rcItem.bottom - rcItem.top - statusIconSize) / 2 - ScaleByDPI(1),
+					pf->m_activeStatus
+				);
+				textOffset = statusIconSize + ScaleByDPI(5);
+			}
 			// compute data necessary to draw the text
 			RECT rcText = rcItem;
-			rcText.left += sz;
+			rcText.left += textOffset;
 			// note, off center from the rectangle because the profile picture is off-center too
-			rcText.bottom = rcText.top + sz - 4;
+			rcText.bottom = rcText.top + textOffset - 4;
+
+			LPTSTR nameTstr = NULL, statTstr = NULL;
 
 			std::string nameText   = pf->GetName(pList->m_guild);
-			std::string statusText = pf->GetStatus(pList->m_guild);
+			nameTstr = ConvertCppStringToTString(nameText);
 
-			LPTSTR nameTstr = ConvertCppStringToTString(nameText);
-			LPTSTR statTstr = ConvertCppStringToTString(statusText);
+			if (!compact) {
+				std::string statusText = pf->GetStatus(pList->m_guild);
+				statTstr = ConvertCppStringToTString(statusText);
+			}
 
 			COLORREF oldTextColor = SetTextColor(hdc, nameTextColor);
 			COLORREF oldBkColor   = SetBkColor  (hdc, backgdColor);
 
 			HGDIOBJ oldObj = SelectObject(hdc, g_AuthorTextFont);
 
-			if (statusText.empty()) {
+			if (compact || !*statTstr) {
+				rcText.top+=2;
 				DrawText(hdc, nameTstr, -1, &rcText, DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE);
 			}
 			else {
@@ -431,7 +464,8 @@ LRESULT MemberList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SetBkColor(hdc, oldBkColor);
 
 			free(nameTstr);
-			free(statTstr);
+			if (statTstr)
+				free(statTstr);
 			break;
 		}
 	}

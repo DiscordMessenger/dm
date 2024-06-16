@@ -164,7 +164,7 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 			CheckDlgButton(hwndDlg, IDC_SAVE_WINDOW_SIZE, GetLocalSettings()->GetSaveWindowSize() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_START_MAXIMIZED, GetLocalSettings()->GetStartMaximized() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_DISABLE_FORMATTING, GetLocalSettings()->DisableFormatting() ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_SCROLL_BAR_ON_GUILDS, GetLocalSettings()->ShowScrollBarOnGuildList() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_COMPACT_MEMBER_LIST, GetLocalSettings()->GetCompactMemberList() ? BST_CHECKED : BST_UNCHECKED);
 
 			LPTSTR tstr = ConvertCppStringToTString(GetLocalSettings()->GetImageBackgroundFileName());
 			SetDlgItemText(hwndDlg, IDC_ACTIVE_IMAGE_EDIT, tstr);
@@ -420,9 +420,9 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 							GetLocalSettings()->SetDisableFormatting(IsDlgButtonChecked(hWnd, IDC_DISABLE_FORMATTING));
 							SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
 							break;
-						case IDC_SCROLL_BAR_ON_GUILDS:
-							GetLocalSettings()->SetShowScrollBarOnGuildList(IsDlgButtonChecked(hWnd, IDC_SCROLL_BAR_ON_GUILDS));
-							SendMessage(g_Hwnd, WM_REPOSITIONEVERYTHING, 0, 0);
+						case IDC_COMPACT_MEMBER_LIST:
+							GetLocalSettings()->SetCompactMemberList(IsDlgButtonChecked(hWnd, IDC_COMPACT_MEMBER_LIST));
+							SendMessage(g_Hwnd, WM_RECREATEMEMBERLIST, 0, 0);
 							break;
 						case IDC_SAVE_WINDOW_SIZE:
 							GetLocalSettings()->SetSaveWindowSize(IsDlgButtonChecked(hWnd, IDC_SAVE_WINDOW_SIZE));

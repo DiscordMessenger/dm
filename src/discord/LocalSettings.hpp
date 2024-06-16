@@ -145,6 +145,12 @@ public:
 	void SetUserScale(int userScale) {
 		m_userScale = userScale;
 	}
+	bool GetCompactMemberList() const {
+		return m_bCompactMemberList;
+	}
+	void SetCompactMemberList(bool b) {
+		m_bCompactMemberList = b;
+	}
 
 private:
 	std::string m_token;

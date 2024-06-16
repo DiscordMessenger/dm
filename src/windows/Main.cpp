@@ -1186,6 +1186,15 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		}
+		case WM_RECREATEMEMBERLIST:
+		{
+			RECT rc{};
+			GetChildRect(hWnd, g_pMemberList->m_mainHwnd, &rc);
+			SAFE_DELETE(g_pMemberList);
+			g_pMemberList = MemberList::Create(hWnd, &rc);
+			WindowProc(hWnd, WM_UPDATEMEMBERLIST, 0, 0);
+			break;
+		}
 		case WM_INITMENUPOPUP:
 		{
 			HMENU Menu = (HMENU)wParam;

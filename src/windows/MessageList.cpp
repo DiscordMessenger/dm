@@ -2683,8 +2683,6 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	RECT embedRect = item.m_messageRect;
 	auto& embedVec = item.m_embedData;
 	size_t sz = embedVec.size();
-	if (sz)
-		embedRect.bottom += ScaleByDPI(5);
 
 	embedRect.right = msgRect.right - ScaleByDPI(10);
 	embedRect.top = embedRect.bottom;
@@ -2722,13 +2720,14 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		embedRect.bottom = embedRect.top;
 	}
 
+	if (sz)
+		embedRect.bottom += ScaleByDPI(5);
+
 	// draw available attachments, if any:
 	RECT attachRect = embedRect;
 	auto& attachVec = item.m_msg.m_attachments;
 	auto& attachItemVec = item.m_attachmentData;
 	sz = attachVec.size();
-	if (sz != 0)
-		attachRect.bottom += ScaleByDPI(5) + ATTACHMENT_GAP;
 
 	attachRect.right   = msgRect.right - ScaleByDPI(10);
 	attachRect.top     = attachRect.bottom;

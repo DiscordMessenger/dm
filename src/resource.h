@@ -362,7 +362,7 @@
 #define IDC_SAVE_WINDOW_SIZE            859
 #define IDC_START_MAXIMIZED             860
 #define IDC_QUICK_QUERY                 861
-#define IDC_SCROLL_BAR_ON_GUILDS        861
+#define IDC_COMPACT_MEMBER_LIST         861
 #define IDC_CHANNEL_LIST                862
 #define IDC_QUICK_GROUP                 863
 #define IDC_EDIT_DISCORDAPI             864
@@ -391,7 +391,6 @@
 #define IDC_COMBO_GUI_SCALE             890
 #define IDC_NOTIFICATION_HINT           891
 #define IDC_TOGGLE_XSUPERPROPS          892
-#define IDC_BUTTON1                     893
 #define IDC_NOTIFS_MARK_AS_READ         893
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
