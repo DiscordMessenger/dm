@@ -226,6 +226,13 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 
 			break;
 		}
+		case PG_CHAT:
+		{
+			CheckDlgButton(hwndDlg, IDC_IMAGES_WHEN_UPLOADED, GetLocalSettings()->ShowAttachmentImages() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_IMAGES_WHEN_EMBEDDED, GetLocalSettings()->ShowEmbedImages()      ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_SHOW_EMBEDS,          GetLocalSettings()->ShowEmbedContent()     ? BST_CHECKED : BST_UNCHECKED);
+			break;
+		}
 		case PG_WINDOW:
 		{
 			CheckDlgButton(hwndDlg, IDC_SAVE_WINDOW_SIZE, GetLocalSettings()->GetSaveWindowSize() ? BST_CHECKED : BST_UNCHECKED);
@@ -437,6 +444,18 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 					{
 						case IDC_DISABLE_FORMATTING:
 							GetLocalSettings()->SetDisableFormatting(IsDlgButtonChecked(hWnd, IDC_DISABLE_FORMATTING));
+							SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+							break;
+						case IDC_IMAGES_WHEN_UPLOADED:
+							GetLocalSettings()->SetShowAttachmentImages(IsDlgButtonChecked(hWnd, IDC_IMAGES_WHEN_UPLOADED));
+							SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+							break;
+						case IDC_IMAGES_WHEN_EMBEDDED:
+							GetLocalSettings()->SetShowEmbedImages(IsDlgButtonChecked(hWnd, IDC_IMAGES_WHEN_EMBEDDED));
+							SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+							break;
+						case IDC_SHOW_EMBEDS:
+							GetLocalSettings()->SetShowEmbedContent(IsDlgButtonChecked(hWnd, IDC_SHOW_EMBEDS));
 							SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
 							break;
 					}

@@ -227,10 +227,18 @@ void RichEmbedItem::Measure(HDC hdc, RECT& messageRect, bool isCompact)
 	int maxImgWidth = std::max(int(rcItem.right - rcItem.left), 10);
 
 	// Calculate the embedded image.
-	if (m_pEmbed->m_bHasThumbnail)
-		m_thumbnailSize = EnsureMaximumSize(m_pEmbed->m_thumbnailWidth, m_pEmbed->m_thumbnailHeight, maxImgWidth, maxHeight);
-	else if (m_pEmbed->m_bHasImage)
-		m_imageSize = EnsureMaximumSize(m_pEmbed->m_imageWidth, m_pEmbed->m_imageHeight, maxImgWidth, maxHeight);
+	if (GetLocalSettings()->ShowEmbedImages())
+	{
+		if (m_pEmbed->m_bHasThumbnail)
+			m_thumbnailSize = EnsureMaximumSize(m_pEmbed->m_thumbnailWidth, m_pEmbed->m_thumbnailHeight, maxImgWidth, maxHeight);
+		else if (m_pEmbed->m_bHasImage)
+			m_imageSize = EnsureMaximumSize(m_pEmbed->m_imageWidth, m_pEmbed->m_imageHeight, maxImgWidth, maxHeight);
+	}
+	else
+	{
+		m_thumbnailSize = { 0, 0 };
+		m_imageSize = { 0, 0 };
+	}
 
 	sz.cx = std::max({ sz.cx, m_imageSize.cx, m_thumbnailSize.cx });
 	sz.cy = m_providerSize.cy;
@@ -330,25 +338,27 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 		DrawText(hdc, m_description.GetWrapped(), -1, &rcText, DT_WORDBREAK | DT_WORD_ELLIPSIS);
 		sizeY += m_descriptionSize.cy;
 	}
-	if (m_thumbnailSize.cy) {
-		m_thumbnailResourceID = GetAvatarCache()->MakeIdentifier(m_pEmbed->m_thumbnailUrl);
-		GetAvatarCache()->AddImagePlace(m_thumbnailResourceID, eImagePlace::ATTACHMENTS, m_pEmbed->m_thumbnailProxiedUrl);
-		bool hasAlpha = false;
-		HBITMAP hbm = GetAvatarCache()->GetBitmapSpecial(m_pEmbed->m_thumbnailUrl, hasAlpha);
-		if (sizeY) sizeY += gap;
-		m_thumbnailRect = { rc.left, rc.top + sizeY, rc.left + m_thumbnailSize.cx, rc.top + sizeY + m_thumbnailSize.cy };
-		DrawImageSpecial(hdc, hbm, m_thumbnailRect, hasAlpha);
-		sizeY += m_thumbnailSize.cy;
-	}
-	if (m_imageSize.cy) {
-		m_imageResourceID = GetAvatarCache()->MakeIdentifier(m_pEmbed->m_imageUrl);
-		GetAvatarCache()->AddImagePlace(m_imageResourceID, eImagePlace::ATTACHMENTS, m_pEmbed->m_imageProxiedUrl);
-		bool hasAlpha = false;
-		HBITMAP hbm = GetAvatarCache()->GetBitmapSpecial(m_pEmbed->m_imageUrl, hasAlpha);
-		if (sizeY) sizeY += gap;
-		m_imageRect = { rc.left, rc.top + sizeY, rc.left + m_imageSize.cx, rc.top + sizeY + m_imageSize.cy };
-		DrawImageSpecial(hdc, hbm, m_imageRect, hasAlpha);
-		sizeY += m_imageSize.cy;
+	if (GetLocalSettings()->ShowEmbedImages()) {
+		if (m_thumbnailSize.cy) {
+			m_thumbnailResourceID = GetAvatarCache()->MakeIdentifier(m_pEmbed->m_thumbnailUrl);
+			GetAvatarCache()->AddImagePlace(m_thumbnailResourceID, eImagePlace::ATTACHMENTS, m_pEmbed->m_thumbnailProxiedUrl);
+			bool hasAlpha = false;
+			HBITMAP hbm = GetAvatarCache()->GetBitmapSpecial(m_pEmbed->m_thumbnailUrl, hasAlpha);
+			if (sizeY) sizeY += gap;
+			m_thumbnailRect = { rc.left, rc.top + sizeY, rc.left + m_thumbnailSize.cx, rc.top + sizeY + m_thumbnailSize.cy };
+			DrawImageSpecial(hdc, hbm, m_thumbnailRect, hasAlpha);
+			sizeY += m_thumbnailSize.cy;
+		}
+		if (m_imageSize.cy) {
+			m_imageResourceID = GetAvatarCache()->MakeIdentifier(m_pEmbed->m_imageUrl);
+			GetAvatarCache()->AddImagePlace(m_imageResourceID, eImagePlace::ATTACHMENTS, m_pEmbed->m_imageProxiedUrl);
+			bool hasAlpha = false;
+			HBITMAP hbm = GetAvatarCache()->GetBitmapSpecial(m_pEmbed->m_imageUrl, hasAlpha);
+			if (sizeY) sizeY += gap;
+			m_imageRect = { rc.left, rc.top + sizeY, rc.left + m_imageSize.cx, rc.top + sizeY + m_imageSize.cy };
+			DrawImageSpecial(hdc, hbm, m_imageRect, hasAlpha);
+			sizeY += m_imageSize.cy;
+		}
 	}
 	if (m_footerSize.cy) {
 		SelectObject(hdc, g_ReplyTextFont);
@@ -2684,6 +2694,9 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	auto& embedVec = item.m_embedData;
 	size_t sz = embedVec.size();
 
+	if (!GetLocalSettings()->ShowEmbedContent())
+		sz = 0;
+
 	embedRect.right = msgRect.right - ScaleByDPI(10);
 	embedRect.top = embedRect.bottom;
 
@@ -2745,8 +2758,12 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			case ContentType::JPEG:
 			case ContentType::WEBP:
 			{
-				DrawImageAttachment(hdc, paintRect, attachItem, attachRect);
-				break;
+				if (GetLocalSettings()->ShowAttachmentImages())
+				{
+					DrawImageAttachment(hdc, paintRect, attachItem, attachRect);
+					break;
+				}
+				// FALLTHROUGH
 			}
 			default:
 			{
@@ -4079,11 +4096,14 @@ void MessageList::AdjustHeightInfo(const MessageItem& msg, int& height, int& tex
 
 	// also figure out embed size
 	embedheight = 0;
-	for (auto& emb : msg.m_embedData)
+	if (GetLocalSettings()->ShowEmbedContent())
 	{
-		int inc = emb.m_size.cy + ScaleByDPI(5);
-		height += inc;
-		embedheight += inc;
+		for (auto& emb : msg.m_embedData)
+		{
+			int inc = emb.m_size.cy + ScaleByDPI(5);
+			height += inc;
+			embedheight += inc;
+		}
 	}
 
 	// also figure out attachment size
@@ -4092,7 +4112,7 @@ void MessageList::AdjustHeightInfo(const MessageItem& msg, int& height, int& tex
 	{
 		// XXX improve?
 		int inc = 0;
-		if (att.m_contentType == ContentType::BLOB)
+		if (!GetLocalSettings()->ShowAttachmentImages() || !att.IsImage())
 			inc = ATTACHMENT_HEIGHT + ATTACHMENT_GAP;
 		else
 			inc = att.m_previewHeight + ATTACHMENT_GAP;
@@ -4370,8 +4390,11 @@ void MessageList::DetermineMessageMeasurements(MessageItem& mi, HDC _hdc, LPRECT
 	);
 	
 	const bool isCompact = IsCompact();
-	for (auto& embed : mi.m_embedData)
-		embed.Measure(hdc, rect, isCompact);
+
+	if (GetLocalSettings()->ShowEmbedContent()) {
+		for (auto& embed : mi.m_embedData)
+			embed.Measure(hdc, rect, isCompact);
+	}
 
 	AdjustHeightInfo(mi, mi.m_height, mi.m_textHeight, mi.m_authHeight, mi.m_replyHeight, mi.m_attachHeight, mi.m_embedHeight);
 

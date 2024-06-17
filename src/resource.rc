@@ -667,12 +667,12 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,12,18,236,18
     GROUPBOX        "Display Images",IDC_STATIC,6,43,248,41
     CONTROL         "When uploaded directly to Discord",IDC_IMAGES_WHEN_UPLOADED,
-                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,55,236,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,55,236,10
     CONTROL         "When posted as links in chat",IDC_IMAGES_WHEN_EMBEDDED,
-                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,68,236,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,68,236,10
     GROUPBOX        "Embed Settings",IDC_STATIC,6,90,248,27
     CONTROL         "Show embeds and preview links in chat",IDC_SHOW_EMBEDS,
-                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,101,236,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,101,236,10
 END
 
 IDD_DIALOG_WINDOWSETTINGS DIALOGEX 0, 0, 260, 242

@@ -47,7 +47,7 @@ public:
 		return m_previewWidth != m_width || m_previewHeight != m_height;
 	}
 
-	bool IsImage()
+	bool IsImage() const
 	{
 		return
 			m_contentType == ContentType::PNG ||

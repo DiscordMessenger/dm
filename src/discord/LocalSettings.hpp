@@ -151,6 +151,24 @@ public:
 	void SetCompactMemberList(bool b) {
 		m_bCompactMemberList = b;
 	}
+	bool ShowAttachmentImages() const {
+		return m_bShowAttachmentImages;
+	}
+	bool ShowEmbedImages() const {
+		return m_bShowEmbedImages;
+	}
+	bool ShowEmbedContent() const {
+		return m_bShowEmbedContent;
+	}
+	void SetShowAttachmentImages(bool b) {
+		m_bShowAttachmentImages = b;
+	}
+	void SetShowEmbedImages(bool b) {
+		m_bShowEmbedImages = b;
+	}
+	void SetShowEmbedContent(bool b) {
+		m_bShowEmbedContent = b;
+	}
 
 private:
 	std::string m_token;
@@ -171,6 +189,9 @@ private:
 	bool m_bShowScrollBarOnGuildList = false;
 	bool m_bCompactMemberList = false;
 	bool m_bAddExtraHeaders = true;
+	bool m_bShowAttachmentImages = true;
+	bool m_bShowEmbedImages = true;
+	bool m_bShowEmbedContent = true;
 	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
 	int m_height = 700;
