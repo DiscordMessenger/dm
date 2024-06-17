@@ -131,6 +131,9 @@
 #define IDD_DIALOG_UPLOADING            413
 #define IDD_DIALOG_GUILD_CHOOSER        414
 #define IDD_DIALOG_NOTIFICATIONS        415
+#define IDD_DIALOG_NOTIFSETTINGS        416
+#define IDD_DIALOG_CHATSETTINGS         417
+#define IDD_DIALOG_WINDOWSETTINGS       418
 #define IDR_MAINMENU                    501
 #define IDR_MESSAGE_CONTEXT             502
 #define IDR_GUILD_CONTEXT               503
@@ -300,6 +303,9 @@
 #define IDS_WELCOME_TO_START_DM_1       762
 #define IDS_WELCOME_TO_START_DM_2       763
 #define IDS_WELCOME_TO_START_GROUP      764
+#define IDS_NOTIFICATIONS               765
+#define IDS_CHAT                        766
+#define IDS_WINDOW                      767
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803
@@ -392,6 +398,16 @@
 #define IDC_NOTIFICATION_HINT           891
 #define IDC_TOGGLE_XSUPERPROPS          892
 #define IDC_NOTIFS_MARK_AS_READ         893
+#define IDC_IMAGES_WHEN_UPLOADED        894
+#define IDC_IMAGES_WHEN_EMBEDDED        895
+#define IDC_SHOW_EMBEDS                 896
+#define IDC_ENABLE_BALLOON_NOTIFS       898
+#define IDC_FLASH_TASKBAR               899
+#define IDC_USE_DISCORD_SOUND           900
+#define IDC_MUTE_NOTIFICATIONS          901
+#define IDC_OPEN_ON_STARTUP             902
+#define IDC_START_MINIMIZED             903
+#define IDC_MINIMIZE_TO_NOTIF           904
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
 #define ID_FILE_EXIT                    1003
@@ -470,7 +486,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        101
 #define _APS_NEXT_COMMAND_VALUE         1069
-#define _APS_NEXT_CONTROL_VALUE         894
+#define _APS_NEXT_CONTROL_VALUE         904
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif
 #endif

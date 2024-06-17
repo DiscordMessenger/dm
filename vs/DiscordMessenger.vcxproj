@@ -48,6 +48,7 @@
     <ProjectGuid>{3249eac3-35d9-4646-ace2-e2bd3b7f4812}</ProjectGuid>
     <RootNamespace>DiscordMessenger</RootNamespace>
     <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
+    <ProjectName>IDD_DIALOG_NOTIFSETTINGS [English (United States)]</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

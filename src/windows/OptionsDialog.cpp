@@ -22,14 +22,18 @@ const int g_indexToUserInterfaceScale[] = {
 	1500,
 };
 
-#define C_PAGES (3)
-
 enum ePage
 {
 	PG_ACCOUNT_AND_PRIVACY,
 	PG_APPEARANCE,
+	PG_NOTIFICATIONS,
+	PG_CHAT,
+	PG_WINDOW,
 	PG_CONNECTION,
+	PG_PAGE_COUNT
 };
+
+#define C_PAGES (int(PG_PAGE_COUNT))
 
 #pragma pack(push, 1)
 typedef struct
@@ -161,8 +165,6 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 				GetSettingsManager()->GetMessageCompact() ? IDC_APPEARANCE_COMPACT : IDC_APPEARANCE_COZY
 			);
 
-			CheckDlgButton(hwndDlg, IDC_SAVE_WINDOW_SIZE, GetLocalSettings()->GetSaveWindowSize() ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_START_MAXIMIZED, GetLocalSettings()->GetStartMaximized() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_DISABLE_FORMATTING, GetLocalSettings()->DisableFormatting() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_COMPACT_MEMBER_LIST, GetLocalSettings()->GetCompactMemberList() ? BST_CHECKED : BST_UNCHECKED);
 
@@ -222,6 +224,12 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 			EnableWindow(GetDlgItem(hwndDlg, IDC_ACTIVE_IMAGE_BROWSE), isWatermarkStyle);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_COMBO_ALIGNMENT),     isWatermarkStyle);
 
+			break;
+		}
+		case PG_WINDOW:
+		{
+			CheckDlgButton(hwndDlg, IDC_SAVE_WINDOW_SIZE, GetLocalSettings()->GetSaveWindowSize() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_START_MAXIMIZED,  GetLocalSettings()->GetStartMaximized() ? BST_CHECKED : BST_UNCHECKED);
 			break;
 		}
 		case PG_CONNECTION:
@@ -416,14 +424,28 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 							GetSettingsManager()->FlushSettings();
 							SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
 							break;
-						case IDC_DISABLE_FORMATTING:
-							GetLocalSettings()->SetDisableFormatting(IsDlgButtonChecked(hWnd, IDC_DISABLE_FORMATTING));
-							SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
-							break;
 						case IDC_COMPACT_MEMBER_LIST:
 							GetLocalSettings()->SetCompactMemberList(IsDlgButtonChecked(hWnd, IDC_COMPACT_MEMBER_LIST));
 							SendMessage(g_Hwnd, WM_RECREATEMEMBERLIST, 0, 0);
 							break;
+					}
+					break;
+				}
+				case PG_CHAT:
+				{
+					switch (LOWORD(wParam))
+					{
+						case IDC_DISABLE_FORMATTING:
+							GetLocalSettings()->SetDisableFormatting(IsDlgButtonChecked(hWnd, IDC_DISABLE_FORMATTING));
+							SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+							break;
+					}
+					break;
+				}
+				case PG_WINDOW:
+				{
+					switch (LOWORD(wParam))
+					{
 						case IDC_SAVE_WINDOW_SIZE:
 							GetLocalSettings()->SetSaveWindowSize(IsDlgButtonChecked(hWnd, IDC_SAVE_WINDOW_SIZE));
 							break;
@@ -578,11 +600,17 @@ HRESULT OnPreferenceDialogInit(HWND hWnd)
 
 	AddTab(hwndTab, tie, PG_ACCOUNT_AND_PRIVACY, (LPTSTR)TmGetTString(IDS_ACCOUNT_PRIVACY));
 	AddTab(hwndTab, tie, PG_APPEARANCE,          (LPTSTR)TmGetTString(IDS_APPEARANCE));
+	AddTab(hwndTab, tie, PG_NOTIFICATIONS,       (LPTSTR)TmGetTString(IDS_NOTIFICATIONS));
+	AddTab(hwndTab, tie, PG_CHAT,                (LPTSTR)TmGetTString(IDS_CHAT));
+	AddTab(hwndTab, tie, PG_WINDOW,              (LPTSTR)TmGetTString(IDS_WINDOW));
 	AddTab(hwndTab, tie, PG_CONNECTION,          (LPTSTR)TmGetTString(IDS_CONNECTION));
 
-	// Lock the resources for the three child dialog boxes.
+	// Lock the resources for the child dialog boxes.
 	pHeader->apRes[PG_ACCOUNT_AND_PRIVACY] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_MY_ACCOUNT));
 	pHeader->apRes[     PG_APPEARANCE    ] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_APPEARANCE));
+	pHeader->apRes[    PG_NOTIFICATIONS  ] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_NOTIFSETTINGS));
+	pHeader->apRes[        PG_CHAT       ] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_CHATSETTINGS));
+	pHeader->apRes[       PG_WINDOW      ] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_WINDOWSETTINGS));
 	pHeader->apRes[     PG_CONNECTION    ] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_CONNECTION));
 
 	RECT rcTab;

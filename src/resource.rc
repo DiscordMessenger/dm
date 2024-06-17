@@ -450,29 +450,24 @@ IDD_DIALOG_APPEARANCE DIALOGEX 0, 0, 260, 242
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    GROUPBOX        "Message Display",IDC_MDISPLAY_BOX,6,7,248,58
+    GROUPBOX        "Message Display",IDC_MDISPLAY_BOX,6,7,248,38
     CONTROL         "Cozy: Modern, beautiful, and easy on your eyes.",IDC_APPEARANCE_COZY,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,18,236,10
     CONTROL         "Compact: Fit more messages on screen at one time. #IRC",IDC_APPEARANCE_COMPACT,
                     "Button",BS_AUTORADIOBUTTON,12,30,236,10
-    GROUPBOX        "Message List Style",IDC_MSTYLE_BOX,6,98,248,29
-    GROUPBOX        "Window Settings",IDC_STATIC,6,179,248,55
-    CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,191,236,10
-    CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,204,236,10
-    CONTROL         "Disable markdown formatting (suggested for RTL scripts such as Arabic or in case of performance issues)",IDC_DISABLE_FORMATTING,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,12,43,236,18
-    LTEXT           "Message theme:",IDC_STATIC,12,109,53,13,SS_CENTERIMAGE
-    PUSHBUTTON      "Change...",IDC_ACTIVE_IMAGE_BROWSE,198,140,50,14
-    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,53,140,135,14,ES_AUTOHSCROLL | ES_READONLY
-    LTEXT           "Image:",IDC_STATIC,12,140,41,14,SS_CENTERIMAGE
-    COMBOBOX        IDC_MESSAGE_STYLE,73,109,175,128,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Compact member list",IDC_COMPACT_MEMBER_LIST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,218,236,10
-    COMBOBOX        IDC_COMBO_ALIGNMENT,53,158,195,78,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Aligned to:",IDC_STATIC,12,158,41,12,SS_CENTERIMAGE
-    GROUPBOX        "Message List Watermark",IDC_STATIC,6,129,248,48
-    GROUPBOX        "User Interface Scale",IDC_STATIC,6,67,248,29
-    LTEXT           "Size of UI elements:",IDC_STATIC,12,78,68,12,SS_CENTERIMAGE
-    COMBOBOX        IDC_COMBO_GUI_SCALE,80,78,168,159,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Message List Style",IDC_MSTYLE_BOX,6,93,248,29
+    LTEXT           "Message theme:",IDC_STATIC,12,104,53,13,SS_CENTERIMAGE
+    PUSHBUTTON      "Change...",IDC_ACTIVE_IMAGE_BROWSE,198,135,50,14
+    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,53,135,135,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Image:",IDC_STATIC,12,135,41,14,SS_CENTERIMAGE
+    COMBOBOX        IDC_MESSAGE_STYLE,73,104,175,128,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Compact member list",IDC_COMPACT_MEMBER_LIST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,60,236,10
+    COMBOBOX        IDC_COMBO_ALIGNMENT,53,153,195,78,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Aligned to:",IDC_STATIC,12,153,41,12,SS_CENTERIMAGE
+    GROUPBOX        "Message List Watermark",IDC_STATIC,6,124,248,48
+    GROUPBOX        "User Interface",IDC_STATIC,6,48,248,42
+    LTEXT           "Size of UI elements:",IDC_STATIC,12,72,68,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_GUI_SCALE,80,72,168,159,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_DIALOG_PROFILE_POPOUT DIALOGEX 0, 0, 126, 134
@@ -648,6 +643,53 @@ BEGIN
     DEFPUSHBUTTON   "",IDC_NOTIFS_MARK_AS_READ,324,7,18,15,BS_ICON
 END
 
+IDD_DIALOG_NOTIFSETTINGS DIALOGEX 0, 0, 260, 242
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    GROUPBOX        "Balloon Notifications",IDC_STATIC,6,7,248,65
+    CONTROL         "Enable balloon notifications",IDC_ENABLE_BALLOON_NOTIFS,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,18,103,10
+    CONTROL         "Flash the window on the taskbar if a notification is received",IDC_FLASH_TASKBAR,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,31,205,10
+    CONTROL         "Play Discord notification sound when a notification is received",IDC_USE_DISCORD_SOUND,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,57,212,10
+    CONTROL         "Don't play sound when a notification is received",IDC_MUTE_NOTIFICATIONS,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,44,242,10
+END
+
+IDD_DIALOG_CHATSETTINGS DIALOGEX 0, 0, 260, 242
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    GROUPBOX        "Message Options",IDC_STATIC,6,7,248,33
+    CONTROL         "Disable markdown formatting (suggested for RTL scripts such as Arabic or in case of performance issues)",IDC_DISABLE_FORMATTING,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,12,18,236,18
+    GROUPBOX        "Display Images",IDC_STATIC,6,43,248,41
+    CONTROL         "When uploaded directly to Discord",IDC_IMAGES_WHEN_UPLOADED,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,55,236,10
+    CONTROL         "When posted as links in chat",IDC_IMAGES_WHEN_EMBEDDED,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,68,236,10
+    GROUPBOX        "Embed Settings",IDC_STATIC,6,90,248,27
+    CONTROL         "Show embeds and preview links in chat",IDC_SHOW_EMBEDS,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,101,236,10
+END
+
+IDD_DIALOG_WINDOWSETTINGS DIALOGEX 0, 0, 260, 242
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    GROUPBOX        "Window Settings",IDC_STATIC,6,7,248,81
+    CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,18,236,10
+    CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,32,236,10
+    CONTROL         "Open Discord Messenger when your computer starts",IDC_OPEN_ON_STARTUP,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,46,242,10
+    CONTROL         "Open minimized to notification area",IDC_START_MINIMIZED,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,32,60,222,10
+    CONTROL         "Minimize to notification area when clicking the close button",IDC_MINIMIZE_TO_NOTIF,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,74,242,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -775,6 +817,39 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 232
     END
+
+    IDD_DIALOG_NOTIFSETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 254
+        VERTGUIDE, 12
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 234
+    END
+
+    IDD_DIALOG_CHATSETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 254
+        VERTGUIDE, 12
+        VERTGUIDE, 248
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 234
+    END
+
+    IDD_DIALOG_WINDOWSETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 254
+        VERTGUIDE, 12
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 234
+        HORZGUIDE, 18
+        HORZGUIDE, 32
+        HORZGUIDE, 46
+        HORZGUIDE, 60
+        HORZGUIDE, 74
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -874,6 +949,21 @@ BEGIN
     0, 0, 100, 100,
     0, 0, 0, 0,
     0, 0, 0, 0
+END
+
+IDD_DIALOG_NOTIFSETTINGS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_CHATSETTINGS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_WINDOWSETTINGS AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 
@@ -1220,6 +1310,9 @@ BEGIN
                             "This is the beginning of your direct message history with "
     IDS_WELCOME_TO_START_DM_2 "."
     IDS_WELCOME_TO_START_GROUP " group."
+    IDS_NOTIFICATIONS       "Notifications"
+    IDS_CHAT                "Chat"
+    IDS_WINDOW              "Window"
 END
 
 #endif    // English (United States) resources
