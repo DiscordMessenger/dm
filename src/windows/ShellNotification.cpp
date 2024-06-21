@@ -1,5 +1,6 @@
 #include "ShellNotification.hpp"
 #include "Main.hpp"
+#include "../discord/LocalSettings.hpp"
 
 constexpr int NOTIFICATION_ID = 1000;
 
@@ -51,6 +52,9 @@ void ShellNotification::Deinitialize()
 
 void ShellNotification::ShowBalloon(const std::string& titleString, const std::string& contents)
 {
+	if (!GetLocalSettings()->EnableNotifications())
+		return;
+
 	// If user is in 'Do Not Disturb' mode, no taskbar notification should be fired.
 	// However, other methods of checking notifications will still work, such as the menu.
 	Profile* pf = GetDiscordInstance()->GetProfile();
@@ -58,6 +62,11 @@ void ShellNotification::ShowBalloon(const std::string& titleString, const std::s
 	{
 		if (pf->m_activeStatus == STATUS_DND)
 			return;
+	}
+
+	if (GetLocalSettings()->FlashOnNotification() && IsIconic(g_Hwnd))
+	{
+		FlashWindow(g_Hwnd, FALSE);
 	}
 
 	NOTIFYICONDATA d;

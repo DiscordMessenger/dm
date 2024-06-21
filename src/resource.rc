@@ -649,13 +649,13 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     GROUPBOX        "Balloon Notifications",IDC_STATIC,6,7,248,65
     CONTROL         "Enable balloon notifications",IDC_ENABLE_BALLOON_NOTIFS,
-                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,18,103,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,18,235,10
     CONTROL         "Flash the window on the taskbar if a notification is received",IDC_FLASH_TASKBAR,
-                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,31,205,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,31,235,10
     CONTROL         "Play Discord notification sound when a notification is received",IDC_USE_DISCORD_SOUND,
-                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,57,212,10
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,57,235,10
     CONTROL         "Don't play sound when a notification is received",IDC_MUTE_NOTIFICATIONS,
-                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,44,242,10
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,44,235,10
 END
 
 IDD_DIALOG_CHATSETTINGS DIALOGEX 0, 0, 260, 242
@@ -823,6 +823,7 @@ BEGIN
         LEFTMARGIN, 6
         RIGHTMARGIN, 254
         VERTGUIDE, 12
+        VERTGUIDE, 247
         TOPMARGIN, 7
         BOTTOMMARGIN, 234
     END

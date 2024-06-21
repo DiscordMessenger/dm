@@ -101,6 +101,12 @@ bool LocalSettings::Load()
 	if (j.contains("ShowEmbedContent"))
 		m_bShowEmbedContent = j["ShowEmbedContent"];
 
+	if (j.contains("EnableNotifications"))
+		m_bEnableNotifications = j["EnableNotifications"];
+
+	if (j.contains("FlashOnNotification"))
+		m_bFlashOnNotification = j["FlashOnNotification"];
+
 	if (m_bSaveWindowSize)
 	{
 		if (j.contains("WindowWidth"))
@@ -160,6 +166,8 @@ bool LocalSettings::Save()
 	j["ShowAttachmentImages"] = m_bShowAttachmentImages;
 	j["ShowEmbedImages"] = m_bShowEmbedImages;
 	j["ShowEmbedContent"] = m_bShowEmbedContent;
+	j["EnableNotifications"] = m_bEnableNotifications;
+	j["FlashOnNotification"] = m_bFlashOnNotification;
 	
 	if (m_bSaveWindowSize) {
 		j["WindowWidth"] = m_width;

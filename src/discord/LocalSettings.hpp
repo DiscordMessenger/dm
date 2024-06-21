@@ -169,6 +169,18 @@ public:
 	void SetShowEmbedContent(bool b) {
 		m_bShowEmbedContent = b;
 	}
+	bool EnableNotifications() const {
+		return m_bEnableNotifications;
+	}
+	bool FlashOnNotification() const {
+		return m_bFlashOnNotification;
+	}
+	void SetEnableNotifications(bool b) {
+		m_bEnableNotifications = b;
+	}
+	void SetFlashOnNotification(bool b) {
+		m_bFlashOnNotification = b;
+	}
 
 private:
 	std::string m_token;
@@ -192,6 +204,8 @@ private:
 	bool m_bShowAttachmentImages = true;
 	bool m_bShowEmbedImages = true;
 	bool m_bShowEmbedContent = true;
+	bool m_bEnableNotifications = true;
+	bool m_bFlashOnNotification = true;
 	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
 	int m_height = 700;

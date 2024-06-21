@@ -1,5 +1,6 @@
 #include "Config.hpp"
 #include "OptionsDialog.hpp"
+#include "ShellNotification.hpp"
 #include "../discord/LocalSettings.hpp"
 
 #ifdef NEW_WINDOWS
@@ -226,6 +227,12 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 
 			break;
 		}
+		case PG_NOTIFICATIONS:
+		{
+			CheckDlgButton(hwndDlg, IDC_ENABLE_BALLOON_NOTIFS, GetLocalSettings()->EnableNotifications() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_FLASH_TASKBAR,         GetLocalSettings()->FlashOnNotification() ? BST_CHECKED : BST_UNCHECKED);
+			break;
+		}
 		case PG_CHAT:
 		{
 			CheckDlgButton(hwndDlg, IDC_IMAGES_WHEN_UPLOADED, GetLocalSettings()->ShowAttachmentImages() ? BST_CHECKED : BST_UNCHECKED);
@@ -434,6 +441,19 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 						case IDC_COMPACT_MEMBER_LIST:
 							GetLocalSettings()->SetCompactMemberList(IsDlgButtonChecked(hWnd, IDC_COMPACT_MEMBER_LIST));
 							SendMessage(g_Hwnd, WM_RECREATEMEMBERLIST, 0, 0);
+							break;
+					}
+					break;
+				}
+				case PG_NOTIFICATIONS:
+				{
+					switch (LOWORD(wParam))
+					{
+						case IDC_ENABLE_BALLOON_NOTIFS:
+							GetLocalSettings()->SetEnableNotifications(IsDlgButtonChecked(hWnd, IDC_ENABLE_BALLOON_NOTIFS));
+							break;
+						case IDC_FLASH_TASKBAR:
+							GetLocalSettings()->SetFlashOnNotification(IsDlgButtonChecked(hWnd, IDC_FLASH_TASKBAR));
 							break;
 					}
 					break;
