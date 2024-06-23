@@ -98,6 +98,29 @@ typedef struct tagLVGROUP
 #endif
 } LVGROUP, *PLVGROUP;
 
+#ifndef NIF_REALTIME
+#define NIF_REALTIME 0x40
+#endif
+#ifndef NIF_SHOWTIP
+#define NIF_SHOWTIP  0x80
+#endif
+#ifndef NIIF_USER
+#define NIIF_USER 0x4
+#endif
+
+#ifndef NIN_BALLOONSHOW
+#define NIN_BALLOONSHOW (WM_USER + 2)
+#endif
+#ifndef NIN_BALLOONHIDE
+#define NIN_BALLOONHIDE (WM_USER + 3)
+#endif
+#ifndef NIN_BALLOONTIMEOUT
+#define NIN_BALLOONTIMEOUT (WM_USER + 4)
+#endif
+#ifndef NIN_BALLOONUSERCLICK
+#define NIN_BALLOONUSERCLICK (WM_USER + 5)
+#endif
+
 #endif // WINVER >= 0x0500
 
 #endif // MINGW_SPECIFIC_HACKS

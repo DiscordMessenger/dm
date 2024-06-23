@@ -10,7 +10,7 @@ USER_DEFINES  =
 
 # WINVER definitions
 WINVER  ?= 0x0501
-WIN32IE ?= 0x0400
+WIN32IE ?= 0x0500
 
 # == Don't change below unless you know what you are doing! ==
 BUILD_DIR = build
