@@ -29,6 +29,7 @@
 #include "../discord/WebsocketClient.hpp"
 #include "../discord/UpdateChecker.hpp"
 
+#include <tlhelp32.h>
 #include <system_error>
 
 // proportions:
@@ -1436,6 +1437,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetShellNotification()->Callback(wParam, lParam);
 			break;
 		}
+		case SW_RESTORE:
+			GetFrontend()->RestoreWindow();
+			break;
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -1569,8 +1573,61 @@ HTTPClient* GetHTTPClient()
 	return g_pHTTPClient;
 }
 
+//https://stackoverflow.com/a/48207646
+static void GetAllWindowsFromProcessID(const DWORD dwProcessID, std::vector <HWND>& vhWnds)
+{
+	HWND hCurWnd = NULL;
+	do
+	{
+		hCurWnd = FindWindowEx(NULL, hCurWnd, NULL, NULL);
+		DWORD dwProcID = 0;
+		GetWindowThreadProcessId(hCurWnd, &dwProcID);
+		if (dwProcID == dwProcessID)
+		{
+			vhWnds.push_back(hCurWnd);
+		}
+	} while (hCurWnd != NULL);
+}
+
+static bool CheckExistingProcesses()
+{
+	TCHAR fileNameRaw[MAX_PATH];
+	GetModuleFileName(NULL, fileNameRaw, MAX_PATH);
+	TCHAR* fileName = PathFindFileName(fileNameRaw);
+
+	PROCESSENTRY32 processEntry32;
+	processEntry32.dwSize = sizeof(PROCESSENTRY32);
+
+	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	const DWORD selfPid = GetCurrentProcessId();
+
+	if (Process32First(snapshot, &processEntry32))
+	{
+		while (Process32Next(snapshot, &processEntry32))
+		{
+			if (!_tcscmp(processEntry32.szExeFile, fileName) && processEntry32.th32ProcessID != selfPid)
+			{
+				std::vector<HWND> windows;
+				GetAllWindowsFromProcessID(processEntry32.th32ProcessID, windows);
+
+				for (HWND window : windows) {
+					SendMessage(window, SW_RESTORE, 0, 0);
+				}
+
+				return true;
+			}
+		}
+	}
+
+	CloseHandle(snapshot);
+	return false;
+}
+
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nShowCmd)
 {
+	if (CheckExistingProcesses())
+		return 0;
+
 	g_hInstance = hInstance;
 	ri::InitReimplementation();
 
