@@ -248,6 +248,7 @@ void ShellNotification::Callback(WPARAM wParam, LPARAM lParam)
 		case WM_LBUTTONUP:
 			GetFrontend()->RestoreWindow();
 			break;
+
 		case WM_RBUTTONUP:
 		{
 			POINT pt;

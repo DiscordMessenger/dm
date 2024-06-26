@@ -494,6 +494,7 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 							break;
 						case IDC_MINIMIZE_TO_NOTIF:
 							GetLocalSettings()->SetMinimizeToNotif(IsDlgButtonChecked(hWnd, IDC_MINIMIZE_TO_NOTIF));
+							break;
 					}
 					break;
 				}
