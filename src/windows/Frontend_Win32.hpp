@@ -59,6 +59,8 @@ public:
 	void RegisterAttachment(Snowflake sf, const std::string& avatarlnk) override;
 	void RegisterChannelIcon(Snowflake sf, const std::string& avatarlnk) override;
 	void RequestQuit() override;
+	void MinimizeWindow() override;
+	void RestoreWindow() override;
 	bool IsWindowMinimized() override;
 	std::string GetDirectMessagesText() override;
 	std::string GetPleaseWaitText() override;

@@ -687,7 +687,7 @@ BEGIN
     CONTROL         "Open minimized to notification area",IDC_START_MINIMIZED,
                     "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,32,60,222,10
     CONTROL         "Minimize to notification area when clicking the close button",IDC_MINIMIZE_TO_NOTIF,
-                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,74,242,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,74,242,10
 END
 
 

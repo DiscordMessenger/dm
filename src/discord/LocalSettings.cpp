@@ -135,6 +135,8 @@ bool LocalSettings::Load()
 	if (j.contains("AddExtraHeaders"))
 		m_bAddExtraHeaders = j["AddExtraHeaders"];
 	
+	if (j.contains("MinimizeToNotif"))
+		m_bMinimizeToNotif = j["MinimizeToNotif"];
 	return true;
 }
 
@@ -168,6 +170,7 @@ bool LocalSettings::Save()
 	j["ShowEmbedContent"] = m_bShowEmbedContent;
 	j["EnableNotifications"] = m_bEnableNotifications;
 	j["FlashOnNotification"] = m_bFlashOnNotification;
+	j["MinimizeToNotif"] = m_bMinimizeToNotif;
 	
 	if (m_bSaveWindowSize) {
 		j["WindowWidth"] = m_width;

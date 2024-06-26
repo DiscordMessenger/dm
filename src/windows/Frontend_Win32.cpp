@@ -399,6 +399,16 @@ void Frontend_Win32::RequestQuit()
 	::WantQuit();
 }
 
+void Frontend_Win32::MinimizeWindow()
+{
+	ShowWindow(g_Hwnd, SW_HIDE);
+}
+
+void Frontend_Win32::RestoreWindow()
+{
+	ShowWindow(g_Hwnd, SW_RESTORE);
+}
+
 bool Frontend_Win32::IsWindowMinimized()
 {
 	return IsIconic(g_Hwnd);

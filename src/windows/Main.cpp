@@ -1121,6 +1121,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			ProfilePopout::Dismiss();
 			AutoComplete::DismissAutoCompleteWindowsIfNeeded(hWnd);
 			g_pLoadingMessage->Hide();
+
+			if (GetLocalSettings()->GetMinimizeToNotif())
+			{
+				GetFrontend()->MinimizeWindow();
+				return 1;
+			}
 			break;
 
 		case WM_SIZE: {

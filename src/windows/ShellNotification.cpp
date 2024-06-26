@@ -195,6 +195,24 @@ void ShellNotification::OnNotification()
 	m_bAnyNotificationsSinceLastTime = false;
 }
 
+void ShellNotification::ShowContextMenu()
+{
+	POINT cursor;
+	GetCursorPos(&cursor);
+
+	const HMENU popupMenu = CreatePopupMenu();
+	InsertMenu(popupMenu, 0, MF_BYPOSITION | MF_STRING, WM_DESTROY, L"Exit");
+
+	SetForegroundWindow(g_Hwnd);
+	const int command = TrackPopupMenu(popupMenu, TPM_LEFTBUTTON | TPM_RETURNCMD, cursor.x, cursor.y, 0, g_Hwnd, NULL);
+	PostMessage(g_Hwnd, WM_NULL, 0, 0);
+
+	if (command == WM_DESTROY)
+	{
+		PostMessage(g_Hwnd, WM_DESTROY, 0, 0);
+	}
+}
+
 void ShellNotification::Callback(WPARAM wParam, LPARAM lParam)
 {
 	switch (LOWORD(lParam))
@@ -228,6 +246,8 @@ void ShellNotification::Callback(WPARAM wParam, LPARAM lParam)
 		}
 
 		case WM_LBUTTONUP:
+			GetFrontend()->RestoreWindow();
+			break;
 		case WM_RBUTTONUP:
 		{
 			POINT pt;
@@ -236,7 +256,7 @@ void ShellNotification::Callback(WPARAM wParam, LPARAM lParam)
 				break;
 			}
 
-			//ShowPopupMenu(pt, LOWORD(wParam) == WM_RBUTTONUP);
+			ShowContextMenu();
 			break;
 		}
 	}
