@@ -15,8 +15,7 @@ HRESULT InstanceMutex::Init()
 	return 0;
 #else
 
-	SetLastError(NO_ERROR);
-	m_handle = CreateMutex(NULL, TRUE, L"DiscordMessenger");
+	m_handle = CreateMutex(NULL, TRUE, TEXT("DiscordMessenger"));
 
 	const DWORD error = GetLastError();
 	if (error == ERROR_ALREADY_EXISTS)

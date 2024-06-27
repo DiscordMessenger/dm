@@ -201,7 +201,7 @@ void ShellNotification::ShowContextMenu()
 	GetCursorPos(&cursor);
 
 	const HMENU popupMenu = CreatePopupMenu();
-	InsertMenu(popupMenu, 0, MF_BYPOSITION | MF_STRING, WM_DESTROY, L"Exit");
+	InsertMenu(popupMenu, 0, MF_BYPOSITION | MF_STRING, WM_DESTROY, TEXT("Exit"));
 
 	SetForegroundWindow(g_Hwnd);
 	const int command = TrackPopupMenu(popupMenu, TPM_LEFTBUTTON | TPM_RETURNCMD, cursor.x, cursor.y, 0, g_Hwnd, NULL);

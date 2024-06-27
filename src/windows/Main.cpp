@@ -1123,7 +1123,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			AutoComplete::DismissAutoCompleteWindowsIfNeeded(hWnd);
 			g_pLoadingMessage->Hide();
 
-			if (GetLocalSettings()->GetMinimizeToNotif())
+			if (GetLocalSettings()->GetStartMaximized())
 			{
 				GetFrontend()->MinimizeWindow();
 				return 1;
@@ -1580,21 +1580,21 @@ static bool ForceSingleInstance(LPCWSTR pClassName)
 	HRESULT hResult = g_instanceMutex.Init();
 
 	if (hResult != ERROR_ALREADY_EXISTS)
-		return false;
+		return true;
 
 	HWND hWnd = FindWindow(pClassName, NULL);
 	if (hWnd)
 	{
 		SendMessage(hWnd, WM_RESTORE, 0, 0);
 	}
-	return true;
+	return false;
 }
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nShowCmd)
 {
 	LPCWSTR pClassName = TEXT("DiscordMessengerClass");
 
-	if (ForceSingleInstance(pClassName))
+	if (!ForceSingleInstance(pClassName))
 		return 0;
 
 	g_hInstance = hInstance;
