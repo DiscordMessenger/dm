@@ -198,19 +198,14 @@ void ShellNotification::OnNotification()
 void ShellNotification::ShowContextMenu()
 {
 	POINT cursor;
-	GetCursorPos(&cursor);
-
-	const HMENU popupMenu = CreatePopupMenu();
-	InsertMenu(popupMenu, 0, MF_BYPOSITION | MF_STRING, WM_DESTROY, TEXT("Exit"));
-
-	SetForegroundWindow(g_Hwnd);
-	const int command = TrackPopupMenu(popupMenu, TPM_LEFTBUTTON | TPM_RETURNCMD, cursor.x, cursor.y, 0, g_Hwnd, NULL);
-	PostMessage(g_Hwnd, WM_NULL, 0, 0);
-
-	if (command == WM_DESTROY)
-	{
-		PostMessage(g_Hwnd, WM_DESTROY, 0, 0);
+	if (!GetCursorPos(&cursor)) {
+		DbgPrintW("Could not acquire cursor position.");
+		return;
 	}
+
+	const HMENU popupMenu = GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_NOTIFICATION_CONTEXT)), 0);
+	SetForegroundWindow(g_Hwnd);
+	TrackPopupMenu(popupMenu, TPM_LEFTBUTTON, cursor.x, cursor.y, 0, g_Hwnd, NULL);
 }
 
 void ShellNotification::Callback(WPARAM wParam, LPARAM lParam)
@@ -250,16 +245,8 @@ void ShellNotification::Callback(WPARAM wParam, LPARAM lParam)
 			break;
 
 		case WM_RBUTTONUP:
-		{
-			POINT pt;
-			if (!GetCursorPos(&pt)) {
-				DbgPrintW("Could not acquire cursor position.");
-				break;
-			}
-
 			ShowContextMenu();
 			break;
-		}
 	}
 
 

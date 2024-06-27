@@ -416,6 +416,14 @@ int OnSSLError(const std::string& url)
 	return MessageBox(g_Hwnd, buffer, TmGetTString(IDS_SSL_ERROR_TITLE), MB_ABORTRETRYIGNORE | MB_ICONWARNING);
 }
 
+void CloseCleanup(HWND hWnd)
+{
+	KillImageViewer();
+	ProfilePopout::Dismiss();
+	AutoComplete::DismissAutoCompleteWindowsIfNeeded(hWnd);
+	g_pLoadingMessage->Hide();
+}
+
 BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (LOWORD(wParam))
@@ -439,7 +447,7 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case ID_FILE_EXIT:
 		{
-			SendMessage(hWnd, WM_CLOSE, 0, 0);
+			SendMessage(hWnd, WM_CLOSEBYPASSTRAY, 0, 0);
 			return 0;
 		}
 		case ID_HELP_ABOUTDISCORDMESSENGER:
@@ -597,6 +605,12 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (!isClipboardClosed) CloseClipboard();
 			break;
 		}
+		case ID_NOTIFICATION_SHOW:
+			SendMessage(g_Hwnd, WM_RESTORE, 0, 0);
+			break;
+		case ID_NOTIFICATION_EXIT:
+			SendMessage(g_Hwnd, WM_CLOSEBYPASSTRAY, 0, 0);
+			break;
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -621,6 +635,39 @@ void TryConnectAgainIn(int time) {
 
 void ResetTryAgainInTime() {
 	g_tryAgainTimerElapse = 500;
+}
+
+const LPTSTR g_tStartupArg = TEXT(" --startup");
+const LPSTR  g_StartupArg  = "--startup";
+
+bool g_bFromStartup = false;
+
+void CheckIfItsStartup(const LPSTR pCmdLine)
+{
+	g_bFromStartup = StrStrA(pCmdLine, g_StartupArg);
+}
+
+void AddOrRemoveAppFromStartup()
+{
+	HKEY hkey = NULL;
+	RegCreateKey(HKEY_CURRENT_USER, TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Run"), &hkey);
+
+	LPCTSTR value = TmGetTString(IDS_PROGRAM_NAME);
+
+	if (GetLocalSettings()->GetOpenOnStartup())
+	{
+		TCHAR tPath[MAX_PATH];
+		const DWORD length = GetModuleFileName(NULL, tPath, MAX_PATH);
+		
+		const std::string sPath = "\"" + MakeStringFromTString(tPath) + "\"" + MakeStringFromTString(g_tStartupArg);
+		const LPTSTR finalPath = ConvertCppStringToTString(sPath);
+
+		RegSetValueEx(hkey, value, 0, REG_SZ, (BYTE *)finalPath, (wcslen(finalPath) + 1) * sizeof(TCHAR));
+	}
+	else
+	{
+		RegDeleteValue(hkey, value);
+	}
 }
 
 int g_agerCounter = 0;
@@ -1094,6 +1141,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				g_tryAgainTimer = 0;
 			}
 			g_pLoadingMessage->Hide();
+
+			if (g_bFromStartup && GetLocalSettings()->GetStartMinimized()) {
+				GetFrontend()->MinimizeWindow();
+			}
 			break;
 		case WM_CONNECTING: {
 			g_pLoadingMessage->Show();
@@ -1117,13 +1168,16 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 
-		case WM_CLOSE:
-			KillImageViewer();
-			ProfilePopout::Dismiss();
-			AutoComplete::DismissAutoCompleteWindowsIfNeeded(hWnd);
-			g_pLoadingMessage->Hide();
+		case WM_CLOSEBYPASSTRAY:
+			AddOrRemoveAppFromStartup();
+			CloseCleanup(hWnd);
+			DestroyWindow(hWnd);
+			break;
 
-			if (GetLocalSettings()->GetStartMaximized())
+		case WM_CLOSE:
+			CloseCleanup(hWnd);
+
+			if (GetLocalSettings()->GetMinimizeToNotif())
 			{
 				GetFrontend()->MinimizeWindow();
 				return 1;
@@ -1596,6 +1650,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 	if (!ForceSingleInstance(pClassName))
 		return 0;
+
+	CheckIfItsStartup(pCmdLine);
 
 	g_hInstance = hInstance;
 	ri::InitReimplementation();

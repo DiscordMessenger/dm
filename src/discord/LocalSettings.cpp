@@ -71,6 +71,15 @@ bool LocalSettings::Load()
 	if (j.contains("StartMaximized"))
 		m_bStartMaximized = j["StartMaximized"];
 
+	if (j.contains("OpenOnStartup"))
+		m_bOpenOnStartup = j["OpenOnStartup"];
+
+	if (j.contains("StartMinimized"))
+		m_bStartMinimized = j["StartMinimized"];
+
+	if (j.contains("MinimizeToNotif"))
+		m_bMinimizeToNotif = j["MinimizeToNotif"];
+
 	if (j.contains("EnableTLSVerification"))
 		m_bEnableTLSVerification = j["EnableTLSVerification"];
 
@@ -134,9 +143,6 @@ bool LocalSettings::Load()
 
 	if (j.contains("AddExtraHeaders"))
 		m_bAddExtraHeaders = j["AddExtraHeaders"];
-	
-	if (j.contains("MinimizeToNotif"))
-		m_bMinimizeToNotif = j["MinimizeToNotif"];
 	return true;
 }
 
@@ -155,6 +161,9 @@ bool LocalSettings::Save()
 	j["ReplyMentionDefault"] = m_bReplyMentionDefault;
 	j["StartMaximized"] = m_bStartMaximized;
 	j["SaveWindowSize"] = m_bSaveWindowSize;
+	j["OpenOnStartup"] = m_bOpenOnStartup;
+	j["StartMinimized"] = m_bStartMinimized;
+	j["MinimizeToNotif"] = m_bMinimizeToNotif;
 	j["CheckUpdates"] = m_bCheckUpdates;
 	j["EnableTLSVerification"] = m_bEnableTLSVerification;
 	j["DisableFormatting"] = m_bDisableFormatting;
@@ -170,7 +179,6 @@ bool LocalSettings::Save()
 	j["ShowEmbedContent"] = m_bShowEmbedContent;
 	j["EnableNotifications"] = m_bEnableNotifications;
 	j["FlashOnNotification"] = m_bFlashOnNotification;
-	j["MinimizeToNotif"] = m_bMinimizeToNotif;
 	
 	if (m_bSaveWindowSize) {
 		j["WindowWidth"] = m_width;
