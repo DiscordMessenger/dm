@@ -67,4 +67,5 @@ enum eWmUserMsgs
 	WM_RECREATEMEMBERLIST,
 
 	WM_UPDATETEXTSIZE = WM_APP, // used by the MessageEditor
+	WM_RESTORE,
 };
