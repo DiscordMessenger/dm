@@ -1143,7 +1143,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pLoadingMessage->Hide();
 
 			if (g_bFromStartup && GetLocalSettings()->GetStartMinimized()) {
-				GetFrontend()->MinimizeWindow();
+				GetFrontend()->HideWindow();
 			}
 			break;
 		case WM_CONNECTING: {
@@ -1179,7 +1179,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			if (GetLocalSettings()->GetMinimizeToNotif())
 			{
-				GetFrontend()->MinimizeWindow();
+				GetFrontend()->HideWindow();
 				return 1;
 			}
 			break;
@@ -1189,6 +1189,16 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			int height = HIWORD(lParam);
 			// Save the new size
 			GetLocalSettings()->SetWindowSize(UnscaleByDPI(width), UnscaleByDPI(height));
+
+			switch (wParam)
+			{
+				case SIZE_MAXIMIZED:
+					GetLocalSettings()->SetMaximized(true);
+					break;
+				case SIZE_RESTORED:
+					GetLocalSettings()->SetMaximized(false);
+					break;
+			}
 
 			ProfilePopout::Dismiss();
 			ProperlySizeControls(hWnd);
@@ -1492,7 +1502,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		case WM_RESTORE:
+			bool wasMaximized = GetLocalSettings()->GetMaximized();
+
 			GetFrontend()->RestoreWindow();
+
+			if (wasMaximized)
+				GetFrontend()->MaximizeWindow();
 			break;
 	}
 
@@ -1675,7 +1690,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	int wndWidth = 0, wndHeight = 0;
 	bool startMaximized = false;
 	GetLocalSettings()->GetWindowSize(wndWidth, wndHeight);
-	startMaximized = GetLocalSettings()->GetStartMaximized();
+	startMaximized = GetLocalSettings()->GetStartMaximized() || GetLocalSettings()->GetMaximized();
 
 	// Initialize the window class.
 	WNDCLASS& wc = g_MainWindowClass;

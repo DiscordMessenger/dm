@@ -92,6 +92,12 @@ public:
 	bool GetMinimizeToNotif() const {
 		return m_bMinimizeToNotif;
 	}
+	void SetMaximized(bool b) {
+		m_bMaximized = b;
+	}
+	bool GetMaximized() const {
+		return m_bMaximized;
+	}
 	bool IsFirstStart() const {
 		return m_bIsFirstStart;
 	}
@@ -214,6 +220,7 @@ private:
 	bool m_bOpenOnStartup = false;
 	bool m_bStartMinimized = false;
 	bool m_bMinimizeToNotif = true;
+	bool m_bMaximized = false;
 	bool m_bIsFirstStart = false;
 	bool m_bCheckUpdates = false;
 	bool m_bAskToCheckUpdates = true;
