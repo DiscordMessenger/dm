@@ -606,7 +606,7 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		case ID_NOTIFICATION_SHOW:
-			SendMessage(g_Hwnd, WM_RESTORE, 0, 0);
+			SendMessage(g_Hwnd, WM_RESTOREAPP, 0, 0);
 			break;
 		case ID_NOTIFICATION_EXIT:
 			SendMessage(g_Hwnd, WM_CLOSEBYPASSTRAY, 0, 0);
@@ -1189,16 +1189,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			int height = HIWORD(lParam);
 			// Save the new size
 			GetLocalSettings()->SetWindowSize(UnscaleByDPI(width), UnscaleByDPI(height));
-
-			switch (wParam)
-			{
-				case SIZE_MAXIMIZED:
-					GetLocalSettings()->SetMaximized(true);
-					break;
-				case SIZE_RESTORED:
-					GetLocalSettings()->SetMaximized(false);
-					break;
-			}
+			GetLocalSettings()->SetMaximized(wParam == SIZE_MAXIMIZED);
 
 			ProfilePopout::Dismiss();
 			ProperlySizeControls(hWnd);
@@ -1501,7 +1492,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetShellNotification()->Callback(wParam, lParam);
 			break;
 		}
-		case WM_RESTORE:
+		case WM_RESTOREAPP:
 			if (GetLocalSettings()->GetMaximized())
 				GetFrontend()->MaximizeWindow();
 			else
@@ -1652,7 +1643,7 @@ static bool ForceSingleInstance(LPCWSTR pClassName)
 	HWND hWnd = FindWindow(pClassName, NULL);
 	if (hWnd)
 	{
-		SendMessage(hWnd, WM_RESTORE, 0, 0);
+		SendMessage(hWnd, WM_RESTOREAPP, 0, 0);
 	}
 	return false;
 }

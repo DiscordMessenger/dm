@@ -241,7 +241,7 @@ void ShellNotification::Callback(WPARAM wParam, LPARAM lParam)
 		}
 
 		case WM_LBUTTONUP:
-			SendMessage(g_Hwnd, WM_RESTORE, 0, 0);
+			SendMessage(g_Hwnd, WM_RESTOREAPP, 0, 0);
 			break;
 
 		case WM_RBUTTONUP:

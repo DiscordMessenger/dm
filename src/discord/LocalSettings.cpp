@@ -80,8 +80,8 @@ bool LocalSettings::Load()
 	if (j.contains("MinimizeToNotif"))
 		m_bMinimizeToNotif = j["MinimizeToNotif"];
 
-	if (j.contains("m_bMaximized"))
-		m_bMinimizeToNotif = j["m_bMaximized"];
+	if (j.contains("Maximized"))
+		m_bMaximized = j["Maximized"];
 
 	if (j.contains("EnableTLSVerification"))
 		m_bEnableTLSVerification = j["EnableTLSVerification"];
@@ -167,7 +167,7 @@ bool LocalSettings::Save()
 	j["OpenOnStartup"] = m_bOpenOnStartup;
 	j["StartMinimized"] = m_bStartMinimized;
 	j["MinimizeToNotif"] = m_bMinimizeToNotif;
-	j["m_bMaximized"] = m_bMaximized;
+	j["Maximized"] = m_bMaximized;
 	j["CheckUpdates"] = m_bCheckUpdates;
 	j["EnableTLSVerification"] = m_bEnableTLSVerification;
 	j["DisableFormatting"] = m_bDisableFormatting;

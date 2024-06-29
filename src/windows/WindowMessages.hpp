@@ -68,5 +68,5 @@ enum eWmUserMsgs
 	WM_CLOSEBYPASSTRAY,
 
 	WM_UPDATETEXTSIZE = WM_APP, // used by the MessageEditor
-	WM_RESTORE,
+	WM_RESTOREAPP,
 };
