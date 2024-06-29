@@ -637,8 +637,8 @@ void ResetTryAgainInTime() {
 	g_tryAgainTimerElapse = 500;
 }
 
-const LPTSTR g_tStartupArg = TEXT(" --startup");
-const LPSTR  g_StartupArg  = "--startup";
+const TCHAR  g_tStartupArg[] = TEXT(" --startup");
+const CHAR   g_StartupArg[]  = "--startup";
 
 bool g_bFromStartup = false;
 
