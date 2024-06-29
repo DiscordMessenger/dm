@@ -1502,12 +1502,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		case WM_RESTORE:
-			bool wasMaximized = GetLocalSettings()->GetMaximized();
-
-			GetFrontend()->RestoreWindow();
-
-			if (wasMaximized)
+			if (GetLocalSettings()->GetMaximized())
 				GetFrontend()->MaximizeWindow();
+			else
+				GetFrontend()->RestoreWindow();
 			break;
 	}
 
