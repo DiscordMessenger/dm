@@ -242,8 +242,14 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 		}
 		case PG_WINDOW:
 		{
-			CheckDlgButton(hwndDlg, IDC_SAVE_WINDOW_SIZE, GetLocalSettings()->GetSaveWindowSize() ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_START_MAXIMIZED,  GetLocalSettings()->GetStartMaximized() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_SAVE_WINDOW_SIZE,  GetLocalSettings()->GetSaveWindowSize()  ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_START_MAXIMIZED,   GetLocalSettings()->GetStartMaximized()  ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_OPEN_ON_STARTUP,   GetLocalSettings()->GetOpenOnStartup()   ? BST_CHECKED : BST_UNCHECKED);
+			
+			CheckDlgButton(hwndDlg, IDC_START_MINIMIZED,   GetLocalSettings()->GetStartMinimized()  ? BST_CHECKED : BST_UNCHECKED);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_START_MINIMIZED), GetLocalSettings()->GetOpenOnStartup());
+
+			CheckDlgButton(hwndDlg, IDC_MINIMIZE_TO_NOTIF, GetLocalSettings()->GetMinimizeToNotif() ? BST_CHECKED : BST_UNCHECKED);
 			break;
 		}
 		case PG_CONNECTION:
@@ -490,6 +496,19 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 							break;
 						case IDC_START_MAXIMIZED:
 							GetLocalSettings()->SetStartMaximized(IsDlgButtonChecked(hWnd, IDC_START_MAXIMIZED));
+							break;
+						case IDC_OPEN_ON_STARTUP:
+						{
+							const bool checked = IsDlgButtonChecked(hWnd, IDC_OPEN_ON_STARTUP);
+							GetLocalSettings()->SetOpenOnStartup(checked);
+							EnableWindow(GetDlgItem(hWnd, IDC_START_MINIMIZED), checked);
+							break;
+						}
+						case IDC_START_MINIMIZED:
+							GetLocalSettings()->SetStartMinimized(IsDlgButtonChecked(hWnd, IDC_START_MINIMIZED));
+							break;
+						case IDC_MINIMIZE_TO_NOTIF:
+							GetLocalSettings()->SetMinimizeToNotif(IsDlgButtonChecked(hWnd, IDC_MINIMIZE_TO_NOTIF));
 							break;
 					}
 					break;

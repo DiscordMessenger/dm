@@ -22,6 +22,7 @@ private:
 	void ShowBalloon(const std::string& titleString, const std::string& contents);
 	void ShowBalloonForOneNotification(Notification* pNotif);
 	void ShowBalloonForNotifications(const std::vector<Notification*>& pNotifs);
+	void ShowContextMenu();
 
 private:
 	bool m_bInitialized = false;

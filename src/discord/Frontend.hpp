@@ -98,6 +98,10 @@ public:
 	virtual std::string GetFormatTimeShortText() = 0;
 	virtual std::string GetFormatTimeShorterText() = 0;
 
+	virtual void HideWindow() = 0;
+	virtual void RestoreWindow() = 0;
+	virtual void MaximizeWindow() = 0;
+
 	// Debugging
 #ifdef USE_DEBUG_PRINTS
 	virtual void DebugPrint(const char* fmt, va_list vl) = 0;

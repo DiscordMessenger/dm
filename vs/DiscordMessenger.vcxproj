@@ -504,6 +504,7 @@
     <ClInclude Include="..\src\windows\GuildLister.hpp" />
     <ClInclude Include="..\src\windows\ImageLoader.hpp" />
     <ClInclude Include="..\src\windows\ImageViewer.hpp" />
+    <ClInclude Include="..\src\windows\InstanceMutex.hpp" />
     <ClInclude Include="..\src\windows\LoadingMessage.hpp" />
     <ClInclude Include="..\src\windows\LogonDialog.hpp" />
     <ClInclude Include="..\src\windows\Main.hpp" />
@@ -568,6 +569,7 @@
     <ClCompile Include="..\src\windows\GuildLister.cpp" />
     <ClCompile Include="..\src\windows\ImageLoader.cpp" />
     <ClCompile Include="..\src\windows\ImageViewer.cpp" />
+    <ClCompile Include="..\src\windows\InstanceMutex.cpp" />
     <ClCompile Include="..\src\windows\LoadingMessage.cpp" />
     <ClCompile Include="..\src\windows\LogonDialog.cpp" />
     <ClCompile Include="..\src\windows\Main.cpp" />

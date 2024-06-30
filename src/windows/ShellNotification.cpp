@@ -195,6 +195,19 @@ void ShellNotification::OnNotification()
 	m_bAnyNotificationsSinceLastTime = false;
 }
 
+void ShellNotification::ShowContextMenu()
+{
+	POINT cursor;
+	if (!GetCursorPos(&cursor)) {
+		DbgPrintW("Could not acquire cursor position.");
+		return;
+	}
+
+	const HMENU popupMenu = GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_NOTIFICATION_CONTEXT)), 0);
+	SetForegroundWindow(g_Hwnd);
+	TrackPopupMenu(popupMenu, TPM_LEFTBUTTON, cursor.x, cursor.y, 0, g_Hwnd, NULL);
+}
+
 void ShellNotification::Callback(WPARAM wParam, LPARAM lParam)
 {
 	switch (LOWORD(lParam))
@@ -228,17 +241,12 @@ void ShellNotification::Callback(WPARAM wParam, LPARAM lParam)
 		}
 
 		case WM_LBUTTONUP:
-		case WM_RBUTTONUP:
-		{
-			POINT pt;
-			if (!GetCursorPos(&pt)) {
-				DbgPrintW("Could not acquire cursor position.");
-				break;
-			}
-
-			//ShowPopupMenu(pt, LOWORD(wParam) == WM_RBUTTONUP);
+			SendMessage(g_Hwnd, WM_RESTOREAPP, 0, 0);
 			break;
-		}
+
+		case WM_RBUTTONUP:
+			ShowContextMenu();
+			break;
 	}
 
 

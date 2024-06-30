@@ -98,6 +98,7 @@
 #define IDI_SCROLL                      98
 #define IDI_NOTIFICATION                99
 #define IDI_NOTIFICATION_2K             100
+#define IDR_NOTIFICATION_CONTEXT        101
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -475,6 +476,8 @@
 #define IDM_BLOCK                       1065
 #define IDM_COPYID                      1066
 #define ID_ACTIONS_QUICKSWITCHER        1067
+#define ID_NOTIFICATION_SHOW            1068
+#define ID_NOTIFICATION_EXIT            1069
 #define IDR_MAIN_ACCELS                 1201
 #define IDA_SEARCH                      1301
 #define IDA_QUICKSWITCHER               1302
@@ -484,8 +487,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        101
-#define _APS_NEXT_COMMAND_VALUE         1069
+#define _APS_NEXT_RESOURCE_VALUE        102
+#define _APS_NEXT_COMMAND_VALUE         1079
 #define _APS_NEXT_CONTROL_VALUE         904
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif
