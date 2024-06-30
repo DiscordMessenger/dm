@@ -659,7 +659,7 @@ void AddOrRemoveAppFromStartup()
 		TCHAR tPath[MAX_PATH];
 		const DWORD length = GetModuleFileName(NULL, tPath, MAX_PATH);
 		
-		const std::string sPath = "\"" + MakeStringFromTString(tPath) + "\"" + MakeStringFromTString(g_tStartupArg);
+		const std::string sPath = "\"" + MakeStringFromTString(tPath) + "\"" + std::string(g_StartupArg);
 		const LPTSTR finalPath = ConvertCppStringToTString(sPath);
 
 		RegSetValueEx(hkey, value, 0, REG_SZ, (BYTE *)finalPath, (wcslen(finalPath) + 1) * sizeof(TCHAR));
