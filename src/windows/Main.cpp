@@ -637,8 +637,7 @@ void ResetTryAgainInTime() {
 	g_tryAgainTimerElapse = 500;
 }
 
-const TCHAR  g_tStartupArg[] = TEXT(" --startup");
-const CHAR   g_StartupArg[]  = "--startup";
+const CHAR g_StartupArg[] = "/startup";
 
 bool g_bFromStartup = false;
 
@@ -659,7 +658,7 @@ void AddOrRemoveAppFromStartup()
 		TCHAR tPath[MAX_PATH];
 		const DWORD length = GetModuleFileName(NULL, tPath, MAX_PATH);
 		
-		const std::string sPath = "\"" + MakeStringFromTString(tPath) + "\"" + std::string(g_StartupArg);
+		const std::string sPath = "\"" + MakeStringFromTString(tPath) + "\" " + std::string(g_StartupArg);
 		const LPTSTR finalPath = ConvertCppStringToTString(sPath);
 
 		RegSetValueEx(hkey, value, 0, REG_SZ, (BYTE *)finalPath, (wcslen(finalPath) + 1) * sizeof(TCHAR));
@@ -791,7 +790,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pMessageList->UpdateAllowDrop();
 
 			UpdateMainWindowTitle(hWnd);
-			SetFocus(g_pMessageEditor->m_edit_hwnd);
+
+			if (IsWindowActive(g_Hwnd))
+				SetFocus(g_pMessageEditor->m_edit_hwnd);
 
 			if (!GetDiscordInstance()->GetCurrentChannel())
 			{
@@ -1147,7 +1148,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		case WM_CONNECTING: {
-			g_pLoadingMessage->Show();
+			if (!g_bFromStartup || !GetLocalSettings()->GetStartMinimized())
+				g_pLoadingMessage->Show();
 			break;
 		}
 		case WM_LOGINAGAIN:
@@ -1745,7 +1747,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 		TextToSpeech::Initialize();
 
 		// Run the message loop.
-		ShowWindow (g_Hwnd, startMaximized ? SW_SHOWMAXIMIZED : nShowCmd);
+
+		if (!g_bFromStartup || !GetLocalSettings()->GetStartMinimized())
+			ShowWindow (g_Hwnd, startMaximized ? SW_SHOWMAXIMIZED : nShowCmd);
 
 		while (GetMessage(&msg, NULL, 0, 0) > 0)
 		{

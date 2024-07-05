@@ -133,6 +133,11 @@ void WindowScrollXY(HWND hWnd, int diffLeftRight, int diffUpDown)
 	UpdateWindow(hWnd);
 }
 
+bool IsWindowActive(HWND hWnd)
+{
+	return IsWindowVisible(hWnd) && GetForegroundWindow() == hWnd;
+}
+
 bool FileExists(const std::string& path)
 {
 #ifdef OLD_WINDOWS

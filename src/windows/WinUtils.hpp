@@ -49,6 +49,7 @@ std::string GetStringFromHResult(HRESULT hr);
 LPTSTR GetTStringFromHResult(HRESULT hr);
 
 // Window utils
+bool IsWindowActive(HWND hWnd);
 void WindowScroll(HWND hWnd, int diffUpDown);
 void WindowScrollXY(HWND hWnd, int diffLeftRight, int diffUpDown);
 void DrawBitmap(HDC hdc, HBITMAP bitmap, int x, int y, LPRECT clip = NULL, COLORREF transparent = CLR_NONE, int scaleToWidth = 0, int scaleToHeight = 0, bool hasAlpha = false);

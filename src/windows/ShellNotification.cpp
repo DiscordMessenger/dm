@@ -237,6 +237,10 @@ void ShellNotification::Callback(WPARAM wParam, LPARAM lParam)
 		{
 			// TODO: Don't know how to know which one we clicked
 			DbgPrintW("Acknowledge Notification");
+
+			ShowWindow(g_Hwnd, SW_SHOW);
+			SetActiveWindow(g_Hwnd);
+
 			break;
 		}
 
