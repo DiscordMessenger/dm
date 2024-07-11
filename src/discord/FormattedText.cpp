@@ -710,7 +710,7 @@ void FormattedText::UseRegex(std::string& str)
 	// Not too expensive I hope!
 	if (flags & HAS_BSLASH)
 	{
-		for (size_t i = 0; i < str.size() - 1; i++) {
+		for (size_t i = 0; !str.empty() && i < str.size() - 1; i++) {
 			if (str[i] != '\\')
 				continue;
 			
@@ -733,7 +733,7 @@ void FormattedText::UseRegex(std::string& str)
 	}
 	if (flags & HAS_QUOTE)
 	{
-		for (size_t i = 0; i < str.size() - 2; i++) {
+		for (size_t i = 0; str.size() > 2 && i < str.size() - 2; i++) {
 
 			if ((i == 0 || str[i - 1] == '\n') && str[i] == '>' && str[i + 1] == ' ')
 				str[i] = CHAR_BEG_QUOTE, str[i + 1] = CHAR_NOOP;
@@ -741,7 +741,7 @@ void FormattedText::UseRegex(std::string& str)
 	}
 	if (flags & HAS_AT)
 	{
-		for (size_t i = 0; i < str.size() - 2; i++) {
+		for (size_t i = 0; str.size() > 2 && i < str.size() - 2; i++) {
 			if (str[i] != '@')
 				continue;
 
