@@ -99,6 +99,9 @@ public:
 
 		return time(NULL) >= m_remindUpdatesOn;
 	}
+	bool CheckUpdatesOption() const {
+		return m_bCheckUpdates;
+	}
 	bool AskToCheckUpdates() const {
 		return m_bAskToCheckUpdates;
 	}

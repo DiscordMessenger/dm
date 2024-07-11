@@ -255,7 +255,7 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 			SetDlgItemText(hwndDlg, IDC_EDIT_DISCORDCDN, tstrCDN);
 
 			CheckDlgButton(hwndDlg, IDC_ENABLE_TLS_CHECKS,  GetLocalSettings()->EnableTLSVerification() ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_CHECK_UPDATES,      GetLocalSettings()->CheckUpdates()          ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_CHECK_UPDATES,      GetLocalSettings()->CheckUpdatesOption()    ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_TOGGLE_XSUPERPROPS, GetLocalSettings()->AddExtraHeaders()       ? BST_CHECKED : BST_UNCHECKED);
 
 			free(tstrAPI);
