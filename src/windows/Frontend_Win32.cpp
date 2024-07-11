@@ -155,8 +155,10 @@ void Frontend_Win32::OnUpdateAvailable(const std::string& url, const std::string
 
 		DownloadFileDialog(g_Hwnd, url, url.substr(idxsave));
 	}
-
-	GetLocalSettings()->StopUpdateCheckTemporarily();
+	else
+	{
+		GetLocalSettings()->StopUpdateCheckTemporarily();
+	}
 }
 
 void Frontend_Win32::OnFailedToSendMessage(Snowflake channel, Snowflake message)

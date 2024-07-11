@@ -90,7 +90,7 @@ public:
 		m_discordCdn = str;
 	}
 	void SetCheckUpdates(bool b) {
-		m_bCheckUpdates = true;
+		m_bCheckUpdates = b;
 		m_bAskToCheckUpdates = false;
 	}
 	bool CheckUpdates() const {

@@ -197,6 +197,5 @@ bool LocalSettings::CheckTrustedDomain(const std::string& url)
 
 void LocalSettings::StopUpdateCheckTemporarily()
 {
-	// TODO:
-	// m_remindUpdatesOn = time(NULL) + time_t(72LL * 60 * 60);
+	m_remindUpdatesOn = time(NULL) + time_t(72LL * 60 * 60);
 }
