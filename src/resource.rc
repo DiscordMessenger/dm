@@ -701,11 +701,11 @@ BEGIN
     CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,18,236,10
     CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,32,236,10
     CONTROL         "Open Discord Messenger when your computer starts",IDC_OPEN_ON_STARTUP,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,46,242,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,46,236,10
     CONTROL         "Open minimized to notification area",IDC_START_MINIMIZED,
-                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,32,60,222,10
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,32,60,216,10
     CONTROL         "Minimize to notification area when clicking the close button",IDC_MINIMIZE_TO_NOTIF,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,74,242,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,74,236,10
 END
 
 
@@ -861,6 +861,7 @@ BEGIN
         LEFTMARGIN, 6
         RIGHTMARGIN, 254
         VERTGUIDE, 12
+        VERTGUIDE, 248
         TOPMARGIN, 7
         BOTTOMMARGIN, 234
         HORZGUIDE, 18
