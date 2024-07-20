@@ -74,6 +74,30 @@ public:
 	bool GetStartMaximized() const {
 		return m_bStartMaximized;
 	}
+	void SetOpenOnStartup(bool b) {
+		m_bOpenOnStartup = b;
+	}
+	bool GetOpenOnStartup() const {
+		return m_bOpenOnStartup;
+	}
+	void SetStartMinimized(bool b) {
+		m_bStartMinimized = b;
+	}
+	bool GetStartMinimized() const {
+		return m_bStartMinimized;
+	}
+	void SetMinimizeToNotif(bool b) {
+		m_bMinimizeToNotif = b;
+	}
+	bool GetMinimizeToNotif() const {
+		return m_bMinimizeToNotif;
+	}
+	void SetMaximized(bool b) {
+		m_bMaximized = b;
+	}
+	bool GetMaximized() const {
+		return m_bMaximized;
+	}
 	bool IsFirstStart() const {
 		return m_bIsFirstStart;
 	}
@@ -196,6 +220,10 @@ private:
 	bool m_bReplyMentionDefault = true;
 	bool m_bSaveWindowSize = false;
 	bool m_bStartMaximized = false;
+	bool m_bOpenOnStartup = false;
+	bool m_bStartMinimized = false;
+	bool m_bMinimizeToNotif = true;
+	bool m_bMaximized = false;
 	bool m_bIsFirstStart = false;
 	bool m_bCheckUpdates = false;
 	bool m_bAskToCheckUpdates = true;

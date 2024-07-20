@@ -25,6 +25,7 @@
 #include "ProgressDialog.hpp"
 #include "AutoComplete.hpp"
 #include "ShellNotification.hpp"
+#include "InstanceMutex.hpp"
 #include "../discord/LocalSettings.hpp"
 #include "../discord/WebsocketClient.hpp"
 #include "../discord/UpdateChecker.hpp"
@@ -415,6 +416,14 @@ int OnSSLError(const std::string& url)
 	return MessageBox(g_Hwnd, buffer, TmGetTString(IDS_SSL_ERROR_TITLE), MB_ABORTRETRYIGNORE | MB_ICONWARNING);
 }
 
+void CloseCleanup(HWND hWnd)
+{
+	KillImageViewer();
+	ProfilePopout::Dismiss();
+	AutoComplete::DismissAutoCompleteWindowsIfNeeded(hWnd);
+	g_pLoadingMessage->Hide();
+}
+
 BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (LOWORD(wParam))
@@ -438,7 +447,7 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case ID_FILE_EXIT:
 		{
-			SendMessage(hWnd, WM_CLOSE, 0, 0);
+			SendMessage(hWnd, WM_CLOSEBYPASSTRAY, 0, 0);
 			return 0;
 		}
 		case ID_HELP_ABOUTDISCORDMESSENGER:
@@ -596,6 +605,12 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (!isClipboardClosed) CloseClipboard();
 			break;
 		}
+		case ID_NOTIFICATION_SHOW:
+			SendMessage(g_Hwnd, WM_RESTOREAPP, 0, 0);
+			break;
+		case ID_NOTIFICATION_EXIT:
+			SendMessage(g_Hwnd, WM_CLOSEBYPASSTRAY, 0, 0);
+			break;
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -620,6 +635,38 @@ void TryConnectAgainIn(int time) {
 
 void ResetTryAgainInTime() {
 	g_tryAgainTimerElapse = 500;
+}
+
+const CHAR g_StartupArg[] = "/startup";
+
+bool g_bFromStartup = false;
+
+void CheckIfItsStartup(const LPSTR pCmdLine)
+{
+	g_bFromStartup = StrStrA(pCmdLine, g_StartupArg);
+}
+
+void AddOrRemoveAppFromStartup()
+{
+	HKEY hkey = NULL;
+	RegCreateKey(HKEY_CURRENT_USER, TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Run"), &hkey);
+
+	LPCTSTR value = TmGetTString(IDS_PROGRAM_NAME);
+
+	if (GetLocalSettings()->GetOpenOnStartup())
+	{
+		TCHAR tPath[MAX_PATH];
+		const DWORD length = GetModuleFileName(NULL, tPath, MAX_PATH);
+		
+		const std::string sPath = "\"" + MakeStringFromTString(tPath) + "\" " + std::string(g_StartupArg);
+		const LPTSTR finalPath = ConvertCppStringToTString(sPath);
+
+		RegSetValueEx(hkey, value, 0, REG_SZ, (BYTE *)finalPath, (wcslen(finalPath) + 1) * sizeof(TCHAR));
+	}
+	else
+	{
+		RegDeleteValue(hkey, value);
+	}
 }
 
 int g_agerCounter = 0;
@@ -743,7 +790,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pMessageList->UpdateAllowDrop();
 
 			UpdateMainWindowTitle(hWnd);
-			SetFocus(g_pMessageEditor->m_edit_hwnd);
+
+			if (IsWindowActive(g_Hwnd))
+				SetFocus(g_pMessageEditor->m_edit_hwnd);
 
 			if (!GetDiscordInstance()->GetCurrentChannel())
 			{
@@ -1093,9 +1142,14 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				g_tryAgainTimer = 0;
 			}
 			g_pLoadingMessage->Hide();
+
+			if (g_bFromStartup && GetLocalSettings()->GetStartMinimized()) {
+				GetFrontend()->HideWindow();
+			}
 			break;
 		case WM_CONNECTING: {
-			g_pLoadingMessage->Show();
+			if (!g_bFromStartup || !GetLocalSettings()->GetStartMinimized())
+				g_pLoadingMessage->Show();
 			break;
 		}
 		case WM_LOGINAGAIN:
@@ -1116,11 +1170,20 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 
+		case WM_CLOSEBYPASSTRAY:
+			AddOrRemoveAppFromStartup();
+			CloseCleanup(hWnd);
+			DestroyWindow(hWnd);
+			break;
+
 		case WM_CLOSE:
-			KillImageViewer();
-			ProfilePopout::Dismiss();
-			AutoComplete::DismissAutoCompleteWindowsIfNeeded(hWnd);
-			g_pLoadingMessage->Hide();
+			CloseCleanup(hWnd);
+
+			if (GetLocalSettings()->GetMinimizeToNotif())
+			{
+				GetFrontend()->HideWindow();
+				return 1;
+			}
 			break;
 
 		case WM_SIZE: {
@@ -1128,6 +1191,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			int height = HIWORD(lParam);
 			// Save the new size
 			GetLocalSettings()->SetWindowSize(UnscaleByDPI(width), UnscaleByDPI(height));
+			GetLocalSettings()->SetMaximized(wParam == SIZE_MAXIMIZED);
 
 			ProfilePopout::Dismiss();
 			ProperlySizeControls(hWnd);
@@ -1430,6 +1494,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetShellNotification()->Callback(wParam, lParam);
 			break;
 		}
+		case WM_RESTOREAPP:
+			if (GetLocalSettings()->GetMaximized())
+				GetFrontend()->MaximizeWindow();
+			else
+				GetFrontend()->RestoreWindow();
+			break;
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -1563,8 +1633,32 @@ HTTPClient* GetHTTPClient()
 	return g_pHTTPClient;
 }
 
+InstanceMutex g_instanceMutex;
+
+static bool ForceSingleInstance(LPCWSTR pClassName)
+{
+	HRESULT hResult = g_instanceMutex.Init();
+
+	if (hResult != ERROR_ALREADY_EXISTS)
+		return true;
+
+	HWND hWnd = FindWindow(pClassName, NULL);
+	if (hWnd)
+	{
+		SendMessage(hWnd, WM_RESTOREAPP, 0, 0);
+	}
+	return false;
+}
+
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nShowCmd)
 {
+	LPCWSTR pClassName = TEXT("DiscordMessengerClass");
+
+	if (!ForceSingleInstance(pClassName))
+		return 0;
+
+	CheckIfItsStartup(pCmdLine);
+
 	g_hInstance = hInstance;
 	ri::InitReimplementation();
 
@@ -1587,14 +1681,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	int wndWidth = 0, wndHeight = 0;
 	bool startMaximized = false;
 	GetLocalSettings()->GetWindowSize(wndWidth, wndHeight);
-	startMaximized = GetLocalSettings()->GetStartMaximized();
+	startMaximized = GetLocalSettings()->GetStartMaximized() || GetLocalSettings()->GetMaximized();
 
 	// Initialize the window class.
 	WNDCLASS& wc = g_MainWindowClass;
 
 	wc.lpfnWndProc   = WindowProc;
 	wc.hInstance     = hInstance;
-	wc.lpszClassName = TEXT("DiscordMessengerClass");
+	wc.lpszClassName = pClassName;
 	wc.hbrBackground = g_backgroundBrush;
 	wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
 	wc.hIcon         = g_Icon = LoadIcon(hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)));
@@ -1653,7 +1747,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 		TextToSpeech::Initialize();
 
 		// Run the message loop.
-		ShowWindow (g_Hwnd, startMaximized ? SW_SHOWMAXIMIZED : nShowCmd);
+
+		if (!g_bFromStartup || !GetLocalSettings()->GetStartMinimized())
+			ShowWindow (g_Hwnd, startMaximized ? SW_SHOWMAXIMIZED : nShowCmd);
 
 		while (GetMessage(&msg, NULL, 0, 0) > 0)
 		{

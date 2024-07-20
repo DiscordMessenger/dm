@@ -401,6 +401,21 @@ void Frontend_Win32::RequestQuit()
 	::WantQuit();
 }
 
+void Frontend_Win32::HideWindow()
+{
+	ShowWindow(g_Hwnd, SW_HIDE);
+}
+
+void Frontend_Win32::RestoreWindow()
+{
+	ShowWindow(g_Hwnd, SW_RESTORE);
+}
+
+void Frontend_Win32::MaximizeWindow()
+{
+	ShowWindow(g_Hwnd, SW_MAXIMIZE);
+}
+
 bool Frontend_Win32::IsWindowMinimized()
 {
 	return IsIconic(g_Hwnd);
