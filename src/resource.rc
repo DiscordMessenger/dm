@@ -1001,8 +1001,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 1,0,7,0
+ PRODUCTVERSION 1,0,7,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -1019,12 +1019,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "iProgramInCpp"
             VALUE "FileDescription", "Discord Messenger"
-            VALUE "FileVersion", "1.0"
+            VALUE "FileVersion", "1.07"
             VALUE "InternalName", "Discord.exe"
             VALUE "LegalCopyright", "Copyright (C) 2023-2024 iProgramInCpp - Licensed under the MIT license."
             VALUE "OriginalFilename", "Discord.exe"
             VALUE "ProductName", "Discord Messenger"
-            VALUE "ProductVersion", "1.0"
+            VALUE "ProductVersion", "1.07"
         END
     END
     BLOCK "VarFileInfo"
