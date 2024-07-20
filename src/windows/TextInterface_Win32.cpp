@@ -148,7 +148,21 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 
 		bool hasAlpha = false;
 		HBITMAP hbm = GetAvatarCache()->GetBitmap(nameRaw, hasAlpha);
-		DrawBitmap(hdc, hbm, rect.left, rect.top, NULL, CLR_NONE, height, height, hasAlpha);
+
+		bool shouldResize = GetProfilePictureSize() != height;
+
+		if (shouldResize)
+		{
+			HBRUSH hbr = CreateSolidBrush(context->m_bkColor);
+			HBITMAP hnbm = ResizeWithBackgroundColor(hdc, hbm, hbr, hasAlpha, height, height, GetProfilePictureSize(), GetProfilePictureSize());
+			DrawBitmap(hdc, hnbm, rect.left, rect.top, NULL, CLR_NONE, height, height, false);
+			DeleteBitmap(hnbm);
+			DeleteBrush(hbr);
+		}
+		else
+		{
+			DrawBitmap(hdc, hbm, rect.left, rect.top, NULL, CLR_NONE, height, height, hasAlpha);
+		}
 		return;
 	}
 
