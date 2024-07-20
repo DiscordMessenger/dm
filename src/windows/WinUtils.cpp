@@ -1252,3 +1252,49 @@ void DrawIconInvert(HDC hdc, HICON hIcon, int x, int y, int sizeX, int sizeY, bo
 	DeleteBitmap(hbm);
 	DeleteDC(hdcMem);
 }
+
+// Resizes a transparent image with a transparent color, without looking bad.
+// NOTE: Creates a new bitmap.  Make sure to delete the bitmap when done.
+HBITMAP ResizeWithBackgroundColor(HDC hdc, HBITMAP hBitmap, HBRUSH backgroundColor, bool bHasAlpha, int newSizeX, int newSizeY, int oldSizeX, int oldSizeY)
+{
+	// create 3 compatible DCs. Ungodly
+	HDC hdc1 = CreateCompatibleDC(hdc);
+	HDC hdc2 = CreateCompatibleDC(hdc);
+	HDC hdc3 = CreateCompatibleDC(hdc);
+
+	// this "hack" bitmap will hold an intermediate: the profile picture but behind a COLOR_3DFACE background.
+	// This allows us to call StretchBlt with no loss of quality while also looking like it's blended in.
+	HBITMAP hackBitmap = CreateCompatibleBitmap(hdc, oldSizeX, oldSizeY);
+	HBITMAP newBitmap = CreateCompatibleBitmap(hdc, newSizeX, newSizeY);
+
+	// select the bitmaps
+	HGDIOBJ a1 = SelectObject(hdc1, hBitmap);
+	HGDIOBJ a2 = SelectObject(hdc2, hackBitmap);
+	HGDIOBJ a3 = SelectObject(hdc3, newBitmap);
+
+	// into hdc2, we will first draw the background and then alphablend the profile picture if has alpha
+	RECT rcFull = { 0, 0, oldSizeX, oldSizeY };
+	BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+	FillRect(hdc2, &rcFull, backgroundColor);
+
+	if (bHasAlpha)
+		ri::AlphaBlend(hdc2, 0, 0, oldSizeX, oldSizeY, hdc1, 0, 0, oldSizeX, oldSizeY, bf);
+	else
+		BitBlt(hdc2, 0, 0, oldSizeX, oldSizeY, hdc1, 0, 0, SRCCOPY);
+
+	// now draw from hdc2 into hdc3
+	int mode = SetStretchBltMode(hdc3, HALFTONE);
+	StretchBlt(hdc3, 0, 0, newSizeX, newSizeY, hdc2, 0, 0, oldSizeX, oldSizeY, SRCCOPY);
+	SetStretchBltMode(hdc3, mode);
+
+	// cleanup
+	SelectObject(hdc1, a1);
+	SelectObject(hdc2, a2);
+	SelectObject(hdc3, a3);
+	DeleteDC(hdc1);
+	DeleteDC(hdc2);
+	DeleteDC(hdc3);
+	DeleteObject(hackBitmap);
+
+	return newBitmap;
+}

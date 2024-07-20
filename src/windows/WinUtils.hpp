@@ -84,6 +84,7 @@ std::string CutOutURLPath(const std::string& url);
 int MessageBoxHooked(HWND hWnd, LPCTSTR title, LPCTSTR caption, int flags, int overID, LPCTSTR overText);
 int MessageBoxHooked(HWND hWnd, LPCTSTR title, LPCTSTR caption, int flags, int overCount, const int* overID, const LPCTSTR*  overText);
 void DrawIconInvert(HDC hdc, HICON hIcon, int x, int y, int sizeX, int sizeY, bool invert);
+HBITMAP ResizeWithBackgroundColor(HDC hdc, HBITMAP hBitmap, HBRUSH backgroundColor, bool bHasAlpha, int newSizeX, int newSizeY, int oldSizeX, int oldSizeY);
 
 #ifdef USE_DEBUG_PRINTS
 void DbgPrintW(const char* fmt, ...);
