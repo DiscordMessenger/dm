@@ -384,8 +384,9 @@ INT_PTR QuickSwitcher::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 
 			OnUpdateQuery(hWnd, "");
 
-			// Go button is disabled by default, enabled when an item is selected
-			EnableWindow(GetDlgItem(hWnd, IDOK), FALSE);
+			// Go button is disabled by default, enabled when an item is selected.
+			// If the list isn't empty, then a selected item exists.
+			EnableWindow(GetDlgItem(hWnd, IDOK), ListView_GetItemCount(hList) != 0);
 
 			ListView_SetExtendedListViewStyle(hList, LVS_EX_FULLROWSELECT);
 			// Instantly focus on the searcher
