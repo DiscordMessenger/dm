@@ -1758,9 +1758,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 			// of the main window.  This is fine, since that means that I won't have to
 			// add code to the child windows themselves to dismiss the popout.
 			//
-			// Note, this is safe to do because if msg's hwnd member is equal to
-			// ProfilePopout::m_hwnd, IsDialogMessage has already called its dialogproc,
-			// and returned false, therefore we wouldn't even get here.
+			// Also redirect all WM_CHAR messages on other focusable windows to the message
+			// editor.
 			//
 			switch (msg.message)
 			{
@@ -1777,6 +1776,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 				case WM_MOVE:
 				case WM_SIZE:
 					AutoComplete::DismissAutoCompleteWindowsIfNeeded(msg.hwnd);
+					break;
+
+				case WM_CHAR:
+
+					if (msg.hwnd == g_pChannelView->m_listHwnd ||
+						msg.hwnd == g_pChannelView->m_treeHwnd ||
+						msg.hwnd == g_pMemberList->m_listHwnd ||
+						msg.hwnd == g_pMemberList->m_mainHwnd ||
+						msg.hwnd == g_pGuildLister->m_hwnd ||
+						msg.hwnd == g_pMessageList->m_hwnd)
+					{
+						msg.hwnd = g_pMessageEditor->m_edit_hwnd;
+						SetFocus(msg.hwnd);
+					}
 					break;
 			}
 
