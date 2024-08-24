@@ -10,3 +10,4 @@ keep/
 *.aps
 .vs/
 *.user
+/vs/x64/DebugAsan
