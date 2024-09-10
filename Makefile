@@ -68,6 +68,8 @@ CXXFLAGS = \
 	$(DEFINES)     \
 	-MMD           \
 	-std=c++11     \
+	-mno-sse       \
+	-mno-sse2      \
 	$(UNICODE_DEF) \
 	$(DEBUG_DEF)
 
