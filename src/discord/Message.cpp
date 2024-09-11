@@ -291,7 +291,8 @@ void Message::Load(Json& data, Snowflake guild)
 
 	if (!msgRef.is_null())
 	{
-		m_bHaveReferencedMessage = true;
+		m_pReferencedMessage = std::make_shared<ReferenceMessage>();
+		ReferenceMessage& rMsg = *m_pReferencedMessage;
 
 		if (msgRef["guild_id"].is_null())
 			m_refMessageGuild = guild;
@@ -304,11 +305,11 @@ void Message::Load(Json& data, Snowflake guild)
 		m_refMessageSnowflake = GetSnowflake(msgRef, "message_id");
 
 		if (!refdMsg.is_null()) {
-			m_referencedMessage.Load(refdMsg, guild);
+			rMsg.Load(refdMsg, guild);
 		}
 		else {
-			m_referencedMessage.m_author = "Original message was deleted.";
-			m_referencedMessage.m_author_snowflake = 0;
+			rMsg.m_author = "Original message was deleted.";
+			rMsg.m_author_snowflake = 0;
 		}
 	}
 
@@ -325,8 +326,9 @@ void Message::Load(Json& data, Snowflake guild)
 
 			m_userMentions.insert(id);
 
-			if (m_bHaveReferencedMessage && m_referencedMessage.m_author_snowflake == id)
-				m_referencedMessage.m_bMentionsAuthor = true;
+			if (m_pReferencedMessage != nullptr &&
+				m_pReferencedMessage->m_author_snowflake == id)
+				m_pReferencedMessage->m_bMentionsAuthor = true;
 		}
 	}
 

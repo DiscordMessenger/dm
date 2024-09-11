@@ -501,14 +501,14 @@ void MessageItem::Update(Snowflake guildID)
 	m_date = ConvertCppStringToTString(isCompact ? m_msg.m_dateCompact : m_msg.m_dateFull);
 	m_dateEdited = ConvertCppStringToTString(isCompact ? m_msg.m_editedTextCompact : m_msg.m_editedText);
 
-	if (m_msg.m_bHaveReferencedMessage)
+	if (m_msg.m_pReferencedMessage)
 	{
-		std::string authorStr = m_msg.m_referencedMessage.m_author;
-		if (m_msg.m_referencedMessage.m_bMentionsAuthor) {
+		std::string authorStr = m_msg.m_pReferencedMessage->m_author;
+		if (m_msg.m_pReferencedMessage->m_bMentionsAuthor) {
 			authorStr = "@" + authorStr;
 		}
 
-		m_replyMsg = ConvertCppStringToTString(m_msg.m_referencedMessage.m_message);
+		m_replyMsg = ConvertCppStringToTString(m_msg.m_pReferencedMessage->m_message);
 		m_replyAuth = ConvertCppStringToTString(authorStr);
 	}
 
@@ -1885,7 +1885,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 	RECT rcReply = rc;
 	rcReply.bottom = rcReply.top + item.m_replyHeight;
 
-	auto& refMsg = item.m_msg.m_referencedMessage;
+	auto& refMsg = *item.m_msg.m_pReferencedMessage;
 	const bool isActionMessage = IsActionMessage(refMsg.m_type);
 	const bool isCompact = IsCompact();
 
@@ -2391,7 +2391,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	// draw the reply if needed
 	int replyOffset = 0;
 
-	if (item.m_msg.m_bHaveReferencedMessage && !isActionMessage && isChainBegin)
+	if (item.m_msg.m_pReferencedMessage != nullptr && !isActionMessage && isChainBegin)
 		replyOffset = DrawMessageReply(hdc, item, rc);
 
 	rc.top += replyOffset;
@@ -3463,8 +3463,9 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						break;
 					
 					std::string action = " said ";
-					if (pMsg->m_msg.m_type == MessageType::REPLY)
-						action = " replied to " + pMsg->m_msg.m_referencedMessage.m_author + " ";
+					if (pMsg->m_msg.m_type == MessageType::REPLY &&
+						pMsg->m_msg.m_pReferencedMessage != nullptr)
+						action = " replied to " + pMsg->m_msg.m_pReferencedMessage->m_author + " ";
 
 					TextToSpeech::Speak(pMsg->m_msg.m_author + action + GetDiscordInstance()->ReverseMentions(pMsg->m_msg.m_message, pThis->m_guildID, true));
 					break;
@@ -4151,7 +4152,7 @@ bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int
 		prevAuthor != item.m_msg.m_author_snowflake ||
 		prevTime + 15 * 60 < item.m_msg.m_dateTime ||
 		item.m_msg.IsLoadGap() ||
-		item.m_msg.m_bHaveReferencedMessage ||
+		item.m_msg.m_pReferencedMessage != nullptr ||
 		item.m_msg.m_type == MessageType::REPLY ||
 		IsActionMessage(prevType) ||
 		IsActionMessage(item.m_msg.m_type) ||
@@ -4306,7 +4307,8 @@ void MessageList::OnUpdateAvatar(Snowflake sf)
 		if (msg.m_msg.m_author_snowflake == sf && !IsCompact())
 			InvalidateRect(m_hwnd, &msg.m_avatarRect, false);
 
-		if (msg.m_msg.m_bHaveReferencedMessage && msg.m_msg.m_referencedMessage.m_author_snowflake == sf && !IsCompact())
+		if (msg.m_msg.m_pReferencedMessage != nullptr &&
+			msg.m_msg.m_pReferencedMessage->m_author_snowflake == sf && !IsCompact())
 			InvalidateRect(m_hwnd, &msg.m_refAvatarRect, false);
 	}
 }

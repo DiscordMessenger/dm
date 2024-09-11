@@ -1246,7 +1246,8 @@ bool DiscordInstance::EditMessageInCurrentChannel(const std::string& msg_, Snowf
 		return false;
 
 	Json j;
-	if (!pMsg->m_referencedMessage.m_bMentionsAuthor) {
+	if (pMsg->m_pReferencedMessage &&
+		!pMsg->m_pReferencedMessage->m_bMentionsAuthor) {
 		Json alm, prs;
 		prs.push_back("users");
 		prs.push_back("roles");
