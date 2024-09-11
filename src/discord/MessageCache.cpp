@@ -73,7 +73,7 @@ MessageChunkList::MessageChunkList()
 	msg.m_message = "";
 	msg.m_dateFull = "";
 	msg.m_dateCompact = "";
-	m_messages[msg.m_snowflake] = msg;
+	m_messages[msg.m_snowflake] = std::move(msg);
 }
 
 void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, json& j, const std::string& channelName)
@@ -103,7 +103,7 @@ void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, j
 				addedMessages = true;
 		}
 
-		m_messages[msg.m_snowflake] = msg;
+		m_messages[msg.m_snowflake] = std::move(msg);
 		receivedMessages++;
 
 		if (lowestMsg > msg.m_snowflake)
@@ -126,7 +126,7 @@ void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, j
 		msg.m_type = MessageType::CHANNEL_HEADER;
 		msg.m_snowflake = 1;
 		msg.m_author = channelName;
-		m_messages[msg.m_snowflake] = msg;
+		m_messages[msg.m_snowflake] = std::move(msg);
 	}
 
 	msg.m_author = GetFrontend()->GetPleaseWaitText();
@@ -135,7 +135,7 @@ void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, j
 		msg.m_type = MessageType::GAP_UP;
 		msg.m_anchor = lowestMsg;
 		msg.m_snowflake = lowestMsg - 1;
-		m_messages[msg.m_snowflake] = msg;
+		m_messages[msg.m_snowflake] = std::move(msg);
 	}
 
 	if (addAfter && addedMessages)
@@ -143,7 +143,7 @@ void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, j
 		msg.m_type = MessageType::GAP_DOWN;
 		msg.m_anchor = highestMsg;
 		msg.m_snowflake = highestMsg + 1;
-		m_messages[msg.m_snowflake] = msg;
+		m_messages[msg.m_snowflake] = std::move(msg);
 	}
 
 	GetDiscordInstance()->OnFetchedMessages(gap, sd);

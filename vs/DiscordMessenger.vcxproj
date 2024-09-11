@@ -478,6 +478,7 @@
     <ClInclude Include="..\src\discord\LocalSettings.hpp" />
     <ClInclude Include="..\src\discord\Message.hpp" />
     <ClInclude Include="..\src\discord\MessageCache.hpp" />
+    <ClInclude Include="..\src\discord\MessagePoll.hpp" />
     <ClInclude Include="..\src\discord\MessageType.hpp" />
     <ClInclude Include="..\src\discord\NotificationManager.hpp" />
     <ClInclude Include="..\src\discord\Permissions.hpp" />
@@ -551,6 +552,7 @@
     <ClCompile Include="..\src\discord\LocalSettings.cpp" />
     <ClCompile Include="..\src\discord\Message.cpp" />
     <ClCompile Include="..\src\discord\MessageCache.cpp" />
+    <ClCompile Include="..\src\discord\MessagePoll.cpp" />
     <ClCompile Include="..\src\discord\NotificationManager.cpp" />
     <ClCompile Include="..\src\discord\Profile.cpp" />
     <ClCompile Include="..\src\discord\ProfileCache.cpp" />

@@ -632,6 +632,9 @@
     <ClInclude Include="..\src\windows\InstanceMutex.hpp">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\discord\MessagePoll.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\windows\ProfileView.cpp">
@@ -804,6 +807,9 @@
     </ClCompile>
     <ClCompile Include="..\src\windows\InstanceMutex.cpp">
       <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\MessagePoll.cpp">
+      <Filter>Source Files\Discord</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

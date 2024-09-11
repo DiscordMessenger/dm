@@ -224,7 +224,7 @@ std::string GetFieldSafe(const nlohmann::json& j, const std::string& key)
 
 int GetFieldSafeInt(const nlohmann::json& j, const std::string& key)
 {
-	if (j.contains(key) && !j[key].is_null())
+	if (j.contains(key) && j[key].is_number_integer())
 		return j[key];
 
 	return 0;

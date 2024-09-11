@@ -3,10 +3,12 @@
 #include <vector>
 #include <set>
 #include <ctime>
+#include <memory>
 #include <nlohmann/json.h>
 #include "Snowflake.hpp"
 #include "Attachment.hpp"
 #include "MessageType.hpp"
+#include "MessagePoll.hpp"
 
 // XXX: Ok, I'm going to be cheap here and implement a separate class for the referenced message stuff.
 struct ReferenceMessage
@@ -116,6 +118,7 @@ public:
 	ReferenceMessage m_referencedMessage;
 	std::vector<RichEmbed> m_embeds;
 	Snowflake m_webhookId = 0;
+	std::shared_ptr<MessagePoll> m_pMessagePoll;
 
 public:
 	Message() {}

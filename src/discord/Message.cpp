@@ -208,6 +208,8 @@ void Message::Load(Json& data, Snowflake guild)
 {
 	Json& author = data["author"];
 
+	m_pMessagePoll.reset();
+
 	Snowflake messageId = GetSnowflake(data, "id");
 
 	Snowflake authorId = m_author_snowflake;
@@ -280,6 +282,9 @@ void Message::Load(Json& data, Snowflake guild)
 			m_embeds.push_back(emb);
 		}
 	}
+
+	if (data.contains("poll"))
+		m_pMessagePoll = std::make_shared<MessagePoll>(data["pool"]);
 
 	Json& msgRef = data["message_reference"];
 	Json& refdMsg = data["referenced_message"];
