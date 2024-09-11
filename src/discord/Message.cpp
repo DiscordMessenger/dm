@@ -284,7 +284,7 @@ void Message::Load(Json& data, Snowflake guild)
 	}
 
 	if (data.contains("poll"))
-		m_pMessagePoll = std::make_shared<MessagePoll>(data["pool"]);
+		m_pMessagePoll = std::make_shared<MessagePoll>(data["poll"]);
 
 	Json& msgRef = data["message_reference"];
 	Json& refdMsg = data["referenced_message"];
