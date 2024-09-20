@@ -665,6 +665,13 @@ void MessageItem::Update(Snowflake guildID)
 			m_interactableData.push_back(iil);
 		}
 	}
+
+	if (m_msg.m_pMessagePoll) {
+		SAFE_DELETE(m_pMessagePollData);
+
+		m_pMessagePollData = new MessagePollData(m_msg.m_pMessagePoll);
+		m_pMessagePollData->Update();
+	}
 }
 
 static void ShiftUpRect(RECT& rc, int amount) {
@@ -711,6 +718,10 @@ void MessageItem::ShiftUp(int amount)
 		ShiftUpRect(emb.m_titleRect, amount);
 		ShiftUpRect(emb.m_authorRect, amount);
 		ShiftUpRect(emb.m_providerRect, amount);
+	}
+
+	if (m_pMessagePollData) {
+		m_pMessagePollData->ShiftUp(amount);
 	}
 }
 
@@ -2564,10 +2575,12 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			rc.top += ScaleByDPI(5);
 
 		RECT rcMsg = rc;
-		rcMsg.bottom -= item.m_attachHeight + item.m_embedHeight;
+		rcMsg.bottom -= item.m_attachHeight + item.m_embedHeight + item.m_pollHeight;
 		if (item.m_attachHeight)
 			rcMsg.bottom -= ATTACHMENT_GAP;
 		if (item.m_embedHeight)
+			rcMsg.bottom -= ScaleByDPI(5);
+		if (item.m_pollHeight)
 			rcMsg.bottom -= ScaleByDPI(5);
 
 		item.m_message.Layout(&mddc, Rect(W32RECT(rcMsg)), bIsCompact ? (item.m_authWidth + item.m_dateWidth + ScaleByDPI(10)) : 0);
@@ -2736,8 +2749,24 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	if (sz)
 		embedRect.bottom += ScaleByDPI(5);
 
+	// draw poll, if available:
+	RECT pollRect = embedRect;
+	pollRect.right = msgRect.right - ScaleByDPI(10);
+	pollRect.top = pollRect.bottom;
+	auto pollData = item.m_pMessagePollData;
+	if (pollData)
+	{
+		if (pollData->m_height == 0)
+			pollData->Measure(hdc, pollRect, this);
+		pollRect.bottom += pollData->m_height;
+
+		pollData->Draw(hdc, pollRect, this);
+		pollRect.top += pollData->m_height + ScaleByDPI(5);
+		pollRect.bottom = pollRect.top;
+	}
+
 	// draw available attachments, if any:
-	RECT attachRect = embedRect;
+	RECT attachRect = pollRect;
 	auto& attachVec = item.m_msg.m_attachments;
 	auto& attachItemVec = item.m_attachmentData;
 	sz = attachVec.size();
@@ -4059,7 +4088,15 @@ void MessageList::FullRecalcAndRepaint()
 	RecalcMessageSizes(true, repaintSizeUnused, 0);
 }
 
-void MessageList::AdjustHeightInfo(const MessageItem& msg, int& height, int& textheight, int& authheight, int& replyheight, int& attachheight, int& embedheight)
+void MessageList::AdjustHeightInfo(
+	const MessageItem& msg,
+	int& height,
+	int& textheight,
+	int& authheight,
+	int& replyheight,
+	int& attachheight,
+	int& embedheight,
+	int& pollheight)
 {
 	bool isCompact = IsCompact();
 	int replyheight2 = replyheight;
@@ -4122,14 +4159,28 @@ void MessageList::AdjustHeightInfo(const MessageItem& msg, int& height, int& tex
 		attachheight += inc;
 	}
 
+	// also figure out poll size
+	if (msg.m_pMessagePollData) {
+		pollheight = msg.m_pMessagePollData->m_height + ScaleByDPI(5);
+		height += pollheight;
+	}
+	else {
+		pollheight = 0;
+	}
+
 	if (embedheight != 0)
 		embedheight -= ScaleByDPI(5);
 	if (attachheight != 0)
 		attachheight -= ATTACHMENT_GAP;
+	if (pollheight != 0)
+		pollheight -= ScaleByDPI(5);
 
+	// TODO: not sure why we do this?
 	if (attachheight != 0)
 		height += ScaleByDPI(5);
 	if (embedheight != 0)
+		height += ScaleByDPI(5);
+	if (pollheight != 0)
 		height += ScaleByDPI(5);
 
 	if (!IsActionMessage(msg.m_msg.m_type) && !IsCompact() && !isChainCont && height < minHeight)
@@ -4397,8 +4448,11 @@ void MessageList::DetermineMessageMeasurements(MessageItem& mi, HDC _hdc, LPRECT
 		for (auto& embed : mi.m_embedData)
 			embed.Measure(hdc, rect, isCompact);
 	}
+	if (mi.m_pMessagePollData) {
+		mi.m_pMessagePollData->Measure(hdc, rect, isCompact);
+	}
 
-	AdjustHeightInfo(mi, mi.m_height, mi.m_textHeight, mi.m_authHeight, mi.m_replyHeight, mi.m_attachHeight, mi.m_embedHeight);
+	AdjustHeightInfo(mi, mi.m_height, mi.m_textHeight, mi.m_authHeight, mi.m_replyHeight, mi.m_attachHeight, mi.m_embedHeight, mi.m_pollHeight);
 
 	if (!_hdc) ReleaseDC(m_hwnd, hdc);
 }
@@ -4691,4 +4745,67 @@ MessageList* MessageList::Create(HWND hwnd, LPRECT pRect)
 	newThis->UpdateBackgroundBrush();
 
 	return newThis;
+}
+
+void MessagePollData::Update()
+{
+	m_answerTexts.clear();
+	m_emojiTexts.clear();
+
+	MessagePoll* pPoll = m_pMessagePoll.get();
+	m_question.Set(pPoll->m_question);
+
+	for (const auto& ans : pPoll->m_options) {
+		m_answerTexts[ans.first].Set(ans.second.m_text);
+		if (!ans.second.m_emojiUTF8.empty())
+			m_emojiTexts[ans.first].Set(ans.second.m_emojiUTF8);
+	}
+}
+
+void MessagePollData::ShiftUp(int amount)
+{
+	ShiftUpRect(m_questionRect, amount);
+}
+
+void MessagePollData::Measure(HDC hdc, RECT& messageRect, bool isCompact)
+{
+	const int borderSize = ScaleByDPI(10);
+	SIZE sz { 0, 0 };
+
+	int maxWidth = messageRect.right - messageRect.left - borderSize * 3;
+	RECT rcMeasureDef = { 0, 0, maxWidth, 0 }, rcMeasure;
+
+	// Measure the question text.
+	rcMeasure = rcMeasureDef;
+	DrawText(hdc, m_question.GetWrapped(), -1, &rcMeasure, DT_CALCRECT | DT_WORDBREAK);
+
+
+	int width, height;
+
+	width = rcMeasure.right - rcMeasure.left;
+	height = rcMeasure.bottom - rcMeasure.top;
+
+	m_width = width + borderSize * 2;
+	m_height = height + borderSize * 2;
+}
+
+void MessagePollData::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
+{
+	const int borderSize = ScaleByDPI(10);
+
+	RECT rcPoll = messageRect, rcPoll2;
+	rcPoll.right = rcPoll.left + m_width;
+	rcPoll.bottom = rcPoll.top + m_height;
+	rcPoll2 = rcPoll;
+	DrawEdge(hdc, &rcPoll2, EDGE_RAISED, BF_RECT);
+
+	rcPoll.left += borderSize;
+	rcPoll.top += borderSize;
+	rcPoll.right -= borderSize;
+	rcPoll.bottom -= borderSize;
+	RECT rcQuestion = rcPoll;
+	DrawText(hdc, m_question.GetWrapped(), -1, &rcQuestion, DT_WORDBREAK | DT_CALCRECT);
+	DrawText(hdc, m_question.GetWrapped(), -1, &rcQuestion, DT_WORDBREAK);
+	m_questionRect = rcQuestion;
+	rcPoll.top = rcQuestion.bottom;
 }

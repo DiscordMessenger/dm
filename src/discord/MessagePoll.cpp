@@ -10,6 +10,10 @@ MessagePoll::MessagePoll(const nlohmann::json& j)
 		m_bAllowMultiselect = j["allow_multiselect"];
 		m_expiry = ParseTime(j["expiry"]);
 
+		if (j.contains("question")) {
+			m_question = GetFieldSafe(j["question"], "text");
+		}
+
 		if (j.contains("answers") && j["answers"].is_array()) {
 			for (const auto& ans : j["answers"]) {
 				MessagePollOption mpo;

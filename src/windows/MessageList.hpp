@@ -1,5 +1,6 @@
 #pragma once
 #include <set>
+#include <map>
 #include "Main.hpp"
 #include "../discord/FormattedText.hpp"
 
@@ -182,6 +183,39 @@ public:
 	void Draw(HDC hdc, RECT& messageRect, MessageList* pList);
 };
 
+class MessagePollData
+{
+public:
+	std::shared_ptr<MessagePoll> m_pMessagePoll;
+	int m_width = 0;
+	int m_height = 0;
+	String m_question;
+	std::map<int, String> m_answerTexts;
+	std::map<int, String> m_emojiTexts;
+	RECT m_questionRect;
+
+public:
+	MessagePollData() {}
+	MessagePollData(std::shared_ptr<MessagePoll>& mp) {
+		m_pMessagePoll = mp;
+	}
+	MessagePollData(const MessagePollData& oth) {
+		if (oth.m_pMessagePoll != nullptr)
+			m_pMessagePoll = oth.m_pMessagePoll;
+	}
+	MessagePollData(MessagePollData&& oth) noexcept {
+		if (oth.m_pMessagePoll != nullptr)
+			m_pMessagePoll = std::move(oth.m_pMessagePoll);
+	}
+
+public:
+	void Update();
+	void ShiftUp(int amount);
+
+	void Measure(HDC hdc, RECT& messageRect, bool isCompact);
+	void Draw(HDC hdc, RECT& messageRect, MessageList* pList);
+};
+
 class MessageItem
 {
 private:
@@ -203,6 +237,7 @@ private:
 	int m_replyHeight = 0;
 	int m_attachHeight = 0;
 	int m_embedHeight = 0;
+	int m_pollHeight = 0;
 	int m_placeInChain = 0; // (1)
 	bool m_bIsDateGap = false;
 	FormattedText m_message;
@@ -217,6 +252,7 @@ private:
 	std::vector<AttachmentItem> m_attachmentData;
 	std::vector<InteractableItem> m_interactableData;
 	std::vector<RichEmbedItem> m_embedData;
+	MessagePollData* m_pMessagePollData = nullptr;
 	bool m_bKeepWordsUpdate = false;
 	bool m_bKeepHeightRecalc = false;
 	bool m_bWasMentioned = false;
@@ -256,6 +292,9 @@ public:
 		m_bIsDateGap = other.m_bIsDateGap;
 		m_bNeedUpdate = true;
 
+		if (other.m_pMessagePollData)
+			m_pMessagePollData = new MessagePollData(*other.m_pMessagePollData);
+
 		// Update pointers to the attachment data
 		for (size_t i = 0; i < m_attachmentData.size(); i++) {
 			ptrdiff_t offs = m_attachmentData[i].m_pAttachment - other.m_msg.m_attachments.data();
@@ -267,7 +306,12 @@ public:
 			m_embedData[i].m_pEmbed = (m_msg.m_embeds.data() + offs);
 		}
 	}
-	MessageItem(MessageItem&& other) { // move
+	MessageItem(MessageItem&& other) noexcept { // move
+		if (this == &other) {
+			assert(!"why?");
+			return;
+		}
+
 		m_msg = other.m_msg;
 		m_rect = other.m_rect;
 		m_authorRect = other.m_authorRect;
@@ -298,6 +342,7 @@ public:
 		m_bNeedUpdate = other.m_bNeedUpdate;
 		m_placeInChain = other.m_placeInChain;
 		m_bIsDateGap = other.m_bIsDateGap;
+		m_pMessagePollData = other.m_pMessagePollData; other.m_pMessagePollData = nullptr;
 
 		// Update pointers to the attachment data
 		for (size_t i = 0; i < m_attachmentData.size(); i++) {
@@ -329,6 +374,10 @@ public:
 		free((void*)m_replyMsg);
 		free((void*)m_replyAuth);
 		m_author = m_date = m_dateEdited = m_replyMsg = m_replyAuth = NULL;
+		if (m_pMessagePollData) {
+			delete m_pMessagePollData;
+			m_pMessagePollData = nullptr;
+		}
 		m_bNeedUpdate = true;
 	}
 	~MessageItem() {
@@ -508,7 +557,7 @@ private:
 	void HitTestAttachments(POINT pt, BOOL& hit);
 	void HitTestInteractables(POINT pt, BOOL& hit);
 
-	void AdjustHeightInfo(const MessageItem& msg, int& height, int& textheight, int& authheight, int& replyheight, int& attachheight, int& embedheight);
+	void AdjustHeightInfo(const MessageItem& msg, int& height, int& textheight, int& authheight, int& replyheight, int& attachheight, int& embedheight, int& pollheight);
 	void OpenAttachment( AttachmentItem* pItem );
 	void OpenInteractable( InteractableItem* pItem, MessageItem* pMsg );
 
