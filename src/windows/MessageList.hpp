@@ -1,6 +1,7 @@
 #pragma once
 #include <set>
 #include <map>
+#include <queue>
 #include "Main.hpp"
 #include "../discord/FormattedText.hpp"
 
@@ -84,6 +85,8 @@ public:
 	RECT m_textRect;
 	RECT m_addRect;
 	bool m_bHighlighted = false;
+	size_t m_frameNumber = 0;
+	uint64_t m_updateScheduledAt = 0;
 };
 
 enum {
@@ -214,6 +217,19 @@ public:
 
 	void Measure(HDC hdc, RECT& messageRect, bool isCompact);
 	void Draw(HDC hdc, RECT& messageRect, MessageList* pList);
+};
+
+struct EnqueuedImageUpdate
+{
+	uint64_t m_time;
+	RECT m_updateRect;
+
+	bool operator<(const EnqueuedImageUpdate& oth) const
+	{
+		if (m_time != oth.m_time)
+			return m_time < oth.m_time;
+		return memcmp(&m_updateRect, &oth.m_updateRect, sizeof(RECT)) < 0;
+	}
 };
 
 class MessageItem
@@ -433,6 +449,9 @@ private:
 	bool m_bManagedByOwner = false;
 	bool m_bIsTopDown = false;
 
+	std::priority_queue<EnqueuedImageUpdate> m_imageUpdateQueue;
+	UINT_PTR m_timerHandle = 0;
+
 	void Scroll(int amount, RECT* rcClip = NULL, bool shiftAllRects = true);
 	
 	void MessageHeightChanged(int oldHeight, int newHeight, bool toStart = false);
@@ -553,6 +572,11 @@ protected:
 	static bool IsClientSideMessage(MessageType::eType msgType);
 
 private:
+	enum {
+		TMR_FLASH = 1,
+		TMR_UPDATE = 2
+	};
+
 	void HitTestAuthor(POINT pt, BOOL& hit);
 	void HitTestAttachments(POINT pt, BOOL& hit);
 	void HitTestInteractables(POINT pt, BOOL& hit);
@@ -573,6 +597,9 @@ private:
 	void Paint(HDC hdc, RECT& rcPaint);
 
 	void RequestMarkRead();
+
+	void ScheduleImageUpdate(uint64_t destTime, RECT& updateRect);
+	void CreateScheduleTimerIfNeeded();
 
 	// [Left] [Author] [pinned] [a message](uid) [ to this channel.
 

@@ -216,7 +216,7 @@ void Frontend_Win32::OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_
 {
 	int nImSize = bIsProfilePicture ? -1 : 0;
 	bool bHasAlpha = false;
-	HImage* himg = ImageLoader::ConvertToBitmap(pData, nSize, bHasAlpha, false, nImSize, nImSize);
+	HImage* himg = ImageLoader::ConvertToBitmap(pData, nSize, bHasAlpha, true, nImSize, nImSize);
 
 	if (himg)
 	{

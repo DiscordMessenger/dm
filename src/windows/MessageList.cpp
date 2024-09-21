@@ -28,14 +28,14 @@ static int GetProfileBorderRenderSize()
 	return ScaleByDPI(Supports32BitIcons() ? (PROFILE_PICTURE_SIZE_DEF + 12) : 64);
 }
 
-static void DrawImageSpecial(HDC hdc, HImage* him, RECT rect, bool hasAlpha)
+static void DrawImageSpecial(HDC hdc, HImage* him, RECT rect, bool hasAlpha, size_t frameNumber, int& frameLengthOut)
 {
 	if (him == HIMAGE_LOADING)
 		DrawLoadingBox(hdc, rect);
 	else if (him == HIMAGE_ERROR || !him)
 		DrawErrorBox(hdc, rect);
 	else
-		DrawBitmap(hdc, him->GetFirstFrame(), rect.left, rect.top, NULL, CLR_NONE, rect.right - rect.left, rect.bottom - rect.top, hasAlpha);
+		DrawBitmap(hdc, him->GetImage(frameNumber, &frameLengthOut), rect.left, rect.top, NULL, CLR_NONE, rect.right - rect.left, rect.bottom - rect.top, hasAlpha);
 }
 
 WNDCLASS MessageList::g_MsgListClass;
@@ -338,6 +338,7 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 		DrawText(hdc, m_description.GetWrapped(), -1, &rcText, DT_WORDBREAK | DT_WORD_ELLIPSIS);
 		sizeY += m_descriptionSize.cy;
 	}
+	int useless = 0;
 	if (GetLocalSettings()->ShowEmbedImages()) {
 		if (m_thumbnailSize.cy) {
 			m_thumbnailResourceID = GetAvatarCache()->MakeIdentifier(m_pEmbed->m_thumbnailUrl);
@@ -346,7 +347,7 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 			HImage* him = GetAvatarCache()->GetImageSpecial(m_pEmbed->m_thumbnailUrl, hasAlpha);
 			if (sizeY) sizeY += gap;
 			m_thumbnailRect = { rc.left, rc.top + sizeY, rc.left + m_thumbnailSize.cx, rc.top + sizeY + m_thumbnailSize.cy };
-			DrawImageSpecial(hdc, him, m_thumbnailRect, hasAlpha);
+			DrawImageSpecial(hdc, him, m_thumbnailRect, hasAlpha, 0, useless);
 			sizeY += m_thumbnailSize.cy;
 		}
 		if (m_imageSize.cy) {
@@ -356,7 +357,7 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 			HImage* him = GetAvatarCache()->GetImageSpecial(m_pEmbed->m_imageUrl, hasAlpha);
 			if (sizeY) sizeY += gap;
 			m_imageRect = { rc.left, rc.top + sizeY, rc.left + m_imageSize.cx, rc.top + sizeY + m_imageSize.cy };
-			DrawImageSpecial(hdc, him, m_imageRect, hasAlpha);
+			DrawImageSpecial(hdc, him, m_imageRect, hasAlpha, 0, useless);
 			sizeY += m_imageSize.cy;
 		}
 	}
@@ -1446,9 +1447,32 @@ void MessageList::DrawImageAttachment(HDC hdc, RECT& paintRect, AttachmentItem& 
 
 	GetAvatarCache()->AddImagePlace(attachItem.m_resourceID, eImagePlace::ATTACHMENTS, url, pAttach->m_id);
 
+	int frameLengthOut = 0;
 	bool hasAlpha = false;
 	HImage* him = GetAvatarCache()->GetImageSpecial(attachItem.m_resourceID, hasAlpha);
-	DrawImageSpecial(hdc, him, childAttachRect, hasAlpha);
+
+	if (!him || him == HIMAGE_ERROR || him == HIMAGE_LOADING) {
+		attachItem.m_frameNumber = 0;
+		DrawImageSpecial(hdc, him, childAttachRect, hasAlpha, attachItem.m_frameNumber, frameLengthOut);
+		return;
+	}
+
+	if (attachItem.m_frameNumber >= him->Frames.size()) {
+		attachItem.m_frameNumber = 0;
+	}
+
+	DrawImageSpecial(hdc, him, childAttachRect, hasAlpha, attachItem.m_frameNumber, frameLengthOut);
+
+	if (him->Frames.size() > 1 &&
+		attachItem.m_updateScheduledAt < GetTimeMs() + 10)
+	{
+		if(!attachItem.m_updateScheduledAt)
+			attachItem.m_updateScheduledAt = GetTimeMs();
+
+		attachItem.m_updateScheduledAt += frameLengthOut;
+		attachItem.m_frameNumber++;
+		ScheduleImageUpdate(attachItem.m_updateScheduledAt, childAttachRect);
+	}
 }
 
 void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem& attachItem, RECT& attachRect)
@@ -2074,6 +2098,30 @@ void MessageList::RequestMarkRead()
 	GetDiscordInstance()->RequestAcknowledgeChannel(m_channelID);
 
 	GetNotificationManager()->MarkNotificationsRead(m_channelID);
+}
+
+void MessageList::CreateScheduleTimerIfNeeded()
+{
+	if (m_imageUpdateQueue.empty())
+		return;
+
+	const EnqueuedImageUpdate& up = m_imageUpdateQueue.top();
+	int64_t timeDiff = int64_t(up.m_time) - int64_t(GetTimeMs());
+	if (timeDiff < 1)
+		timeDiff = 1;
+
+	if (m_timerHandle)
+		KillTimer(m_hwnd, m_timerHandle);
+
+	m_timerHandle = SetTimer(m_hwnd, TMR_UPDATE, (UINT) timeDiff, NULL);
+}
+
+void MessageList::ScheduleImageUpdate(uint64_t destTime, RECT& updateRect)
+{
+	EnqueuedImageUpdate upd { destTime, updateRect };
+	m_imageUpdateQueue.push(upd);
+
+	CreateScheduleTimerIfNeeded();
 }
 
 void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& clientRect, RECT& paintRect, DrawingContext& mddc, COLORREF chosenBkColor, bool bDrawNewMarker)
@@ -2977,14 +3025,14 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 
 		bool needUpdate = false;
 
-		if (!isActionMessage) {
+		/*if (!isActionMessage) {
 			if (iter->m_message.Empty())
 				needUpdate = true;
 		}
-		else {
-			if (iter->m_bNeedUpdate)
-				needUpdate = true;
-		}
+		else {*/
+		if (iter->m_bNeedUpdate)
+			needUpdate = true;
+		//}
 
 		if (needUpdate)
 			iter->Update(m_guildID);
@@ -3080,23 +3128,36 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_TIMER:
 		{
-			// Flash timer
-			Snowflake flashedMsg = pThis->m_emphasizedMessage;
-			if (!flashedMsg)
-				break;
+			if (wParam == pThis->m_flash_timer)
+			{
+				// Flash timer
+				Snowflake flashedMsg = pThis->m_emphasizedMessage;
+				if (!flashedMsg)
+					break;
 
-			pThis->m_flash_counter--;
-			if (pThis->m_flash_counter <= 0) {
-				pThis->m_emphasizedMessage = 0;
-				KillTimer(hWnd, pThis->m_flash_timer);
-				pThis->m_flash_timer = 0;
+				pThis->m_flash_counter--;
+				if (pThis->m_flash_counter <= 0) {
+					pThis->m_emphasizedMessage = 0;
+					KillTimer(hWnd, pThis->m_flash_timer);
+					pThis->m_flash_timer = 0;
+				}
+
+				auto itMsg = pThis->FindMessage(flashedMsg);
+				if (itMsg == pThis->m_messages.end())
+					break;
+
+				InvalidateRect(hWnd, &itMsg->m_rect, pThis->MayErase());
+				break;
 			}
 
-			auto itMsg = pThis->FindMessage(flashedMsg);
-			if (itMsg == pThis->m_messages.end())
-				break;
+			// pop out the next enqueued image update
+			if (!pThis->m_imageUpdateQueue.empty()) {
+				EnqueuedImageUpdate eiu = pThis->m_imageUpdateQueue.top();
+				InvalidateRect(hWnd, &eiu.m_updateRect, false);
+				pThis->m_imageUpdateQueue.pop();
+				pThis->CreateScheduleTimerIfNeeded();
+			}
 
-			InvalidateRect(hWnd, &itMsg->m_rect, pThis->MayErase());
 			break;
 		}
 		case WM_DROPFILES:
@@ -3927,7 +3988,7 @@ void MessageList::FlashMessage(Snowflake msg)
 	// Start flashing
 	m_flash_counter = 5;
 	m_emphasizedMessage = msg;
-	m_flash_timer = SetTimer(m_hwnd, 0, 250, NULL);
+	m_flash_timer = SetTimer(m_hwnd, TMR_FLASH, 250, NULL);
 	if (!m_flash_timer) {
 		DbgPrintW("Failed to flash message %lld", msg);
 		m_flash_counter = 0;

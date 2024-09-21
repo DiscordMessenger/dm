@@ -41,7 +41,13 @@ struct Image
 	std::vector<ImageFrame> Frames;
 	int Width = 0;
 	int Height = 0;
-	
+	bool m_bIsGif = false;
+	// IF the image is a GIF:
+	// - The image is fully opaque
+	// - The Frames element will have a SINGLE element. Frames[0] will contain
+	//   the real width and height of the GIF, but the GIF file itself will be
+	//   located in the 
+
 	Image() {}
 	Image(ImageFrame&& imf, int width, int height) :
 		Width(width),
@@ -52,6 +58,10 @@ struct Image
 
 	bool IsValid() const {
 		return !Frames.empty();
+	}
+
+	bool IsGIF() const {
+		return m_bIsGif;
 	}
 };
 
@@ -93,30 +103,77 @@ static Image DecodeWithStbImage(const uint8_t* pData, size_t size)
 		return Image();
 
 	// note: doing some work with raw STBI contexts here. don't mind it.
-	/*
 	stbi__context s;
 	stbi__start_mem(&s, pData, (int) size); // why do you have to be an INT here...
 
-	if (stbi__gif_test(&s)) {
-
-	}
-	*/
-
-	int x = 0, w = 0, h = 0;
-	stbi_uc* dataStbi = stbi_load_from_memory(pData, int(size), &w, &h, &x, 4);
-	if (!dataStbi)
-		return Image();
-
-	// byte swap because stbi is annoying
-	for (int i = 0; i < w * h; i++)
+	if (stbi__gif_test(&s))
 	{
-		stbi_uc* pd = &dataStbi[i * 4];
-		stbi_uc tmp = pd[0];
-		pd[0] = pd[2];
-		pd[2] = tmp;
-	}
+		int c = 0;
+		int w = 0, h = 0;
+		stbi__gif g{};
+		stbi_uc* data = NULL;
+		Image img;
 
-	return Image(ImageFrame(dataStbi, stbi_image_free, 0), w, h);
+		while (true)
+		{
+			stbi_uc* two_back = NULL;
+			if (img.Frames.size() >= 2) {
+				two_back = img.Frames[img.Frames.size() - 2].Data;
+			}
+			data = stbi__gif_load_next(&s, &g, &c, 4, two_back);
+			if (w == 0) {
+				w = g.w;
+				h = g.h;
+			}
+
+			if (data == (stbi_uc*) &s) {
+				// means the GIF stream was terminated.
+				break;
+			}
+
+			// NOTE: need to *copy* the data!
+			stbi_uc* newdata = (stbi_uc*) malloc(w * h * sizeof(uint32_t));
+			memcpy(newdata, data, w * h * sizeof(uint32_t));
+
+			for (int i = 0; i < w * h; i++)
+			{
+				stbi_uc* pd = &newdata[i * 4];
+				stbi_uc tmp = pd[0];
+				pd[0] = pd[2];
+				pd[2] = tmp;
+				pd[3] = 255;
+			}
+
+			img.Frames.push_back(std::move(ImageFrame(newdata, &::free, g.delay)));
+		}
+
+		if (g.out)
+			STBI_FREE(g.out);
+		
+		img.Width = w;
+		img.Height = h;
+		DbgPrintF("loaded image with %zu frames!", img.Frames.size());
+
+		return img;
+	}
+	else
+	{
+		int x = 0, w = 0, h = 0;
+		stbi_uc* dataStbi = stbi_load_from_memory(pData, int(size), &w, &h, &x, 4);
+		if (!dataStbi)
+			return Image();
+
+		// byte swap because stbi is annoying
+		for (int i = 0; i < w * h; i++)
+		{
+			stbi_uc* pd = &dataStbi[i * 4];
+			stbi_uc tmp = pd[0];
+			pd[0] = pd[2];
+			pd[2] = tmp;
+		}
+
+		return Image(ImageFrame(dataStbi, stbi_image_free, 0), w, h);
+	}
 }
 
 #else
@@ -198,6 +255,8 @@ HImage* ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& ou
 				pixels[i] = u.x;
 			}
 		}
+
+		hasAlpha = false;
 
 		HBITMAP hbm = NULL;
 

@@ -141,7 +141,7 @@ HImage* AvatarCache::GetImageSpecial(const std::string& resource, bool& hasAlpha
 
 		int nsz = pla == eImagePlace::ATTACHMENTS ? 0 : -1;
 		bool hasAlpha = false;
-		HImage* himg = ImageLoader::ConvertToBitmap(pData, size_t(sz), hasAlpha, false, nsz, nsz);
+		HImage* himg = ImageLoader::ConvertToBitmap(pData, size_t(sz), hasAlpha, true, nsz, nsz);
 
 		if (himg && himg->IsValid())
 		{
