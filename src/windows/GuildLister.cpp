@@ -881,7 +881,7 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 				else
 				{
-					hbm = GetAvatarCache()->GetBitmap(pGuild->m_avatarlnk, hasAlpha);
+					hbm = GetAvatarCache()->GetImage(pGuild->m_avatarlnk, hasAlpha)->GetFirstFrame();
 				}
 
 				int oldY = y;
@@ -1035,7 +1035,7 @@ BOOL GuildLister::ChooserDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 				if (!guild.m_avatarlnk.empty()) {
 					bool unusedHasAlpha = false;
-					hbm = GetAvatarCache()->GetBitmap(guild.m_avatarlnk, unusedHasAlpha);
+					hbm = GetAvatarCache()->GetImage(guild.m_avatarlnk, unusedHasAlpha)->GetFirstFrame();
 				}
 
 				int im = ImageList_Add(hImgList, hbm, NULL);

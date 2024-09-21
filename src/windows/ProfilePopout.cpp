@@ -318,7 +318,7 @@ bool ProfilePopout::Layout(HWND hWnd, SIZE& fullSize)
 			ShowWindow(hChild, SW_SHOW);
 			MoveWindow(hChild, pos.x, pos.y, joinedAtIconSize, joinedAtIconSize, TRUE);
 			bool hasAlpha = false;
-			HBITMAP hbm = GetAvatarCache()->GetBitmap(gld->m_avatarlnk, hasAlpha);
+			HBITMAP hbm = GetAvatarCache()->GetImage(gld->m_avatarlnk, hasAlpha)->GetFirstFrame();
 			if (hbm) {
 				hdc = GetDC(hWnd);
 				int pps = GetProfilePictureSize();

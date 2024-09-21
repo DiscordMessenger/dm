@@ -19,19 +19,19 @@ static int g_ivPreviewWidth, g_ivPreviewHeight;
 static int g_ivPreviewImageWidth, g_ivPreviewImageHeight;
 static bool g_ivbHaveScrollBars;
 static HWND g_ivChildHwnd, g_ivButtonHwnd;
-static HBITMAP g_hBitmapPreview, g_hBitmapFull;
+static HImage* g_hBitmapPreview, *g_hBitmapFull;
 static HCURSOR g_curZoomIn, g_curZoomOut;
 
 void KillImageBitmaps()
 {
-	if (g_hBitmapFull)    DeleteObject(g_hBitmapFull);
-	if (g_hBitmapPreview) DeleteObject(g_hBitmapPreview);
+	if (g_hBitmapFull)    delete g_hBitmapFull;
+	if (g_hBitmapPreview) delete g_hBitmapPreview;
 	g_hBitmapFull = g_hBitmapPreview = NULL;
 }
 
 static bool g_bChildZoomedIn = false;
 
-static HBITMAP GetBitmap()
+static HImage* GetBitmap()
 {
 	if (g_bChildZoomedIn)
 		return g_hBitmapFull;
@@ -103,21 +103,14 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 		}
 		case WM_UPDATEBITMAP:
 		{
-			HBITMAP hbm = GetBitmap();
-			if (!hbm)
+			HImage* him = GetBitmap();
+			if (!him)
 				return 0;
-
-			BITMAP bm;
-			memset(&bm, 0, sizeof(bm));
-			if (!GetObject(hbm, sizeof(BITMAP), &bm)) {
-				MessageBox(hWnd, TmGetTString(IDS_CANT_SHOW_BITMAP), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR);
-				break;
-			}
 
 			bool bzi = g_bChildZoomedIn;
 
-			int prevWidth  = abs(bm.bmWidth);
-			int prevHeight = abs(bm.bmHeight);
+			int prevWidth  = abs(him->Width);
+			int prevHeight = abs(him->Height);
 
 			RECT rect = {};
 			GetClientRect(hWnd, &rect);
@@ -241,8 +234,8 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 			PAINTSTRUCT ps;
 			HDC hdc = BeginPaint(hWnd, &ps);
 
-			HBITMAP hbm = GetBitmap();
-			if (!hbm) {
+			HImage* him = GetBitmap();
+			if (!him) {
 				COLORREF oldBk = SetBkColor(hdc, GetSysColor (COLOR_3DDKSHADOW));
 				COLORREF oldText = SetTextColor(hdc, RGB(255, 255, 255));
 				HGDIOBJ oldObject = SelectObject(hdc, g_MessageTextFont);
@@ -276,7 +269,10 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 			}
 
 			// draw the image
-			DrawBitmap(hdc, hbm, -xOffs, -yOffs, NULL);
+
+			// TODO: if animated, go animate it!
+			assert(him->Frames.size() != 0);
+			DrawBitmap(hdc, him->Frames[0].Bitmap, -xOffs, -yOffs, NULL);
 
 			EndPaint(hWnd, &ps);
 			break;
@@ -327,8 +323,11 @@ void ImageViewerOnLoad(NetRequest* pRequest)
 
 	bool unusedHasAlpha1 = false;
 	bool unusedHasAlpha2 = false;
-	g_hBitmapFull = ImageLoader::ConvertToBitmap(pData, nSize, unusedHasAlpha1, 0, 0);
-	g_hBitmapPreview = ImageLoader::ConvertToBitmap(pData, nSize, unusedHasAlpha2, g_ivPreviewImageWidth, g_ivPreviewImageHeight);
+	HImage* imFull    = ImageLoader::ConvertToBitmap(pData, nSize, unusedHasAlpha1, false, 0, 0);
+	HImage* imPreview = ImageLoader::ConvertToBitmap(pData, nSize, unusedHasAlpha2, false, g_ivPreviewImageWidth, g_ivPreviewImageHeight);
+
+	g_hBitmapFull    = imFull;
+	g_hBitmapPreview = imPreview;
 
 	g_bChildZoomedIn = false;
 	SendMessage(g_ivChildHwnd, WM_UPDATEBITMAP, 0, 0);

@@ -147,7 +147,7 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 		std::string name = GetAvatarCache()->AddImagePlace(nameRaw, eImagePlace::EMOJIS, nameRaw, parsed, height);
 
 		bool hasAlpha = false;
-		HBITMAP hbm = GetAvatarCache()->GetBitmap(nameRaw, hasAlpha);
+		HBITMAP hbm = GetAvatarCache()->GetImage(nameRaw, hasAlpha)->GetFirstFrame();
 
 		bool shouldResize = GetProfilePictureSize() != height;
 

@@ -52,7 +52,7 @@ std::string AvatarCache::AddImagePlace(const std::string& resource, eImagePlace 
 	return id;
 }
 
-void AvatarCache::SetBitmap(const std::string& resource, HBITMAP hbm, bool hasAlpha)
+void AvatarCache::SetImage(const std::string& resource, HImage* him, bool hasAlpha)
 {
 	std::string id = MakeIdentifier(resource);
 
@@ -66,14 +66,14 @@ void AvatarCache::SetBitmap(const std::string& resource, HBITMAP hbm, bool hasAl
 	auto iter = m_profileToBitmap.find(id);
 	if (iter != m_profileToBitmap.end())
 	{
-		DeleteBitmapIfNeeded(iter->second.m_bitmap);
-		iter->second.m_bitmap = hbm;
+		DeleteImageIfNeeded(iter->second.m_image);
+		iter->second.m_image = him;
 		iter->second.m_age = 0;
 		iter->second.m_bHasAlpha = hasAlpha;
 		return;
 	}
 
-	m_profileToBitmap[id] = BitmapObject(hbm, 0, hasAlpha);
+	m_profileToBitmap[id] = BitmapObject(him, 0, hasAlpha);
 }
 
 ImagePlace AvatarCache::GetPlace(const std::string& resource)
@@ -93,9 +93,10 @@ void AvatarCache::LoadedResource(const std::string& resource)
 #include "Main.hpp"
 #include "NetworkerThread.hpp"
 
-extern HBITMAP GetDefaultBitmap(); // main.cpp
+//extern HBITMAP GetDefaultBitmap(); // main.cpp
+extern HImage* GetDefaultImage(); // main.cpp
 
-HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource, bool& hasAlphaOut)
+HImage* AvatarCache::GetImageSpecial(const std::string& resource, bool& hasAlphaOut)
 {
 	std::string id = MakeIdentifier(resource);
 
@@ -103,15 +104,15 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource, bool& hasAlph
 	if (iter != m_profileToBitmap.end()) {
 		iter->second.m_age = 0;
 		hasAlphaOut = iter->second.m_bHasAlpha;
-		return iter->second.m_bitmap;
+		return iter->second.m_image;
 	}
 
 	auto iterIP = m_imagePlaces.find(id);
 	if (iterIP == m_imagePlaces.end()) {
 		// this shouldn't happen.  Just set to default
 		DbgPrintW("Could not load resource %s, no image place was registered", id.c_str());
-		SetBitmap(id, HBITMAP_LOADING, false);
-		return GetBitmapSpecial(id, hasAlphaOut);
+		SetImage(id, HIMAGE_LOADING, false);
+		return GetImageSpecial(id, hasAlphaOut);
 	}
 
 	eImagePlace pla = iterIP->second.type;
@@ -125,8 +126,8 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource, bool& hasAlph
 		// load that instead.
 		FILE* f = fopen(final_path.c_str(), "rb");
 		if (!f) {
-			SetBitmap(id, HBITMAP_ERROR, false);
-			return GetBitmapSpecial(id, hasAlphaOut);
+			SetImage(id, HIMAGE_ERROR, false);
+			return GetImageSpecial(id, hasAlphaOut);
 		}
 
 		fseek(f, 0, SEEK_END);
@@ -140,26 +141,30 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource, bool& hasAlph
 
 		int nsz = pla == eImagePlace::ATTACHMENTS ? 0 : -1;
 		bool hasAlpha = false;
-		HBITMAP hbmp = ImageLoader::ConvertToBitmap(pData, size_t(sz), hasAlpha, nsz, nsz);
-		if (hbmp) {
-			SetBitmap(id, hbmp, hasAlpha);
+		HImage* himg = ImageLoader::ConvertToBitmap(pData, size_t(sz), hasAlpha, false, nsz, nsz);
+
+		if (himg && himg->IsValid())
+		{
+			SetImage(id, himg, hasAlpha);
 			hasAlphaOut = hasAlpha;
-			return hbmp;
+			return himg;
 		}
+
+		SAFE_DELETE(himg);
 
 		// just return the default...
 		DbgPrintW("Image %s could not be decoded!", id.c_str());
 #endif
-		SetBitmap(id, HBITMAP_ERROR, false);
-		return GetBitmapSpecial(id, hasAlphaOut);
+		SetImage(id, HIMAGE_ERROR, false);
+		return GetImageSpecial(id, hasAlphaOut);
 	}
 
 	// Could not find it in the cache, so request it from discord
-	SetBitmap(id, HBITMAP_LOADING, false);
+	SetImage(id, HIMAGE_LOADING, false);
 
 	if (iterIP->second.place.empty()) {
 		DbgPrintW("Image %s could not be fetched!  Place is empty", id.c_str());
-		return GetBitmapSpecial(id, hasAlphaOut);
+		return GetImageSpecial(id, hasAlphaOut);
 	}
 
 	std::string url = iterIP->second.GetURL();
@@ -168,7 +173,7 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource, bool& hasAlph
 	{
 		// if not inserted already
 		if (!m_loadingResources.insert(url).second)
-			return GetBitmapSpecial(id, hasAlphaOut);
+			return GetImageSpecial(id, hasAlphaOut);
 
 #ifdef DISABLE_AVATAR_LOADING_FOR_DEBUGGING
 		GetFrontend()->OnAttachmentFailed(!iterIP->second.IsAttachment(), id);
@@ -191,34 +196,34 @@ HBITMAP AvatarCache::GetBitmapSpecial(const std::string& resource, bool& hasAlph
 		DbgPrintW("Image %s could not be downloaded! URL is empty!", id.c_str());
 	}
 
-	return GetBitmapSpecial(id, hasAlphaOut);
+	return GetImageSpecial(id, hasAlphaOut);
 }
 
-HBITMAP AvatarCache::GetBitmapNullable(const std::string& resource, bool& hasAlphaOut)
+HImage* AvatarCache::GetImageNullable(const std::string& resource, bool& hasAlphaOut)
 {
-	HBITMAP hbm = GetBitmapSpecial(resource, hasAlphaOut);
+	HImage* him = GetImageSpecial(resource, hasAlphaOut);
 
-	if (hbm == HBITMAP_ERROR || hbm == HBITMAP_LOADING)
-		hbm = NULL;
+	if (him == HIMAGE_ERROR || him == HIMAGE_LOADING)
+		him = NULL;
 
-	return hbm;
+	return him;
 }
 
-HBITMAP AvatarCache::GetBitmap(const std::string& resource, bool& hasAlphaOut)
+HImage* AvatarCache::GetImage(const std::string& resource, bool& hasAlphaOut)
 {
 	hasAlphaOut = false;
-	HBITMAP hbm = GetBitmapSpecial(resource, hasAlphaOut);
+	HImage* him = GetImageSpecial(resource, hasAlphaOut);
 
-	if (hbm == HBITMAP_ERROR || hbm == HBITMAP_LOADING || !hbm)
-		hbm = GetDefaultBitmap();
+	if (him == HIMAGE_ERROR || him == HIMAGE_LOADING || !him)
+		him = GetDefaultImage();
 
-	return hbm;
+	return him;
 }
 
 void AvatarCache::WipeBitmaps()
 {
 	for (auto b : m_profileToBitmap)
-		DeleteBitmapIfNeeded(b.second.m_bitmap);
+		DeleteImageIfNeeded(b.second.m_image);
 
 	m_profileToBitmap.clear();
 	m_imagePlaces.clear();
@@ -230,7 +235,7 @@ void AvatarCache::EraseBitmap(const std::string& resource)
 	if (iter == m_profileToBitmap.end())
 		return;
 
-	DeleteBitmapIfNeeded(iter->second.m_bitmap);
+	DeleteImageIfNeeded(iter->second.m_image);
 	m_profileToBitmap.erase(iter);
 }
 
@@ -241,9 +246,9 @@ bool AvatarCache::TrimBitmap()
 
 	for (auto &b : m_profileToBitmap) {
 		if (maxAge < b.second.m_age &&
-			b.second.m_bitmap != GetDefaultBitmap() &&
-			b.second.m_bitmap != HBITMAP_ERROR &&
-			b.second.m_bitmap != HBITMAP_LOADING) {
+			b.second.m_image != GetDefaultImage() &&
+			b.second.m_image != HIMAGE_ERROR &&
+			b.second.m_image != HIMAGE_LOADING) {
 			maxAge = b.second.m_age;
 			rid    = b.first;
 		}
@@ -260,7 +265,7 @@ bool AvatarCache::TrimBitmap()
 		m_loadingResources.erase(iter2);
 
 	DbgPrintW("Deleting bitmap %s", rid.c_str());
-	DeleteBitmapIfNeeded(iter->second.m_bitmap);
+	DeleteImageIfNeeded(iter->second.m_image);
 	m_profileToBitmap.erase(iter);
 
 	return true;
@@ -289,13 +294,10 @@ void AvatarCache::ClearProcessingRequests()
 	m_loadingResources.clear();
 }
 
-void AvatarCache::DeleteBitmapIfNeeded(HBITMAP hbm)
+void AvatarCache::DeleteImageIfNeeded(HImage* him)
 {
-	if (hbm && hbm != HBITMAP_LOADING && hbm != HBITMAP_ERROR && hbm != GetDefaultBitmap())
-	{
-		BOOL result = DeleteObject(hbm);
-		assert(result);
-	}
+	if (him && him != HIMAGE_LOADING && him != HIMAGE_ERROR && him != GetDefaultImage())
+		delete him;
 }
 
 std::string ImagePlace::GetURL() const

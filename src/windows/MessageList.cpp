@@ -28,14 +28,14 @@ static int GetProfileBorderRenderSize()
 	return ScaleByDPI(Supports32BitIcons() ? (PROFILE_PICTURE_SIZE_DEF + 12) : 64);
 }
 
-static void DrawImageSpecial(HDC hdc, HBITMAP hbm, RECT rect, bool hasAlpha)
+static void DrawImageSpecial(HDC hdc, HImage* him, RECT rect, bool hasAlpha)
 {
-	if (hbm == HBITMAP_LOADING)
+	if (him == HIMAGE_LOADING)
 		DrawLoadingBox(hdc, rect);
-	else if (hbm == HBITMAP_ERROR || !hbm)
+	else if (him == HIMAGE_ERROR || !him)
 		DrawErrorBox(hdc, rect);
 	else
-		DrawBitmap(hdc, hbm, rect.left, rect.top, NULL, CLR_NONE, rect.right - rect.left, rect.bottom - rect.top, hasAlpha);
+		DrawBitmap(hdc, him->GetFirstFrame(), rect.left, rect.top, NULL, CLR_NONE, rect.right - rect.left, rect.bottom - rect.top, hasAlpha);
 }
 
 WNDCLASS MessageList::g_MsgListClass;
@@ -343,20 +343,20 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 			m_thumbnailResourceID = GetAvatarCache()->MakeIdentifier(m_pEmbed->m_thumbnailUrl);
 			GetAvatarCache()->AddImagePlace(m_thumbnailResourceID, eImagePlace::ATTACHMENTS, m_pEmbed->m_thumbnailProxiedUrl);
 			bool hasAlpha = false;
-			HBITMAP hbm = GetAvatarCache()->GetBitmapSpecial(m_pEmbed->m_thumbnailUrl, hasAlpha);
+			HImage* him = GetAvatarCache()->GetImageSpecial(m_pEmbed->m_thumbnailUrl, hasAlpha);
 			if (sizeY) sizeY += gap;
 			m_thumbnailRect = { rc.left, rc.top + sizeY, rc.left + m_thumbnailSize.cx, rc.top + sizeY + m_thumbnailSize.cy };
-			DrawImageSpecial(hdc, hbm, m_thumbnailRect, hasAlpha);
+			DrawImageSpecial(hdc, him, m_thumbnailRect, hasAlpha);
 			sizeY += m_thumbnailSize.cy;
 		}
 		if (m_imageSize.cy) {
 			m_imageResourceID = GetAvatarCache()->MakeIdentifier(m_pEmbed->m_imageUrl);
 			GetAvatarCache()->AddImagePlace(m_imageResourceID, eImagePlace::ATTACHMENTS, m_pEmbed->m_imageProxiedUrl);
 			bool hasAlpha = false;
-			HBITMAP hbm = GetAvatarCache()->GetBitmapSpecial(m_pEmbed->m_imageUrl, hasAlpha);
+			HImage* him = GetAvatarCache()->GetImageSpecial(m_pEmbed->m_imageUrl, hasAlpha);
 			if (sizeY) sizeY += gap;
 			m_imageRect = { rc.left, rc.top + sizeY, rc.left + m_imageSize.cx, rc.top + sizeY + m_imageSize.cy };
-			DrawImageSpecial(hdc, hbm, m_imageRect, hasAlpha);
+			DrawImageSpecial(hdc, him, m_imageRect, hasAlpha);
 			sizeY += m_imageSize.cy;
 		}
 	}
@@ -1447,8 +1447,8 @@ void MessageList::DrawImageAttachment(HDC hdc, RECT& paintRect, AttachmentItem& 
 	GetAvatarCache()->AddImagePlace(attachItem.m_resourceID, eImagePlace::ATTACHMENTS, url, pAttach->m_id);
 
 	bool hasAlpha = false;
-	HBITMAP hbm = GetAvatarCache()->GetBitmapSpecial(attachItem.m_resourceID, hasAlpha);
-	DrawImageSpecial(hdc, hbm, childAttachRect, hasAlpha);
+	HImage* him = GetAvatarCache()->GetImageSpecial(attachItem.m_resourceID, hasAlpha);
+	DrawImageSpecial(hdc, him, childAttachRect, hasAlpha);
 }
 
 void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem& attachItem, RECT& attachRect)
@@ -1942,7 +1942,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 			DrawIconEx(hdc, pfpX - pfpBordOffX, pfpY - pfpBordOffY, g_ProfileBorderIcon, pfpBordSize, pfpBordSize, 0, NULL, DI_COMPAT | DI_NORMAL);
 			bool hasAlpha = false;
 			GetAvatarCache()->AddImagePlace(refMsg.m_avatar, eImagePlace::AVATARS, refMsg.m_avatar, refMsg.m_author_snowflake);
-			HBITMAP hbm = GetAvatarCache()->GetBitmap(refMsg.m_avatar, hasAlpha);
+			HBITMAP hbm = GetAvatarCache()->GetImage(refMsg.m_avatar, hasAlpha)->GetFirstFrame();
 
 			RECT& raRect = item.m_refAvatarRect;
 			raRect.left   = pfpX;
@@ -2689,7 +2689,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 				// draw the avatar
 				bool hasAlpha = false;
 				GetAvatarCache()->AddImagePlace(item.m_msg.m_avatar, eImagePlace::AVATARS, item.m_msg.m_avatar, item.m_msg.m_author_snowflake);
-				HBITMAP hbm = GetAvatarCache()->GetBitmap(item.m_msg.m_avatar, hasAlpha);
+				HBITMAP hbm = GetAvatarCache()->GetImage(item.m_msg.m_avatar, hasAlpha)->GetFirstFrame();
 				DrawBitmap(hdc, hbm, pfRect.left, pfRect.top, &pfRect, CLR_NONE, GetProfilePictureSize(), 0, hasAlpha);
 			}
 		}

@@ -216,12 +216,21 @@ void Frontend_Win32::OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_
 {
 	int nImSize = bIsProfilePicture ? -1 : 0;
 	bool bHasAlpha = false;
-	HBITMAP bmp = ImageLoader::ConvertToBitmap(pData, nSize, bHasAlpha, nImSize, nImSize);
-	if (bmp)
+	HImage* himg = ImageLoader::ConvertToBitmap(pData, nSize, bHasAlpha, false, nImSize, nImSize);
+
+	if (himg)
 	{
-		GetAvatarCache()->LoadedResource(additData);
-		GetAvatarCache()->SetBitmap(additData, bmp, bHasAlpha);
-		OnUpdateAvatar(additData);
+		if (himg->IsValid())
+		{
+			GetAvatarCache()->LoadedResource(additData);
+			GetAvatarCache()->SetImage(additData, himg, bHasAlpha);
+			OnUpdateAvatar(additData);
+			// note: stole the resource so that the HImage destructor doesn't delete it.
+		}
+		else
+		{
+			delete himg;
+		}
 	}
 
 	// store the cached data..
@@ -246,7 +255,7 @@ void Frontend_Win32::OnAttachmentFailed(bool bIsProfilePicture, const std::strin
 	}
 
 	GetAvatarCache()->LoadedResource(additData);
-	GetAvatarCache()->SetBitmap(additData, HBITMAP_ERROR, false);
+	GetAvatarCache()->SetImage(additData, HIMAGE_ERROR, false);
 	OnUpdateAvatar(additData);
 }
 

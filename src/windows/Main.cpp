@@ -152,11 +152,15 @@ HFONT
 	g_TypingBoldFont;
 
 HBITMAP g_DefaultProfilePicture;
+HImage g_defaultImage;
 UINT_PTR g_HeartbeatTimer;
 int g_HeartbeatTimerInterval;
 
 HBITMAP GetDefaultBitmap() {
 	return g_DefaultProfilePicture;
+}
+HImage* GetDefaultImage() {
+	return &g_defaultImage;
 }
 
 void WantQuit()
@@ -1698,6 +1702,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	g_DefaultProfilePicture = (HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_DEFAULT),                   IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
 	g_ProfileBorderIcon     = (HICON)  LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER)),      IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
 	g_ProfileBorderIconGold = (HICON)  LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER_GOLD)), IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+
+	g_defaultImage.Frames.resize(1);
+	g_defaultImage.Frames[0].Bitmap = g_DefaultProfilePicture;
+	g_defaultImage.Width = g_defaultImage.Height = GetProfilePictureSize();
 
 	InitializeStatusIcons();
 

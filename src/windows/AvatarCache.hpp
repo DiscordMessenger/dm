@@ -6,6 +6,7 @@
 #include <set>
 
 #include "../discord/Snowflake.hpp"
+#include "ImageLoader.hpp"
 
 enum class eImagePlace
 {
@@ -33,8 +34,8 @@ struct ImagePlace {
 	std::string GetURL() const;
 };
 
-#define HBITMAP_LOADING ((HBITMAP) 0xDDCCBBAA)
-#define HBITMAP_ERROR   ((HBITMAP) 0xDDCCBBAB)
+#define HIMAGE_LOADING ((HImage*) 0xDDCCBBAA)
+#define HIMAGE_ERROR   ((HImage*) 0xDDCCBBAB)
 
 // Kind of a misnomer as it also handles attachment resources.
 class AvatarCache
@@ -42,12 +43,12 @@ class AvatarCache
 private:
 	struct BitmapObject
 	{
-		HBITMAP m_bitmap = NULL;
+		HImage* m_image = nullptr;
 		int m_age = 0;
 		bool m_bHasAlpha = false;
 
 		BitmapObject() {}
-		BitmapObject(HBITMAP hbm, int age, bool hasAlpha) : m_bitmap(hbm), m_age(age), m_bHasAlpha(hasAlpha) {}
+		BitmapObject(HImage* him, int age, bool hasAlpha) : m_image(him), m_age(age), m_bHasAlpha(hasAlpha) {}
 
 		~BitmapObject() {
 		}
@@ -58,7 +59,7 @@ protected:
 
 	// Set the bitmap associated with the resource ID.
 	// Note, after this, hbm is owned by the profile bitmap handler, so you shouldn't delete it
-	void SetBitmap(const std::string& resource, HBITMAP hbm, bool hasAlpha);
+	void SetImage(const std::string& resource, HImage* him, bool hasAlpha);
 
 public:
 	// Create a 32-character identifier based on the resource name.  If a 32 character
@@ -76,13 +77,13 @@ public:
 	void LoadedResource(const std::string& resource);
 
 	// Get the bitmap associated with the resource.  If it isn't loaded, request it, and return special bitmap handles.
-	HBITMAP GetBitmapSpecial(const std::string& resource, bool& hasAlphaOut);
+	HImage* GetImageSpecial(const std::string& resource, bool& hasAlphaOut);
 
 	// Get the bitmap associated with the resource.  If it isn't loaded, request it, and return NULL.
-	HBITMAP GetBitmapNullable(const std::string& resource, bool& hasAlphaOut);
+	HImage* GetImageNullable(const std::string& resource, bool& hasAlphaOut);
 
 	// Get the bitmap associated with the resource.  If it isn't loaded, request it, and return a default.
-	HBITMAP GetBitmap(const std::string& resource, bool& hasAlphaOut);
+	HImage* GetImage(const std::string& resource, bool& hasAlphaOut);
 
 	// Delete all bitmaps.
 	void WipeBitmaps();
@@ -117,8 +118,8 @@ private:
 	// A list of resources pending load.
 	std::set<std::string> m_loadingResources;
 
-	// Delete the bitmap if it isn't the default one.
-	static void DeleteBitmapIfNeeded(HBITMAP hbm);
+	// Delete the image if it isn't the default one.
+	static void DeleteImageIfNeeded(HImage* hbm);
 };
 
 AvatarCache* GetAvatarCache();

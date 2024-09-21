@@ -98,7 +98,7 @@ void ProfileView::Paint(HDC hdc)
 	}
 
 	bool hasAlpha = false;
-	HBITMAP hbm = GetAvatarCache()->GetBitmap(avatarLink, hasAlpha);
+	HBITMAP hbm = GetAvatarCache()->GetImage(avatarLink, hasAlpha)->GetFirstFrame();
 	int pfpSize = GetProfilePictureSize();
 	int pfpBorderSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 	int pfpBorderSizeDrawn = GetProfileBorderSize();

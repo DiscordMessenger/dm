@@ -148,7 +148,7 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 			hwnd = GetDlgItem(hwndDlg, IDC_STATIC_PROFILE_IMAGE);
 
 			bool unusedHasAlpha = false;
-			HBITMAP hbm = GetAvatarCache()->GetBitmap(pProfile->m_avatarlnk, unusedHasAlpha);
+			HBITMAP hbm = GetAvatarCache()->GetImage(pProfile->m_avatarlnk, unusedHasAlpha)->GetFirstFrame();
 			SendMessage(hwnd, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)hbm);
 
 			eExplicitFilter filter = GetSettingsManager()->GetExplicitFilter();

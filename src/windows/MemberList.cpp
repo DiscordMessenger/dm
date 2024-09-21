@@ -401,7 +401,7 @@ LRESULT MemberList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				// draw profile picture
 				bool hasAlpha = false;
-				HBITMAP hbm = GetAvatarCache()->GetBitmap(pf->m_avatarlnk, hasAlpha), hbmmask = NULL;
+				HBITMAP hbm = GetAvatarCache()->GetImage(pf->m_avatarlnk, hasAlpha)->GetFirstFrame(), hbmmask = NULL;
 				DrawBitmap(hdc, hbm, rcItem.left + ScaleByDPI(6), rcItem.top + ScaleByDPI(4), NULL, CLR_NONE, GetProfilePictureSize(), 0, hasAlpha);
 
 				// draw status indicator
