@@ -44,9 +44,11 @@ struct Image
 	bool m_bIsGif = false;
 	// IF the image is a GIF:
 	// - The image is fully opaque
-	// - The Frames element will have a SINGLE element. Frames[0] will contain
+	// - The Frames vector will have a SINGLE element.  Frames[0] will contain
 	//   the real width and height of the GIF, but the GIF file itself will be
-	//   located in the 
+	//   stored as image data, instead of the frames themselves.  This is done
+	//   to save space.  For example, a 619 frame 300 X 281 GIF takes up around
+	//   200 MEGABYTES of space! This is, frankly, BAD!
 
 	Image() {}
 	Image(ImageFrame&& imf, int width, int height) :
@@ -109,51 +111,26 @@ static Image DecodeWithStbImage(const uint8_t* pData, size_t size)
 	if (stbi__gif_test(&s))
 	{
 		int c = 0;
-		int w = 0, h = 0;
 		stbi__gif g{};
 		stbi_uc* data = NULL;
 		Image img;
 
-		while (true)
-		{
-			stbi_uc* two_back = NULL;
-			if (img.Frames.size() >= 2) {
-				two_back = img.Frames[img.Frames.size() - 2].Data;
-			}
-			data = stbi__gif_load_next(&s, &g, &c, 4, two_back);
-			if (w == 0) {
-				w = g.w;
-				h = g.h;
-			}
-
-			if (data == (stbi_uc*) &s) {
-				// means the GIF stream was terminated.
-				break;
-			}
-
-			// NOTE: need to *copy* the data!
-			stbi_uc* newdata = (stbi_uc*) malloc(w * h * sizeof(uint32_t));
-			memcpy(newdata, data, w * h * sizeof(uint32_t));
-
-			for (int i = 0; i < w * h; i++)
-			{
-				stbi_uc* pd = &newdata[i * 4];
-				stbi_uc tmp = pd[0];
-				pd[0] = pd[2];
-				pd[2] = tmp;
-				pd[3] = 255;
-			}
-
-			img.Frames.push_back(std::move(ImageFrame(newdata, &::free, g.delay)));
+		data = stbi__gif_load_next(&s, &g, &c, 4, nullptr);
+		if (!data) {
+			// the image failed to load.
+			return img;
 		}
 
-		if (g.out)
-			STBI_FREE(g.out);
-		
-		img.Width = w;
-		img.Height = h;
-		DbgPrintF("loaded image with %zu frames!", img.Frames.size());
+		// nope, we just wanted the width/height.
+		stbi_image_free(data);
 
+		stbi_uc* pDataClone = (stbi_uc*)malloc(size);
+		memcpy(pDataClone, pData, size);
+
+		img.Width = g.w;
+		img.Height = g.h;
+		img.Frames.push_back(std::move(ImageFrame(pDataClone, &::free, 0)));
+		img.m_bIsGif = true;
 		return img;
 	}
 	else
@@ -184,6 +161,44 @@ static Image DecodeWithStbImage(const uint8_t* pData, size_t size, int* width, i
 }
 
 #endif
+
+struct HGifData
+{
+	uint8_t* GifData = nullptr;
+	size_t GifSize = 0;
+
+#ifdef STBI_SUP
+	bool BeganContext = false;
+	bool IsCorrupt = false;
+	stbi__context Context{};
+	stbi__gif Gif{};
+#endif
+
+	HGifData() {}
+	HGifData(const HGifData&) = delete;
+	HGifData(HGifData&& oth) noexcept
+	{
+		GifData = oth.GifData; oth.GifData = nullptr;
+		GifSize = oth.GifSize;
+		BeganContext = oth.BeganContext;
+		IsCorrupt = oth.IsCorrupt;
+		memcpy(&Context, &oth.Context, sizeof(Context));
+		memcpy(&Gif, &oth.Gif, sizeof(Gif));
+		memset(&oth.Context, 0, sizeof oth.Context);
+		memset(&oth.Gif, 0, sizeof oth.Gif);
+	}
+
+	~HGifData()
+	{
+		if (GifData)
+			free(GifData);
+
+#ifdef STBI_SUP
+		if (Gif.out)
+			stbi_image_free(Gif.out);
+#endif
+	}
+};
 
 HImage* ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& outHasAlphaChannel, bool loadAllFrames, int newWidth, int newHeight)
 {
@@ -216,6 +231,27 @@ HImage* ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& ou
 	himg->Frames.resize(loadedImageCount);
 	himg->Width = newWidth;
 	himg->Height = newHeight;
+
+	// IF this is a gif:
+	if (img.IsGIF())
+	{
+		// Well, we just want to create a simple bitmap and return.
+		// This bitmap will actually draw the GIF, instead of our own.
+		HDC wndHdc = GetDC(g_Hwnd);
+		HBITMAP hbm = CreateCompatibleBitmap(wndHdc, img.Width, img.Height);
+		ReleaseDC(g_Hwnd, wndHdc);
+
+		himg->Frames.resize(1);
+		himg->Frames[0].Bitmap = hbm;
+
+		// steal the data for ourselves, don't let ImageFrame's destructor delete it.
+		HGifData* gif = himg->GifData = new HGifData;
+		gif->GifData = img.Frames[0].Data;
+		gif->GifSize = size;
+
+		img.Frames[0].Data = nullptr;
+		return himg;
+	}
 
 	BITMAPINFO bmi{};
 	BITMAPINFOHEADER& hdr = bmi.bmiHeader;
@@ -567,6 +603,9 @@ HImage::~HImage()
 	// note: this assertion will not work when exiting !
 	//assert(this != &g_defaultImage);
 	DbgPrintW("HImage %p destructed", this);
+
+	if (GifData)
+		delete GifData;
 }
 
 HBITMAP HImage::WithdrawImage(size_t frameNo, int* frameLengthOut)
@@ -597,4 +636,102 @@ HBITMAP HImage::GetFirstFrame() const
 {
 	if (Frames.empty()) return NULL;
 	return Frames[0].Bitmap;
+}
+
+HBITMAP HImage::GetNextFrameGIF(int& outDelay, int __recursion)
+{
+	assert(Frames.size() > 0);
+	if (Frames.empty())
+		return nullptr;
+
+	HBITMAP hbm = Frames[0].Bitmap;
+	assert(hbm);
+
+	HGifData* gifData = GifData;
+	if (!gifData)
+		return hbm;
+
+	if (gifData->IsCorrupt)
+		// Return whatever the last thing was
+		return hbm;
+
+	if (__recursion > 10)
+	{
+		DbgPrintF("ERROR: GIF parsing lead to infinite recursion. Does this GIF seriously have no frames?!");
+		assert(!"uh oh"); // <-- does nothing on release builds :)
+
+		// Return whatever the last thing was
+		gifData->IsCorrupt = true;
+		return hbm;
+	}
+
+	if (!gifData->BeganContext) {
+		stbi__start_mem(&gifData->Context, gifData->GifData, (int) gifData->GifSize); // why do you have to be an INT here...
+		gifData->BeganContext = true;
+	}
+
+	BITMAPINFO bmi{};
+	BITMAPINFOHEADER& hdr = bmi.bmiHeader;
+	hdr.biSizeImage = 0;
+	hdr.biWidth = Width;
+	hdr.biHeight = -Height;
+	hdr.biPlanes = 1;
+	hdr.biBitCount = 32;
+	hdr.biCompression = BI_RGB;
+	hdr.biSize = sizeof(BITMAPINFOHEADER);
+
+	// note: no support for two_back.
+	int Components = 0;
+	stbi_uc* data = stbi__gif_load_next(&gifData->Context, &gifData->Gif, &Components, 4, NULL);
+
+	if (data == nullptr) {
+		// ERROR!
+		DbgPrintF("ERROR: Potentially corrupt GIF.");
+		ResetGifContext();
+		return hbm;
+	}
+
+	if (data == (stbi_uc*) &gifData->Context) {
+		DbgPrintF("loop back to first frame!!");
+		ResetGifContext();
+		return GetNextFrameGIF(outDelay, __recursion + 1);
+	}
+
+	// byte swap because stbi is annoying
+	for (int i = 0; i < Width * Height; i++)
+	{
+		stbi_uc* pd = &data[i * 4];
+		stbi_uc tmp = pd[0];
+		pd[0] = pd[2];
+		pd[2] = tmp;
+	}
+
+	assert(gifData->Gif.w == Width);
+	assert(gifData->Gif.h == Height);
+
+	HDC wndHdc = GetDC(g_Hwnd);
+	int x = SetDIBits(wndHdc, hbm, 0, Height, data, &bmi, DIB_RGB_COLORS);
+	if (x == GDI_ERROR) {
+		DbgPrintF("damn it!! SetDIBits failed while processing a gif: %d", x);
+	}
+	ReleaseDC(g_Hwnd, wndHdc);
+
+	outDelay = gifData->Gif.delay;
+	return hbm;
+}
+
+void HImage::ResetGifContext()
+{
+	HGifData* gifData = GifData;
+	if (!gifData)
+		return;
+
+	if (!gifData->BeganContext)
+		return;
+
+	gifData->BeganContext = false;
+	if (gifData->Gif.out)
+		STBI_FREE(gifData->Gif.out);
+
+	memset(&gifData->Gif, 0, sizeof gifData->Gif);
 }

@@ -10,6 +10,12 @@
 #include "../discord/ActiveStatus.hpp"
 #include "../discord/Frontend.hpp"
 
+#if !defined MINGW_SPECIFIC_HACKS
+#define WEBP_SUP
+#endif
+
+#define STBI_SUP
+
 #ifdef UNICODE
 #define WAsnprintf _snwprintf
 #else

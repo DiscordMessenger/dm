@@ -4,6 +4,14 @@
 #include <cstdint>
 #include <vector>
 
+#include "WinUtils.hpp"
+
+#ifdef STBI_SUP
+#include "stb/stb_image.h"
+#else
+#error WHAT
+#endif
+
 struct HImageFrame
 {
 	HBITMAP Bitmap = NULL;
@@ -12,19 +20,34 @@ struct HImageFrame
 	~HImageFrame();
 };
 
+struct HGifData;
+
 struct HImage
 {
 	std::vector<HImageFrame> Frames;
 	int Width = 0;
 	int Height = 0;
+	HGifData* GifData = nullptr;
 
 	HImage();
 	~HImage();
+
 	HImage(const HImage&) = delete;
-	HImage(HImage&&) = default;
+
+	HImage(HImage&& oth) noexcept
+	{
+		Width = oth.Width;
+		Height = oth.Height;
+		Frames = std::move(oth.Frames);
+		GifData = std::move(oth.GifData);
+	}
 
 	bool IsValid() const noexcept {
 		return !Frames.empty();
+	}
+
+	bool IsGIF() const noexcept {
+		return GifData != nullptr;
 	}
 
 	// Withdraws a bitmap handle based on frame number.  This removes it from
@@ -40,6 +63,13 @@ struct HImage
 	// Gets the first frame of an image.
 	// Use when you have no intention of animating the image.
 	HBITMAP GetFirstFrame() const;
+
+	// Gets the next frame of a GIF.
+	// NOTE: This returns the same HBITMAP handle but with different data.
+	HBITMAP GetNextFrameGIF(int& outDelay, int __recursion = 0);
+
+private:
+	void ResetGifContext();
 };
 
 class ImageLoader

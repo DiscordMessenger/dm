@@ -26,12 +26,6 @@
 #define USE_SPEECH
 #endif
 
-#if !defined MINGW_SPECIFIC_HACKS
-#define WEBP_SUP
-#endif
-
-#define STBI_SUP
-
 #include "../resource.h"
 
 #include "MissingDefinitions.hpp"
