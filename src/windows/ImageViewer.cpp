@@ -21,11 +21,17 @@ static bool g_ivbHaveScrollBars;
 static HWND g_ivChildHwnd, g_ivButtonHwnd;
 static HImage* g_hBitmapPreview, *g_hBitmapFull;
 static HCURSOR g_curZoomIn, g_curZoomOut;
+static UINT g_ivTimerHandle;
+static uint64_t g_ivTimeSetupTimer;
 
 void KillImageBitmaps()
 {
-	if (g_hBitmapFull)    delete g_hBitmapFull;
-	if (g_hBitmapPreview) delete g_hBitmapPreview;
+	if (g_hBitmapFull)
+		delete g_hBitmapFull;
+
+	if (g_hBitmapPreview && g_hBitmapPreview != g_hBitmapFull)
+		delete g_hBitmapPreview;
+
 	g_hBitmapFull = g_hBitmapPreview = NULL;
 }
 
@@ -75,6 +81,57 @@ static bool ImageViewerNeedScrollBarsAtAll(int winWidth, int winHeight)
 static bool ImageViewerNeedScrollBars(int winWidth, int winHeight)
 {
 	return g_bChildZoomedIn && (g_ivWidth != winWidth || g_ivHeight != winHeight);
+}
+
+uint64_t g_ivNextTimerSetup = 0;
+uint64_t g_ivTestTime = 0;
+
+#pragma comment(lib, "winmm.lib")
+
+void ImageViewerAdvanceGifAndCreateTimer();
+void CALLBACK ImageViewerTimerCallBack(UINT tid, UINT msg, DWORD dwu, DWORD dw1, DWORD dw2)
+{
+	uint64_t Diff = GetTimeMs() - g_ivTimeSetupTimer;
+	g_ivTimeSetupTimer = GetTimeMs();
+	ImageViewerAdvanceGifAndCreateTimer();
+}
+
+void ImageViewerAdvanceGifAndCreateTimer()
+{
+	if (!g_hBitmapFull->IsGIF())
+		return;
+
+	int delay = 0;
+	g_hBitmapFull->GetNextFrameGIF(delay);
+
+	PostMessage(g_ivChildHwnd, WM_UPDATEBITMAP, 0, 0);
+
+	if (g_ivTimerHandle) {
+		return; // don't set up another.
+	}
+
+	TIMECAPS tc;
+	MMRESULT mmResult;
+	mmResult = timeGetDevCaps(&tc, sizeof tc);
+	if (mmResult == TIMERR_NOCANDO) {
+		// ugh.
+		DbgPrintF("Winmm time reported that it can't fetch device caps.  No way!");
+		return;
+	}
+
+	UINT wTimerRes = std::min(std::max(tc.wPeriodMin, 1U), tc.wPeriodMax);
+	
+	mmResult = timeBeginPeriod(wTimerRes);
+	assert(mmResult != TIMERR_NOCANDO);
+
+	MMRESULT mmres = timeSetEvent(delay, wTimerRes, ImageViewerTimerCallBack, NULL, TIME_PERIODIC);
+	if (mmres == TIMERR_NOCANDO) {
+		assert(!"But what can you do?");
+		g_ivTimerHandle = 0;
+	}
+	else {
+		g_ivTimerHandle = (UINT) mmres;
+	}
 }
 
 LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -235,7 +292,8 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 			HDC hdc = BeginPaint(hWnd, &ps);
 
 			HImage* him = GetBitmap();
-			if (!him) {
+			if (!him)
+			{
 				COLORREF oldBk = SetBkColor(hdc, GetSysColor (COLOR_3DDKSHADOW));
 				COLORREF oldText = SetTextColor(hdc, RGB(255, 255, 255));
 				HGDIOBJ oldObject = SelectObject(hdc, g_MessageTextFont);
@@ -269,10 +327,37 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 			}
 
 			// draw the image
-
-			// TODO: if animated, go animate it!
 			assert(him->Frames.size() != 0);
-			DrawBitmap(hdc, him->Frames[0].Bitmap, -xOffs, -yOffs, NULL);
+
+			if (!g_bChildZoomedIn && !him->Frames.empty())
+			{
+				if (g_hBitmapFull == g_hBitmapPreview)
+				{
+					HDC hdc2 = CreateCompatibleDC(hdc);
+					HGDIOBJ hgdiobj = SelectObject(hdc2, him->GetImage(0, NULL));
+
+					StretchBlt(
+						hdc,
+						-xOffs,
+						-yOffs,
+						g_ivPreviewImageWidth,
+						g_ivPreviewImageHeight,
+						hdc2,
+						0,
+						0,
+						him->Width,
+						him->Height,
+						SRCCOPY
+					);
+
+					SelectObject(hdc2, hgdiobj);
+					DeleteDC(hdc2);
+				}
+				else
+				{
+					DrawBitmap(hdc, him->Frames[0].Bitmap, -xOffs, -yOffs, NULL);
+				}
+			}
 
 			EndPaint(hWnd, &ps);
 			break;
@@ -281,6 +366,12 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 		{
 			KillImageBitmaps();
 			g_ivChildHwnd = g_ivHwnd = NULL;
+
+			if (g_ivTimerHandle)
+			{
+				timeKillEvent(g_ivTimerHandle);
+				g_ivTimerHandle = 0;
+			}
 			break;
 		}
 		case WM_CREATE:
@@ -323,14 +414,26 @@ void ImageViewerOnLoad(NetRequest* pRequest)
 
 	bool unusedHasAlpha1 = false;
 	bool unusedHasAlpha2 = false;
-	HImage* imFull    = ImageLoader::ConvertToBitmap(pData, nSize, unusedHasAlpha1, false, 0, 0);
-	HImage* imPreview = ImageLoader::ConvertToBitmap(pData, nSize, unusedHasAlpha2, false, g_ivPreviewImageWidth, g_ivPreviewImageHeight);
+	HImage* imFull = ImageLoader::ConvertToBitmap(pData, nSize, unusedHasAlpha1, false, 0, 0);
+	g_hBitmapFull = imFull;
 
-	g_hBitmapFull    = imFull;
-	g_hBitmapPreview = imPreview;
+	if (g_hBitmapFull->IsGIF())
+	{
+		g_hBitmapPreview = g_hBitmapFull;
+	}
+	else
+	{
+		HImage* imPreview = ImageLoader::ConvertToBitmap(pData, nSize, unusedHasAlpha2, false, g_ivPreviewImageWidth, g_ivPreviewImageHeight);
+		g_hBitmapPreview = imPreview;
+	}
 
 	g_bChildZoomedIn = false;
-	SendMessage(g_ivChildHwnd, WM_UPDATEBITMAP, 0, 0);
+
+	if (g_ivTimerHandle)
+		timeKillEvent(g_ivTimerHandle);
+	g_ivTimerHandle = 0;
+
+	ImageViewerAdvanceGifAndCreateTimer();
 }
 
 void ImageViewerRequestSave()
