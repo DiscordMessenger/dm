@@ -85,7 +85,6 @@ public:
 	RECT m_textRect;
 	RECT m_addRect;
 	bool m_bHighlighted = false;
-	size_t m_frameNumber = 0;
 	uint64_t m_updateScheduledAt = 0;
 };
 
@@ -450,7 +449,7 @@ private:
 	bool m_bIsTopDown = false;
 
 	std::priority_queue<EnqueuedImageUpdate> m_imageUpdateQueue;
-	UINT_PTR m_timerHandle = 0;
+	UINT m_timerHandle = 0;
 
 	void Scroll(int amount, RECT* rcClip = NULL, bool shiftAllRects = true);
 	
@@ -600,6 +599,8 @@ private:
 
 	void ScheduleImageUpdate(uint64_t destTime, RECT& updateRect);
 	void CreateScheduleTimerIfNeeded();
+
+	static void CALLBACK TimerCallBack(UINT tid, UINT msg, DWORD_PTR dwu, DWORD dw1, DWORD dw2);
 
 	// [Left] [Author] [pinned] [a message](uid) [ to this channel.
 

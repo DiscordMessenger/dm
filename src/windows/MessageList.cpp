@@ -1,5 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <mmsystem.h>
 #include <shellapi.h>
 #include "MessageList.hpp"
 #include "TextToSpeech.hpp"
@@ -28,14 +29,14 @@ static int GetProfileBorderRenderSize()
 	return ScaleByDPI(Supports32BitIcons() ? (PROFILE_PICTURE_SIZE_DEF + 12) : 64);
 }
 
-static void DrawImageSpecial(HDC hdc, HImage* him, RECT rect, bool hasAlpha, size_t frameNumber, int& frameLengthOut)
+static void DrawImageSpecial(HDC hdc, HImage* him, RECT rect, bool hasAlpha)
 {
 	if (him == HIMAGE_LOADING)
 		DrawLoadingBox(hdc, rect);
 	else if (him == HIMAGE_ERROR || !him)
 		DrawErrorBox(hdc, rect);
 	else
-		DrawBitmap(hdc, him->GetImage(frameNumber, &frameLengthOut), rect.left, rect.top, NULL, CLR_NONE, rect.right - rect.left, rect.bottom - rect.top, hasAlpha);
+		DrawBitmap(hdc, him->GetImage(0, NULL), rect.left, rect.top, NULL, CLR_NONE, rect.right - rect.left, rect.bottom - rect.top, hasAlpha);
 }
 
 WNDCLASS MessageList::g_MsgListClass;
@@ -338,7 +339,6 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 		DrawText(hdc, m_description.GetWrapped(), -1, &rcText, DT_WORDBREAK | DT_WORD_ELLIPSIS);
 		sizeY += m_descriptionSize.cy;
 	}
-	int useless = 0;
 	if (GetLocalSettings()->ShowEmbedImages()) {
 		if (m_thumbnailSize.cy) {
 			m_thumbnailResourceID = GetAvatarCache()->MakeIdentifier(m_pEmbed->m_thumbnailUrl);
@@ -347,7 +347,7 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 			HImage* him = GetAvatarCache()->GetImageSpecial(m_pEmbed->m_thumbnailUrl, hasAlpha);
 			if (sizeY) sizeY += gap;
 			m_thumbnailRect = { rc.left, rc.top + sizeY, rc.left + m_thumbnailSize.cx, rc.top + sizeY + m_thumbnailSize.cy };
-			DrawImageSpecial(hdc, him, m_thumbnailRect, hasAlpha, 0, useless);
+			DrawImageSpecial(hdc, him, m_thumbnailRect, hasAlpha);
 			sizeY += m_thumbnailSize.cy;
 		}
 		if (m_imageSize.cy) {
@@ -357,7 +357,7 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 			HImage* him = GetAvatarCache()->GetImageSpecial(m_pEmbed->m_imageUrl, hasAlpha);
 			if (sizeY) sizeY += gap;
 			m_imageRect = { rc.left, rc.top + sizeY, rc.left + m_imageSize.cx, rc.top + sizeY + m_imageSize.cy };
-			DrawImageSpecial(hdc, him, m_imageRect, hasAlpha, 0, useless);
+			DrawImageSpecial(hdc, him, m_imageRect, hasAlpha);
 			sizeY += m_imageSize.cy;
 		}
 	}
@@ -1450,27 +1450,21 @@ void MessageList::DrawImageAttachment(HDC hdc, RECT& paintRect, AttachmentItem& 
 	int frameLengthOut = 0;
 	bool hasAlpha = false;
 	HImage* him = GetAvatarCache()->GetImageSpecial(attachItem.m_resourceID, hasAlpha);
+	if (him && him != HIMAGE_ERROR && him != HIMAGE_LOADING && him->IsGIF()) {
+		him->GetNextFrameGIF(frameLengthOut);
+	}
 
-	if (!him || him == HIMAGE_ERROR || him == HIMAGE_LOADING) {
-		attachItem.m_frameNumber = 0;
-		DrawImageSpecial(hdc, him, childAttachRect, hasAlpha, attachItem.m_frameNumber, frameLengthOut);
+	DrawImageSpecial(hdc, him, childAttachRect, hasAlpha);
+
+	if (!him || him == HIMAGE_ERROR || him == HIMAGE_LOADING)
 		return;
-	}
 
-	if (attachItem.m_frameNumber >= him->Frames.size()) {
-		attachItem.m_frameNumber = 0;
-	}
-
-	DrawImageSpecial(hdc, him, childAttachRect, hasAlpha, attachItem.m_frameNumber, frameLengthOut);
-
-	if (him->Frames.size() > 1 &&
-		attachItem.m_updateScheduledAt < GetTimeMs() + 10)
+	if (him->IsGIF() && attachItem.m_updateScheduledAt < GetTimeMs() + 10)
 	{
 		if(!attachItem.m_updateScheduledAt)
 			attachItem.m_updateScheduledAt = GetTimeMs();
 
 		attachItem.m_updateScheduledAt += frameLengthOut;
-		attachItem.m_frameNumber++;
 		ScheduleImageUpdate(attachItem.m_updateScheduledAt, childAttachRect);
 	}
 }
@@ -2100,6 +2094,18 @@ void MessageList::RequestMarkRead()
 	GetNotificationManager()->MarkNotificationsRead(m_channelID);
 }
 
+static_assert(sizeof(DWORD_PTR) == sizeof(DWORD), "Are you trying to create a 64-bit build? You'll probably need to rewrite this");
+
+void CALLBACK MessageList::TimerCallBack(UINT tid, UINT msg, DWORD_PTR dwu, DWORD dw1, DWORD dw2)
+{
+	MessageList* pThis = (MessageList*) dwu;
+
+	if (pThis->m_imageUpdateQueue.empty()) {
+		timeKillEvent(pThis->m_timerHandle);
+		pThis->m_timerHandle = 0;
+	}
+}
+
 void MessageList::CreateScheduleTimerIfNeeded()
 {
 	if (m_imageUpdateQueue.empty())
@@ -2111,9 +2117,21 @@ void MessageList::CreateScheduleTimerIfNeeded()
 		timeDiff = 1;
 
 	if (m_timerHandle)
-		KillTimer(m_hwnd, m_timerHandle);
+		// Already set up a timer.
+		return;
 
-	m_timerHandle = SetTimer(m_hwnd, TMR_UPDATE, (UINT) timeDiff, NULL);
+	TIMECAPS tc;
+	MMRESULT mmResult;
+	mmResult = timeGetDevCaps(&tc, sizeof tc);
+	if (mmResult == TIMERR_NOCANDO) {
+		// ugh.
+		DbgPrintF("Winmm time reported that it can't fetch device caps.  No way!");
+		return;
+	}
+
+	UINT wTimerRes = std::min(std::max(tc.wPeriodMin, 1U), tc.wPeriodMax);
+
+	m_timerHandle = timeSetEvent(wTimerRes, wTimerRes, &MessageList::TimerCallBack, (DWORD_PTR) this, TIME_PERIODIC);
 }
 
 void MessageList::ScheduleImageUpdate(uint64_t destTime, RECT& updateRect)
