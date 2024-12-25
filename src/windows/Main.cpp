@@ -1649,7 +1649,15 @@ static bool ForceSingleInstance(LPCWSTR pClassName)
 	HWND hWnd = FindWindow(pClassName, NULL);
 	if (hWnd)
 	{
-		SendMessage(hWnd, WM_RESTOREAPP, 0, 0);
+		DWORD dwResult = 0; // ignored
+		if (SendMessageTimeout(hWnd, WM_RESTOREAPP, 0, 0, SMTO_BLOCK | SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 3000, &dwResult))
+			// The message was received by the app to restore its window.
+			return false;
+
+		// Ok, so we probably have a hung process.
+		// Instruct them to close or terminate the hung process.
+		MessageBox(NULL, TmGetTString(IDS_TERMINATE_HUNG_PROCESS), TmGetTString(IDS_PROGRAM_NAME), MB_ICONWARNING | MB_OK);
+		return false;
 	}
 	return false;
 }
@@ -1658,11 +1666,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 {
 	LPCWSTR pClassName = TEXT("DiscordMessengerClass");
 
-	if (!ForceSingleInstance(pClassName))
-		return 0;
-
-	CheckIfItsStartup(pCmdLine);
-
 	g_hInstance = hInstance;
 	ri::InitReimplementation();
 
@@ -1670,6 +1673,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	InitCommonControls(); // actually a dummy but adds the needed reference to comctl32
 	// (see https://devblogs.microsoft.com/oldnewthing/20050718-16/?p=34913 )
 	XSetProcessDPIAware();
+
+	if (!ForceSingleInstance(pClassName))
+		return 0;
+
+	CheckIfItsStartup(pCmdLine);
+
 
 	g_pFrontEnd = new Frontend_Win32;
 	g_pHTTPClient = new NetworkerThreadManager;

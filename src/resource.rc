@@ -1335,6 +1335,12 @@ BEGIN
     IDS_WINDOW              "Window"
 END
 
+STRINGTABLE
+BEGIN
+    IDS_TERMINATE_HUNG_PROCESS 
+                            "An instance of Discord Messenger is already running, but is currently frozen. Before trying to re-open this application, you should terminate the current instance of Discord Messenger."
+END
+
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
