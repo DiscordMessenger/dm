@@ -758,6 +758,7 @@ void MessageList::DeleteMessage(Snowflake sf)
 
 	if (afteriter != m_messages.end())
 	{
+		std::string nm, av;
 		Snowflake sf = Snowflake(-1);
 		time_t tm = 0;
 		int pl = 0;
@@ -768,12 +769,14 @@ void MessageList::DeleteMessage(Snowflake sf)
 			tm = beforeiter->m_msg.m_dateTime;
 			et = beforeiter->m_msg.m_type;
 			pl = beforeiter->m_placeInChain;
+			nm = beforeiter->m_msg.m_author;
+			av = beforeiter->m_msg.m_avatar;
 		}
 
 		afterMessageInitialHeight = afteriter->m_height;
 
 		bool shouldRecalc = false;
-		if (ShouldStartNewChain(sf, tm, pl, et, *afteriter, false)) {
+		if (ShouldStartNewChain(sf, tm, pl, et, nm, av, *afteriter, false)) {
 			afteriter->m_placeInChain = 0; // don't care about the rest to be honest
 			shouldRecalc = true;
 		}
@@ -4196,19 +4199,45 @@ bool MessageList::ShouldBeDateGap(time_t oldTime, time_t newTime)
 	return !m_bManagedByOwner && (oldTime / 86400 != newTime / 86400);
 }
 
-bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, MessageType::eType prevType, const MessageItem& item, bool ifChainTooLongToo)
+bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, MessageType::eType prevType, const std::string& prevAuthorName, const std::string& prevAuthorAvatar, const MessageItem& item, bool ifChainTooLongToo)
 {
-	return m_bManagedByOwner || (
-		(prevPlaceInChain >= 10 && ifChainTooLongToo) ||
-		prevAuthor != item.m_msg.m_author_snowflake ||
-		prevTime + 15 * 60 < item.m_msg.m_dateTime ||
-		item.m_msg.IsLoadGap() ||
-		item.m_msg.m_pReferencedMessage != nullptr ||
-		item.m_msg.m_type == MessageType::REPLY ||
-		IsActionMessage(prevType) ||
-		IsActionMessage(item.m_msg.m_type) ||
-		ShouldBeDateGap(prevTime, item.m_msg.m_dateTime)
-	);
+	if (m_bManagedByOwner)
+		return true;
+
+	if (prevPlaceInChain >= 10 && ifChainTooLongToo)
+		return true;
+
+	if (prevAuthor != item.m_msg.m_author_snowflake)
+		return true;
+
+	if (prevTime + 15 * 60 < item.m_msg.m_dateTime)
+		return true;
+
+	if (item.m_msg.IsLoadGap())
+		return true;
+
+	if (item.m_msg.m_pReferencedMessage != nullptr)
+		return true;
+
+	if (item.m_msg.m_type == MessageType::REPLY)
+		return true;
+
+	if (IsActionMessage(prevType))
+		return true;
+
+	if (IsActionMessage(item.m_msg.m_type))
+		return true;
+	
+	if (ShouldBeDateGap(prevTime, item.m_msg.m_dateTime))
+		return true;
+
+	if (prevAuthorName != item.m_msg.m_author)
+		return true;
+
+	if (prevAuthorAvatar != item.m_msg.m_avatar)
+		return true;
+
+	return false;
 }
 
 int MessageList::RecalcMessageSizes(bool update, int& repaintSize, Snowflake addedMessagesBeforeThisID)
@@ -4225,6 +4254,7 @@ int MessageList::RecalcMessageSizes(bool update, int& repaintSize, Snowflake add
 	time_t prevTime = 0;
 	Snowflake prevAuthor = Snowflake(-1);
 	MessageType::eType prevType = MessageType::DEFAULT;
+	std::string prevAuthorName = "", prevAuthorAvatar = "";
 	int prevPlaceInChain = 0;
 	int subScroll = 0;
 
@@ -4247,8 +4277,9 @@ int MessageList::RecalcMessageSizes(bool update, int& repaintSize, Snowflake add
 
 		bool modifyChainOrder = addedMessagesBeforeThisID == 0 || iter->m_msg.m_snowflake <= addedMessagesBeforeThisID;
 
+
 		bool bIsDateGap = ShouldBeDateGap(prevTime, iter->m_msg.m_dateTime);
-		bool startNewChain = isCompact || ShouldStartNewChain(prevAuthor, prevTime, prevPlaceInChain, prevType, *iter, modifyChainOrder);
+		bool startNewChain = isCompact || ShouldStartNewChain(prevAuthor, prevTime, prevPlaceInChain, prevType, prevAuthorName, prevAuthorAvatar, *iter, modifyChainOrder);
 
 		bool msgOldIsDateGap = iter->m_bIsDateGap;
 		bool msgOldWasChainBeg = iter->m_placeInChain == 0;
@@ -4301,6 +4332,8 @@ int MessageList::RecalcMessageSizes(bool update, int& repaintSize, Snowflake add
 
 		prevPlaceInChain = iter->m_placeInChain;
 		prevAuthor = iter->m_msg.m_author_snowflake;
+		prevAuthorName = iter->m_msg.m_author;
+		prevAuthorAvatar = iter->m_msg.m_avatar;
 		prevTime = iter->m_msg.m_dateTime;
 		prevType = iter->m_msg.m_type;
 
@@ -4666,6 +4699,7 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool upda
 	time_t prevDate = 0;
 	int prevPlaceInChain = -1;
 	MessageType::eType prevType = MessageType::DEFAULT;
+	std::string prevAuthorName = "", prevAuthorAvatar = "";
 	if (!m_messages.empty())
 	{
 		MessageItem* item = nullptr;
@@ -4679,13 +4713,15 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool upda
 			prevDate = item->m_msg.m_dateTime;
 			prevType = item->m_msg.m_type;
 			prevPlaceInChain = item->m_placeInChain;
+			prevAuthorName = item->m_msg.m_author;
+			prevAuthorAvatar = item->m_msg.m_avatar;
 		}
 	}
 
 	if (ShouldBeDateGap(prevDate, mi.m_msg.m_dateTime))
 		mi.m_bIsDateGap = true;
 
-	if (prevPlaceInChain < 0 || ShouldStartNewChain(prevAuthor, prevDate, prevPlaceInChain, prevType, mi, true))
+	if (prevPlaceInChain < 0 || ShouldStartNewChain(prevAuthor, prevDate, prevPlaceInChain, prevType, prevAuthorName, prevAuthorAvatar, mi, true))
 		mi.m_placeInChain = 0;
 	else
 		mi.m_placeInChain = prevPlaceInChain + 1;
