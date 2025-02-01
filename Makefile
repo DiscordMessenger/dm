@@ -54,8 +54,11 @@ DEFINES = \
 	-DASIO_IPROGS_THREADS         \
 	-D_WEBSOCKETPP_IPROGS_THREAD_ \
 	-DMINGW_SPECIFIC_HACKS        \
-	-DASIO_DISABLE_WINDOWS_OBJECT_HANDLE \
-	-DASIO_DISABLE_IOCP
+	-DUSE_IPROGS_REIMPL           \
+	-DASIO_DISABLE_WINDOWS_OBJECT_HANDLE
+
+#note: USE_IPROGS_REIMPL is defined so that iprogsthreads will use the mwas
+#version of certain APIs such as TryEnterCriticalSection
 
 ifeq ($(UNICODE), no)
 	UNICODE_DEF =

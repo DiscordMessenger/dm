@@ -80,12 +80,15 @@ int win_static_mutex::do_init()
 # if defined(UNDER_CE)
   ::InitializeCriticalSection(&crit_section_);
 # else
-  if (!::InitializeCriticalSectionAndSpinCount(&crit_section_, 0x80000000))
+  if (!ri::InitializeCriticalSectionAndSpinCount(&crit_section_, 0x80000000))
   {
-    last_error = ::GetLastError();
-    ::ReleaseMutex(mutex);
-    ::CloseHandle(mutex);
-    return last_error;
+    //last_error = ::GetLastError();
+    //::ReleaseMutex(mutex);
+    //::CloseHandle(mutex);
+    //return last_error;
+
+    // HELL no, you just initialize it normally
+    ::InitializeCriticalSection(&crit_section_);
   }
 # endif
 #else
@@ -102,12 +105,15 @@ int win_static_mutex::do_init()
       return last_error;
     }
 # else
-    if (!::InitializeCriticalSectionAndSpinCount(&crit_section_, 0x80000000))
+    if (!ri::InitializeCriticalSectionAndSpinCount(&crit_section_, 0x80000000))
     {
-      last_error = ::GetLastError();
-      ::ReleaseMutex(mutex);
-      ::CloseHandle(mutex);
-      return last_error;
+      //last_error = ::GetLastError();
+      //::ReleaseMutex(mutex);
+      //::CloseHandle(mutex);
+      //return last_error;
+      
+      // HELL no, you just initialize it normally
+      ::InitializeCriticalSection(&crit_section_);
     }
 # endif
   }

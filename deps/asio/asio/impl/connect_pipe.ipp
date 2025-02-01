@@ -24,6 +24,7 @@
 #include "asio/connect_pipe.hpp"
 
 #if defined(ASIO_HAS_IOCP)
+# include "ri/reimpl.hpp"
 # include <cstdio>
 # if _WIN32_WINNT >= 0x601
 #  include <bcrypt.h>
@@ -53,7 +54,7 @@ void create_pipe(native_pipe_handle p[2], asio::error_code& ec)
   long n1 = ::InterlockedIncrement(&counter1);
   long n2 = (static_cast<unsigned long>(n1) % 0x10000000) == 0
     ? ::InterlockedIncrement(&counter2)
-    : ::InterlockedExchangeAdd(&counter2, 0);
+    : ri::InterlockedExchangeAdd(&counter2, 0);
 
   wchar_t pipe_name[128];
 #if defined(ASIO_HAS_SECURE_RTL)

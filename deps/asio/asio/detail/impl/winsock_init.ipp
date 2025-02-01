@@ -19,6 +19,8 @@
 
 #if defined(ASIO_WINDOWS) || defined(__CYGWIN__)
 
+#include "ri/reimpl.hpp"
+
 #include "asio/detail/socket_types.hpp"
 #include "asio/detail/winsock_init.hpp"
 #include "asio/detail/throw_error.hpp"
@@ -63,7 +65,7 @@ void winsock_init_base::manual_cleanup(data& d)
 
 void winsock_init_base::throw_on_error(data& d)
 {
-  long result = ::InterlockedExchangeAdd(&d.result_, 0);
+  long result = ri::InterlockedExchangeAdd(&d.result_, 0);
   if (result != 0)
   {
     asio::error_code ec(result,
