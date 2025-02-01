@@ -1299,6 +1299,17 @@ HBITMAP ResizeWithBackgroundColor(HDC hdc, HBITMAP hBitmap, HBRUSH backgroundCol
 	return newBitmap;
 }
 
+#ifdef _MSC_VER
+#define UsedCompiler "MSVC"
+#else
+#define UsedCompiler "MinGW"
+#endif
+#ifdef UNICODE
+#define ActiveCharset "Unicode"
+#else
+#define ActiveCharset "ANSI"
+#endif
+
 // This function calls std::terminate() after showing a message box.
 extern "C" void Terminate(const char* message, ...)
 {
@@ -1313,13 +1324,7 @@ extern "C" void Terminate(const char* message, ...)
 		anotherBuffer,
 		sizeof anotherBuffer,
 		"A fatal error has occurred within Discord Messenger. Please report it to iProgramInCpp!\r\n"
-		"You are using the "
-#ifdef _MSC_VER
-		"MSVC"
-#else
-		"MinGW"
-#endif
-		" version.\r\n\r\n"
+		"You are using the " UsedCompiler "-" ActiveCharset " version.\r\n\r\n"
 		"Details about the error:\r\n\r\n"
 		"%s\r\n\r\n"
 		"Discord Messenger will now close.",

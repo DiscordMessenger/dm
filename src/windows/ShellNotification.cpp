@@ -12,7 +12,6 @@ ShellNotification* GetShellNotification() {
 
 ShellNotification::~ShellNotification()
 {
-	assert(!m_bInitialized);
 	Deinitialize();
 }
 

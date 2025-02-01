@@ -584,7 +584,7 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_DESTROY:
 		{
-			DestroyWindow(pThis->m_scrollable_hwnd);
+			//DestroyWindow(pThis->m_scrollable_hwnd);
 			DestroyWindow(pThis->m_tooltip_hwnd);
 			DestroyWindow(pThis->m_more_btn_hwnd);
 			DestroyWindow(pThis->m_bar_btn_hwnd);
