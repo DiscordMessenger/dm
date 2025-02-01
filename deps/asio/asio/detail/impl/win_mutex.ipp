@@ -48,7 +48,8 @@ int win_mutex::do_init()
     return ::GetLastError();
 # else
   if (!::InitializeCriticalSectionAndSpinCount(&crit_section_, 0x80000000))
-    return ::GetLastError();
+    // just initialize it normally
+    ::InitializeCriticalSection(&crit_section_);
 # endif
   return 0;
 #else
@@ -61,7 +62,8 @@ int win_mutex::do_init()
       return ::GetLastError();
 # else
     if (!::InitializeCriticalSectionAndSpinCount(&crit_section_, 0x80000000))
-      return ::GetLastError();
+      // just initialize it normally
+      ::InitializeCriticalSection(&crit_section_);
 # endif
   }
   __except(GetExceptionCode() == STATUS_NO_MEMORY

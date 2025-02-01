@@ -623,9 +623,6 @@
     <ClInclude Include="..\src\windows\ShellNotification.hpp">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\windows\NotificationViewer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\discord\DiscordClientConfig.hpp">
       <Filter>Header Files\Discord</Filter>
     </ClInclude>
@@ -635,8 +632,11 @@
     <ClInclude Include="..\src\discord\MessagePoll.hpp">
       <Filter>Header Files\Discord</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\iprogramsterminate.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\src\windows\NotificationViewer.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\deps\iprogramsterminate.h">
+      <Filter>Source Files\Deps</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

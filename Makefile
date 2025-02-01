@@ -5,6 +5,11 @@ MSYS_PATH ?= C:/MinGW/msys/1.0
 OPENSSL_INC_DIR ?= C:/crpa/openssl/include
 OPENSSL_LIB_DIR ?= C:/crpa/openssl
 
+# Print info
+$(info Discord Messenger makefile)
+$(info Debug: $(DEBUG))
+$(info Unicode: $(UNICODE))
+
 USER_INC_DIRS =
 USER_DEFINES  =
 
@@ -49,7 +54,8 @@ DEFINES = \
 	-DASIO_IPROGS_THREADS         \
 	-D_WEBSOCKETPP_IPROGS_THREAD_ \
 	-DMINGW_SPECIFIC_HACKS        \
-	-DASIO_DISABLE_WINDOWS_OBJECT_HANDLE
+	-DASIO_DISABLE_WINDOWS_OBJECT_HANDLE \
+	-DASIO_DISABLE_IOCP
 
 ifeq ($(UNICODE), no)
 	UNICODE_DEF =

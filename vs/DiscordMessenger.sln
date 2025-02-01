@@ -13,6 +13,8 @@ Global
 		DebugAnsi|x86 = DebugAnsi|x86
 		DebugAsan|x64 = DebugAsan|x64
 		DebugAsan|x86 = DebugAsan|x86
+		DebugNoIOCP|x64 = DebugNoIOCP|x64
+		DebugNoIOCP|x86 = DebugNoIOCP|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 		ReleaseAnsi|x64 = ReleaseAnsi|x64
@@ -31,6 +33,10 @@ Global
 		{3249EAC3-35D9-4646-ACE2-E2BD3B7F4812}.DebugAsan|x64.Build.0 = DebugAsan|x64
 		{3249EAC3-35D9-4646-ACE2-E2BD3B7F4812}.DebugAsan|x86.ActiveCfg = DebugAsan|Win32
 		{3249EAC3-35D9-4646-ACE2-E2BD3B7F4812}.DebugAsan|x86.Build.0 = DebugAsan|Win32
+		{3249EAC3-35D9-4646-ACE2-E2BD3B7F4812}.DebugNoIOCP|x64.ActiveCfg = DebugNoIOCP|x64
+		{3249EAC3-35D9-4646-ACE2-E2BD3B7F4812}.DebugNoIOCP|x64.Build.0 = DebugNoIOCP|x64
+		{3249EAC3-35D9-4646-ACE2-E2BD3B7F4812}.DebugNoIOCP|x86.ActiveCfg = DebugNoIOCP|Win32
+		{3249EAC3-35D9-4646-ACE2-E2BD3B7F4812}.DebugNoIOCP|x86.Build.0 = DebugNoIOCP|Win32
 		{3249EAC3-35D9-4646-ACE2-E2BD3B7F4812}.Release|x64.ActiveCfg = Release|x64
 		{3249EAC3-35D9-4646-ACE2-E2BD3B7F4812}.Release|x64.Build.0 = Release|x64
 		{3249EAC3-35D9-4646-ACE2-E2BD3B7F4812}.Release|x86.ActiveCfg = Release|Win32
