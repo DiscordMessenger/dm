@@ -21,6 +21,5 @@ extern "C" void Terminate(const char*, ...);
 
 #define terminateAsio() terminateApplication("asio")
 #define terminateWebsocketpp() terminateApplication("websocketpp")
-#define terminateIprogsThreads() terminateApplication("iprogsthreads")
 
 #endif

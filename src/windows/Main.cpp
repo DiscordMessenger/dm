@@ -647,7 +647,7 @@ bool g_bFromStartup = false;
 
 void CheckIfItsStartup(const LPSTR pCmdLine)
 {
-	g_bFromStartup = StrStrA(pCmdLine, g_StartupArg);
+	g_bFromStartup = strstr(pCmdLine, g_StartupArg);
 }
 
 void AddOrRemoveAppFromStartup()
@@ -665,7 +665,7 @@ void AddOrRemoveAppFromStartup()
 		const std::string sPath = "\"" + MakeStringFromTString(tPath) + "\" " + std::string(g_StartupArg);
 		const LPTSTR finalPath = ConvertCppStringToTString(sPath);
 
-		RegSetValueEx(hkey, value, 0, REG_SZ, (BYTE *)finalPath, (wcslen(finalPath) + 1) * sizeof(TCHAR));
+		RegSetValueEx(hkey, value, 0, REG_SZ, (BYTE *)finalPath, (_tcslen(finalPath) + 1) * sizeof(TCHAR));
 	}
 	else
 	{
@@ -1032,6 +1032,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			try {
 				GetWebsocketClient()->Init();
+			}
+			catch (websocketpp::exception ex) {
+				Terminate("hey, websocketpp excepted: %s | %d | %s", ex.what(), ex.code(), ex.m_msg.c_str());
+			}
+			catch (std::exception ex) {
+				Terminate("hey, websocketpp excepted (generic std::exception): %s", ex.what());
 			}
 			catch (...) {
 				MessageBox(hWnd, TmGetTString(IDS_CANNOT_INIT_WS), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
@@ -1639,7 +1645,7 @@ HTTPClient* GetHTTPClient()
 
 InstanceMutex g_instanceMutex;
 
-static bool ForceSingleInstance(LPCWSTR pClassName)
+static bool ForceSingleInstance(LPCTSTR pClassName)
 {
 	HRESULT hResult = g_instanceMutex.Init();
 
@@ -1664,7 +1670,7 @@ static bool ForceSingleInstance(LPCWSTR pClassName)
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nShowCmd)
 {
-	LPCWSTR pClassName = TEXT("DiscordMessengerClass");
+	LPCTSTR pClassName = TEXT("DiscordMessengerClass");
 
 	g_hInstance = hInstance;
 	ri::InitReimplementation();

@@ -73,9 +73,9 @@ static Image DecodeWebp(const uint8_t* pData, size_t size)
 
 #else
 
-static Image DecodeWebp(const uint8_t* pData, size_t size, int* width, int* height)
+static Image DecodeWebp(const uint8_t* pData, size_t size)
 {
-	return {};
+	return Image();
 }
 
 #endif
@@ -121,9 +121,9 @@ static Image DecodeWithStbImage(const uint8_t* pData, size_t size)
 
 #else
 
-static Image DecodeWithStbImage(const uint8_t* pData, size_t size, int* width, int* height)
+static Image DecodeWithStbImage(const uint8_t* pData, size_t size)
 {
-	return {};
+	return Image();
 }
 
 #endif
@@ -175,6 +175,16 @@ HImage* ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& ou
 
 	for (size_t i = 0; i < loadedImageCount; i++)
 	{
+		// NOTE: Have to define these extra early, because gcc is picky about initialization
+		// even though I don't goddamn use these after `DoneHBM'. But these are used later
+		HGDIOBJ old;
+		int x, oldMode;
+		BITMAPINFO bmi2;
+		BITMAPINFOHEADER& hdr2 = bmi2.bmiHeader;
+		uint32_t* alphaPixels;
+		int width, height;
+		bool needDeletePixels;
+
 		auto& frm = img.Frames[i];
 
 		// pre-multiply alpha
@@ -226,8 +236,9 @@ HImage* ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& ou
 			goto DoneHBM;
 		}
 
-		bool needDeletePixels = false;
-		int width = img.Width, height = img.Height;
+		needDeletePixels = false;
+		width = img.Width;
+		height = img.Height;
 
 		// Check if we need to stretch the bitmap.
 		if (newWidth == width && newHeight == height)
@@ -254,7 +265,7 @@ HImage* ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& ou
 
 		// Yeah, need to stretch the bitmap.  Because of that, we need to perform two stretch
 		// operations and combine the bits together.
-		uint32_t* alphaPixels = new uint32_t[pixelCount];
+		alphaPixels = new uint32_t[pixelCount];
 		for (size_t i = 0; i < pixelCount; i++) {
 			uint32_t alpha = (pixels[i]) >> 24;
 			alphaPixels[i] = (255 << 24) | (alpha << 16) | (alpha << 8) | alpha;
@@ -262,14 +273,13 @@ HImage* ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& ou
 
 		// Create the alpha channel bitmap.
 		hbm = CreateCompatibleBitmap(wndHdc, newWidth, newHeight);
-		HGDIOBJ old = SelectObject(hdc, hbm);
-		int oldMode = SetStretchBltMode(hdc, HALFTONE);
-		int x = StretchDIBits(hdc, 0, 0, newWidth, newHeight, 0, 0, width, height, alphaPixels, &bmi, DIB_RGB_COLORS, SRCCOPY);
+		old = SelectObject(hdc, hbm);
+		oldMode = SetStretchBltMode(hdc, HALFTONE);
+		x = StretchDIBits(hdc, 0, 0, newWidth, newHeight, 0, 0, width, height, alphaPixels, &bmi, DIB_RGB_COLORS, SRCCOPY);
 		SetStretchBltMode(hdc, oldMode);
 		SelectObject(hdc, old);
 		delete[] alphaPixels;
-				
-		BITMAPINFO bmi2;
+		
 		size_t newPixelCount;
 		uint32_t *pvAlphaBits, *pvColorBits;
 
@@ -280,7 +290,6 @@ HImage* ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& ou
 		}
 
 		ZeroMemory(&bmi2, sizeof bmi2);
-		BITMAPINFOHEADER& hdr2 = bmi2.bmiHeader;
 		hdr2.biSizeImage = 0;
 		hdr2.biWidth = newWidth;
 		hdr2.biHeight = -newHeight;

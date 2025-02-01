@@ -18,6 +18,11 @@
 #define SS_REALSIZECONTROL 0x00000040
 #endif // SS_REALSIZECONTROL
 
+// NOTE: This was added in Windows Vista, so it won't work on XP and earlier. but who cares
+#ifndef SMTO_ERRORONEXIT
+#define SMTO_ERRORONEXIT 0x20
+#endif
+
 #ifdef MINGW_SPECIFIC_HACKS
 
 #if(WINVER >= 0x0500)
