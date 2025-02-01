@@ -1664,6 +1664,8 @@ static bool ForceSingleInstance(LPCWSTR pClassName)
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nShowCmd)
 {
+	Terminate("test %d", 42);
+
 	LPCWSTR pClassName = TEXT("DiscordMessengerClass");
 
 	g_hInstance = hInstance;

@@ -127,3 +127,5 @@ void InitializeCOM(); // used by TTS and shell stuff
 } while (0)
 
 #include "ri/reimpl.hpp"
+
+extern "C" void Terminate(const char*, ...);

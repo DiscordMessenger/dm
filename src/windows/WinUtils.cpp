@@ -1298,3 +1298,34 @@ HBITMAP ResizeWithBackgroundColor(HDC hdc, HBITMAP hBitmap, HBRUSH backgroundCol
 
 	return newBitmap;
 }
+
+// This function calls std::terminate() after showing a message box.
+extern "C" void Terminate(const char* message, ...)
+{
+	va_list vargs;
+	va_start(vargs, message);
+	char buffer[4096];
+	vsnprintf(buffer, sizeof buffer, message, vargs);
+	va_end(vargs);
+
+	char anotherBuffer[8192];
+	snprintf(
+		anotherBuffer,
+		sizeof anotherBuffer,
+		"A fatal error has occurred within Discord Messenger. Please report it to iProgramInCpp!\r\n"
+		"You are using the "
+#ifdef _MSC_VER
+		"MSVC"
+#else
+		"MinGW"
+#endif
+		" version.\r\n\r\n"
+		"Details about the error:\r\n\r\n"
+		"%s\r\n\r\n"
+		"Discord Messenger will now close.",
+		buffer
+	);
+
+	MessageBoxA(NULL, anotherBuffer, "DiscordMessenger Fatal Error!", MB_ICONERROR | MB_OK);
+	std::terminate();
+}
