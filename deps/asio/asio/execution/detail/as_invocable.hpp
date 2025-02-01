@@ -71,7 +71,7 @@ struct as_invocable
           std::make_exception_ptr(receiver_invocation_error()));
       receiver_ = 0;
 #else // defined(ASIO_HAS_STD_EXCEPTION_PTR)
-      std::terminate();
+      terminateAsio();
 #endif // defined(ASIO_HAS_STD_EXCEPTION_PTR)
     }
 #endif // !defined(ASIO_NO_EXCEPTIONS)
@@ -124,7 +124,7 @@ struct as_invocable
           std::make_exception_ptr(receiver_invocation_error()));
       ++(*ref_count_);
 #else // defined(ASIO_HAS_STD_EXCEPTION_PTR)
-      std::terminate();
+      terminateAsio();
 #endif // defined(ASIO_HAS_STD_EXCEPTION_PTR)
     }
 #endif // !defined(ASIO_NO_EXCEPTIONS)

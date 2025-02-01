@@ -59,7 +59,7 @@ basic_system_executor<Blocking, Relationship, Allocator>::do_execute(
   }
   catch (...)
   {
-    std::terminate();
+    terminateAsio();
   }
 #endif// !defined(ASIO_NO_EXCEPTIONS)
 }
@@ -83,7 +83,7 @@ basic_system_executor<Blocking, Relationship, Allocator>::do_execute(
   }
   catch (...)
   {
-    std::terminate();
+    terminateAsio();
   }
 #endif// !defined(ASIO_NO_EXCEPTIONS)
 }

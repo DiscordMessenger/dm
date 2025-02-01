@@ -38,7 +38,7 @@ struct system_context::thread_function
     }
     catch (...)
     {
-      std::terminate();
+      terminateAsio();
     }
 #endif// !defined(ASIO_NO_EXCEPTIONS)
   }

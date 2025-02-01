@@ -635,6 +635,9 @@
     <ClInclude Include="..\src\discord\MessagePoll.hpp">
       <Filter>Header Files\Discord</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\iprogramsterminate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\windows\ProfileView.cpp">

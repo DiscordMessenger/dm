@@ -1102,7 +1102,7 @@ protected:
           && is_reference<typename Prop::polymorphic_query_result_type>::value
       >::type*)
   {
-    std::terminate(); // Combination should not be possible.
+    terminateAsio(); // Combination should not be possible.
   }
 
   template <typename Ex, class Prop>
