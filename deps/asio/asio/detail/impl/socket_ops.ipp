@@ -1809,10 +1809,15 @@ socket_type socket(int af, int type, int protocol,
     asio::error_code& ec)
 {
 #if defined(ASIO_WINDOWS) || defined(__CYGWIN__)
-  socket_type s = ::WSASocketW(af, type, protocol, 0, 0, WSA_FLAG_OVERLAPPED);
+  socket_type s = ::WSASocket(af, type, protocol, 0, 0, WSA_FLAG_OVERLAPPED);
   get_last_error(ec, s == invalid_socket);
-  if (s == invalid_socket)
-    return s;
+  if (s == invalid_socket) {
+    // hey hey. try the non-overlapped version.
+    s = ::WSASocket(af, type, protocol, 0, 0, 0);
+    get_last_error(ec, s == invalid_socket);
+    if (s == invalid_socket)
+      return s;
+  }
 
   if (af == ASIO_OS_DEF(AF_INET6))
   {
