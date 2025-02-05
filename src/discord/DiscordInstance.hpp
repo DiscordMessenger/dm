@@ -39,6 +39,11 @@ struct ChannelHistory
 	// latest to earliest
 	Snowflake m_history[C_CHANNEL_HISTORY_MAX] = { 0 };
 
+	void Clear() {
+		for (int i = 0; i < C_CHANNEL_HISTORY_MAX; i++)
+			m_history[i] = 0;
+	}
+
 	void AddToHistory(Snowflake sf)
 	{
 		if (sf == 0)
@@ -387,6 +392,9 @@ public:
 
 	// Reset the initial gateway URL. Used when switching service providers.
 	void ResetGatewayURL();
+
+	// Clears data about the current user when logged out.
+	void ClearData();
 
 public:
 	DiscordInstance(std::string token) : m_token(token), m_notificationManager(this) {

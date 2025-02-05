@@ -1586,6 +1586,32 @@ void DiscordInstance::ResetGatewayURL()
 	m_gatewayUrl = "";
 }
 
+void DiscordInstance::ClearData()
+{
+	CloseGatewaySession();
+
+	m_guilds.clear();
+	m_dmGuild.m_channels.clear();
+	m_messageRequestsInProgress.clear();
+	m_gatewayUrl.clear();
+	m_gatewayResumeUrl.clear();
+	m_sessionId.clear();
+	m_sessionType.clear();
+	m_pendingUploads.clear();
+	m_channelHistory.Clear();
+	m_userGuildSettings.Clear();
+	m_channelDenyList.clear();
+	m_relationships.clear();
+
+	m_mySnowflake = 0;
+	m_CurrentGuild = 0;
+	m_CurrentChannel = 0;
+	m_gatewayConnId = -1;
+	m_heartbeatSequenceId = -1;
+	m_ackVersion = 0;
+	m_nextAttachmentID = 1;
+}
+
 void DiscordInstance::SetActivityStatus(eActiveStatus status, bool bRequestServer)
 {
 	DbgPrintF("Setting activity status to %d", status);

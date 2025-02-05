@@ -439,6 +439,9 @@ BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				case OPTIONS_RESULT_LOGOUT: {
 					PostMessage(hWnd, WM_LOGGEDOUT, 100, 0);
 					GetDiscordInstance()->SetToken("");
+					GetDiscordInstance()->ClearData();
+					GetLocalSettings()->SetToken("");
+					GetLocalSettings()->Save();
 					g_pChannelView->ClearChannels();
 					g_pMemberList->ClearMembers();
 					g_pStatusBar->ClearTypers();
@@ -1053,7 +1056,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					TmGetTString(IDS_PROGRAM_NAME),
 					MB_ICONINFORMATION | MB_OK
 				);
+			}
 
+			if (GetLocalSettings()->GetToken().empty())
+			{
 				if (!LogonDialogShow())
 				{
 					g_bQuittingEarly = true;
@@ -1409,7 +1415,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					MB_ICONERROR | MB_OK
 				);
 			}
-
+			
 			if (!LogonDialogShow())
 				PostQuitMessage(0);
 			else
@@ -1830,6 +1836,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 		TextToSpeech::Deinitialize();
 	}
 
+	g_Hwnd = NULL;
 	UnregisterClass(wc.lpszClassName, hInstance);
 	GetLocalSettings()->Save();
 	GetWebsocketClient()->Kill();
