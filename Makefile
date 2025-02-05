@@ -2,8 +2,8 @@
 DEBUG ?= yes
 UNICODE ?= yes
 MSYS_PATH ?= C:/MinGW/msys/1.0
-OPENSSL_INC_DIR ?= C:/crpa/openssl/include
-OPENSSL_LIB_DIR ?= C:/crpa/openssl
+OPENSSL_INC_DIR ?= C:/DiscordMessenger/openssl/include
+OPENSSL_LIB_DIR ?= C:/DiscordMessenger/openssl
 
 # Print info
 $(info Discord Messenger makefile)
@@ -77,6 +77,7 @@ CXXFLAGS = \
 	$(DEFINES)     \
 	-MMD           \
 	-std=c++11     \
+	-mno-mmx       \
 	-mno-sse       \
 	-mno-sse2      \
 	$(UNICODE_DEF) \
