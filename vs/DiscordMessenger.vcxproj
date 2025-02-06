@@ -540,6 +540,7 @@
     <ClInclude Include="..\src\discord\FormattedText.hpp" />
     <ClInclude Include="..\src\discord\Frontend.hpp" />
     <ClInclude Include="..\src\discord\Guild.hpp" />
+    <ClInclude Include="..\src\discord\GuildListItem.hpp" />
     <ClInclude Include="..\src\discord\GuildMember.hpp" />
     <ClInclude Include="..\src\discord\HTTPClient.hpp" />
     <ClInclude Include="..\src\discord\LocalSettings.hpp" />
@@ -615,6 +616,7 @@
     <ClCompile Include="..\src\discord\Emoji.cpp" />
     <ClCompile Include="..\src\discord\FormattedText.cpp" />
     <ClCompile Include="..\src\discord\Guild.cpp" />
+    <ClCompile Include="..\src\discord\GuildListItem.cpp" />
     <ClCompile Include="..\src\discord\HTTPClient.cpp" />
     <ClCompile Include="..\src\discord\LocalSettings.cpp" />
     <ClCompile Include="..\src\discord\Message.cpp" />

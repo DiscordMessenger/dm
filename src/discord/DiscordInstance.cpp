@@ -1877,6 +1877,7 @@ void DiscordInstance::ParseChannel(Channel& c, nlohmann::json& chan, int& num)
 
 bool DiscordInstance::SortGuilds()
 {
+#ifdef DISABLE_GUILD_FOLDERS
 	// Sort.
 	m_guilds.sort();
 
@@ -1926,6 +1927,57 @@ bool DiscordInstance::SortGuilds()
 
 	m_guilds.sort();
 	return true;
+#else
+	GuildItemList gil = std::move(m_guildItemList);
+	m_guildItemList.Clear();
+
+	std::map<Snowflake, std::string> folderNames;
+	std::vector<std::pair<Snowflake, Snowflake>> guilds; // pair (folderid, guildid)
+
+	GetSettingsManager()->GetGuildFoldersEx(folderNames, guilds);
+
+	std::map<Snowflake, bool> folderAdded;
+	std::map<Snowflake, bool> guildAdded;
+
+	// Add each guild in order.  If there is a folder, add it first if needed.
+	for (auto& guild : guilds)
+	{
+		if (!folderAdded[guild.first] && guild.first) {
+			folderAdded[guild.first] = true;
+			m_guildItemList.AddFolder(guild.first, folderNames[guild.first]);
+		}
+
+		// Fetch info about the actual guild.
+		Guild* gld = GetGuild(guild.second);
+		std::string name, avatar;
+		if (!gld) {
+			DbgPrintF("Guild %lld in guild folders doesn't actually exist", guild.second);
+			name = "Unknown guild";
+		}
+		else {
+			name = gld->m_name;
+			avatar = gld->m_avatarlnk;
+		}
+
+		guildAdded[guild.second] = true;
+		m_guildItemList.AddGuild(guild.first, guild.second, name, avatar);
+	}
+
+	// If there are any leftover guilds to add, add those as well.
+	for (auto& guild : m_guilds)
+	{
+		if (!guildAdded[guild.m_snowflake]) {
+			DbgPrintF("Guild %lld isn't in guild folders, adding to the end", guild.m_snowflake);
+			m_guildItemList.AddGuild(0, guild.m_snowflake, guild.m_name, guild.m_avatarlnk);
+		}
+	}
+
+	m_guildItemList.Dump();
+
+	// TODO: Add a name to empty guild folders.
+
+	return gil.CompareOrder(m_guildItemList) == false;
+#endif
 }
 
 void DiscordInstance::ParseAndAddGuild(nlohmann::json& elem)

@@ -93,6 +93,9 @@ void GuildLister::ClearTooltips()
 
 void GuildLister::UpdateTooltips()
 {
+	// TODO
+	return;
+
 	ClearTooltips();
 
 	RECT rect = {};
@@ -523,11 +526,36 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 
 int GuildLister::GetScrollableHeight()
 {
-	std::vector<Snowflake> sf;
-	GetDiscordInstance()->GetGuildIDs(sf, true);
-	//take out gap
+	Snowflake currentFolder = 0;
+	std::vector<Snowflake> sfs;
+	GetDiscordInstance()->GetGuildIDsOrdered(sfs, true);
 	int pfpSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
-	return sf.size() * pfpSize - pfpSize + C_GUILD_GAP_HEIGHT;
+	int height = 0;
+	for (auto sf : sfs)
+	{
+		if (sf == 1) {
+			height += C_GUILD_GAP_HEIGHT;
+			continue;
+		}
+
+		if (sf & BIT_FOLDER) {
+			currentFolder = sf & ~BIT_FOLDER;
+			if (sf == BIT_FOLDER) {
+				// Skip the folder terminator
+				continue;
+			}
+		}
+		else if (currentFolder && !m_openFolders[currentFolder])
+		{
+			// Skip items in closed folders.
+			continue;
+		}
+
+		height += pfpSize;
+	}
+
+	//take out gap
+	return height;
 }
 
 std::string MakeIconStringFromName(const std::string& name)
@@ -620,13 +648,29 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			tme.dwHoverTime = HOVER_DEFAULT;
 			_TrackMouseEvent(&tme);
 
+			Snowflake currentFolder = 0;
 			std::vector<Snowflake> sfs;
-			GetDiscordInstance()->GetGuildIDs(sfs, true);
+			GetDiscordInstance()->GetGuildIDsOrdered(sfs, true);
 			for (auto sf : sfs)
 			{
 				if (sf == 1)
 				{
 					y += C_GUILD_GAP_HEIGHT;
+					continue;
+				}
+
+				if (sf & BIT_FOLDER)
+				{
+					currentFolder = sf & ~BIT_FOLDER;
+
+					if (sf == BIT_FOLDER) {
+						// Skip the folder terminator
+						continue;
+					}
+				}
+				else if (currentFolder && !pThis->m_openFolders[currentFolder])
+				{
+					// Skip items in closed folders.
 					continue;
 				}
 
@@ -748,9 +792,10 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				ScreenToClient(hWnd, &pt);
 			}
 
-			Snowflake selected = 2;
+			RECT selectedRect;
+			Snowflake selected = 2, currentFolder = 0;
 			std::vector<Snowflake> sfs;
-			GetDiscordInstance()->GetGuildIDs(sfs, true);
+			GetDiscordInstance()->GetGuildIDsOrdered(sfs, true);
 
 			for (auto sf : sfs)
 			{
@@ -760,6 +805,21 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					continue;
 				}
 				
+				if (sf & BIT_FOLDER)
+				{
+					currentFolder = sf & ~BIT_FOLDER;
+
+					if (sf == BIT_FOLDER) {
+						// Skip the folder terminator
+						continue;
+					}
+				}
+				else if (currentFolder && !pThis->m_openFolders[currentFolder])
+				{
+					// Skip items in closed folders.
+					continue;
+				}
+
 				RECT r = {
 					rect.left + ScaleByDPI(6),
 					rect.top + y + ScaleByDPI(4),
@@ -770,6 +830,7 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (PtInRect(&r, pt))
 				{
 					selected = sf;
+					selectedRect = r;
 					break;
 				}
 
@@ -781,6 +842,37 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (uMsg == WM_CONTEXTMENU) {
 					if (selected != 0)
 						pThis->ShowMenu(selected, oript);
+				}
+				else if (selected & BIT_FOLDER) {
+					Snowflake folder = selected & ~BIT_FOLDER;
+					pThis->m_openFolders[folder] ^= 1;
+
+					selectedRect.left = rect.left;
+					selectedRect.right = rect.right;
+					selectedRect.bottom = rect.bottom;
+					InvalidateRect(hWnd, &selectedRect, FALSE);
+
+					// Get the old position
+					SCROLLINFO si{};
+					si.cbSize = sizeof si;
+					si.fMask = SIF_POS | SIF_RANGE | SIF_PAGE;
+					pThis->GetScrollInfo(&si);
+
+					int diff = pThis->UpdateScrollBar(true);
+
+					// Check if it is equal to the max
+					if (si.nPos + si.nPage >= si.nMax && diff >= 0)
+					{
+						int oldMax = si.nMax;
+						pThis->GetScrollInfo(&si);
+
+						diff += si.nMax - oldMax;
+						si.nPos += diff;
+						pThis->SetScrollInfo(&si, true);
+						pThis->m_oldPos = si.nPos;
+					}
+					
+					WindowScroll(hWnd, diff);
 				}
 				else {
 					Snowflake sf1 = 0;
@@ -834,10 +926,12 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			initialRect.bottom = y;
 
 			std::vector<Snowflake> sfs;
-			GetDiscordInstance()->GetGuildIDs(sfs, true);
+			GetDiscordInstance()->GetGuildIDsOrdered(sfs, true);
 
 			POINT pt;
 			MoveToEx(hdc, 0, 0, &pt);
+
+			Snowflake currentFolder = 0;
 
 			for (auto sf : sfs)
 			{
@@ -856,32 +950,55 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					continue;
 				}
 
-				Guild* pGuild = GetDiscordInstance()->GetGuild(sf);
-				assert(pGuild);
-
-				int mentionCount = 0;
-				for (auto &channel : pGuild->m_channels) {
-					mentionCount += channel.m_mentionCount;
-				}
-				
 				HBITMAP hbm;
-				std::string textOver = "";
+				std::string textOver = "", name = "", avatarlnk = "";
 				bool loadedByLoadBitmap = false;
 				bool hasAlpha = false;
-				if (pGuild->m_snowflake == 0)
+				int mentionCount = 0;
+				
+				if (sf & BIT_FOLDER)
+				{
+					name = "Server Folder";
+					avatarlnk = "";
+
+					currentFolder = sf & ~BIT_FOLDER;
+
+					if (sf == BIT_FOLDER) {
+						// Skip the folder terminator
+						continue;
+					}
+				}
+				else if (currentFolder && !pThis->m_openFolders[currentFolder])
+				{
+					// Skip items in closed folders.
+					continue;
+				}
+
+				Guild* pGuild = GetDiscordInstance()->GetGuild(sf);
+				if (pGuild)
+				{
+					for (auto &channel : pGuild->m_channels) {
+						mentionCount += channel.m_mentionCount;
+					}
+
+					name = pGuild->m_name;
+					avatarlnk = pGuild->m_avatarlnk;
+				}
+				
+				if (sf == 0)
 				{
 					loadedByLoadBitmap = true;
 					hbm = LoadBitmap(g_hInstance, MAKEINTRESOURCE(IDB_DEFAULT));
 				}
-				else if (pGuild->m_avatarlnk.empty())
+				else if (avatarlnk.empty())
 				{
 					loadedByLoadBitmap = true;
 					hbm = LoadBitmap(g_hInstance, MAKEINTRESOURCE(IDB_EMPTY));
-					textOver = MakeIconStringFromName(pGuild->m_name);
+					textOver = MakeIconStringFromName(name);
 				}
 				else
 				{
-					hbm = GetAvatarCache()->GetImage(pGuild->m_avatarlnk, hasAlpha)->GetFirstFrame();
+					hbm = GetAvatarCache()->GetImage(avatarlnk, hasAlpha)->GetFirstFrame();
 				}
 
 				int oldY = y;

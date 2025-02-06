@@ -136,6 +136,7 @@ public: // SETTINGS
 	bool GetMessageCompact();
 
 	std::vector<Snowflake> GetGuildFolders();
+	void GetGuildFoldersEx(std::map<Snowflake, std::string>& folders, std::vector<std::pair<Snowflake, Snowflake>>& guilds);
 
 private:
 	Protobuf::DecodeHint* CreateHint();

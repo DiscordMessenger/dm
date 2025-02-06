@@ -638,6 +638,9 @@
     <ClInclude Include="..\deps\iprogramsterminate.h">
       <Filter>Source Files\Deps</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\discord\GuildListItem.hpp">
+      <Filter>Header Files\Discord</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\windows\ProfileView.cpp">
@@ -812,6 +815,9 @@
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="..\src\discord\MessagePoll.cpp">
+      <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\discord\GuildListItem.cpp">
       <Filter>Source Files\Discord</Filter>
     </ClCompile>
   </ItemGroup>

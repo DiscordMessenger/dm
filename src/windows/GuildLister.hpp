@@ -32,6 +32,8 @@ public:
 
 	std::map<Snowflake, RECT> m_iconRects;
 
+	std::map<Snowflake, bool> m_openFolders;
+
 public:
 	GuildLister();
 	~GuildLister();
@@ -55,6 +57,7 @@ public:
 
 private:
 	void DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, const std::string& textOver, bool hasAlpha);
+	int GetScrollableHeight();
 
 public:
 	static WNDCLASS g_GuildListerParentClass;
@@ -66,8 +69,5 @@ public:
 	static void InitializeClass();
 
 	static GuildLister* Create(HWND hwnd, LPRECT pRect);
-
-private:
-	static int GetScrollableHeight();
 };
 

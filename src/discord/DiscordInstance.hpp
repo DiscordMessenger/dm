@@ -18,6 +18,7 @@
 #include "Relationship.hpp"
 #include "NotificationManager.hpp"
 #include "UserGuildSettings.hpp"
+#include "GuildListItem.hpp"
 
 struct NetRequest;
 
@@ -32,6 +33,9 @@ struct FailedMessageParams
 	Snowflake channel;
 	Snowflake message;
 };
+
+// Used by GetGuildIDsOrdered
+#define BIT_FOLDER 0x8000000000000000
 
 #define C_CHANNEL_HISTORY_MAX (3)
 struct ChannelHistory
@@ -206,6 +210,9 @@ public:
 	// to them returned a 403.  Frankly this shouldn't be usable, but oh well.
 	std::set<Snowflake> m_channelDenyList;
 
+	// List of guilds and guild folders.
+	GuildItemList m_guildItemList;
+
 public:
 	Profile* GetProfile() {
 		return GetProfileCache()->LookupProfile(m_mySnowflake, "", "", "", false);
@@ -252,6 +259,39 @@ public:
 
 		for (auto& g : m_guilds)
 			sf.push_back(g.m_snowflake);
+	}
+
+	void GetGuildIDsOrdered(std::vector<Snowflake>& sf, bool bUI = false)
+	{
+		if (bUI) {
+			sf.push_back(0); // @me
+			sf.push_back(1); // gap
+		}
+
+		auto items = m_guildItemList.GetItems();
+		for (auto& item : *items)
+		{
+			// If there is a folder, OR the snowflake with BIT_FOLDER
+			Snowflake id = item->GetID() & ~BIT_FOLDER;
+
+			if (item->IsFolder())
+			{
+				sf.push_back(BIT_FOLDER | item->GetID());
+
+				auto subitems = item->GetItems();
+				for (auto& subitem : *subitems)
+				{
+					sf.push_back(subitem->GetID());
+				}
+
+				// add an empty item to terminate this folder
+				sf.push_back(BIT_FOLDER);
+			}
+			else
+			{
+				sf.push_back(item->GetID());
+			}
+		}
 	}
 
 	Guild* GetCurrentGuild()
