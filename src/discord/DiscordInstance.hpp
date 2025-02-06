@@ -261,6 +261,37 @@ public:
 			sf.push_back(g.m_snowflake);
 	}
 
+	std::string GetGuildFolderName(Snowflake sf)
+	{
+		auto items = m_guildItemList.GetItems();
+		for (auto& item : *items)
+		{
+			if (item->GetID() != sf)
+				continue;
+
+			auto name = item->GetName();
+			if (!name.empty())
+				return name;
+
+			if (!item->IsFolder() || item->GetItems()->empty())
+				return "Empty Folder";
+
+			name = "";
+			auto subitems = item->GetItems();
+			for (auto& subitem : *subitems) {
+				if (!name.empty())
+					name += ", ";
+				name += subitem->GetName();
+			}
+
+			if (name.size() > 100)
+				name = name.substr(0, 97) + "...";
+			return name;
+		}
+
+		return "Unknown";
+	}
+
 	void GetGuildIDsOrdered(std::vector<Snowflake>& sf, bool bUI = false)
 	{
 		if (bUI) {

@@ -128,7 +128,7 @@ void GuildLister::UpdateTooltips()
 		std::string name = "";
 		if (sf & BIT_FOLDER)
 		{
-			name = "Server Folder";
+			name = GetDiscordInstance()->GetGuildFolderName(sf & ~BIT_FOLDER);
 			currentFolder = sf & ~BIT_FOLDER;
 
 			if (sf == BIT_FOLDER) {
@@ -518,13 +518,13 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 			oldPen = SelectObject(hdc, GetStockObject(BLACK_PEN));
 
 			if (currentFolder == (id & ~BIT_FOLDER)) {
-				RoundRect(hdc, rcProfile.left, rcProfile.top,      rcProfile.right, rcProfile.top + pfpBorderSize + amount, 10, 10);
+				RoundRect(hdc, rcProfile.left + 1, rcProfile.top + 1,  rcProfile.right - 1, rcProfile.top - 1 + pfpBorderSize + amount, 10, 10);
 			}
 			else if (isLastItem) {
-				RoundRect(hdc, rcProfile.left, rcProfile.top - 15, rcProfile.right, rcProfile.top + pfpBorderSize, 10, 10);
+				RoundRect(hdc, rcProfile.left + 1, rcProfile.top - 14, rcProfile.right - 1, rcProfile.top - 1 + pfpBorderSize, 10, 10);
 			}
 			else {
-				RoundRect(hdc, rcProfile.left, rcProfile.top - 15, rcProfile.right, rcProfile.bottom + 15, 10, 10);
+				RoundRect(hdc, rcProfile.left + 1, rcProfile.top - 14, rcProfile.right - 1, rcProfile.bottom - 1 + 15, 10, 10);
 			}
 
 			SelectObject(hdc, oldPen);
@@ -1076,7 +1076,7 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				
 				if (sf & BIT_FOLDER)
 				{
-					name = "Server Folder";
+					name = "";
 					avatarlnk = "";
 
 					currentFolder = sf & ~BIT_FOLDER;
