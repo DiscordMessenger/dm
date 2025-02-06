@@ -972,6 +972,7 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						if (yRev - si.nPos > si.nPage) {
 							diff += yRev - si.nPos - si.nPage;
 							si.nPos += diff;
+							selectedRect.top = std::max(selectedRect.top - diff, rect.top);
 							si.fMask = SIF_POS;
 							pThis->SetScrollInfo(&si, true);
 							pThis->m_oldPos = si.nPos;
