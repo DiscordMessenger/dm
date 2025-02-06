@@ -471,7 +471,7 @@ LRESULT CALLBACK GuildLister::ParentWndProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, const std::string& textOver, bool hasAlpha)
+void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, const std::string& textOver, bool hasAlpha, Snowflake currentFolder, bool isLastItem)
 {
 	int height = 0;
 	int pfpSize = GetProfilePictureSize();
@@ -492,7 +492,7 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 		RECT rcProfile = {
 			rect.left + BORDER_SIZE,
 			rect.top  + y,
-			rect.left + pfpBorderSize + BORDER_SIZE * 2,
+			rect.left + pfpBorderSize + BORDER_SIZE,
 			rect.top  + y + pfpBorderSize + BORDER_SIZE * 2
 		};
 
@@ -501,6 +501,29 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 		int pfpBorderSize2 = GetProfileBorderRenderSize();
 
 		FillRect(hdc, &rcProfile, GetSysColorBrush(GUILD_LISTER_COLOR));
+
+		if (currentFolder) {
+			HRGN hrgn = CreateRectRgnIndirect(&rcProfile);
+			SelectClipRgn(hdc, hrgn);
+			int amount = 0;
+
+			if (m_openFolders[currentFolder]) {
+				amount = 15;
+			}
+
+			if (currentFolder == (id & ~BIT_FOLDER)) {
+				RoundRect(hdc, rcProfile.left, rcProfile.top,      rcProfile.right, rcProfile.top + pfpBorderSize + amount, 10, 10);
+			}
+			else if (isLastItem) {
+				RoundRect(hdc, rcProfile.left, rcProfile.top - 15, rcProfile.right, rcProfile.top + pfpBorderSize, 10, 10);
+			}
+			else {
+				RoundRect(hdc, rcProfile.left, rcProfile.top - 15, rcProfile.right, rcProfile.bottom + 15, 10, 10);
+			}
+
+			SelectClipRgn(hdc, NULL);
+		}
+
 		DrawIconEx(hdc, rect.left + BORDER_SIZE, rect.top + BORDER_SIZE + y, hborder, pfpBorderSize2, pfpBorderSize2, 0, NULL, DI_COMPAT | DI_NORMAL);
 		DrawBitmap(hdc, hicon, rect.left + BORDER_SIZE + ScaleByDPI(6), rect.top + BORDER_SIZE + y + ScaleByDPI(4), NULL, CLR_NONE, GetProfilePictureSize(), GetProfilePictureSize(), hasAlpha);
 
@@ -997,8 +1020,9 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			Snowflake currentFolder = 0;
 
-			for (auto sf : sfs)
+			for (size_t i = 0; i < sfs.size(); i++)
 			{
+				Snowflake sf = sfs[i];
 				if (sf == 1)
 				{
 					RECT rc = rect;
@@ -1038,6 +1062,10 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					continue;
 				}
 
+				bool isLastItem = false;
+				if (i == sfs.size() - 1 || (sfs[i + 1] & BIT_FOLDER))
+					isLastItem = true;
+
 				Guild* pGuild = GetDiscordInstance()->GetGuild(sf);
 				if (pGuild)
 				{
@@ -1066,13 +1094,11 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 
 				int oldY = y;
-				pThis->DrawServerIcon(hdc, hbm, y, rect, sf, textOver, hasAlpha);
+				pThis->DrawServerIcon(hdc, hbm, y, rect, sf, textOver, hasAlpha, currentFolder, isLastItem);
 				DrawMentionStatus(hdc, rect.left + BORDER_SIZE + ScaleByDPI(6), rect.top + BORDER_SIZE + ScaleByDPI(4) + oldY, mentionCount);
 
 				if (loadedByLoadBitmap)
-				{
 					DeleteObject(hbm);
-				}
 			}
 
 			RECT finalRect = rect;

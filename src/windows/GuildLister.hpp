@@ -56,7 +56,7 @@ public:
 	void ShowGuildChooserMenu();
 
 private:
-	void DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, const std::string& textOver, bool hasAlpha);
+	void DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, const std::string& textOver, bool hasAlpha, Snowflake currentFolder, bool isLastItem);
 	int GetScrollableHeight();
 
 public:
