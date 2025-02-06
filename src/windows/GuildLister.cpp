@@ -93,9 +93,6 @@ void GuildLister::ClearTooltips()
 
 void GuildLister::UpdateTooltips()
 {
-	// TODO
-	return;
-
 	ClearTooltips();
 
 	RECT rect = {};
@@ -116,14 +113,31 @@ void GuildLister::UpdateTooltips()
 	tme.dwHoverTime = HOVER_DEFAULT;
 	_TrackMouseEvent(&tme);
 
+	Snowflake currentFolder = 0;
 	std::vector<Snowflake> sfs;
-	GetDiscordInstance()->GetGuildIDs(sfs, true);
+	GetDiscordInstance()->GetGuildIDsOrdered(sfs, true);
 	int idx = 1;
 	for (auto sf : sfs)
 	{
 		if (sf == 1)
 		{
 			y += C_GUILD_GAP_HEIGHT;
+			continue;
+		}
+
+		std::string name = "";
+		if (sf & BIT_FOLDER)
+		{
+			name = "Server Folder";
+			currentFolder = sf & ~BIT_FOLDER;
+
+			if (sf == BIT_FOLDER) {
+				// skip
+				continue;
+			}
+		}
+		else if (currentFolder && !m_openFolders[currentFolder]) {
+			// skip items in closed folders.
 			continue;
 		}
 
@@ -135,9 +149,11 @@ void GuildLister::UpdateTooltips()
 		};
 
 		Guild* pGld = GetDiscordInstance()->GetGuild(sf);
-		assert(pGld);
+		if (pGld) {
+			name = pGld->m_name;
+		}
 
-		LPTSTR tstr = ConvertCppStringToTString(pGld->m_name);
+		LPTSTR tstr = ConvertCppStringToTString(name);
 		TOOLINFO ti{};
 		ti.cbSize = sizeof(ti);
 		ti.hwnd = m_scrollable_hwnd;
@@ -860,19 +876,67 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 					int diff = pThis->UpdateScrollBar(true);
 
-					// Check if it is equal to the max
-					if (si.nPos + si.nPage >= si.nMax && diff >= 0)
+					if (pThis->m_openFolders[folder])
 					{
-						int oldMax = si.nMax;
-						pThis->GetScrollInfo(&si);
+						// Check if the bottom of this folder is outide of the current
+						// scroll boundaries. If yes, then scroll down to reveal it.
+						int bottomPosition = 0;
 
-						diff += si.nMax - oldMax;
-						si.nPos += diff;
-						pThis->SetScrollInfo(&si, true);
-						pThis->m_oldPos = si.nPos;
+						// NOTE: I hate that I duplicate this exact loop like 5 times
+						// throughout this file.
+						pThis->GetScrollInfo(&si);
+						int yBot = -si.nPos, yTop = -si.nPos;
+
+						for (auto sf : sfs)
+						{
+							if (sf == 1) {
+								yBot += C_GUILD_GAP_HEIGHT;
+								continue;
+							}
+
+							if (sf & BIT_FOLDER) {
+								if (sf == BIT_FOLDER) {
+									// Skip the folder terminator. Except, if the terminated folder
+									// is the one we just opened.
+									if (currentFolder == folder) {
+										break;
+									}
+
+									continue;
+								}
+
+								currentFolder = sf & ~BIT_FOLDER;
+								if (currentFolder == folder)
+									yTop = yBot;
+							}
+							else if (currentFolder && !pThis->m_openFolders[currentFolder]) {
+								// Skip items in closed folders.
+								continue;
+							}
+
+							yBot += height;
+						}
+
+						// Which Y should we reveal?
+						// If the folder, when opened, is more than a page, reveal
+						// the top, else reveal the bottom.
+						int yRev = yBot;
+						if (yBot > yTop + si.nPage)
+							yRev = yTop + si.nPage;
+
+						if (yRev - si.nPos > si.nPage) {
+							diff += yRev - si.nPos - si.nPage;
+							si.nPos += diff;
+							pThis->SetScrollInfo(&si, true);
+							pThis->m_oldPos = si.nPos;
+						}
 					}
-					
+
 					WindowScroll(hWnd, diff);
+					pThis->UpdateTooltips();
+
+					pThis->GetScrollInfo(&si);
+					pThis->m_oldPos = si.nPos;
 				}
 				else {
 					Snowflake sf1 = 0;
