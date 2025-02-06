@@ -81,6 +81,10 @@ extern HFONT
 extern HICON g_ProfileBorderIcon;
 extern HICON g_ProfileBorderIconGold;
 
+// from shell32
+extern HICON g_folderClosedIcon;
+extern HICON g_folderOpenIcon;
+
 enum eComboIDs
 {
 	CID_MESSAGELIST = 9999,

@@ -151,6 +151,10 @@ HFONT
 	g_TypingRegFont,
 	g_TypingBoldFont;
 
+// icons grabbed from shell32
+HICON g_folderClosedIcon;
+HICON g_folderOpenIcon;
+
 HBITMAP g_DefaultProfilePicture;
 HImage g_defaultImage;
 UINT_PTR g_HeartbeatTimer;
@@ -1691,7 +1695,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 	CheckIfItsStartup(pCmdLine);
 
-
 	g_pFrontEnd = new Frontend_Win32;
 	g_pHTTPClient = new NetworkerThreadManager;
 
@@ -1727,6 +1730,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	g_defaultImage.Frames.resize(1);
 	g_defaultImage.Frames[0].Bitmap = g_DefaultProfilePicture;
 	g_defaultImage.Width = g_defaultImage.Height = GetProfilePictureSize();
+
+	// Find the folder icons within shell32.
+	HMODULE hshell32 = GetModuleHandle(TEXT("shell32.dll"));
+	g_folderClosedIcon = LoadIcon(hshell32, MAKEINTRESOURCE(4));
+	g_folderOpenIcon   = LoadIcon(hshell32, MAKEINTRESOURCE(5));
 
 	InitializeStatusIcons();
 

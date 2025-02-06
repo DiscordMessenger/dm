@@ -480,6 +480,8 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 
 	SetRectEmpty(&m_iconRects[id]);
 
+	bool isFolderIcon = currentFolder && (id & ~BIT_FOLDER) == currentFolder;
+
 	m_selectedGuild = GetDiscordInstance()->GetCurrentGuildID();
 	if (hdc && hicon)
 	{
@@ -511,6 +513,10 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 				amount = 15;
 			}
 
+			HGDIOBJ oldBrush, oldPen;
+			oldBrush = SelectObject(hdc, GetSysColorBrush(COLOR_BTNSHADOW));
+			oldPen = SelectObject(hdc, GetStockObject(BLACK_PEN));
+
 			if (currentFolder == (id & ~BIT_FOLDER)) {
 				RoundRect(hdc, rcProfile.left, rcProfile.top,      rcProfile.right, rcProfile.top + pfpBorderSize + amount, 10, 10);
 			}
@@ -521,11 +527,16 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 				RoundRect(hdc, rcProfile.left, rcProfile.top - 15, rcProfile.right, rcProfile.bottom + 15, 10, 10);
 			}
 
+			SelectObject(hdc, oldPen);
+			SelectObject(hdc, oldBrush);
+
 			SelectClipRgn(hdc, NULL);
 		}
 
-		DrawIconEx(hdc, rect.left + BORDER_SIZE, rect.top + BORDER_SIZE + y, hborder, pfpBorderSize2, pfpBorderSize2, 0, NULL, DI_COMPAT | DI_NORMAL);
-		DrawBitmap(hdc, hicon, rect.left + BORDER_SIZE + ScaleByDPI(6), rect.top + BORDER_SIZE + y + ScaleByDPI(4), NULL, CLR_NONE, GetProfilePictureSize(), GetProfilePictureSize(), hasAlpha);
+		if (!isFolderIcon) {
+			DrawIconEx(hdc, rect.left + BORDER_SIZE, rect.top + BORDER_SIZE + y, hborder, pfpBorderSize2, pfpBorderSize2, 0, NULL, DI_COMPAT | DI_NORMAL);
+			DrawBitmap(hdc, hicon, rect.left + BORDER_SIZE + ScaleByDPI(6), rect.top + BORDER_SIZE + y + ScaleByDPI(4), NULL, CLR_NONE, GetProfilePictureSize(), GetProfilePictureSize(), hasAlpha);
+		}
 
 		height = pfpBorderSize;
 	}
@@ -540,19 +551,31 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 			rect.top + y + pfpBorderSize + BORDER_SIZE * 2
 		};
 	}
+	
+	RECT rcProfile = {
+		rect.left + BORDER_SIZE + ScaleByDPI(6),
+		rect.top  + y + BORDER_SIZE + ScaleByDPI(4),
+		rect.left + BORDER_SIZE + pfpBorderSize - ScaleByDPI(6),
+		rect.top  + y + pfpBorderSize + BORDER_SIZE * 2 - ScaleByDPI(10)
+	};
 
-	if (hdc && !textOver.empty())
+	if (hdc && isFolderIcon)
+	{
+		int smIconSz = GetSystemMetrics(SM_CXICON);
+		HICON hic;
+		if (m_openFolders[currentFolder])
+			hic = g_folderOpenIcon;
+		else
+			hic = g_folderClosedIcon;
+
+		DrawIcon(hdc, rcProfile.left + (rcProfile.right - rcProfile.left - smIconSz) / 2, rcProfile.top + (rcProfile.bottom - rcProfile.top - smIconSz) / 2, hic);
+	}
+	else if (hdc && !textOver.empty())
 	{
 		int mod = SetBkMode(hdc, TRANSPARENT);
 		COLORREF clr = SetTextColor(hdc, RGB(255, 255, 255));
 		HGDIOBJ go = SelectObject(hdc, g_AuthorTextFont);
 		LPTSTR tstr = ConvertCppStringToTString(textOver);
-		RECT rcProfile = {
-			rect.left + BORDER_SIZE + ScaleByDPI(6),
-			rect.top  + y + BORDER_SIZE + ScaleByDPI(4),
-			rect.left + BORDER_SIZE + pfpBorderSize - ScaleByDPI(6),
-			rect.top  + y + pfpBorderSize + BORDER_SIZE * 2 - ScaleByDPI(10)
-		};
 		DrawText(hdc, tstr, -1, &rcProfile, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX | DT_WORD_ELLIPSIS);
 		free(tstr);
 		SelectObject(hdc, go);
@@ -889,7 +912,6 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					selectedRect.left = rect.left;
 					selectedRect.right = rect.right;
 					selectedRect.bottom = rect.bottom;
-					InvalidateRect(hWnd, &selectedRect, FALSE);
 
 					// Get the old position
 					SCROLLINFO si{};
@@ -950,9 +972,15 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						if (yRev - si.nPos > si.nPage) {
 							diff += yRev - si.nPos - si.nPage;
 							si.nPos += diff;
+							si.fMask = SIF_POS;
 							pThis->SetScrollInfo(&si, true);
 							pThis->m_oldPos = si.nPos;
 						}
+					}
+					else {
+						// TODO HACK
+						if (pThis->m_bIsScrollBarVisible)
+							diff = 0;
 					}
 
 					WindowScroll(hWnd, diff);
@@ -960,6 +988,8 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 					pThis->GetScrollInfo(&si);
 					pThis->m_oldPos = si.nPos;
+
+					InvalidateRect(hWnd, &selectedRect, FALSE);
 				}
 				else {
 					Snowflake sf1 = 0;
