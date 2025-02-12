@@ -2331,8 +2331,9 @@ void DiscordInstance::HandleREADY(Json& j)
 	if (firstReadyOnThisUser) {
 		m_CurrentChannel = 0;
 
-		if (m_guilds.size() > 0)
-			guildsf = m_guilds.front().m_snowflake;
+		auto list = m_guildItemList.GetItems();
+		if (list->size() > 0)
+			guildsf = list->front()->GetID();
 	}
 	else {
 		guildsf = m_CurrentGuild;
