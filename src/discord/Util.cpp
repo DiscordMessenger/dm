@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iomanip>
 #include <chrono>
+#include <ctime>
 #include "Util.hpp"
 #include "Frontend.hpp"
 
@@ -376,10 +377,10 @@ time_t ParseTime(const std::string& iso8601)
 
 	// Convert to time_t
 	// XXX timegm on linux
-#ifdef MINGW_SPECIFIC_HACKS
-	time_t t = mktime(&ptime);
-#elif _WIN32
-	time_t t = _mkgmtime(&ptime);
+#ifdef _WIN32
+	extern time_t MakeGMTime(const tm* ptime);
+	time_t t = MakeGMTime(&ptime);
+	//time_t t = _mkgmtime(&ptime);
 #else
 	time_t t = timegm(&ptime);
 #endif

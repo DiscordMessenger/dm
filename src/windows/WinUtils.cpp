@@ -1334,3 +1334,37 @@ extern "C" void Terminate(const char* message, ...)
 	MessageBoxA(NULL, anotherBuffer, "DiscordMessenger Fatal Error!", MB_ICONERROR | MB_OK);
 	std::terminate();
 }
+
+static time_t FileTimeToTimeT(LPFILETIME ft)
+{
+	ULARGE_INTEGER uli {};
+	uli.LowPart = ft->dwLowDateTime;
+	uli.HighPart = ft->dwHighDateTime;
+	auto lt = (uli.QuadPart - 116444736000000000LL) / 10000000LL;
+
+	assert(lt < 2000000000);
+	if (lt > 2147483647)
+		lt = 2147483647;
+
+	return (time_t) lt;
+}
+
+time_t MakeGMTime(const tm* ptime)
+{
+	SYSTEMTIME st { };
+	st.wYear      = ptime->tm_year ? (1900 + ptime->tm_year) : 0;
+	st.wMonth     = 1 + ptime->tm_mon;
+	st.wDay       = ptime->tm_mday;
+	st.wDayOfWeek = ptime->tm_wday;
+	st.wHour      = ptime->tm_hour;
+	st.wMinute    = ptime->tm_min;
+	st.wSecond    = ptime->tm_sec;
+
+	FILETIME ft { };
+	SystemTimeToFileTime(&st, &ft);
+
+	if (ft.dwHighDateTime == 0 && ft.dwLowDateTime == 0)
+		return 0;
+
+	return FileTimeToTimeT(&ft);
+}

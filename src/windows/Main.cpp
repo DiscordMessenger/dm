@@ -1657,6 +1657,7 @@ InstanceMutex g_instanceMutex;
 
 static bool ForceSingleInstance(LPCTSTR pClassName)
 {
+	return true;
 	HRESULT hResult = g_instanceMutex.Init();
 
 	if (hResult != ERROR_ALREADY_EXISTS)

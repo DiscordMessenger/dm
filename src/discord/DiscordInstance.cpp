@@ -2963,7 +2963,7 @@ void DiscordInstance::OnUploadAttachmentFirst(NetRequest* pReq)
 			DiscordRequest::UPLOAD_ATTACHMENT_2,
 			pReq->key,
 			"",
-			GetToken(),
+			"",//GetToken(),
 			"",
 			nullptr, // default processing
 			pNewData,
