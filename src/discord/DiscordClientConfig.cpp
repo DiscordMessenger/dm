@@ -13,37 +13,39 @@ DiscordClientConfig* GetClientConfig()
 
 DiscordClientConfig::DiscordClientConfig()
 {
-	// Setup here
+	// Setup here -- These are dumped from my discord canary client
+	m_osArch = m_appArch = "x64"; // not actually
 	m_os = "Windows";
-	m_browser = "Chrome";
+	m_browser = "Discord Client";
 	m_systemLocale = "en-US";
 	m_timeZone = "Europe/Bucharest"; // TODO: UTC here
-	m_browserVersion = "125.0.0.0";
+	m_browserVersion = "33.4.0";
 	m_browserVersionSimple = "125";
 	m_webKitVersion = "537.36";
-	m_osVersion = "10";
-	m_releaseChannel = "stable";
-	m_clientBuildNumber = 301663;
-	m_device = "";
-	m_referrer = "";
-	m_referrerCurrent = "";
-	m_referringDomain = "";
-	m_referringDomainCurrent = "";
-	m_designId = 0;
+	m_osVersion = "10.0.22621";
+	m_osSdkVersion = "22621";
+	m_releaseChannel = "canary";
+	m_clientBuildNumber = 370948;
+	m_nativeBuildNumber = 59076;
+	m_clientVersion = "1.0.556";
+	m_osVersionSimple = "10";
+	m_chromeVersion = "130.0.6723.191";
 
 	m_browserUserAgent =
 		"Mozilla/5.0 (Windows NT "
-		+ m_osVersion
+		+ m_osVersionSimple
 		+ ".0; Win64; x64) AppleWebKit/"
 		+ m_webKitVersion
-		+ " (KHTML, like Gecko) Chrome/"
+		+ " (KHTML, like Gecko) discord/"
+		+ m_clientVersion
+		+ " Chrome/"
+		+ m_chromeVersion
+		+ " Electron/"
 		+ m_browserVersion
 		+ " Safari/"
-		+ m_webKitVersion
-		+ " Edg/"
-		+ m_browserVersion;
+		+ m_webKitVersion;
 
-	m_secChUa = "\"Chromium\";v=\"" + m_browserVersionSimple + "\", \"Microsoft Edge\";v=\"125\", \"Not-A.Brand\";v=\"99\"";
+	m_secChUa = "\"Not?A_Brand\";v=\"99\", \"Chromium\";v=\"130\"";
 
 	// Ok, now serialize it
 	nlohmann::json j = Serialize();
@@ -62,21 +64,21 @@ DiscordClientConfig::DiscordClientConfig()
 nlohmann::json DiscordClientConfig::Serialize() const
 {
 	nlohmann::json j;
-	j["os"] = m_os;
+	j["app_arch"] = m_appArch;
 	j["browser"] = m_browser;
-	j["device"] = m_device;
-	j["system_locale"] = m_systemLocale;
 	j["browser_user_agent"] = m_browserUserAgent;
 	j["browser_version"] = m_browserVersion;
-	j["os_version"] = m_osVersion;
-	j["referrer"] = m_referrer;
-	j["referring_domain"] = m_referringDomain;
-	j["referrer_current"] = m_referrerCurrent;
-	j["referring_domain_current"] = m_referringDomainCurrent;
-	j["release_channel"] = m_releaseChannel;
 	j["client_build_number"] = m_clientBuildNumber;
 	j["client_event_source"] = nullptr;
-	j["design_id"] = m_designId;
+	j["client_version"] = m_clientVersion;
+	j["has_client_mods"] = false; // this whole thing is a mod isn't it?
+	j["native_build_number"] = m_nativeBuildNumber;
+	j["os"] = m_os;
+	j["os_arch"] = m_osArch;
+	j["os_sdk_version"] = m_osSdkVersion;
+	j["os_version"] = m_osVersion;
+	j["release_channel"] = m_releaseChannel;
+	j["system_locale"] = m_systemLocale;
 	return j;
 }
 
