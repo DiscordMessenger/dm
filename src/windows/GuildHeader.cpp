@@ -3,7 +3,7 @@
 #include "NotificationViewer.hpp"
 
 #define GUILD_HEADER_COLOR   COLOR_ACTIVECAPTION
-#define GUILD_HEADER_COLOR_2 COLOR_GRADIENTACTIVECAPTION
+#define GUILD_HEADER_COLOR_2 GetGradientActiveCaptionColor()
 #define CHANNEL_ICON_SIZE 16
 
 #define IDTB_MEMBERS  (1000) // Show list of members
@@ -174,7 +174,7 @@ void GuildHeader::DrawButton(HDC hdc, Button& button)
 
 	POINT    oldPt;
 	COLORREF oldPen = ri::SetDCPenColor(hdc, 0);
-	HGDIOBJ  oldObj = SelectObject(hdc, GetStockPen(DC_PEN));
+	HGDIOBJ  oldObj = SelectObject(hdc, ri::GetDCPen());
 	MoveToEx(hdc, 0, 0, &oldPt);
 
 	const int clr = GUILD_HEADER_COLOR_2;

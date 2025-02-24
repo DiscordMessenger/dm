@@ -228,7 +228,7 @@ void MdDrawCodeBackground(DrawingContext* context, const Rect& rect)
 
 	if (context->m_bInvertTextColor) {
 		COLORREF old = ri::SetDCBrushColor(context->m_hdc, context->InvertIfNeeded(GetSysColor(COLOR_WINDOW)));
-		FillRect(context->m_hdc, &rc, GetStockBrush(DC_BRUSH));
+		FillRect(context->m_hdc, &rc, ri::GetDCBrush());
 		ri::SetDCBrushColor(context->m_hdc, old);
 	}
 	else {

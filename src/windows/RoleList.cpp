@@ -164,7 +164,7 @@ void RoleList::DrawRole(HDC hdc, RoleItem* role)
 void RoleList::DrawShinyRoleColor(HDC hdc, const LPRECT pRect, COLORREF base)
 {
 	COLORREF old = ri::SetDCBrushColor(hdc, base);
-	FillRect(hdc, pRect, GetStockBrush(DC_BRUSH));
+	FillRect(hdc, pRect, ri::GetDCBrush());
 	ri::SetDCBrushColor(hdc, old);
 
 	int left = pRect->left;
@@ -172,7 +172,7 @@ void RoleList::DrawShinyRoleColor(HDC hdc, const LPRECT pRect, COLORREF base)
 	int width = pRect->right - pRect->left;
 	int height = pRect->bottom - pRect->top;
 
-	HGDIOBJ obj = SelectObject(hdc, GetStockPen(DC_PEN));
+	HGDIOBJ obj = SelectObject(hdc, ri::GetDCPen());
 	POINT oldPt;
 	MoveToEx(hdc, 0, 0, &oldPt);
 

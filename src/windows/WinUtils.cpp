@@ -405,8 +405,38 @@ void DrawBitmap(HDC hdc, HBITMAP bitmap, int x, int y, LPRECT clip, COLORREF tra
 	}
 }
 
+static bool HasGradientCaption()
+{
+	auto version = LOWORD(GetVersion());
+	if (LOBYTE(version) < 4) return false;
+	if (LOBYTE(version) > 4) return true;
+	return HIBYTE(version) > 1;
+}
+
+int GetGradientActiveCaptionColor()
+{
+	if (!HasGradientCaption())
+		return COLOR_ACTIVECAPTION;
+
+	return COLOR_GRADIENTACTIVECAPTION;
+}
+
+int GetGradientInactiveCaptionColor()
+{
+	if (!HasGradientCaption())
+		return COLOR_INACTIVECAPTION;
+
+	return COLOR_GRADIENTINACTIVECAPTION;
+}
+
 void FillGradient(HDC hdc, const LPRECT lpRect, int sci1, int sci2, bool vertical)
 {
+	if (!HasGradientCaption()) {
+		if (sci1 == COLOR_GRADIENTACTIVECAPTION)
+			sci1 = COLOR_ACTIVECAPTION;
+		if (sci1 == COLOR_GRADIENTINACTIVECAPTION)
+			sci1 = COLOR_INACTIVECAPTION;
+	}
 	if (ri::HaveMsImg()) {
 		COLORREF c1 = GetSysColor(sci1);
 		COLORREF c2 = GetSysColor(sci2);
@@ -537,7 +567,7 @@ void FillGradientColors(HDC hdc, const LPRECT lpRect, COLORREF c1, COLORREF c2, 
 	else
 	{
 		COLORREF oldColor = ri::SetDCBrushColor(hdc, c1);
-		FillRect(hdc, lpRect, GetStockBrush(DC_BRUSH));
+		FillRect(hdc, lpRect, ri::GetDCBrush());
 		ri::SetDCBrushColor(hdc, oldColor);
 	}
 }

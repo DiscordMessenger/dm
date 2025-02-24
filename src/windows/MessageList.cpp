@@ -274,12 +274,12 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 	}
 	else {
 		COLORREF oldClr = ri::SetDCBrushColor(hdc, pList->GetDarkerBackgroundColor());
-		FillRect(hdc, &rcGradient, GetStockBrush(DC_BRUSH));
+		FillRect(hdc, &rcGradient, ri::GetDCBrush());
 		ri::SetDCBrushColor(hdc, oldClr);
 	}
 
 	COLORREF oldCol = ri::SetDCBrushColor(hdc, m_color);
-	FillRect(hdc, &rcLine, GetStockBrush(DC_BRUSH));
+	FillRect(hdc, &rcLine, ri::GetDCBrush());
 	ri::SetDCBrushColor(hdc, oldCol);
 
 	// Draw the thing
@@ -1882,10 +1882,10 @@ COLORREF MessageList::DrawMentionBackground(HDC hdc, RECT& rc, COLORREF chosenBk
 	else
 	{
 		COLORREF old = ri::SetDCBrushColor(hdc, color);
-		FillRect(hdc, &rc, GetStockBrush(DC_BRUSH));
+		FillRect(hdc, &rc, ri::GetDCBrush());
 
 		ri::SetDCBrushColor(hdc, color2);
-		FillRect(hdc, &rcLeft, GetStockBrush(DC_BRUSH));
+		FillRect(hdc, &rcLeft, ri::GetDCBrush());
 		ri::SetDCBrushColor(hdc, old);
 	}
 
@@ -2156,7 +2156,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			oldFont = SelectObject(hdc, g_AuthorTextFont);
 
 		POINT old;
-		HGDIOBJ oldob = SelectObject(hdc, GetStockPen(DC_PEN));
+		HGDIOBJ oldob = SelectObject(hdc, ri::GetDCPen());
 		MoveToEx(hdc, l1, (dgRect.top + dgRect.bottom) / 2, &old);
 		LineTo(hdc, r1, (dgRect.top + dgRect.bottom) / 2);
 		MoveToEx(hdc, l2, (dgRect.top + dgRect.bottom) / 2, NULL);
@@ -2185,7 +2185,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	if (isFlashed) {
 		bkgdColor = GetDarkerBackgroundColor();
 		COLORREF crOld = ri::SetDCBrushColor(hdc, bkgdColor);
-		FillRect(hdc, &msgRect, GetStockBrush(DC_BRUSH));
+		FillRect(hdc, &msgRect, ri::GetDCBrush());
 		ri::SetDCBrushColor(hdc, crOld);
 	}
 	switch (mStyle)
@@ -2552,7 +2552,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 			if (iitem.m_bHighlighted && inView) {
 				POINT old{};
-				HGDIOBJ  oldPen    = SelectObject(hdc, GetStockPen(DC_PEN));
+				HGDIOBJ  oldPen    = SelectObject(hdc, ri::GetDCPen());
 				COLORREF oldPenClr = ri::SetDCPenColor(hdc, GetTextColor(hdc));
 				MoveToEx(hdc, iitem.m_rect.left,  iitem.m_rect.bottom - 1, &old);
 				LineTo  (hdc, iitem.m_rect.right, iitem.m_rect.bottom - 1);
@@ -2654,7 +2654,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 				if (iitem.m_bHighlighted)
 				{
 					POINT old{};
-					HGDIOBJ oldObj = SelectObject(hdc, GetStockPen(DC_PEN));
+					HGDIOBJ oldObj = SelectObject(hdc, ri::GetDCPen());
 					COLORREF oldPenClr = ri::SetDCPenColor(hdc, iitem.UseLinkColor()  ? COLOR_LINK : windowTextColor);
 					MoveToEx(hdc, iitem.m_rect.left, iitem.m_rect.bottom - 1, &old);
 					LineTo  (hdc, iitem.m_rect.right, iitem.m_rect.bottom - 1);
@@ -2838,8 +2838,8 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	if (bDrawNewMarker)
 	{
 		// Draw the unread marker.
-		HGDIOBJ oldPen = SelectObject(hdc, GetStockObject(DC_PEN));
 		COLORREF oldClr = ri::SetDCPenColor(hdc, RGB(255, 0, 0));
+		HGDIOBJ oldPen = SelectObject(hdc, ri::GetDCPen());
 
 		POINT ptOld{};
 		MoveToEx(hdc, msgRect.left, msgRect.top, &ptOld);
@@ -2852,8 +2852,8 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		HICON hic = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_NEW)), IMAGE_ICON, iconSize, iconSize, LR_SHARED | LR_CREATEDIBSECTION);
 		DrawIconEx(hdc, msgRect.right - iconSize, msgRect.top, hic, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
 
-		ri::SetDCPenColor(hdc, oldClr);
 		SelectObject(hdc, oldPen);
+		ri::SetDCPenColor(hdc, oldClr);
 	}
 }
 
