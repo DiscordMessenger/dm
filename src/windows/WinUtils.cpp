@@ -198,7 +198,19 @@ void CopyStringToClipboard(const std::string& str)
 	{
 		EmptyClipboard();
 
-		LPCTSTR ctstr = ConvertCppStringToTString(str);
+		// This expands all of the new line characters inside str into
+		// a carriagereturn-linefeed sequence.
+		std::string str2;
+		str2.reserve(24 + str.size());
+
+		for (size_t i = 0; i < str.size(); i++)
+		{
+			if (str[i] == '\n' && (i == 0 || str[i] != '\r'))
+				str2.push_back('\r');
+			str2.push_back(str[i]);
+		}
+
+		LPCTSTR ctstr = ConvertCppStringToTString(str2);
 
 		size_t stringSize = (str.length() + 1) * sizeof(TCHAR);
 

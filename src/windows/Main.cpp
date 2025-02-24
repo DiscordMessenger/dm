@@ -1209,8 +1209,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_SIZE: {
 			int width = LOWORD(lParam);
 			int height = HIWORD(lParam);
+
+			RECT r{ 0, 0, width, height };
+			AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, FALSE);
+
 			// Save the new size
-			GetLocalSettings()->SetWindowSize(UnscaleByDPI(width), UnscaleByDPI(height));
+			GetLocalSettings()->SetWindowSize(r.right - r.left, r.bottom - r.top);
 			GetLocalSettings()->SetMaximized(wParam == SIZE_MAXIMIZED);
 
 			ProfilePopout::Dismiss();
@@ -1765,8 +1769,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 		/* style */      flags,
 		/* x pos */      CW_USEDEFAULT,
 		/* y pos */      CW_USEDEFAULT,
-		/* x siz */      ScaleByDPI(wndWidth),
-		/* y siz */      ScaleByDPI(wndHeight),
+		/* x siz */      wndWidth,
+		/* y siz */      wndHeight,
 		/* parent */     NULL,
 		/* menu  */      NULL,
 		/* instance */   hInstance,
