@@ -412,7 +412,7 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 						#endif
 
 							OPENFILENAME ofn{};
-							ofn.lStructSize    = sizeof ofn;
+							ofn.lStructSize    = SIZEOF_OPENFILENAME_NT4;
 							ofn.hwndOwner      = g_Hwnd;
 							ofn.hInstance      = g_hInstance;
 							ofn.nMaxFile       = MAX_FILE;

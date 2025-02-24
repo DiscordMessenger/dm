@@ -301,7 +301,7 @@ void UploadDialogShow2()
 	buffer[0] = buffer2[0] = 0;
 
 	OPENFILENAME ofn{};
-	ofn.lStructSize    = sizeof ofn;
+	ofn.lStructSize    = SIZEOF_OPENFILENAME_NT4;
 	ofn.hwndOwner      = g_Hwnd;
 	ofn.hInstance      = g_hInstance;
 	ofn.nMaxFile       = MAX_FILE;

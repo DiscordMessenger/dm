@@ -746,7 +746,7 @@ void DownloadFileDialog(HWND hWnd, const std::string& url, const std::string& fi
 	free(fileTitle2);
 
 	OPENFILENAME ofn{};
-	ofn.lStructSize = sizeof(ofn);
+	ofn.lStructSize = SIZEOF_OPENFILENAME_NT4;
 	ofn.hwndOwner   = hWnd;
 	ofn.hInstance   = g_hInstance;
 	ofn.lpstrFilter = GetFilter(fileName);

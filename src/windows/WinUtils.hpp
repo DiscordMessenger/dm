@@ -23,6 +23,20 @@ struct NetRequest;
 #define WM_MOUSEHWHEEL 0x020E
 #endif // _WIN32_WINNT
 
+#ifdef _MSC_VER
+
+// Well, MSVC defines OPENFILENAME_NT4 for us
+#define SIZEOF_OPENFILENAME_NT4 sizeof(OPENFILENAME_NT4)
+
+#else
+
+// MinGW doesn't, so we'll have to hardcode it.
+// Luckily OPENFILENAME_NT4 doesn't have fields whose size
+// depends on UNICODE, so it's always 76 bytes.
+#define SIZEOF_OPENFILENAME_NT4 76
+
+#endif
+
 // String manipulation
 
 #define CHECKBOX_INTERNAL_SIZE 12 // how do I avoid hard coding this??
