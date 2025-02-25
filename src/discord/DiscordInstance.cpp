@@ -34,11 +34,16 @@ Snowflake CreateTemporarySnowflake()
 std::string GetStatusStringFromGameJsonObject(Json& game)
 {
 	std::string dump = game.dump();
-	int type = game["type"];
 
+	if (!game.contains("type") || !game["type"].is_number_integer()) {
+		DbgPrintF("Returning nothing because type didn't exist");
+		return "";
+	}
+
+	int type = game["type"];
 	switch (type) {
 		default:
-			return "huh?";
+			return "";
 		case ACTIVITY_PLAYING:
 			return "Playing " + GetFieldSafe(game, "name");
 		case ACTIVITY_STREAMING:
