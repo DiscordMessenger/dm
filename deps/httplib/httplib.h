@@ -280,6 +280,7 @@ using socket_t = int;
 #ifdef CPPHTTPLIB_OPENSSL_SUPPORT
 #ifdef _WIN32
 #include <wincrypt.h>
+#include "ri/recrypt.hpp"
 
 // these are defined in wincrypt.h and it breaks compilation if BoringSSL is
 // used
@@ -4499,12 +4500,12 @@ inline std::string SHA_512(const std::string &s) {
 // NOTE: This code came up with the following stackoverflow post:
 // https://stackoverflow.com/questions/9507184/can-openssl-on-windows-use-the-system-certificate-store
 inline bool load_system_certs_on_windows(X509_STORE *store) {
-  auto hStore = CertOpenSystemStoreW((HCRYPTPROV_LEGACY)NULL, L"ROOT");
+  auto hStore = ri::CertOpenSystemStoreA((HCRYPTPROV_LEGACY)NULL, "ROOT");
 
   if (!hStore) { return false; }
 
   PCCERT_CONTEXT pContext = NULL;
-  while ((pContext = CertEnumCertificatesInStore(hStore, pContext)) !=
+  while ((pContext = ri::CertEnumCertificatesInStore(hStore, pContext)) !=
 		 nullptr) {
 	auto encoded_cert =
 		static_cast<const unsigned char *>(pContext->pbCertEncoded);
@@ -4516,8 +4517,8 @@ inline bool load_system_certs_on_windows(X509_STORE *store) {
 	}
   }
 
-  CertFreeCertificateContext(pContext);
-  CertCloseStore(hStore, 0);
+  ri::CertFreeCertificateContext(pContext);
+  ri::CertCloseStore(hStore, 0);
 
   return true;
 }

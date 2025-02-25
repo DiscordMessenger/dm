@@ -183,7 +183,7 @@ bool MemberList::OnNotify(LRESULT& out, WPARAM wParam, LPARAM lParam)
 			tme.dwFlags = TME_LEAVE;
 			tme.hwndTrack = m_listHwnd;
 			tme.dwHoverTime = 1;
-			_TrackMouseEvent(&tme);
+			ri::TrackMouseEvent(&tme);
 
 			out = TRUE;
 			return true;

@@ -602,7 +602,7 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 			break;
 
 		default:
-			str = "Unknown HTTP code " + std::to_string(pRequest->result) + " (" + pRequest->ErrorMessage() + ".\n"
+			str = "Unknown HTTP code " + std::to_string(pRequest->result) + " (" + pRequest->ErrorMessage() + ")\n"
 				"URL requested: " + pRequest->url + "\n\nResponse:" + pRequest->response;
 			bExitAfterError = false;
 			bShowMessageBox = true;

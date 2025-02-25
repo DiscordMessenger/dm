@@ -528,6 +528,8 @@
   <ItemGroup>
     <ClInclude Include="..\deps\httplib\httplib.h" />
     <ClInclude Include="..\deps\iprogramsterminate.h" />
+    <ClInclude Include="..\deps\mwas\include\ri\recrypt.hpp" />
+    <ClInclude Include="..\deps\mwas\include\ri\reimpl.hpp" />
     <ClInclude Include="..\src\discord\ActiveStatus.hpp" />
     <ClInclude Include="..\src\discord\Attachment.hpp" />
     <ClInclude Include="..\src\discord\Channel.hpp" />

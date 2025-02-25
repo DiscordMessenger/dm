@@ -641,6 +641,12 @@
     <ClInclude Include="..\src\discord\GuildListItem.hpp">
       <Filter>Header Files\Discord</Filter>
     </ClInclude>
+    <ClInclude Include="..\deps\mwas\include\ri\recrypt.hpp">
+      <Filter>Source Files\Deps\Mwas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\deps\mwas\include\ri\reimpl.hpp">
+      <Filter>Source Files\Deps\Mwas</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\windows\ProfileView.cpp">

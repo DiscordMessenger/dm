@@ -293,7 +293,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				tme.dwFlags = TME_LEAVE;
 				tme.dwHoverTime = 1;
 				tme.hwndTrack = hWnd;
-				_TrackMouseEvent(&tme);
+				ri::TrackMouseEvent(&tme);
 
 				POINT pt = { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) };
 				for (auto& button : pThis->m_buttons) {

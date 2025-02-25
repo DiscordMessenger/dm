@@ -3621,7 +3621,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			tme.dwFlags = TME_LEAVE;
 			tme.hwndTrack = hWnd;
 			tme.dwHoverTime = 0;
-			_TrackMouseEvent(&tme);
+			ri::TrackMouseEvent(&tme);
 			if (hit)
 				return TRUE;
 			break;

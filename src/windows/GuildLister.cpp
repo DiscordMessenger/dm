@@ -111,7 +111,7 @@ void GuildLister::UpdateTooltips()
 	tme.dwFlags = TME_LEAVE | TME_HOVER;
 	tme.hwndTrack = m_scrollable_hwnd;
 	tme.dwHoverTime = HOVER_DEFAULT;
-	_TrackMouseEvent(&tme);
+	ri::TrackMouseEvent(&tme);
 
 	Snowflake currentFolder = 0;
 	std::vector<Snowflake> sfs;
@@ -708,7 +708,7 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			tme.dwFlags = TME_LEAVE | TME_HOVER;
 			tme.hwndTrack = hWnd;
 			tme.dwHoverTime = HOVER_DEFAULT;
-			_TrackMouseEvent(&tme);
+			ri::TrackMouseEvent(&tme);
 
 			Snowflake currentFolder = 0;
 			std::vector<Snowflake> sfs;

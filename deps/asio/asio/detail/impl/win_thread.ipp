@@ -17,6 +17,8 @@
 
 #include "asio/detail/config.hpp"
 
+#include "ri/reimpl.hpp"
+
 #if defined(ASIO_WINDOWS) \
   && !defined(ASIO_WINDOWS_APP) \
   && !defined(UNDER_CE)
@@ -50,7 +52,7 @@ void win_thread::join()
   }
   else
   {
-    ::QueueUserAPC(apc_function, thread_, 0);
+    ri::QueueUserAPC(apc_function, thread_, 0);
     ::WaitForSingleObject(thread_, INFINITE);
   }
 }
