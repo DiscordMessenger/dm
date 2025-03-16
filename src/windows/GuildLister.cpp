@@ -1310,6 +1310,7 @@ void GuildLister::InitializeClass()
 	wc1.style         = 0;
 	wc1.hCursor       = LoadCursor(0, IDC_ARROW);
 	wc1.lpfnWndProc   = GuildLister::ParentWndProc;
+	wc1.hInstance     = g_hInstance;
 
 	RegisterClass(&wc1);
 
@@ -1320,6 +1321,7 @@ void GuildLister::InitializeClass()
 	wc.style         = 0;
 	wc.hCursor       = LoadCursor(0, IDC_ARROW);
 	wc.lpfnWndProc   = GuildLister::WndProc;
+	wc.hInstance     = g_hInstance;
 
 	RegisterClass(&wc);
 }

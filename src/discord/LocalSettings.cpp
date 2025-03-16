@@ -3,6 +3,7 @@
 #include "LocalSettings.hpp"
 #include "Util.hpp"
 #include "DiscordAPI.hpp"
+#include "Frontend.hpp"
 using nlohmann::json;
 
 static LocalSettings* g_pInstance;
@@ -127,10 +128,15 @@ bool LocalSettings::Load()
 		if (j.contains("WindowHeight"))
 			m_height = j["WindowHeight"];
 
-		if (m_width < 900)
-			m_width = 900;
-		if (m_height < 600)
-			m_height = 600;
+		if (m_width < GetFrontend()->GetMinimumWidth())
+			m_width = GetFrontend()->GetMinimumWidth();
+		if (m_height < GetFrontend()->GetMinimumHeight())
+			m_height = GetFrontend()->GetMinimumHeight();
+	}
+	else
+	{
+		m_width = GetFrontend()->GetDefaultWidth();
+		m_height = GetFrontend()->GetDefaultHeight();
 	}
 
 	if (j.contains("CheckUpdates")) {

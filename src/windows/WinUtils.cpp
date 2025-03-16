@@ -29,7 +29,10 @@ extern HINSTANCE g_hInstance; // main.hpp
 void InitializeCOM()
 {
 	if (FAILED(CoInitialize(NULL)))
+	{
+		MessageBoxA(NULL, "COM could not be initialized.", NULL, 0);
 		exit(1);
+	}
 }
 
 int GetSystemDpiU()
@@ -54,7 +57,7 @@ void ForgetSystemDPI()
 	g_systemDPICache = 0;
 }
 
-int g_Scale = 100;
+int g_Scale = NORMAL_SCALE;
 
 void SetUserScale(int scale)
 {

@@ -514,6 +514,7 @@ void ChannelView::InitializeClass()
 	wc.style = 0;
 	wc.hCursor = LoadCursor(0, IDC_ARROW);
 	wc.lpfnWndProc = &ChannelView::WndProc;
+	wc.hInstance = g_hInstance;
 
 	RegisterClass(&wc);
 }

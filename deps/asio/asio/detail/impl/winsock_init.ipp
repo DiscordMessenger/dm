@@ -20,6 +20,7 @@
 #if defined(ASIO_WINDOWS) || defined(__CYGWIN__)
 
 #include "ri/reimpl.hpp"
+#include "ri/resock2.hpp"
 
 #include "asio/detail/socket_types.hpp"
 #include "asio/detail/winsock_init.hpp"
@@ -36,6 +37,10 @@ void winsock_init_base::startup(data& d,
 {
   if (::InterlockedIncrement(&d.init_count_) == 1)
   {
+    // Well I know you want 2.0 but we might not have it!
+    if (!ri::SupportsWSARecv())
+       major = 1, minor = 1;
+
     WSADATA wsa_data;
     long result = ::WSAStartup(MAKEWORD(major, minor), &wsa_data);
     ::InterlockedExchange(&d.result_, result);

@@ -101,6 +101,10 @@ public:
 	virtual void HideWindow() = 0;
 	virtual void RestoreWindow() = 0;
 	virtual void MaximizeWindow() = 0;
+	virtual int GetMinimumWidth() = 0;
+	virtual int GetMinimumHeight() = 0;
+	virtual int GetDefaultWidth() = 0;
+	virtual int GetDefaultHeight() = 0;
 
 	// Debugging
 #ifdef USE_DEBUG_PRINTS

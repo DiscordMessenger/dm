@@ -3703,6 +3703,7 @@ void MessageList::InitializeClass()
 	wc.style         = 0;
 	wc.lpfnWndProc   = MessageList::WndProc;
 	wc.hCursor       = LoadCursor(0, IDC_ARROW);
+	wc.hInstance     = g_hInstance;
 
 	RegisterClass(&wc);
 

@@ -72,6 +72,10 @@ public:
 	std::string GetFormatTimeLongText() override;
 	std::string GetFormatTimeShortText() override;
 	std::string GetFormatTimeShorterText() override;
+	int GetMinimumWidth() override;
+	int GetMinimumHeight() override;
+	int GetDefaultWidth() override;
+	int GetDefaultHeight() override;
 
 #ifdef USE_DEBUG_PRINTS
 	void DebugPrint(const char* fmt, va_list vl) override;

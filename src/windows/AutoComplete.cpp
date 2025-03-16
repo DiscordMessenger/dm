@@ -335,6 +335,7 @@ bool AutoComplete::InitializeClass()
 	wc.style         = 0;
 	wc.hCursor       = LoadCursor (0, IDC_ARROW);
 	wc.lpfnWndProc   = AutoComplete::WndProc;
+	wc.hInstance     = g_hInstance;
 
 	return RegisterClass(&wc);
 }

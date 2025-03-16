@@ -530,3 +530,23 @@ std::string Frontend_Win32::GetFormatTimeShorterText()
 {
 	return TmGetString(IDS_SHORT_TIME_FMT);
 }
+
+int Frontend_Win32::GetMinimumWidth()
+{
+	return ScaleByDPI(600);
+}
+
+int Frontend_Win32::GetMinimumHeight()
+{
+	return ScaleByDPI(400);
+}
+
+int Frontend_Win32::GetDefaultWidth()
+{
+	return ScaleByDPI(1000);
+}
+
+int Frontend_Win32::GetDefaultHeight()
+{
+	return ScaleByDPI(700);
+}

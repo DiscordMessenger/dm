@@ -87,7 +87,7 @@ LDFLAGS = \
 	$(LIB_DIRS) \
 	-mwindows   \
 	-lmswsock   \
-	-lws2_32    \
+	-lwsock32   \
 	-lcomctl32  \
 	-lgdi32     \
 	-luser32    \
