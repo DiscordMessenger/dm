@@ -429,7 +429,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			{
 				nameRect = pThis->m_rectLeft;
 				nameRect.left += ScaleByDPI(8);
-				DrawText(hdc, ctstrName, -1, &nameRect, DT_SINGLELINE | DT_CALCRECT | DT_NOPREFIX | DT_WORD_ELLIPSIS);
+				DrawText(hdc, ctstrName, _tcslen(ctstrName), &nameRect, DT_SINGLELINE | DT_CALCRECT | DT_NOPREFIX | ri::GetWordEllipsisFlag());
 				int nameHeight = nameRect.bottom - nameRect.top;
 
 				nameRect = pThis->m_rectLeft;
@@ -444,19 +444,19 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				nameRect.bottom = nameRect.top + nameHeight;
 
 				// draw the name text.
-				DrawText(hdc, ctstrName, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | DT_WORD_ELLIPSIS);
+				DrawText(hdc, ctstrName, _tcslen(ctstrName), &nameRect, DT_SINGLELINE | DT_NOPREFIX | ri::GetWordEllipsisFlag());
 				// also draw the subtitle text
 				SelectObject(hdc, g_GuildSubtitleFont);
 				nameRect.top += nameHeight;
 				nameRect.bottom += nameHeight;
-				DrawText(hdc, ctstrSubt, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | DT_WORD_ELLIPSIS);
+				DrawText(hdc, ctstrSubt, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | ri::GetWordEllipsisFlag());
 
 				SelectObject(hdc, g_GuildCaptionFont);
 			}
 
 			// Measure the channel name.
 			nameRect = pThis->m_rectMid;
-			DrawText(hdc, ctstrChNm, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | DT_WORD_ELLIPSIS | DT_CALCRECT);
+			DrawText(hdc, ctstrChNm, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | ri::GetWordEllipsisFlag() | DT_CALCRECT);
 			nameHeight = nameRect.bottom - nameRect.top;
 			int nameWidth = nameRect.right - nameRect.left;
 
@@ -484,14 +484,14 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			nameRect.top += (rectHeight - nameHeight) / 2;
-			DrawText(hdc, ctstrChNm, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | DT_WORD_ELLIPSIS);
+			DrawText(hdc, ctstrChNm, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | ri::GetWordEllipsisFlag());
 
 			SelectObject(hdc, g_GuildInfoFont);
 
 			nameRect = pThis->m_rectMid;
 			nameRect.left  += ScaleByDPI(20) + nameWidth;
 			nameRect.top   += (rectHeight - nameHeight) / 2;
-			DrawText(hdc, ctstrChIn, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | DT_WORD_ELLIPSIS);
+			DrawText(hdc, ctstrChIn, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | ri::GetWordEllipsisFlag());
 
 			SelectObject(hdc, objOld);
 

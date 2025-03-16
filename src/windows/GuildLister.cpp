@@ -576,7 +576,7 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 		COLORREF clr = SetTextColor(hdc, RGB(255, 255, 255));
 		HGDIOBJ go = SelectObject(hdc, g_AuthorTextFont);
 		LPTSTR tstr = ConvertCppStringToTString(textOver);
-		DrawText(hdc, tstr, -1, &rcProfile, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX | DT_WORD_ELLIPSIS);
+		DrawText(hdc, tstr, -1, &rcProfile, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX | ri::GetWordEllipsisFlag());
 		free(tstr);
 		SelectObject(hdc, go);
 		SetTextColor(hdc, clr);

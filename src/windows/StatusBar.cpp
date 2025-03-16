@@ -227,8 +227,8 @@ void StatusBar::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 			HGDIOBJ gdiObj = SelectObject(hdc, g_TypingRegFont);
 			RECT rcMeasure{};
 			rcMeasure.right = rc.right - rc.left;
-			DrawText(hdc, separator, -1, &rcMeasure, DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE | DT_CALCRECT);
-			DrawText(hdc, separator, -1, &rc,        DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE);
+			DrawText(hdc, separator, -1, &rcMeasure, ri::GetWordEllipsisFlag() | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE | DT_CALCRECT);
+			DrawText(hdc, separator, -1, &rc,        ri::GetWordEllipsisFlag() | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE);
 			SelectObject(hdc, gdiObj);
 			rc.left += rcMeasure.right - rcMeasure.left;
 
@@ -240,8 +240,8 @@ void StatusBar::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 		LPTSTR typerText = ConvertCppStringToTString(tu.m_name);
 		RECT rcMeasure{};
 		rcMeasure.right = rc.right - rc.left;
-		DrawText(hdc, typerText, -1, &rcMeasure, DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE | DT_CALCRECT);
-		DrawText(hdc, typerText, -1, &rc,        DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE);
+		DrawText(hdc, typerText, -1, &rcMeasure, ri::GetWordEllipsisFlag() | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE | DT_CALCRECT);
+		DrawText(hdc, typerText, -1, &rc,        ri::GetWordEllipsisFlag() | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE);
 		rc.left += rcMeasure.right - rcMeasure.left;
 
 		if (rc.left >= rc.right)
@@ -252,7 +252,7 @@ void StatusBar::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 	{
 		SelectObject(hdc, g_TypingRegFont);
 		LPCTSTR typingEnd = TmGetTString(sz == 1 ? IDS_IS_TYPING : IDS_ARE_TYPING);
-		DrawText(hdc, typingEnd, -1, &rc, DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE);
+		DrawText(hdc, typingEnd, -1, &rc, ri::GetWordEllipsisFlag() | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE);
 	}
 
 	SetTextColor(hdc, textOld);

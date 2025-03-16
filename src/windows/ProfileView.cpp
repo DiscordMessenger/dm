@@ -120,7 +120,7 @@ void ProfileView::Paint(HDC hdc)
 	RECT rcText = rect;
 	rcText.left = pfpX + pfpBorderSize - ScaleByDPI(6);
 	rcText.bottom = (rect.top + rect.bottom) / 2 - ScaleByDPI(1);
-	DrawText(hdc, sName, -1, &rcText, DT_BOTTOM | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+	DrawText(hdc, sName, -1, &rcText, DT_BOTTOM | DT_SINGLELINE | ri::GetWordEllipsisFlag());
 
 	SelectObject(hdc, g_AccountTagFont);
 
@@ -128,8 +128,8 @@ void ProfileView::Paint(HDC hdc)
 	rcText.left = pfpX + pfpBorderSize - ScaleByDPI(6);
 	rcText.top = (rect.top + rect.bottom) / 2 + ScaleByDPI(1);
 	RECT rcMeasure = rcText;
-	if (isBot) DrawText(hdc, sUserName, -1, &rcMeasure, DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT);
-	DrawText(hdc, sUserName, -1, &rcText,    DT_SINGLELINE | DT_WORD_ELLIPSIS);
+	if (isBot) DrawText(hdc, sUserName, -1, &rcMeasure, DT_SINGLELINE | ri::GetWordEllipsisFlag() | DT_CALCRECT);
+	DrawText(hdc, sUserName, -1, &rcText,    DT_SINGLELINE | ri::GetWordEllipsisFlag());
 
 	if (isBot) {
 		int offset = rcMeasure.right - rcMeasure.left + ScaleByDPI(4);

@@ -81,7 +81,7 @@ bool ProfilePopout::Layout(HWND hWnd, SIZE& fullSize)
 	const int separatorSize    = ScaleByDPI(6);
 	const int interItemGap     = ScaleByDPI(4);
 	const int profileImageSize = GetProfilePictureSize() + ScaleByDPI(12);
-	const int singleLineFlags  = DT_CALCRECT | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_WORDBREAK;
+	const int singleLineFlags  = DT_CALCRECT | DT_SINGLELINE | ri::GetWordEllipsisFlag() | DT_WORDBREAK;
 	const int editControlFlags = DT_CALCRECT | DT_EDITCONTROL | DT_WORDBREAK;
 	const RECT rcMeasureTemplate = { 0, 0, maxWidth, 0 }; // Used with DT_CALCRECT and wordbreak templates
 

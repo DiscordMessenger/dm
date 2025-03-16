@@ -156,7 +156,7 @@ void RichEmbedItem::Measure(HDC hdc, RECT& messageRect, bool isCompact)
 	if (!m_providerName.Empty()) {
 		SelectObject(hdc, g_ReplyTextFont);
 		RECT rcMeasure = rcItem;
-		DrawText(hdc, m_providerName.GetWrapped(), -1, &rcMeasure, DT_CALCRECT | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+		DrawText(hdc, m_providerName.GetWrapped(), -1, &rcMeasure, DT_CALCRECT | DT_SINGLELINE | ri::GetWordEllipsisFlag());
 		m_providerSize.cx = rcMeasure.right - rcMeasure.left;
 		m_providerSize.cy = rcMeasure.bottom - rcMeasure.top;
 	}
@@ -166,7 +166,7 @@ void RichEmbedItem::Measure(HDC hdc, RECT& messageRect, bool isCompact)
 	if (!m_authorName.Empty()) {
 		SelectObject(hdc, g_DateTextFont);
 		rcMeasure = rcItem;
-		DrawText(hdc, m_authorName.GetWrapped(), -1, &rcMeasure, DT_CALCRECT | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+		DrawText(hdc, m_authorName.GetWrapped(), -1, &rcMeasure, DT_CALCRECT | DT_SINGLELINE | ri::GetWordEllipsisFlag());
 		m_authorSize.cx = rcMeasure.right - rcMeasure.left;
 		m_authorSize.cy = rcMeasure.bottom - rcMeasure.top;
 	}
@@ -176,7 +176,7 @@ void RichEmbedItem::Measure(HDC hdc, RECT& messageRect, bool isCompact)
 	if (!m_title.Empty()) {
 		SelectObject(hdc, g_AuthorTextFont);
 		rcMeasure = rcItem;
-		DrawText(hdc, m_title.GetWrapped(), -1, &rcMeasure, DT_CALCRECT | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+		DrawText(hdc, m_title.GetWrapped(), -1, &rcMeasure, DT_CALCRECT | DT_SINGLELINE | ri::GetWordEllipsisFlag());
 		m_titleSize.cx = rcMeasure.right - rcMeasure.left;
 		m_titleSize.cy = rcMeasure.bottom - rcMeasure.top;
 	}
@@ -186,7 +186,7 @@ void RichEmbedItem::Measure(HDC hdc, RECT& messageRect, bool isCompact)
 	if (!m_description.Empty()) {
 		SelectObject(hdc, g_MessageTextFont);
 		rcMeasure = rcItem;
-		DrawText(hdc, m_description.GetWrapped(), -1, &rcMeasure, DT_CALCRECT | DT_WORDBREAK | DT_WORD_ELLIPSIS);
+		DrawText(hdc, m_description.GetWrapped(), -1, &rcMeasure, DT_CALCRECT | DT_WORDBREAK | ri::GetWordEllipsisFlag());
 		m_descriptionSize.cx = rcMeasure.right - rcMeasure.left;
 		m_descriptionSize.cy = rcMeasure.bottom - rcMeasure.top;
 	}
@@ -196,7 +196,7 @@ void RichEmbedItem::Measure(HDC hdc, RECT& messageRect, bool isCompact)
 	if (!m_footerText.Empty()) {
 		SelectObject(hdc, g_ReplyTextFont);
 		rcMeasure = rcItem;
-		DrawText(hdc, m_footerText.GetWrapped(), -1, &rcMeasure, DT_CALCRECT | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+		DrawText(hdc, m_footerText.GetWrapped(), -1, &rcMeasure, DT_CALCRECT | DT_SINGLELINE | ri::GetWordEllipsisFlag());
 		m_footerSize.cx = rcMeasure.right - rcMeasure.left;
 		m_footerSize.cy = rcMeasure.bottom - rcMeasure.top;
 	}
@@ -207,7 +207,7 @@ void RichEmbedItem::Measure(HDC hdc, RECT& messageRect, bool isCompact)
 		SelectObject(hdc, g_ReplyTextFont);
 		rcMeasure = rcItem;
 		rcMeasure.left += m_footerSize.cx + ScaleByDPI(15);
-		DrawText(hdc, m_date.GetWrapped(), -1, &rcMeasure, DT_CALCRECT | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+		DrawText(hdc, m_date.GetWrapped(), -1, &rcMeasure, DT_CALCRECT | DT_SINGLELINE | ri::GetWordEllipsisFlag());
 		m_dateSize.cx = rcMeasure.right - rcMeasure.left;
 		m_dateSize.cy = rcMeasure.bottom - rcMeasure.top;
 	}
@@ -300,8 +300,8 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 		RECT rcText = rc;
 		rcText.top = rc.top + sizeY;
 		rcText.bottom = rcText.top + m_providerSize.cy;
-		DrawText(hdc, m_providerName.GetWrapped(), -1, &rcText, DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT);
-		DrawText(hdc, m_providerName.GetWrapped(), -1, &rcText, DT_SINGLELINE | DT_WORD_ELLIPSIS);
+		DrawText(hdc, m_providerName.GetWrapped(), -1, &rcText, DT_SINGLELINE | ri::GetWordEllipsisFlag() | DT_CALCRECT);
+		DrawText(hdc, m_providerName.GetWrapped(), -1, &rcText, DT_SINGLELINE | ri::GetWordEllipsisFlag());
 		m_providerRect = rcText;
 		sizeY += m_providerSize.cy;
 	}
@@ -311,8 +311,8 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 		RECT rcText = rc;
 		rcText.top = rc.top + sizeY;
 		rcText.bottom = rcText.top + m_authorSize.cy;
-		DrawText(hdc, m_authorName.GetWrapped(), -1, &rcText, DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT);
-		DrawText(hdc, m_authorName.GetWrapped(), -1, &rcText, DT_SINGLELINE | DT_WORD_ELLIPSIS);
+		DrawText(hdc, m_authorName.GetWrapped(), -1, &rcText, DT_SINGLELINE | ri::GetWordEllipsisFlag() | DT_CALCRECT);
+		DrawText(hdc, m_authorName.GetWrapped(), -1, &rcText, DT_SINGLELINE | ri::GetWordEllipsisFlag());
 		m_authorRect = rcText;
 		sizeY += m_authorSize.cy;
 	}
@@ -323,8 +323,8 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 		rcText.top = rc.top + sizeY;
 		rcText.bottom = rcText.top + m_titleSize.cy;
 		COLORREF oldColorText = SetTextColor(hdc, m_pEmbed->m_url.empty() ? windowTextColor : COLOR_LINK);
-		DrawText(hdc, m_title.GetWrapped(), -1, &rcText, DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT);
-		DrawText(hdc, m_title.GetWrapped(), -1, &rcText, DT_SINGLELINE | DT_WORD_ELLIPSIS);
+		DrawText(hdc, m_title.GetWrapped(), -1, &rcText, DT_SINGLELINE | ri::GetWordEllipsisFlag() | DT_CALCRECT);
+		DrawText(hdc, m_title.GetWrapped(), -1, &rcText, DT_SINGLELINE | ri::GetWordEllipsisFlag());
 		SetTextColor(hdc, oldColorText);
 		m_titleRect = rcText;
 		sizeY += m_titleSize.cy;
@@ -335,7 +335,7 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 		RECT rcText = rc;
 		rcText.top = rc.top + sizeY;
 		rcText.bottom = rcText.top + m_descriptionSize.cy;
-		DrawText(hdc, m_description.GetWrapped(), -1, &rcText, DT_WORDBREAK | DT_WORD_ELLIPSIS);
+		DrawText(hdc, m_description.GetWrapped(), -1, &rcText, DT_WORDBREAK | ri::GetWordEllipsisFlag());
 		sizeY += m_descriptionSize.cy;
 	}
 	if (GetLocalSettings()->ShowEmbedImages()) {
@@ -366,11 +366,11 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 		RECT rcText = rc;
 		rcText.top = rc.top + sizeY;
 		rcText.bottom = rcText.top + m_footerSize.cy;
-		DrawText(hdc, m_footerText.GetWrapped(), -1, &rcText, DT_SINGLELINE | DT_WORDBREAK | DT_WORD_ELLIPSIS);
+		DrawText(hdc, m_footerText.GetWrapped(), -1, &rcText, DT_SINGLELINE | DT_WORDBREAK | ri::GetWordEllipsisFlag());
 		sizeY += m_footerSize.cy;
 		if (m_dateSize.cy) {
 			rcText.left += m_footerSize.cx + ScaleByDPI(15);
-			DrawText(hdc, m_date.GetWrapped(), -1, &rcText, DT_SINGLELINE | DT_WORDBREAK | DT_WORD_ELLIPSIS);
+			DrawText(hdc, m_date.GetWrapped(), -1, &rcText, DT_SINGLELINE | DT_WORDBREAK | ri::GetWordEllipsisFlag());
 		}
 	}
 	else if (m_dateSize.cy) {
@@ -379,7 +379,7 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 		RECT rcText = rc;
 		rcText.top = rc.top + sizeY;
 		rcText.bottom = rcText.top + m_footerSize.cy;
-		DrawText(hdc, m_date.GetWrapped(), -1, &rcText, DT_SINGLELINE | DT_WORDBREAK | DT_WORD_ELLIPSIS);
+		DrawText(hdc, m_date.GetWrapped(), -1, &rcText, DT_SINGLELINE | DT_WORDBREAK | ri::GetWordEllipsisFlag());
 		sizeY += m_footerSize.cy;
 	}
 
@@ -2018,14 +2018,14 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 		rcMeasure.right = (rcReply.right - rcReply.left) / 3;
 		int oldRight = rcReply.right;
 		rcReply.right = rcReply.left + rcMeasure.right;
-		DrawText(hdc, strPart1, -1, &rcMeasure, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT);
-		DrawText(hdc, strPart1, -1, &rcReply, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+		DrawText(hdc, strPart1, -1, &rcMeasure, DT_NOPREFIX | DT_SINGLELINE | ri::GetWordEllipsisFlag() | DT_CALCRECT);
+		DrawText(hdc, strPart1, -1, &rcReply, DT_NOPREFIX | DT_SINGLELINE | ri::GetWordEllipsisFlag());
 		rcReply.left += rcMeasure.right - rcMeasure.left;
 		rcReply.right = oldRight;
 	}
 
 	SetTextColor(hdc, nameClr);
-	DrawText(hdc, item.m_replyAuth, -1, &rcReply, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+	DrawText(hdc, item.m_replyAuth, -1, &rcReply, DT_NOPREFIX | DT_SINGLELINE | ri::GetWordEllipsisFlag());
 
 	rcReply.left += item.m_replyAuthorWidth;
 	if (!isActionMessage)
@@ -2037,8 +2037,8 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 	{
 		SetRectEmpty(&rcMeasure);
 		rcMeasure.right = rcReply.right - rcReply.left;
-		DrawText(hdc, strPart2, -1, &rcMeasure, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT);
-		DrawText(hdc, strPart2, -1, &rcReply,   DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+		DrawText(hdc, strPart2, -1, &rcMeasure, DT_NOPREFIX | DT_SINGLELINE | ri::GetWordEllipsisFlag() | DT_CALCRECT);
+		DrawText(hdc, strPart2, -1, &rcReply,   DT_NOPREFIX | DT_SINGLELINE | ri::GetWordEllipsisFlag());
 		rcReply.left += rcMeasure.right - rcMeasure.left;
 	}
 
@@ -2046,8 +2046,8 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 	{
 		SetRectEmpty(&rcMeasure);
 		rcMeasure.right = rcReply.right - rcReply.left;
-		DrawText(hdc, strClick, -1, &rcMeasure, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT);
-		DrawText(hdc, strClick, -1, &rcReply,   DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+		DrawText(hdc, strClick, -1, &rcMeasure, DT_NOPREFIX | DT_SINGLELINE | ri::GetWordEllipsisFlag() | DT_CALCRECT);
+		DrawText(hdc, strClick, -1, &rcReply,   DT_NOPREFIX | DT_SINGLELINE | ri::GetWordEllipsisFlag());
 		rcReply.left += rcMeasure.right - rcMeasure.left;
 	}
 
@@ -2055,8 +2055,8 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 	{
 		SetRectEmpty(&rcMeasure);
 		rcMeasure.right = rcReply.right - rcReply.left;
-		DrawText(hdc, strPart3, -1, &rcMeasure, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT);
-		DrawText(hdc, strPart3, -1, &rcReply,   DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+		DrawText(hdc, strPart3, -1, &rcMeasure, DT_NOPREFIX | DT_SINGLELINE | ri::GetWordEllipsisFlag() | DT_CALCRECT);
+		DrawText(hdc, strPart3, -1, &rcReply,   DT_NOPREFIX | DT_SINGLELINE | ri::GetWordEllipsisFlag());
 		rcReply.left += rcMeasure.right - rcMeasure.left;
 	}
 						
@@ -2376,21 +2376,21 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 		if (STRAVAILABLE(actionMsgPart2)) {
 			rcMeasure = rca;
-			DrawText(hdc, actionMsgPart2, -1, &rcMeasure, DT_CALCRECT | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+			DrawText(hdc, actionMsgPart2, -1, &rcMeasure, DT_CALCRECT | DT_SINGLELINE | ri::GetWordEllipsisFlag());
 			sizePart2 = rcMeasure.right - rcMeasure.left + 1;
 			rca.left += sizePart2;
 		}
 		if (STRAVAILABLE(actionMsgClick)) {
 			HGDIOBJ objold = SelectObject(hdc, g_AuthorTextFont);
 			rcMeasure = rca;
-			DrawText(hdc, actionMsgClick, -1, &rcMeasure, DT_CALCRECT | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+			DrawText(hdc, actionMsgClick, -1, &rcMeasure, DT_CALCRECT | DT_SINGLELINE | ri::GetWordEllipsisFlag());
 			sizeClick = rcMeasure.right - rcMeasure.left + 1;
 			rca.left += sizeClick;
 			SelectObject(hdc, objold);
 		}
 		if (STRAVAILABLE(actionMsgPart3)) {
 			rcMeasure = rca;
-			DrawText(hdc, actionMsgPart3, -1, &rcMeasure, DT_CALCRECT | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+			DrawText(hdc, actionMsgPart3, -1, &rcMeasure, DT_CALCRECT | DT_SINGLELINE | ri::GetWordEllipsisFlag());
 			sizePart3 = rcMeasure.right - rcMeasure.left + 1;
 			rca.left += sizePart3;
 		}
@@ -2505,7 +2505,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 		rca.right = rca.left + authorOffset;
 		rca.left += offs;
-		if (inView) DrawText(hdc, actionMsgPart1, -1, &rca, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
+		if (inView) DrawText(hdc, actionMsgPart1, -1, &rca, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP | ri::GetWordEllipsisFlag());
 		rca.left -= offs;
 		rca.left += authorOffset + authwidth + 1;
 		rca.right = rca.left + authorOffset + authwidth + dateOffset + 1;
@@ -2514,7 +2514,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			if (inView) {
 				int oldright = rca.right;
 				rca.right = rca.left + sizePart2;
-				DrawText(hdc, actionMsgPart2, -1, &rca, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
+				DrawText(hdc, actionMsgPart2, -1, &rca, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP | ri::GetWordEllipsisFlag());
 				rca.right = oldright;
 			}
 			rca.left += sizePart2;
@@ -2546,7 +2546,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 			if (inView) {
 				HGDIOBJ objold = SelectObject(hdc, g_AuthorTextFont);
-				DrawText(hdc, actionMsgClick, -1, &rcClickable, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
+				DrawText(hdc, actionMsgClick, -1, &rcClickable, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP | ri::GetWordEllipsisFlag());
 				SelectObject(hdc, objold);
 			}
 
@@ -2566,7 +2566,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			if (inView) {
 				int oldright = rca.right;
 				rca.right = rca.left + sizePart3;
-				DrawText(hdc, actionMsgPart3, -1, &rca, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS);
+				DrawText(hdc, actionMsgPart3, -1, &rca, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP | ri::GetWordEllipsisFlag());
 				rca.right = oldright;
 			}
 			rca.left += sizePart3;
@@ -3887,6 +3887,9 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 	scrollInfo.nMin = 0;
 	scrollInfo.nMax = th;
 	scrollInfo.nPage = pageHeight;
+
+	if (scrollInfo.nMax < scrollInfo.nPage && LOBYTE(GetVersion()) < 4)
+		scrollInfo.nMax = scrollInfo.nPage;
 
 	int posNow = scrollInfo.nPos;
 	SetScrollInfo(m_hwnd, SB_VERT, &scrollInfo, true);
