@@ -1854,8 +1854,17 @@ void MessageList::ConfirmOpenLink(const std::string& link)
 		buffer[_countof(buffer) - 1] = 0;
 		free(tstr);
 
-		if (MessageBoxHooked(g_Hwnd, buffer, TmGetTString(IDS_HOLD_UP_CONFIRM), MB_ICONWARNING | MB_OKCANCEL, IDOK, TmGetTString(IDS_EXCITED_YES)) != IDOK)
-			return;
+		if (LOBYTE(GetVersion()) >= 4)
+		{
+			// TODO: This actually works on NT 3.51 at first.  But the second time this causes an abort
+			if (MessageBoxHooked(g_Hwnd, buffer, TmGetTString(IDS_HOLD_UP_CONFIRM), MB_ICONWARNING | MB_OKCANCEL, IDOK, TmGetTString(IDS_EXCITED_YES)) != IDOK)
+				return;
+		}
+		else
+		{
+			if (MessageBox(g_Hwnd, buffer, TmGetTString(IDS_HOLD_UP_CONFIRM), MB_ICONWARNING | MB_YESNO) != IDYES)
+				return;
+		}
 	}
 
 	GetDiscordInstance()->LaunchURL(link);
@@ -3888,6 +3897,11 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 	scrollInfo.nMax = th;
 	scrollInfo.nPage = pageHeight;
 
+	// WINDOWS NT 3.51: It seems the message list window just...
+	// forgets to process events if the scroll bar is missing?
+	// It's a strange bug with a strange workaround.
+	//
+	// TODO: Look into this. Is it just a red herring?
 	if (scrollInfo.nMax < scrollInfo.nPage && LOBYTE(GetVersion()) < 4)
 		scrollInfo.nMax = scrollInfo.nPage;
 
