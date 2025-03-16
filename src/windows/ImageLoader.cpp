@@ -218,7 +218,7 @@ HImage* ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& ou
 
 			int x = 0;
 			if (newWidth != img.Width || newHeight != img.Height) {
-				int oldMode = SetStretchBltMode(hdc, HALFTONE);
+				int oldMode = SetStretchBltMode(hdc, ri::GetHalfToneStretchMode());
 				x = StretchDIBits(hdc, 0, 0, newWidth, newHeight, 0, 0, img.Width, img.Height, frm.Data, &bmi, DIB_RGB_COLORS, SRCCOPY);
 				SetStretchBltMode(hdc, oldMode);
 			}
@@ -274,7 +274,7 @@ HImage* ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& ou
 		// Create the alpha channel bitmap.
 		hbm = CreateCompatibleBitmap(wndHdc, newWidth, newHeight);
 		old = SelectObject(hdc, hbm);
-		oldMode = SetStretchBltMode(hdc, HALFTONE);
+		oldMode = SetStretchBltMode(hdc, ri::GetHalfToneStretchMode());
 		x = StretchDIBits(hdc, 0, 0, newWidth, newHeight, 0, 0, width, height, alphaPixels, &bmi, DIB_RGB_COLORS, SRCCOPY);
 		SetStretchBltMode(hdc, oldMode);
 		SelectObject(hdc, old);
@@ -323,7 +323,7 @@ HImage* ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& ou
 		hbm = CreateCompatibleBitmap(wndHdc, newWidth, newHeight);
 		old = SelectObject(hdc, hbm);
 
-		oldMode = SetStretchBltMode(hdc, HALFTONE);
+		oldMode = SetStretchBltMode(hdc, ri::GetHalfToneStretchMode());
 		x = StretchDIBits(hdc, 0, 0, newWidth, newHeight, 0, 0, width, height, pixels, &bmi, DIB_RGB_COLORS, SRCCOPY);
 		SetStretchBltMode(hdc, oldMode);
 		if (x == GDI_ERROR) {

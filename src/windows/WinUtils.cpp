@@ -384,7 +384,7 @@ void DrawBitmap(HDC hdc, HBITMAP bitmap, int x, int y, LPRECT clip, COLORREF tra
 	}
 	else if (scaledW != bm.bmWidth || scaledH != bm.bmHeight)
 	{
-		int oldMode = SetStretchBltMode(hdc, HALFTONE);
+		int oldMode = SetStretchBltMode(hdc, ri::GetHalfToneStretchMode());
 		StretchBlt(hdc, x, y, scaledW, scaledH, hdcMem, 0, 0, bm.bmWidth, bm.bmHeight, SRCCOPY);
 		SetStretchBltMode(hdc, oldMode);
 	}
@@ -1325,7 +1325,7 @@ HBITMAP ResizeWithBackgroundColor(HDC hdc, HBITMAP hBitmap, HBRUSH backgroundCol
 		BitBlt(hdc2, 0, 0, oldSizeX, oldSizeY, hdc1, 0, 0, SRCCOPY);
 
 	// now draw from hdc2 into hdc3
-	int mode = SetStretchBltMode(hdc3, HALFTONE);
+	int mode = SetStretchBltMode(hdc3, ri::GetHalfToneStretchMode());
 	StretchBlt(hdc3, 0, 0, newSizeX, newSizeY, hdc2, 0, 0, oldSizeX, oldSizeY, SRCCOPY);
 	SetStretchBltMode(hdc3, mode);
 
