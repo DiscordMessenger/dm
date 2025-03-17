@@ -63,7 +63,7 @@ static const int g_WelcomeTextCount = _countof(g_WelcomeTextIds);
 
 MessageList::MessageList()
 {
-	m_defaultBackgroundBrush = GetSysColorBrush(COLOR_WINDOW);
+	m_defaultBackgroundBrush = ri::GetSysColorBrush(COLOR_WINDOW);
 }
 
 MessageList::~MessageList()
@@ -845,7 +845,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 	scrollInfo.cbSize = sizeof scrollInfo;
 	scrollInfo.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 
-	GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
+	ri::GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
 
 	// Find the position of the old message
 	int oldYMessage = 0;
@@ -1076,8 +1076,8 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 		haveUpdateRect = false;
 	}
 
-	SetScrollInfo(m_hwnd, SB_VERT, &scrollInfo, true);
-	GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
+	ri::SetScrollInfo(m_hwnd, SB_VERT, &scrollInfo, true);
+	ri::GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
 
 	m_oldPos = scrollInfo.nPos;
 	
@@ -1490,9 +1490,9 @@ void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem
 
 	if (inView)
 	{
-		DrawEdge(hdc, &childAttachRect, BDR_RAISEDINNER | BDR_RAISEDOUTER, BF_RECT | BF_MIDDLE);
+		ri::DrawEdge(hdc, &childAttachRect, BDR_RAISEDINNER | BDR_RAISEDOUTER, BF_RECT | BF_MIDDLE);
 		DrawText(hdc, name, -1, &textRect, DT_NOPREFIX | DT_NOCLIP);
-		DrawIconEx(
+		ri::DrawIconEx(
 			hdc,
 			childAttachRect.left + 4,
 			childAttachRect.top + rectHeight / 2 - iconSize / 2,
@@ -1532,7 +1532,7 @@ void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem
 	
 	if (inView)
 	{
-		DrawIconEx(hdc,
+		ri::DrawIconEx(hdc,
 			dlIconX,
 			dlIconY,
 			(HICON) g_DownloadIcon,
@@ -1930,12 +1930,12 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 			rcReply.bottom + ScaleByDPI(5)
 		);
 		SelectClipRgn(hdc, rgn);
-		DrawIconEx(hdc, rcReply.left + iconOffset, rcReply.bottom + ScaleByDPI(5) - iconSize, g_ReplyPieceIcon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+		ri::DrawIconEx(hdc, rcReply.left + iconOffset, rcReply.bottom + ScaleByDPI(5) - iconSize, g_ReplyPieceIcon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
 		SelectClipRgn(hdc, NULL);
 		DeleteRgn(rgn);
 	}
 	else {
-		DrawIconEx(hdc, rcReply.left + iconOffset, rcReply.bottom + ScaleByDPI(5) - iconSize, g_ReplyPieceIcon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+		ri::DrawIconEx(hdc, rcReply.left + iconOffset, rcReply.bottom + ScaleByDPI(5) - iconSize, g_ReplyPieceIcon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
 	}
 
 	rcReply.left += offset2 + offset3;
@@ -1951,7 +1951,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 			int pfpBordOffY = MulDiv(ScaleByDPI(4), ScaleByDPI(16), GetProfilePictureSize());
 			int pfpX = rcReply.left;
 			int pfpY = rcReply.top + (rcReply.bottom - rcReply.top - pfpSize) / 2;
-			DrawIconEx(hdc, pfpX - pfpBordOffX, pfpY - pfpBordOffY, g_ProfileBorderIcon, pfpBordSize, pfpBordSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+			ri::DrawIconEx(hdc, pfpX - pfpBordOffX, pfpY - pfpBordOffY, g_ProfileBorderIcon, pfpBordSize, pfpBordSize, 0, NULL, DI_COMPAT | DI_NORMAL);
 			bool hasAlpha = false;
 			GetAvatarCache()->AddImagePlace(refMsg.m_avatar, eImagePlace::AVATARS, refMsg.m_avatar, refMsg.m_author_snowflake);
 			HBITMAP hbm = GetAvatarCache()->GetImage(refMsg.m_avatar, hasAlpha)->GetFirstFrame();
@@ -2013,7 +2013,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 		int iconSize = MulDiv(ScaleByDPI(16), 8, 10); // 8/10ths is the ratio of the font too
 		int iconY = rcReply.top + (rcReply.bottom - rcReply.top) / 2 - iconSize / 2;
 		HICON hicon = LoadIcon(g_hInstance, MAKEINTRESOURCE(icon));
-		DrawIconEx(hdc, rcReply.left, iconY, hicon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+		ri::DrawIconEx(hdc, rcReply.left, iconY, hicon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
 		rcReply.left += iconSize + ScaleByDPI(4);
 	}
 
@@ -2144,7 +2144,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 				else         clr = COLOR_WINDOW;
 			}
 
-			FillRect(hdc, &dgRect, GetSysColorBrush(clr));
+			FillRect(hdc, &dgRect, ri::GetSysColorBrush(clr));
 		}
 		else
 		{
@@ -2181,8 +2181,8 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			int iconSize = ScaleByDPI(32);
 			if (iconSize > 32) iconSize = 48;
 			if (iconSize < 32) iconSize = 32;
-			HICON hic = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_NEW_INLINE)), IMAGE_ICON, iconSize, iconSize, LR_SHARED | LR_CREATEDIBSECTION);
-			DrawIconEx(hdc, dgRect.right - iconSize, dgRect.top + (dgRect.bottom - dgRect.top - iconSize) / 2 + 1, hic, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+			HICON hic = (HICON)ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_NEW_INLINE)), IMAGE_ICON, iconSize, iconSize, LR_SHARED | LR_CREATEDIBSECTION);
+			ri::DrawIconEx(hdc, dgRect.right - iconSize, dgRect.top + (dgRect.bottom - dgRect.top - iconSize) / 2 + 1, hic, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
 		}
 
 		if (oldFont) SelectObject(hdc, oldFont);
@@ -2210,24 +2210,24 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 				bkgdColor = GetSysColor(COLOR_3DFACE);
 
 			if (item.m_msg.m_type != MessageType::CHANNEL_HEADER) {
-				DrawEdge(hdc, &rect2, BDR_RAISED, edgeFlags);
+				ri::DrawEdge(hdc, &rect2, BDR_RAISED, edgeFlags);
 			}
 			else if (edgeFlags & BF_MIDDLE) {
-				FillRect(hdc, &rect2, GetSysColorBrush(COLOR_3DFACE));
+				FillRect(hdc, &rect2, ri::GetSysColorBrush(COLOR_3DFACE));
 			}
 			break;
 		}
 		case MS_FLAT: {
 			if (!isFlashed) {
 				bkgdColor = GetSysColor(COLOR_3DFACE);
-				FillRect(hdc, &msgRect, GetSysColorBrush(COLOR_3DFACE));
+				FillRect(hdc, &msgRect, ri::GetSysColorBrush(COLOR_3DFACE));
 			}
 			break;
 		}
 		case MS_FLATBR: {
 			if (!isFlashed) {
 				bkgdColor = GetSysColor(COLOR_WINDOW);
-				FillRect(hdc, &msgRect, GetSysColorBrush(COLOR_WINDOW));
+				FillRect(hdc, &msgRect, ri::GetSysColorBrush(COLOR_WINDOW));
 			}
 			break;
 		}
@@ -2260,7 +2260,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 			if (isChainCont) {
 				// Just render a flat background using the bottom color
-				FillRect(hdc, &msgRect, GetSysColorBrush(swapped ? COLOR_WINDOW : COLOR_3DFACE));
+				FillRect(hdc, &msgRect, ri::GetSysColorBrush(swapped ? COLOR_WINDOW : COLOR_3DFACE));
 				break;
 			}
 
@@ -2350,20 +2350,20 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 				int sz = ScaleByDPI(64);
 
 				for (int i = 0; i < 5; i++) {
-					hics[i] = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_HEADER_1 + i), IMAGE_ICON, sz, sz, LR_SHARED | LR_CREATEDIBSECTION);
+					hics[i] = (HICON)ri::LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_HEADER_1 + i), IMAGE_ICON, sz, sz, LR_SHARED | LR_CREATEDIBSECTION);
 				}
 
 				// Render on the left side.
 				int x = 0;
 				for (int i = 0; i < 2; i++) {
-					DrawIconEx(hdc, x, rc.top, hics[i], sz, sz, 0, NULL, DI_NORMAL | DI_COMPAT);
+					ri::DrawIconEx(hdc, x, rc.top, hics[i], sz, sz, 0, NULL, DI_NORMAL | DI_COMPAT);
 					x += sz;
 				}
 
 				x = rc.right;
 				for (int i = 4; i >= 2; i--) {
 					x -= sz;
-					DrawIconEx(hdc, x, rc.top, hics[i], sz, sz, 0, NULL, DI_NORMAL | DI_COMPAT);
+					ri::DrawIconEx(hdc, x, rc.top, hics[i], sz, sz, 0, NULL, DI_NORMAL | DI_COMPAT);
 				}
 			}
 
@@ -2453,8 +2453,8 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			if (item.m_msg.m_bIsAuthorBot)
 			{
 				int sm = GetSystemMetrics(SM_CXSMICON);
-				HICON hic = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_BOT)), IMAGE_ICON, sm, sm, LR_SHARED);
-				DrawIconEx(hdc, rc.left + auth_wid + ScaleByDPI(4), rc.top + (auth_hei - sm) / 2, hic, sm, sm, 0, NULL, DI_COMPAT | DI_NORMAL);
+				HICON hic = (HICON)ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_BOT)), IMAGE_ICON, sm, sm, LR_SHARED);
+				ri::DrawIconEx(hdc, rc.left + auth_wid + ScaleByDPI(4), rc.top + (auth_hei - sm) / 2, hic, sm, sm, 0, NULL, DI_COMPAT | DI_NORMAL);
 			}
 		}
 
@@ -2507,8 +2507,8 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		int offs = 0;
 		if (icon) {
 			int iconY = rca.top + (rca.bottom - rca.top) / 2 - actionIconSize / 2;
-			HICON hicon = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(icon), IMAGE_ICON, actionIconSize, actionIconSize, LR_SHARED | LR_CREATEDIBSECTION);
-			DrawIconEx(hdc, rca.left, iconY, hicon, actionIconSize, actionIconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+			HICON hicon = (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(icon), IMAGE_ICON, actionIconSize, actionIconSize, LR_SHARED | LR_CREATEDIBSECTION);
+			ri::DrawIconEx(hdc, rca.left, iconY, hicon, actionIconSize, actionIconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
 			offs = actionIconSize + ScaleByDPI(4);
 		}
 
@@ -2695,7 +2695,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			};
 			item.m_avatarRect = pfRect;
 
-			DrawIconEx(hdc, pfRect.left - offs1, pfRect.top - offs2, g_ProfileBorderIcon, szScaled, szScaled, 0, NULL, DI_NORMAL | DI_COMPAT);
+			ri::DrawIconEx(hdc, pfRect.left - offs1, pfRect.top - offs2, g_ProfileBorderIcon, szScaled, szScaled, 0, NULL, DI_NORMAL | DI_COMPAT);
 			if (inView)
 			{
 				// draw the avatar
@@ -2858,8 +2858,8 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		int iconSize = ScaleByDPI(32);
 		if (iconSize > 32) iconSize = 48;
 		if (iconSize < 32) iconSize = 32;
-		HICON hic = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_NEW)), IMAGE_ICON, iconSize, iconSize, LR_SHARED | LR_CREATEDIBSECTION);
-		DrawIconEx(hdc, msgRect.right - iconSize, msgRect.top, hic, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+		HICON hic = (HICON)ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_NEW)), IMAGE_ICON, iconSize, iconSize, LR_SHARED | LR_CREATEDIBSECTION);
+		ri::DrawIconEx(hdc, msgRect.right - iconSize, msgRect.top, hic, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
 
 		SelectObject(hdc, oldPen);
 		ri::SetDCPenColor(hdc, oldClr);
@@ -2928,7 +2928,7 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 	SCROLLINFO si;
 	si.cbSize = sizeof(si);
 	si.fMask = SIF_POS | SIF_RANGE;
-	GetScrollInfo(m_hwnd, SB_VERT, &si);
+	ri::GetScrollInfo(m_hwnd, SB_VERT, &si);
 	ScrollHeight = si.nPos;
 
 	RECT msgRect = rect;
@@ -3170,7 +3170,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (oldWidth != GET_X_LPARAM(lParam)) {
 					si.cbSize = sizeof(si);
 					si.fMask = SIF_TRACKPOS | SIF_POS | SIF_RANGE | SIF_PAGE;
-					GetScrollInfo(hWnd, SB_VERT, &si);
+					ri::GetScrollInfo(hWnd, SB_VERT, &si);
 
 					bool retrack = si.nPos < si.nMax - int(si.nPage) - 10;
 					int position = 0, ypos = 0, ypos2 = 0;
@@ -3235,11 +3235,11 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			si.cbSize = sizeof(si);
 			si.fMask = SIF_TRACKPOS | SIF_POS | SIF_RANGE;
-			GetScrollInfo(pThis->m_hwnd, SB_VERT, &si);
+			ri::GetScrollInfo(pThis->m_hwnd, SB_VERT, &si);
 			si.nTrackPos = si.nPos - (zDelta / 3);
 			if (si.nTrackPos < si.nMin) si.nTrackPos = si.nMin;
 			if (si.nTrackPos > si.nMax) si.nTrackPos = si.nMax;
-			SetScrollInfo(pThis->m_hwnd, SB_VERT, &si, false);
+			ri::SetScrollInfo(pThis->m_hwnd, SB_VERT, &si, false);
 
 			wParam = SB_THUMBTRACK;
 			goto _lbl;
@@ -3254,7 +3254,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			si.cbSize = sizeof(si);
 			si.fMask = SIF_ALL;
 
-			GetScrollInfo(pThis->m_hwnd, SB_VERT, &si);
+			ri::GetScrollInfo(pThis->m_hwnd, SB_VERT, &si);
 
 		_lbl:
 			;
@@ -3300,8 +3300,8 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					break;
 			}
 
-			SetScrollInfo(pThis->m_hwnd, SB_VERT, &si, true);
-			GetScrollInfo(pThis->m_hwnd, SB_VERT, &si);
+			ri::SetScrollInfo(pThis->m_hwnd, SB_VERT, &si, true);
+			ri::GetScrollInfo(pThis->m_hwnd, SB_VERT, &si);
 
 			diffUpDown = si.nPos - pThis->m_oldPos;
 			pThis->m_oldPos = si.nPos;
@@ -3612,7 +3612,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ZeroMemory(&si, sizeof(SCROLLINFO));
 			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask = SIF_PAGE;
-			GetScrollInfo(hWnd, SB_VERT, &si);
+			ri::GetScrollInfo(hWnd, SB_VERT, &si);
 
 			InvalidateRect(hWnd, &refreshRect, pThis->MayErase() && int(si.nPage) > pThis->m_total_height);
 
@@ -3708,7 +3708,7 @@ void MessageList::InitializeClass()
 	WNDCLASS& wc = g_MsgListClass;
 
 	wc.lpszClassName = T_MESSAGE_LIST_CLASS;
-	wc.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
 	wc.style         = 0;
 	wc.lpfnWndProc   = MessageList::WndProc;
 	wc.hCursor       = LoadCursor(0, IDC_ARROW);
@@ -3731,7 +3731,7 @@ void MessageList::UpdateBackgroundBrush()
 	if (mode == MS_IMAGE)
 		SetClassLongPtr(m_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR) m_backgroundBrush);
 	else
-		SetClassLongPtr(m_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR) GetSysColorBrush(bru));
+		SetClassLongPtr(m_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR) ri::GetSysColorBrush(bru));
 }
 
 bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded)
@@ -3753,7 +3753,7 @@ bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded)
 		SCROLLINFO si{};
 		si.cbSize = sizeof(SCROLLINFO);
 		si.fMask = SIF_RANGE;
-		GetScrollInfo(m_hwnd, SB_VERT, &si);
+		ri::GetScrollInfo(m_hwnd, SB_VERT, &si);
 
 		int yOffs = (rcClient.bottom - rcClient.top) / 2 - mi->m_height / 2;
 		y -= yOffs;
@@ -3766,7 +3766,7 @@ bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded)
 		// Just scroll there
 		si.fMask = SIF_POS;
 		si.nPos = y;
-		SetScrollInfo(m_hwnd, SB_VERT, &si, true);
+		ri::SetScrollInfo(m_hwnd, SB_VERT, &si, true);
 
 		FlashMessage(mi->m_msg.m_snowflake);
 		SendMessage(m_hwnd, WM_VSCROLL, SB_ENDSCROLL, 0);
@@ -3875,7 +3875,7 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 	scrollInfo.cbSize = sizeof scrollInfo;
 	scrollInfo.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 
-	GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
+	ri::GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
 
 	bool scroll = true;
 
@@ -3906,8 +3906,8 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 		scrollInfo.nMax = scrollInfo.nPage;
 
 	int posNow = scrollInfo.nPos;
-	SetScrollInfo(m_hwnd, SB_VERT, &scrollInfo, true);
-	GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
+	ri::SetScrollInfo(m_hwnd, SB_VERT, &scrollInfo, true);
+	ri::GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
 	m_oldPos = scrollInfo.nPos;
 
 	if (m_bManagedByOwner)
@@ -4004,7 +4004,7 @@ void MessageList::ReloadBackground()
 	if (m_bBackgroundHasAlpha)
 	{
 		m_backgroundColor = GetSysColor(COLOR_WINDOW);
-		m_backgroundBrush = GetSysColorBrush(COLOR_WINDOW);
+		m_backgroundBrush = ri::GetSysColorBrush(COLOR_WINDOW);
 		m_bDontDeleteBackgroundBrush = true;
 	}
 	else
@@ -4851,7 +4851,7 @@ void MessagePollData::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 	rcPoll.right = rcPoll.left + m_width;
 	rcPoll.bottom = rcPoll.top + m_height;
 	rcPoll2 = rcPoll;
-	DrawEdge(hdc, &rcPoll2, EDGE_RAISED, BF_RECT);
+	ri::DrawEdge(hdc, &rcPoll2, EDGE_RAISED, BF_RECT);
 
 	rcPoll.left += borderSize;
 	rcPoll.top += borderSize;

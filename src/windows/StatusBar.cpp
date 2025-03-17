@@ -206,7 +206,7 @@ void StatusBar::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 	size_t sz = m_typingUsers.size();
 
 	if (sz)
-		DrawIconEx(hdc, rc2.left, rc2.top + (rc2.bottom - rc2.top - smcxiconsm) / 2, icon, smcxiconsm, smcxiconsm, 0, NULL, DI_NORMAL | DI_COMPAT);
+		ri::DrawIconEx(hdc, rc2.left, rc2.top + (rc2.bottom - rc2.top - smcxiconsm) / 2, icon, smcxiconsm, smcxiconsm, 0, NULL, DI_NORMAL | DI_COMPAT);
 
 	int mode = SetBkMode(hdc, TRANSPARENT);
 	HGDIOBJ gdiObjOld = SelectObject(hdc, g_TypingBoldFont);

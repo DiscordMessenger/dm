@@ -37,7 +37,7 @@ void NotificationViewer::Initialize(HWND hWnd)
 
 	HWND child = GetDlgItem(hWnd, IDC_NOTIFS_MARK_AS_READ);
 	int sm = GetSystemMetrics(SM_CXSMICON);
-	HICON hico = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_MARK_READ)), IMAGE_ICON, sm, sm, LR_SHARED | LR_CREATEDIBSECTION);
+	HICON hico = (HICON)ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_MARK_READ)), IMAGE_ICON, sm, sm, LR_SHARED | LR_CREATEDIBSECTION);
 	SendMessage(child, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hico);
 
 	child = GetDlgItem(hWnd, IDC_MESSAGE_LIST);

@@ -88,7 +88,7 @@ void MemberList::Update()
 	SCROLLINFO si{};
 	si.cbSize = sizeof si;
 	si.fMask = SIF_POS;
-	GetScrollInfo(m_listHwnd, SB_VERT, &si);
+	ri::GetScrollInfo(m_listHwnd, SB_VERT, &si);
 
 	// Add each group
 	for (auto& mem : pGuild->m_members)
@@ -374,18 +374,18 @@ LRESULT MemberList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			
 			if (pList->m_hotItem == lpdis->itemID)
 			{
-				FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrush(COLOR_MENUBAR));
+				FillRect(lpdis->hDC, &lpdis->rcItem, ri::GetSysColorBrush(COLOR_MENUBAR));
 				backgdColor = GetSysColor(COLOR_MENUBAR);
 			}
 			else
 			{
 				// Windows 2000 doesn't do automatic clearing
-				FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrush(COLOR_WINDOW));
+				FillRect(lpdis->hDC, &lpdis->rcItem, ri::GetSysColorBrush(COLOR_WINDOW));
 			}
 			
 			if (lpdis->itemState & ODS_SELECTED)
 			{
-				FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
+				FillRect(lpdis->hDC, &lpdis->rcItem, ri::GetSysColorBrush(COLOR_HIGHLIGHT));
 				backgdColor     = GetSysColor(COLOR_HIGHLIGHT);
 				nameTextColor   = GetSysColor(COLOR_HIGHLIGHTTEXT);
 				statusTextColor = GetSysColor(COLOR_HIGHLIGHTTEXT);
@@ -397,7 +397,7 @@ LRESULT MemberList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				// draw profile picture frame
 				int sz = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 				int szDraw = GetProfileBorderSize();
-				DrawIconEx(hdc, rcItem.left, rcItem.top, g_ProfileBorderIcon, szDraw, szDraw, 0, NULL, DI_NORMAL | DI_COMPAT);
+				ri::DrawIconEx(hdc, rcItem.left, rcItem.top, g_ProfileBorderIcon, szDraw, szDraw, 0, NULL, DI_NORMAL | DI_COMPAT);
 
 				// draw profile picture
 				bool hasAlpha = false;
@@ -530,7 +530,7 @@ void MemberList::InitializeClass()
 	WNDCLASS& wc = g_MemberListClass;
 
 	wc.lpszClassName = T_MEMBER_LIST_CLASS;
-	wc.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
 	wc.style = 0;
 	wc.hCursor = LoadCursor(0, IDC_ARROW);
 	wc.lpfnWndProc = &MemberList::WndProc;

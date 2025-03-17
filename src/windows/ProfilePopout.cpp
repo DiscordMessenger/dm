@@ -325,7 +325,7 @@ bool ProfilePopout::Layout(HWND hWnd, SIZE& fullSize)
 				HBITMAP hnewbm = ResizeWithBackgroundColor(
 					hdc,
 					hbm,
-					GetSysColorBrush(COLOR_3DFACE),
+					ri::GetSysColorBrush(COLOR_3DFACE),
 					hasAlpha,
 					joinedAtIconSize,
 					joinedAtIconSize,
@@ -357,7 +357,7 @@ bool ProfilePopout::Layout(HWND hWnd, SIZE& fullSize)
 			MoveWindow(hChild, pos.x, pos.y, joinedAtIconSize, joinedAtIconSize, TRUE);
 
 			// note: the old icon may have been set by the dialog itself.
-			HICON hic = (HICON) SendMessage(hChild, STM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)), IMAGE_ICON, icsz, icsz, LR_CREATEDIBSECTION));
+			HICON hic = (HICON) SendMessage(hChild, STM_SETIMAGE, IMAGE_ICON, (LPARAM)ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)), IMAGE_ICON, icsz, icsz, LR_CREATEDIBSECTION));
 			if (hic) DestroyIcon(hic);
 
 			hChild = GetDlgItem(hWnd, IDC_DISCORD_JOIN_DATE);
@@ -453,7 +453,7 @@ void ProfilePopout::Paint(HWND hWnd, HDC hdc)
 	RECT rect = {};
 	GetClientRect(hWnd, &rect);
 
-	DrawEdge(hdc, &rect, EDGE_RAISED, BF_RECT);
+	ri::DrawEdge(hdc, &rect, EDGE_RAISED, BF_RECT);
 }
 
 void ProfilePopout::FlushNote()

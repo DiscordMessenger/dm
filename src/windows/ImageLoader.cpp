@@ -246,7 +246,7 @@ HImage* ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& ou
 			// Nope, so we can apply a highly optimized scheme.
 		UnstretchedScheme:
 			void* pvBits = NULL;
-			hbm = CreateDIBSection(wndHdc, &bmi, DIB_RGB_COLORS, &pvBits, NULL, 0);
+			hbm = ri::CreateDIBSection(wndHdc, &bmi, DIB_RGB_COLORS, &pvBits, NULL, 0);
 
 			if (!hbm) {
 				DbgPrintW("ConvertToBitmap failed to convert transparent unstretched image!");

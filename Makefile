@@ -72,6 +72,15 @@ else
 	DEBUG_DEF = -DNDEBUG -O2
 endif
 
+XL = -Xlinker
+MJSSV = $(XL) --major-subsystem-version $(XL)
+MNSSV = $(XL) --minor-subsystem-version $(XL)
+MJOSV = $(XL) --major-os-version $(XL)
+MNOSV = $(XL) --minor-os-version $(XL)
+
+# Give it a subsystem version of 3.10 and an OS version of 1.0
+SSYSVER = $(MJSSV) 3 $(MNSSV) 10 $(MJOSV) 1 $(MNOSV) 0
+
 CXXFLAGS = \
 	$(INC_DIRS)    \
 	$(DEFINES)     \
@@ -85,6 +94,7 @@ CXXFLAGS = \
 
 LDFLAGS = \
 	$(LIB_DIRS) \
+	$(SSYSVER)  \
 	-mwindows   \
 	-lmswsock   \
 	-lwsock32   \

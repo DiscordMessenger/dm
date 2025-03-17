@@ -1095,12 +1095,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (g_DownloadIcon) DeleteObject(g_DownloadIcon);
 
 			g_pDiscordInstance = new DiscordInstance(GetLocalSettings()->GetToken());
-			g_BotIcon      = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_BOT)),      IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-			g_SendIcon     = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_SEND)),     IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-			g_JumpIcon     = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_JUMP)),     IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-			g_CancelIcon   = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CANCEL)),   IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-			g_UploadIcon   = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_UPLOAD)),   IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-			g_DownloadIcon = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_DOWNLOAD)), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+			g_BotIcon      = (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_BOT)),      IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+			g_SendIcon     = (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_SEND)),     IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+			g_JumpIcon     = (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_JUMP)),     IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+			g_CancelIcon   = (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CANCEL)),   IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+			g_UploadIcon   = (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_UPLOAD)),   IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+			g_DownloadIcon = (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_DOWNLOAD)), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 
 			MessageList::InitializeClass();
 			ChannelView::InitializeClass();
@@ -1704,7 +1704,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	g_pHTTPClient = new NetworkerThreadManager;
 
 	// Create a background brush.
-	g_backgroundBrush = GetSysColorBrush(COLOR_3DFACE);
+	g_backgroundBrush = ri::GetSysColorBrush(COLOR_3DFACE);
 
 	SetupCachePathIfNeeded();
 	GetLocalSettings()->Load();
@@ -1728,9 +1728,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	wc.lpszMenuName  = MAKEINTRESOURCE(IDR_MAINMENU);
 
 	// NOTE: Despite that we pass LR_SHARED, if this "isn't a standard size" (whatever Microsoft means), we must still delete it!!
-	g_DefaultProfilePicture = (HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_DEFAULT),                   IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
-	g_ProfileBorderIcon     = (HICON)  LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER)),      IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
-	g_ProfileBorderIconGold = (HICON)  LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER_GOLD)), IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+	g_DefaultProfilePicture = (HBITMAP)ri::LoadImage(hInstance, MAKEINTRESOURCE(IDB_DEFAULT),                   IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+	g_ProfileBorderIcon     = (HICON)  ri::LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER)),      IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+	g_ProfileBorderIconGold = (HICON)  ri::LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER_GOLD)), IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
 
 	g_defaultImage.Frames.resize(1);
 	g_defaultImage.Frames[0].Bitmap = g_DefaultProfilePicture;

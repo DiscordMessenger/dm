@@ -94,7 +94,7 @@ void RoleList::LayoutRoles()
 	si.nMin = 0;
 	si.nMax = m_scrollHeight; // Adjust this value depending on the total height of child controls
 	si.nPage = rcClient.bottom - rcClient.top; // Set to the height of the client area
-	SetScrollInfo(m_hwnd, SB_VERT, &si, TRUE);
+	ri::SetScrollInfo(m_hwnd, SB_VERT, &si, TRUE);
 }
 
 int RoleList::GetRolesHeight()
@@ -119,7 +119,7 @@ void RoleList::DrawRole(HDC hdc, RoleItem* role)
 	COLORREF oldBkColor = CLR_NONE;
 	switch (style) {
 		case MS_3DFACE:
-			DrawEdge(hdc, &rect, BDR_RAISEDINNER, BF_RECT | BF_MIDDLE | BF_ADJUST);
+			ri::DrawEdge(hdc, &rect, BDR_RAISEDINNER, BF_RECT | BF_MIDDLE | BF_ADJUST);
 		case MS_FLAT:
 		case MS_IMAGE:
 			oldBkColor = SetBkColor(hdc, GetSysColor(COLOR_3DFACE));
@@ -235,10 +235,10 @@ LRESULT CALLBACK RoleList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			eMessageStyle style = GetLocalSettings()->GetMessageStyle();
 			switch (style) {
 				default:
-					SetClassLong(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)GetSysColorBrush(COLOR_3DFACE));
+					SetClassLong(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)ri::GetSysColorBrush(COLOR_3DFACE));
 					break;
 				case MS_FLATBR:
-					SetClassLong(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)GetSysColorBrush(COLOR_WINDOW));
+					SetClassLong(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)ri::GetSysColorBrush(COLOR_WINDOW));
 					break;
 			}
 			break;
@@ -254,7 +254,7 @@ LRESULT CALLBACK RoleList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			SCROLLINFO si = { sizeof(SCROLLINFO) };
 			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask = SIF_POS;
-			GetScrollInfo(hWnd, SB_VERT, &si);
+			ri::GetScrollInfo(hWnd, SB_VERT, &si);
 			if (pThis->m_scrollY != si.nPos) {
 				pThis->m_scrollY = si.nPos;
 				InvalidateRect(hWnd, NULL, TRUE);
@@ -267,10 +267,10 @@ LRESULT CALLBACK RoleList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			SCROLLINFO si{};
 			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask = SIF_ALL;
-			GetScrollInfo(hWnd, SB_VERT, &si);
+			ri::GetScrollInfo(hWnd, SB_VERT, &si);
 			short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 			yPos = si.nTrackPos = si.nPos - zDelta;
-			SetScrollInfo(hWnd, SB_VERT, &si, false);
+			ri::SetScrollInfo(hWnd, SB_VERT, &si, false);
 			useYPos = true;
 			goto label_scroll;
 		}
@@ -279,7 +279,7 @@ LRESULT CALLBACK RoleList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			SCROLLINFO si{};
 			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask = SIF_ALL;
-			GetScrollInfo(hWnd, SB_VERT, &si);
+			ri::GetScrollInfo(hWnd, SB_VERT, &si);
 			RECT rcClient = {};
 			GetClientRect(hWnd, &rcClient);
 
@@ -315,7 +315,7 @@ LRESULT CALLBACK RoleList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			// Set the new scroll position
 			si.fMask = SIF_POS;
 			si.nPos = yPos;
-			SetScrollInfo(hWnd, SB_VERT, &si, TRUE);
+			ri::SetScrollInfo(hWnd, SB_VERT, &si, TRUE);
 
 			pThis->m_scrollY = si.nPos;
 
@@ -378,7 +378,7 @@ void RoleList::InitializeClass()
 		return;
 
 	wc.lpszClassName = T_ROLE_LIST_CLASS;
-	wc.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
 	wc.style = 0;
 	wc.hCursor = LoadCursor(0, IDC_ARROW);
 	wc.lpfnWndProc = RoleList::WndProc;

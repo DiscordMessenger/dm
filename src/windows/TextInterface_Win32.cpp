@@ -212,7 +212,7 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 		RECT rc2 = rc;
 		rc2.left -= ScaleByDPI(SIZE_QUOTE_INDENT);
 		rc2.right = rc2.left + ScaleByDPI(3);
-		FillRect(hdc, &rc2, GetSysColorBrush(COLOR_SCROLLBAR));
+		FillRect(hdc, &rc2, ri::GetSysColorBrush(COLOR_SCROLLBAR));
 	}
 	DrawText(context->m_hdc, str.GetWrapped(), -1, &rc, flags);
 	SelectObject(hdc, old);
@@ -232,10 +232,10 @@ void MdDrawCodeBackground(DrawingContext* context, const Rect& rect)
 		ri::SetDCBrushColor(context->m_hdc, old);
 	}
 	else {
-		FillRect(context->m_hdc, &rc, GetSysColorBrush(COLOR_WINDOW));
+		FillRect(context->m_hdc, &rc, ri::GetSysColorBrush(COLOR_WINDOW));
 	}
 
-	DrawEdge(context->m_hdc, &rc, BDR_SUNKEN, BF_RECT);
+	ri::DrawEdge(context->m_hdc, &rc, BDR_SUNKEN, BF_RECT);
 }
 
 int MdGetQuoteIndentSize()

@@ -166,8 +166,12 @@ INT_PTR CALLBACK UploadDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 				}
 
 				// TODO: Win32 docs say we should do this in a background thread.
+#ifdef UNICODE
 				DbgPrintW("Getting file info for %S", pData->m_lpstrFile);
-				SHGetFileInfo(pData->m_lpstrFile, 0, &pData->m_sfi, sizeof(SHFILEINFO), SHGFI_ICON);
+#else
+				DbgPrintW("Getting file info for %s", pData->m_lpstrFile);
+#endif
+				ri::SHGetFileInfo(pData->m_lpstrFile, 0, &pData->m_sfi, sizeof(SHFILEINFO), SHGFI_ICON);
 				DbgPrintW("Got the file info!");
 			}
 			else
@@ -175,7 +179,7 @@ INT_PTR CALLBACK UploadDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 				DbgPrintW("Using memory file to upload");
 
 				// Load in not-shared mode, so that DestroyIcon works
-				pData->m_sfi.hIcon = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_FILE), IMAGE_ICON, 0, 0, LR_CREATEDIBSECTION);
+				pData->m_sfi.hIcon = (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_FILE), IMAGE_ICON, 0, 0, LR_CREATEDIBSECTION);
 			}
 
 			SetDlgItemText(hWnd, IDC_FILE_NAME, pData->m_lpstrFileTitle);
@@ -184,6 +188,9 @@ INT_PTR CALLBACK UploadDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			SetDlgItemText(hWnd, IDC_CHANNEL_NAME, tstr);
 			SendMessage(GetDlgItem(hWnd, IDC_CHANNEL_NAME), WM_SETFONT, (WPARAM)g_AuthorTextFont, TRUE);
 			free(tstr);
+
+			if (!pData->m_sfi.hIcon)
+				pData->m_sfi.hIcon = (HICON)ri::LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_FILE), IMAGE_ICON, 0, 0, LR_CREATEDIBSECTION);
 
 			Static_SetIcon(GetDlgItem(hWnd, IDC_FILE_ICON), pData->m_sfi.hIcon);
 

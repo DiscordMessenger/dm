@@ -28,11 +28,7 @@ extern HINSTANCE g_hInstance; // main.hpp
 
 void InitializeCOM()
 {
-	if (FAILED(CoInitialize(NULL)))
-	{
-		MessageBoxA(NULL, "COM could not be initialized.", NULL, 0);
-		exit(1);
-	}
+	ri::CoInitialize(NULL);
 }
 
 int GetSystemDpiU()
@@ -446,7 +442,7 @@ void FillGradient(HDC hdc, const LPRECT lpRect, int sci1, int sci2, bool vertica
 		FillGradientColors(hdc, lpRect, c1, c2, vertical);
 	}
 	else {
-		HBRUSH hbr = GetSysColorBrush(sci1);
+		HBRUSH hbr = ri::GetSysColorBrush(sci1);
 		FillRect(hdc, lpRect, hbr);
 	}
 }
@@ -486,7 +482,7 @@ void FillGradientColors(HDC hdc, const LPRECT lpRect, COLORREF c1, COLORREF c2, 
 			bmi.bmiHeader.biSizeImage = ulWidth * ulHeight * 4;
 
 			void* pvBits = NULL;
-			hbm = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, &pvBits, NULL, 0);
+			hbm = ri::CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, &pvBits, NULL, 0);
 			if (!hbm) {
 				DbgPrintW("FillGradientColors : Could not create bitmap object!");
 				goto _FALLBACK;
@@ -932,16 +928,16 @@ HICON g_ImgErrorIcon;
 void InitializeStatusIcons()
 {
 	for (int i = 0; i < 10; i++) {
-		g_MentionMarkerIcons[i] = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_MENTION_MARKER_1 + i), IMAGE_ICON, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+		g_MentionMarkerIcons[i] = (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_MENTION_MARKER_1 + i), IMAGE_ICON, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
 	}
 	for (int i = 0; i < 4; i++) {
-		g_ProfileStatusIcons[i] = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_STATUS_OFFLINE + i), IMAGE_ICON, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+		g_ProfileStatusIcons[i] = (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_STATUS_OFFLINE + i), IMAGE_ICON, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
 	}
 
 	int smcxicon   = GetSystemMetrics(SM_CXICON);
 	int smcxsmicon = GetSystemMetrics(SM_CXSMICON);
-	g_WaitIcon     = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_WAIT),        IMAGE_ICON, smcxicon,   smcxicon,   LR_CREATEDIBSECTION | LR_SHARED);
-	g_ImgErrorIcon = (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_IMAGE_ERROR), IMAGE_ICON, smcxsmicon, smcxsmicon, LR_CREATEDIBSECTION | LR_SHARED);
+	g_WaitIcon     = (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_WAIT),        IMAGE_ICON, smcxicon,   smcxicon,   LR_CREATEDIBSECTION | LR_SHARED);
+	g_ImgErrorIcon = (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_IMAGE_ERROR), IMAGE_ICON, smcxsmicon, smcxsmicon, LR_CREATEDIBSECTION | LR_SHARED);
 }
 
 void DrawIconInsideProfilePicture(HDC hdc, int xp, int yp, HICON icon)
@@ -952,7 +948,7 @@ void DrawIconInsideProfilePicture(HDC hdc, int xp, int yp, HICON icon)
 	int xb = xp + pfpSize - iconSize;
 	int yb = yp + pfpSize - iconSize;
 
-	DrawIconEx(hdc, xb, yb, icon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+	ri::DrawIconEx(hdc, xb, yb, icon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
 }
 
 void DrawMentionStatus(HDC hdc, int x, int y, int mentionCount)
@@ -971,7 +967,7 @@ void DrawActivityStatus(HDC hdc, int x, int y, eActiveStatus status)
 
 void DrawLoadingBox(HDC hdc, RECT rect)
 {
-	DrawEdge(hdc, &rect, BDR_SUNKEN, BF_RECT);
+	ri::DrawEdge(hdc, &rect, BDR_SUNKEN, BF_RECT);
 
 	HRGN rgn = CreateRectRgnIndirect(&rect);
 	SelectClipRgn(hdc, rgn);
@@ -979,7 +975,7 @@ void DrawLoadingBox(HDC hdc, RECT rect)
 	int smcxicon = GetSystemMetrics(SM_CXICON);
 	int x = rect.left + (rect.right - rect.left - smcxicon) / 2;
 	int y = rect.top  + (rect.bottom - rect.top - smcxicon) / 2;
-	DrawIconEx(hdc, x, y, g_WaitIcon, smcxicon, smcxicon, 0, NULL, DI_COMPAT | DI_NORMAL);
+	ri::DrawIconEx(hdc, x, y, g_WaitIcon, smcxicon, smcxicon, 0, NULL, DI_COMPAT | DI_NORMAL);
 
 	SelectClipRgn(hdc, NULL);
 	DeleteRgn(rgn);
@@ -987,7 +983,7 @@ void DrawLoadingBox(HDC hdc, RECT rect)
 
 void DrawErrorBox(HDC hdc, RECT rect)
 {
-	DrawEdge(hdc, &rect, BDR_SUNKEN, BF_RECT);
+	ri::DrawEdge(hdc, &rect, BDR_SUNKEN, BF_RECT);
 
 	HRGN rgn = CreateRectRgnIndirect(&rect);
 	SelectClipRgn(hdc, rgn);
@@ -995,7 +991,7 @@ void DrawErrorBox(HDC hdc, RECT rect)
 	int smcxsmicon = GetSystemMetrics(SM_CXSMICON);
 	int x = rect.left + (rect.right - rect.left - smcxsmicon) / 2;
 	int y = rect.top  + (rect.bottom - rect.top - smcxsmicon) / 2;
-	DrawIconEx(hdc, x, y, g_ImgErrorIcon, smcxsmicon, smcxsmicon, 0, NULL, DI_COMPAT | DI_NORMAL);
+	ri::DrawIconEx(hdc, x, y, g_ImgErrorIcon, smcxsmicon, smcxsmicon, 0, NULL, DI_COMPAT | DI_NORMAL);
 
 	SelectClipRgn(hdc, NULL);
 	DeleteRgn(rgn);
@@ -1276,7 +1272,7 @@ bool IsIconMostlyBlack(HICON hic)
 void DrawIconInvert(HDC hdc, HICON hIcon, int x, int y, int sizeX, int sizeY, bool invert)
 {
 	if (!invert) {
-		DrawIconEx(hdc, x, y, hIcon, sizeX, sizeY, 0, NULL, DI_NORMAL | DI_COMPAT);
+		ri::DrawIconEx(hdc, x, y, hIcon, sizeX, sizeY, 0, NULL, DI_NORMAL | DI_COMPAT);
 		return;
 	}
 
@@ -1287,7 +1283,7 @@ void DrawIconInvert(HDC hdc, HICON hIcon, int x, int y, int sizeX, int sizeY, bo
 	// take the contents of the HDC there and invert them.
 	BitBlt(hdcMem, 0, 0, sizeX, sizeY, hdc, x, y, NOTSRCCOPY);
 
-	DrawIconEx(hdcMem, 0, 0, hIcon, sizeX, sizeY, 0, NULL, DI_NORMAL | DI_COMPAT);
+	ri::DrawIconEx(hdcMem, 0, 0, hIcon, sizeX, sizeY, 0, NULL, DI_NORMAL | DI_COMPAT);
 
 	// now blit it back out inverted
 	BitBlt(hdc, x, y, sizeX, sizeY, hdcMem, 0, 0, NOTSRCCOPY);

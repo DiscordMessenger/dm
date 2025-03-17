@@ -521,6 +521,7 @@
     <None Include="..\res\animations\upload_lc.avi" />
     <None Include="..\res\cursors\cur_zoomin.cur" />
     <None Include="..\res\cursors\cur_zoomout.cur" />
+    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\res\app.manifest" />

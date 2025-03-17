@@ -158,7 +158,7 @@ HICON GuildHeader::GetIcon(int iconID, int iconSize)
 	{
 		// Note, not shared but we do delete them in the destructor
 		m_hIcons[iconID] = hicon =
-			(HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(iconID), IMAGE_ICON, iconSize, iconSize, LR_CREATEDIBSECTION);
+			(HICON)ri::LoadImage(g_hInstance, MAKEINTRESOURCE(iconID), IMAGE_ICON, iconSize, iconSize, LR_CREATEDIBSECTION);
 	}
 
 	return hicon;
@@ -195,7 +195,7 @@ void GuildHeader::DrawButton(HDC hdc, Button& button)
 		DeleteRgn(rgn);
 	}
 	else {
-		FillRect(hdc, &exp, GetSysColorBrush(clr));
+		FillRect(hdc, &exp, ri::GetSysColorBrush(clr));
 	}
 
 	if (button.m_held) {
@@ -404,9 +404,9 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 #if (WINVER>=0x0500)
 			FillGradient(hdc, &pThis->m_rectLeftFull,  GUILD_HEADER_COLOR, GUILD_HEADER_COLOR_2, false);
 			FillGradient(hdc, &pThis->m_rectRightFull, GUILD_HEADER_COLOR_2, GUILD_HEADER_COLOR, false);
-			FillRect(hdc, &pThis->m_rectMidFull, GetSysColorBrush(GUILD_HEADER_COLOR_2));
+			FillRect(hdc, &pThis->m_rectMidFull, ri::GetSysColorBrush(GUILD_HEADER_COLOR_2));
 #else
-			FillRect(hdc, &pThis->m_rectFull, GetSysColorBrush(GUILD_HEADER_COLOR));
+			FillRect(hdc, &pThis->m_rectFull, ri::GetSysColorBrush(GUILD_HEADER_COLOR));
 #endif
 
 			int old_mode = SetBkMode(hdc, TRANSPARENT);

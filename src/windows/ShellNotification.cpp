@@ -29,7 +29,7 @@ void ShellNotification::Initialize()
 	
 	_tcscpy(d.szTip, TmGetTString(IDS_PROGRAM_NAME));
 
-	Shell_NotifyIcon(NIM_ADD, &d);
+	ri::Shell_NotifyIcon(NIM_ADD, &d);
 
 	m_bInitialized = true;
 }
@@ -44,7 +44,7 @@ void ShellNotification::Deinitialize()
 	d.cbSize = NOTIFYICONDATA_V2_SIZE;
 	d.uID    = NOTIFICATION_ID;
 	d.hWnd   = g_Hwnd;
-	Shell_NotifyIcon(NIM_DELETE, &d);
+	ri::Shell_NotifyIcon(NIM_DELETE, &d);
 
 	m_bInitialized = false;
 }
@@ -81,7 +81,7 @@ void ShellNotification::ShowBalloon(const std::string& titleString, const std::s
 	{
 		_tcscpy(d.szInfo, TEXT(""));
 		_tcscpy(d.szInfoTitle, TEXT(""));
-		Shell_NotifyIcon(NIM_MODIFY, &d);
+		ri::Shell_NotifyIcon(NIM_MODIFY, &d);
 		m_bBalloonActive = false;
 	}
 
@@ -96,7 +96,7 @@ void ShellNotification::ShowBalloon(const std::string& titleString, const std::s
 	_tcscpy(d.szInfo + _countof(d.szInfo) - 4, TEXT("..."));
 	free(tstr);
 
-	Shell_NotifyIcon(NIM_MODIFY, &d);
+	ri::Shell_NotifyIcon(NIM_MODIFY, &d);
 }
 
 void ShellNotification::ShowBalloonForOneNotification(Notification* pNotif)

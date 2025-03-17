@@ -52,30 +52,30 @@ bool ChannelView::InitTreeView()
 	else
 		flag = ILC_COLOR4 | ILC_MASK;
 
-	if ((himl = ImageList_Create(ScaleByDPI(CX_BITMAP),
-		                         ScaleByDPI(CY_BITMAP),
-		                         flag,
-		                         NUM_BITMAPS, 0)) == NULL) {
+	if ((himl = ri::ImageList_Create(ScaleByDPI(CX_BITMAP),
+		                             ScaleByDPI(CY_BITMAP),
+		                             flag,
+		                             NUM_BITMAPS, 0)) == NULL) {
 		DbgPrintW("Cannot create image list!");
 		return FALSE;
 	}
 
 	// Add the open file, closed file, and document bitmaps.
-	m_nCategoryExpandIcon   = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CATEGORY_EXPAND))));
-	m_nCategoryCollapseIcon = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CATEGORY_COLLAPSE))));
-	m_nChannelIcon    = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL))));
-	m_nForumIcon      = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM))));
-	m_nVoiceIcon      = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_VOICE))));
-	m_nDmIcon         = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_DM))));
-	m_nGroupDmIcon    = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM))));
-	m_nChannelDotIcon = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL_UNREAD))));
-	m_nChannelRedIcon = ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL_MENTIONED))));
+	m_nCategoryExpandIcon   = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CATEGORY_EXPAND))));
+	m_nCategoryCollapseIcon = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CATEGORY_COLLAPSE))));
+	m_nChannelIcon    = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL))));
+	m_nForumIcon      = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM))));
+	m_nVoiceIcon      = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_VOICE))));
+	m_nDmIcon         = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_DM))));
+	m_nGroupDmIcon    = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM))));
+	m_nChannelDotIcon = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL_UNREAD))));
+	m_nChannelRedIcon = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL_MENTIONED))));
 
 	// Fail if not all of the images were added.
-	int ic = ImageList_GetImageCount(himl);
+	int ic = ri::ImageList_GetImageCount(himl);
 	if (ic < 8) {
 		DbgPrintW("Cannot add all icons!");
-		ImageList_Destroy(himl);
+		ri::ImageList_Destroy(himl);
 		return FALSE;
 	}
 
@@ -510,7 +510,7 @@ void ChannelView::InitializeClass()
 	WNDCLASS& wc = g_ChannelViewClass;
 
 	wc.lpszClassName = T_CHANNEL_VIEW_CONTAINER_CLASS;
-	wc.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
 	wc.style = 0;
 	wc.hCursor = LoadCursor(0, IDC_ARROW);
 	wc.lpfnWndProc = &ChannelView::WndProc;
@@ -698,18 +698,18 @@ LRESULT ChannelView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			
 			if (pView->m_hotItem == lpdis->itemID)
 			{
-				FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrush(COLOR_MENUBAR));
+				FillRect(lpdis->hDC, &lpdis->rcItem, ri::GetSysColorBrush(COLOR_MENUBAR));
 				backgdColor = GetSysColor(COLOR_MENUBAR);
 			}
 			else
 			{
 				// Windows 2000 doesn't do automatic clearing
-				FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrush(COLOR_WINDOW));
+				FillRect(lpdis->hDC, &lpdis->rcItem, ri::GetSysColorBrush(COLOR_WINDOW));
 			}
 			
 			if (lpdis->itemState & ODS_SELECTED)
 			{
-				FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
+				FillRect(lpdis->hDC, &lpdis->rcItem, ri::GetSysColorBrush(COLOR_HIGHLIGHT));
 				backgdColor     = GetSysColor(COLOR_HIGHLIGHT);
 				nameTextColor   = GetSysColor(COLOR_HIGHLIGHTTEXT);
 				statusTextColor = GetSysColor(COLOR_HIGHLIGHTTEXT);
@@ -718,7 +718,7 @@ LRESULT ChannelView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			// draw profile picture frame
 			int sz = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 			int szDraw = GetProfileBorderSize();
-			DrawIconEx(hdc, rcItem.left, rcItem.top, g_ProfileBorderIcon, szDraw, szDraw, 0, NULL, DI_NORMAL | DI_COMPAT);
+			ri::DrawIconEx(hdc, rcItem.left, rcItem.top, g_ProfileBorderIcon, szDraw, szDraw, 0, NULL, DI_NORMAL | DI_COMPAT);
 			
 			// draw profile picture
 			bool hasAlpha = false;

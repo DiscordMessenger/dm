@@ -134,22 +134,22 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 			si.fMask = SIF_ALL;
 
 			// update the vertical one
-			GetScrollInfo(hWnd, SBS_VERT, &si);
+			ri::GetScrollInfo(hWnd, SBS_VERT, &si);
 			si.nPos = 0;
 			si.nMin = 0;
 			si.nMax = bzi ? prevHeight : 0;
 			si.nPage = bzi ? (winHeight * si.nMax / prevHeight) : 0;
 			si.nTrackPos = 0;
-			SetScrollInfo(hWnd, SBS_VERT, &si, true);
+			ri::SetScrollInfo(hWnd, SBS_VERT, &si, true);
 
 			// update the horizontal one
-			GetScrollInfo(hWnd, SBS_HORZ, &si);
+			ri::GetScrollInfo(hWnd, SBS_HORZ, &si);
 			si.nPos = 0;
 			si.nMin = 0;
 			si.nMax = bzi ? prevWidth : 0;
 			si.nPage = bzi ? (winWidth * si.nMax / prevWidth) : 0;
 			si.nTrackPos = 0;
-			SetScrollInfo(hWnd, SBS_HORZ, &si, true);
+			ri::SetScrollInfo(hWnd, SBS_HORZ, &si, true);
 
 			InvalidateRect(hWnd, NULL, false);
 			break;
@@ -174,11 +174,11 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 				zDelta = -zDelta;
 
 			si.fMask = SIF_ALL;
-			GetScrollInfo(hWnd, id, &si);
+			ri::GetScrollInfo(hWnd, id, &si);
 			si.nTrackPos = si.nPos - (zDelta / 3);
 			if (si.nTrackPos < si.nMin) si.nTrackPos = si.nMin;
 			if (si.nTrackPos > si.nMax) si.nTrackPos = si.nMax;
-			SetScrollInfo(hWnd, id, &si, false);
+			ri::SetScrollInfo(hWnd, id, &si, false);
 
 			if (bIsHorz)
 				tph = si.nTrackPos;
@@ -203,23 +203,23 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 
 			si.fMask = SIF_ALL;
 
-			GetScrollInfo(hWnd, SBS_HORZ, &si);
+			ri::GetScrollInfo(hWnd, SBS_HORZ, &si);
 			if (useTPVals) si.nTrackPos = tph;
 			int oldXPos = si.nPos;
 			if (uMsg == WM_HSCROLL) {
 				UpdateScrollInfoPos(&si, wParam, yChar);
-				SetScrollInfo(hWnd, SBS_HORZ, &si, true);
-				GetScrollInfo(hWnd, SBS_HORZ, &si);
+				ri::SetScrollInfo(hWnd, SBS_HORZ, &si, true);
+				ri::GetScrollInfo(hWnd, SBS_HORZ, &si);
 			}
 			int newXPos = si.nPos;
 
-			GetScrollInfo(hWnd, SBS_VERT, &si);
+			ri::GetScrollInfo(hWnd, SBS_VERT, &si);
 			if (useTPVals) si.nTrackPos = tpv;
 			int oldYPos = si.nPos;
 			if (uMsg == WM_VSCROLL) {
 				UpdateScrollInfoPos(&si, wParam, yChar);
-				SetScrollInfo(hWnd, SBS_VERT, &si, true);
-				GetScrollInfo(hWnd, SBS_VERT, &si);
+				ri::SetScrollInfo(hWnd, SBS_VERT, &si, true);
+				ri::GetScrollInfo(hWnd, SBS_VERT, &si);
 			}
 			int newYPos = si.nPos;
 
@@ -252,9 +252,9 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 
 			int xOffs, yOffs;
 			si.fMask = SIF_POS;
-			GetScrollInfo(hWnd, SBS_VERT, &si);
+			ri::GetScrollInfo(hWnd, SBS_VERT, &si);
 			yOffs = si.nPos;
-			GetScrollInfo(hWnd, SBS_HORZ, &si);
+			ri::GetScrollInfo(hWnd, SBS_HORZ, &si);
 			xOffs = si.nPos;
 
 			if (!g_bChildZoomedIn)
@@ -445,7 +445,7 @@ bool RegisterImageViewerClass()
 	wc.lpfnWndProc   = ImageViewerWndProc;
 	wc.hInstance     = g_hInstance;
 	wc.lpszClassName = DM_IMAGE_VIEWER_CLASS;
-	wc.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
 	wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
 	wc.hIcon         = g_Icon = LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_ICON));
 
@@ -455,7 +455,7 @@ bool RegisterImageViewerClass()
 	wc2.lpfnWndProc   = ImageViewerChildWndProc;
 	wc2.hInstance     = g_hInstance;
 	wc2.lpszClassName = DM_IMAGE_VIEWER_CHILD_CLASS;
-	wc2.hbrBackground = GetSysColorBrush(COLOR_3DDKSHADOW);
+	wc2.hbrBackground = ri::GetSysColorBrush(COLOR_3DDKSHADOW);
 	wc2.hCursor       = LoadCursor(NULL, IDC_ARROW);
 	wc2.hIcon         = g_Icon = LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_ICON));
 

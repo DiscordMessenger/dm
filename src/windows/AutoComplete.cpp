@@ -331,7 +331,7 @@ bool AutoComplete::InitializeClass()
 	WNDCLASS wc;
 	ZeroMemory(&wc, sizeof wc);
 	wc.lpszClassName = T_AUTOCOMPLETE_CLASS;
-	wc.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
 	wc.style         = 0;
 	wc.hCursor       = LoadCursor (0, IDC_ARROW);
 	wc.lpfnWndProc   = AutoComplete::WndProc;

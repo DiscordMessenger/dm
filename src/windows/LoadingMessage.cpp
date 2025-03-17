@@ -80,7 +80,7 @@ void LoadingMessage::DrawLoading(HDC hdc)
 		if (i == st1 || i == st2 || i == st3)
 			ic = m_dot_1;
 
-		DrawIconEx(hdc, xLoad + i * dotWidth - (iconSizeSm - dotWidth) / 2, yLoad, ic, iconSizeSm, iconSizeSm, 0, NULL, DI_COMPAT | DI_NORMAL);
+		ri::DrawIconEx(hdc, xLoad + i * dotWidth - (iconSizeSm - dotWidth) / 2, yLoad, ic, iconSizeSm, iconSizeSm, 0, NULL, DI_COMPAT | DI_NORMAL);
 	}
 
 	m_load_rect = { xLoad, yLoad, xLoad + dotWidth * C_NUM_LOADING_DOTS, yLoad + iconSizeSm };
@@ -101,9 +101,9 @@ LRESULT CALLBACK LoadingMessage::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 		case WM_CREATE: {
 			int iconSize = GetSystemMetrics(SM_CXICON) * 2;
 			int iconSizeSm = GetSystemMetrics(SM_CXSMICON);
-			pThis->m_icon  = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)), IMAGE_ICON, iconSize, iconSize, LR_CREATEDIBSECTION | LR_SHARED);
-			pThis->m_dot_0 = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_OFFLINE_SM)), IMAGE_ICON, iconSizeSm, iconSizeSm, LR_CREATEDIBSECTION | LR_SHARED);
-			pThis->m_dot_1 = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_ONLINE_SM)),  IMAGE_ICON, iconSizeSm, iconSizeSm, LR_CREATEDIBSECTION | LR_SHARED);
+			pThis->m_icon  = (HICON)ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)), IMAGE_ICON, iconSize, iconSize, LR_CREATEDIBSECTION | LR_SHARED);
+			pThis->m_dot_0 = (HICON)ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_OFFLINE_SM)), IMAGE_ICON, iconSizeSm, iconSizeSm, LR_CREATEDIBSECTION | LR_SHARED);
+			pThis->m_dot_1 = (HICON)ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_ONLINE_SM)),  IMAGE_ICON, iconSizeSm, iconSizeSm, LR_CREATEDIBSECTION | LR_SHARED);
 			pThis->m_timer_id = SetTimer(hWnd, 0, C_LOADING_ELAPSE, NULL);
 			break;
 		}
@@ -142,7 +142,7 @@ LRESULT CALLBACK LoadingMessage::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 			int iconSize = GetSystemMetrics(SM_CXICON) * 2;
 			int x = (rect.right - rect.left - iconSize) / 2;
 			int y = (textRect.top - rect.top - iconSize) / 2;
-			DrawIconEx(hdc, x, y, pThis->m_icon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+			ri::DrawIconEx(hdc, x, y, pThis->m_icon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
 
 			pThis->DrawLoading(hdc);
 
@@ -161,7 +161,7 @@ void LoadingMessage::InitializeClass()
 		return;
 
 	wc.lpszClassName = T_LOADING_MESSAGE_CLASS;
-	wc.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
 	wc.style = CS_HREDRAW;
 	wc.hCursor = LoadCursor(0, IDC_WAIT);
 	wc.lpfnWndProc = LoadingMessage::WndProc;

@@ -780,7 +780,7 @@ LRESULT MessageEditor::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			{
 				SetTextColor((HDC) wParam, pThis->m_userNameColor);
 				SetBkColor((HDC) wParam, GetSysColor(COLOR_3DFACE));
-				return (LRESULT) GetSysColorBrush(COLOR_3DFACE);
+				return (LRESULT) ri::GetSysColorBrush(COLOR_3DFACE);
 			}
 			break;
 		}
@@ -794,7 +794,7 @@ void MessageEditor::InitializeClass()
 	WNDCLASS wc;
 	ZeroMemory(&wc, sizeof wc);
 	wc.lpszClassName = T_MESSAGE_EDITOR_CLASS;
-	wc.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
 	wc.style         = 0;
 	wc.hCursor       = LoadCursor (0, IDC_ARROW);
 	wc.lpfnWndProc   = MessageEditor::WndProc;

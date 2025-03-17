@@ -279,7 +279,7 @@ void QuickSwitcher::CreateImageList()
 		DestroyImageList();
 
 	int szIcon = GetSystemMetrics(SM_CXSMICON);
-	g_qsIml = ImageList_Create(szIcon, szIcon, Supports32BitIcons() ? ILC_COLOR32 : ILC_COLOR24, ICN_MAX, 0);
+	g_qsIml = ri::ImageList_Create(szIcon, szIcon, Supports32BitIcons() ? ILC_COLOR32 : ILC_COLOR24, ICN_MAX, 0);
 
 	memset(g_qsImlIdxs, 0, sizeof g_qsImlIdxs);
 
@@ -288,18 +288,18 @@ void QuickSwitcher::CreateImageList()
 		return;
 	}
 
-	g_qsImlIdxs[ICN_CHANNEL] = ImageList_AddIcon(g_qsIml, (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL)), IMAGE_ICON, szIcon, szIcon, LR_CREATEDIBSECTION | LR_SHARED));
-	g_qsImlIdxs[ICN_VOICE]   = ImageList_AddIcon(g_qsIml, (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_VOICE)),   IMAGE_ICON, szIcon, szIcon, LR_CREATEDIBSECTION | LR_SHARED));
-	g_qsImlIdxs[ICN_GROUPDM] = ImageList_AddIcon(g_qsIml, (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM)), IMAGE_ICON, szIcon, szIcon, LR_CREATEDIBSECTION | LR_SHARED));
-	g_qsImlIdxs[ICN_DM]      = ImageList_AddIcon(g_qsIml, (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_DM)),      IMAGE_ICON, szIcon, szIcon, LR_CREATEDIBSECTION | LR_SHARED));
-	g_qsImlIdxs[ICN_GUILD]   = ImageList_AddIcon(g_qsIml, (HICON) LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_SERVER)),  IMAGE_ICON, szIcon, szIcon, LR_CREATEDIBSECTION | LR_SHARED));
+	g_qsImlIdxs[ICN_CHANNEL] = ri::ImageList_AddIcon(g_qsIml, (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL)), IMAGE_ICON, szIcon, szIcon, LR_CREATEDIBSECTION | LR_SHARED));
+	g_qsImlIdxs[ICN_VOICE]   = ri::ImageList_AddIcon(g_qsIml, (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_VOICE)),   IMAGE_ICON, szIcon, szIcon, LR_CREATEDIBSECTION | LR_SHARED));
+	g_qsImlIdxs[ICN_GROUPDM] = ri::ImageList_AddIcon(g_qsIml, (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM)), IMAGE_ICON, szIcon, szIcon, LR_CREATEDIBSECTION | LR_SHARED));
+	g_qsImlIdxs[ICN_DM]      = ri::ImageList_AddIcon(g_qsIml, (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_DM)),      IMAGE_ICON, szIcon, szIcon, LR_CREATEDIBSECTION | LR_SHARED));
+	g_qsImlIdxs[ICN_GUILD]   = ri::ImageList_AddIcon(g_qsIml, (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_SERVER)),  IMAGE_ICON, szIcon, szIcon, LR_CREATEDIBSECTION | LR_SHARED));
 }
 
 void QuickSwitcher::DestroyImageList()
 {
 	if (!g_qsIml) return;
 
-	ImageList_Destroy(g_qsIml);
+	ri::ImageList_Destroy(g_qsIml);
 	g_qsIml = NULL;
 }
 

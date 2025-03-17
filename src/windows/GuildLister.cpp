@@ -217,7 +217,7 @@ int GuildLister::UpdateScrollBar(bool setOldPos)
 void GuildLister::GetScrollInfo(SCROLLINFO* pInfo)
 {
 	if (m_bIsScrollBarVisible) {
-		::GetScrollInfo(m_scrollable_hwnd, SB_VERT, pInfo);
+		ri::GetScrollInfo(m_scrollable_hwnd, SB_VERT, pInfo);
 		return;
 	}
 
@@ -242,7 +242,7 @@ void GuildLister::GetScrollInfo(SCROLLINFO* pInfo)
 void GuildLister::SetScrollInfo(SCROLLINFO* pInfo, bool redraw)
 {
 	if (m_bIsScrollBarVisible) {
-		::SetScrollInfo(m_scrollable_hwnd, SB_VERT, pInfo, redraw);
+		ri::SetScrollInfo(m_scrollable_hwnd, SB_VERT, pInfo, redraw);
 		::ShowScrollBar(m_scrollable_hwnd, SB_VERT, TRUE);
 		return;
 	}
@@ -276,7 +276,7 @@ void GuildLister::SaveScrollInfo()
 	SCROLLINFO& si = m_simulatedScrollInfo;
 	si.cbSize = sizeof m_simulatedScrollInfo;
 	si.fMask = SIF_ALL;
-	::GetScrollInfo(m_scrollable_hwnd, SB_VERT, &si);
+	ri::GetScrollInfo(m_scrollable_hwnd, SB_VERT, &si);
 }
 
 void GuildLister::RestoreScrollInfo()
@@ -289,7 +289,7 @@ void GuildLister::RestoreScrollInfo()
 	si.nMin = 0;
 	si.nMax = GetScrollableHeight();
 	si.nPage = rcClient.bottom - rcClient.top;
-	::SetScrollInfo(m_scrollable_hwnd, SB_VERT, &m_simulatedScrollInfo, TRUE);
+	ri::SetScrollInfo(m_scrollable_hwnd, SB_VERT, &m_simulatedScrollInfo, TRUE);
 }
 
 void GuildLister::ShowGuildChooserMenu()
@@ -502,7 +502,7 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 
 		int pfpBorderSize2 = GetProfileBorderRenderSize();
 
-		FillRect(hdc, &rcProfile, GetSysColorBrush(GUILD_LISTER_COLOR));
+		FillRect(hdc, &rcProfile, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
 
 		if (currentFolder) {
 			HRGN hrgn = CreateRectRgnIndirect(&rcProfile);
@@ -514,7 +514,7 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 			}
 
 			HGDIOBJ oldBrush, oldPen;
-			oldBrush = SelectObject(hdc, GetSysColorBrush(COLOR_BTNSHADOW));
+			oldBrush = SelectObject(hdc, ri::GetSysColorBrush(COLOR_BTNSHADOW));
 			oldPen = SelectObject(hdc, GetStockObject(BLACK_PEN));
 
 			if (currentFolder == (id & ~BIT_FOLDER)) {
@@ -534,7 +534,7 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 		}
 
 		if (!isFolderIcon) {
-			DrawIconEx(hdc, rect.left + BORDER_SIZE, rect.top + BORDER_SIZE + y, hborder, pfpBorderSize2, pfpBorderSize2, 0, NULL, DI_COMPAT | DI_NORMAL);
+			ri::DrawIconEx(hdc, rect.left + BORDER_SIZE, rect.top + BORDER_SIZE + y, hborder, pfpBorderSize2, pfpBorderSize2, 0, NULL, DI_COMPAT | DI_NORMAL);
 			DrawBitmap(hdc, hicon, rect.left + BORDER_SIZE + ScaleByDPI(6), rect.top + BORDER_SIZE + y + ScaleByDPI(4), NULL, CLR_NONE, GetProfilePictureSize(), GetProfilePictureSize(), hasAlpha);
 		}
 
@@ -1059,7 +1059,7 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					RECT rc = rect;
 					rc.top += y;
 					rc.bottom = rc.top + C_GUILD_GAP_HEIGHT;
-					FillRect(hdc, &rc, GetSysColorBrush(GUILD_LISTER_COLOR));
+					FillRect(hdc, &rc, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
 					COLORREF oldPenColor = ri::SetDCPenColor(hdc, GetSysColor(COLOR_3DLIGHT));
 					POINT pt2;
 					MoveToEx(hdc, rc.left + BORDER_SIZE, rc.top + BORDER_SIZE, &pt2);
@@ -1136,9 +1136,9 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			finalRect.top = y;
 
 			if (initialRect.top < initialRect.bottom)
-				FillRect(hdc, &initialRect, GetSysColorBrush(GUILD_LISTER_COLOR));
+				FillRect(hdc, &initialRect, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
 			if (finalRect.top < finalRect.bottom)
-				FillRect(hdc, &finalRect, GetSysColorBrush(GUILD_LISTER_COLOR));
+				FillRect(hdc, &finalRect, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
 
 			MoveToEx(hdc, pt.x, pt.y, NULL);
 
@@ -1233,7 +1233,7 @@ BOOL GuildLister::ChooserDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			HWND hWndList = GetDlgItem(hWnd, IDC_GUILD_LIST);
 
-			HIMAGELIST hImgList = ImageList_Create(
+			HIMAGELIST hImgList = ri::ImageList_Create(
 				GetProfilePictureSize(),
 				GetProfilePictureSize(),
 				ILC_MASK | ILC_COLOR32,
@@ -1254,7 +1254,7 @@ BOOL GuildLister::ChooserDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 			// add DM guild
 			pData->m_guildIDs.push_back(0);
 
-			int im = ImageList_Add(hImgList, GetDefaultBitmap(), NULL);
+			int im = ri::ImageList_Add(hImgList, GetDefaultBitmap(), NULL);
 			int index = 0;
 
 			LPTSTR tstr = ConvertCppStringToTString("Direct Messages");
@@ -1276,7 +1276,7 @@ BOOL GuildLister::ChooserDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 					hbm = GetAvatarCache()->GetImage(guild.m_avatarlnk, unusedHasAlpha)->GetFirstFrame();
 				}
 
-				int im = ImageList_Add(hImgList, hbm, NULL);
+				int im = ri::ImageList_Add(hImgList, hbm, NULL);
 
 				LPTSTR tstr = ConvertCppStringToTString(guild.m_name);
 				lvi.pszText = tstr;
@@ -1291,7 +1291,7 @@ BOOL GuildLister::ChooserDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		}
 		case WM_DESTROY:
 		{
-			ImageList_Destroy(pData->m_imageList);
+			ri::ImageList_Destroy(pData->m_imageList);
 			delete pData;
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) NULL);
 			break;
@@ -1317,7 +1317,7 @@ void GuildLister::InitializeClass()
 	WNDCLASS& wc = g_GuildListerClass;
 
 	wc.lpszClassName = T_GUILD_LISTER_CLASS;
-	wc.hbrBackground = GetSysColorBrush(GUILD_LISTER_COLOR);
+	wc.hbrBackground = ri::GetSysColorBrush(GUILD_LISTER_COLOR);
 	wc.style         = 0;
 	wc.hCursor       = LoadCursor(0, IDC_ARROW);
 	wc.lpfnWndProc   = GuildLister::WndProc;
@@ -1368,8 +1368,8 @@ GuildLister* GuildLister::Create(HWND hwnd, LPRECT pRect)
 
 	// TODO: other icons
 	int smcx = GetSystemMetrics(SM_CXSMICON);
-	SendMessage(newThis->m_more_btn_hwnd, BM_SETIMAGE, (WPARAM) IMAGE_ICON, (LPARAM) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_GUILDS), IMAGE_ICON, smcx, smcx, LR_SHARED | LR_CREATEDIBSECTION));
-	SendMessage(newThis->m_bar_btn_hwnd,  BM_SETIMAGE, (WPARAM) IMAGE_ICON, (LPARAM) LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_SCROLL), IMAGE_ICON, smcx, smcx, LR_SHARED | LR_CREATEDIBSECTION));
+	SendMessage(newThis->m_more_btn_hwnd, BM_SETIMAGE, (WPARAM) IMAGE_ICON, (LPARAM) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_GUILDS), IMAGE_ICON, smcx, smcx, LR_SHARED | LR_CREATEDIBSECTION));
+	SendMessage(newThis->m_bar_btn_hwnd,  BM_SETIMAGE, (WPARAM) IMAGE_ICON, (LPARAM) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_SCROLL), IMAGE_ICON, smcx, smcx, LR_SHARED | LR_CREATEDIBSECTION));
 
 	SetWindowPos(newThis->m_tooltip_hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 	
