@@ -2256,6 +2256,13 @@ void DiscordInstance::HandleREADY(Json& j)
 		for (auto& meme : memes)
 		{
 			idx++;
+
+			if (!meme.is_array())
+				continue;
+
+			if (meme.empty())
+				continue;
+
 			// I don't know why there's another array, just pick the first one
 			Json& memesub = meme[0];
 			Snowflake sf = GetSnowflake(memesub, "user_id");
