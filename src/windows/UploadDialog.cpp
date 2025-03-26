@@ -220,7 +220,7 @@ static void UploadDialogShowData(UploadDialogData* data)
 {
 	if (DialogBoxParam(
 			g_hInstance,
-			MAKEINTRESOURCE(IDD_DIALOG_UPLOADFILES),
+			MAKEINTRESOURCE(DMDI(IDD_DIALOG_UPLOADFILES)),
 			g_Hwnd,
 			UploadDialogProc,
 			(LPARAM) data

@@ -48,7 +48,7 @@ static std::vector<QuickSwitchItem> g_qsItems;
 void QuickSwitcher::ShowDialog()
 {
 	g_qsItems.clear();
-	DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG_QUICK_SWITCHER), g_Hwnd, &QuickSwitcher::DialogProc);
+	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_QUICK_SWITCHER)), g_Hwnd, &QuickSwitcher::DialogProc);
 	g_qsItems.clear();
 }
 

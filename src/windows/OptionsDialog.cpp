@@ -758,5 +758,5 @@ static INT_PTR CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 int ShowOptionsDialog()
 {
-	return DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG_OPTIONS), g_Hwnd, DialogProc);
+	return DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_OPTIONS)), g_Hwnd, DialogProc);
 }

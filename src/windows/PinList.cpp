@@ -175,5 +175,5 @@ void PinList::Show(Snowflake channelID, Snowflake guildID, int x, int y, bool ri
 	m_appearXY = { x, y };
 	m_bRightJustify = rightJustify;
 
-	DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG_PINNEDMESSAGES), g_Hwnd, &DlgProc);
+	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_PINNEDMESSAGES)), g_Hwnd, &DlgProc);
 }

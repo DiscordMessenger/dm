@@ -254,5 +254,5 @@ CLEANUPOK:
 
 void QRCodeDialog::Show()
 {
-	DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG_QRCODELOGIN), g_Hwnd, &QRCodeDialog::OnMessage);
+	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_QRCODELOGIN)), g_Hwnd, &QRCodeDialog::OnMessage);
 }

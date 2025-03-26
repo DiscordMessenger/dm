@@ -49,7 +49,7 @@ void ProgressDialog::Show(const std::string& fileName, Snowflake key, bool isUpl
 	m_bDirection = isUploading;
 	ResetUpdates();
 
-	DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG_UPLOADING), hWnd, &DlgProc);
+	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_UPLOADING)), hWnd, &DlgProc);
 }
 
 bool ProgressDialog::Update(Snowflake key, size_t offset, size_t length)

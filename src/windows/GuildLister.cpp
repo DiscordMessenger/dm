@@ -294,7 +294,7 @@ void GuildLister::RestoreScrollInfo()
 
 void GuildLister::ShowGuildChooserMenu()
 {
-	DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG_GUILD_CHOOSER), g_Hwnd, &ChooserDlgProc);
+	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_GUILD_CHOOSER)), g_Hwnd, &ChooserDlgProc);
 }
 
 void GuildLister::OnScroll()

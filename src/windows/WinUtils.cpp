@@ -849,6 +849,38 @@ SIZE EnsureMaximumSize(int width, int height, int maxWidth, int maxHeight)
 	return sz;
 }
 
+bool SupportsDialogEx()
+{
+	return false;
+
+	static bool _initted = false;
+	static bool _supports = false;
+
+	if (_initted)
+		return _supports;
+
+	// I know GetVersion() is deprecated, but what are you gonna do?
+	// It'll return 6.2.9200, but fine, that's still not Windows 2000.
+
+	// Note - declared FKG_FORCED_USAGE at the top to prevent VC from
+	// preventing me from using it.
+	DWORD version = GetVersion();
+	WORD majmin = LOWORD(version);
+	BYTE major = LOBYTE(majmin);
+	BYTE minor = HIBYTE(majmin);
+
+	_initted = true;
+
+	// Check for Windows 4.00 and greater.
+	if (major > 3) _supports = true;
+	// Check for Windows NT 3.51 or greater.
+	else if (major == 3 && minor > 50) _supports = true;
+	// Surely using a version older than 3.51, so don't support.
+	else _supports = false;
+
+	return _supports;
+}
+
 bool Supports32BitIcons()
 {
 	static bool _initted = false;
@@ -917,6 +949,29 @@ int MapIconToOldIfNeeded(int iconID)
 
 		default: // No mapping
 			return iconID;
+	}
+}
+
+int MapDialogToOldIfNeeded(int iid)
+{
+	if (SupportsDialogEx())
+		return iid;
+
+	switch (iid)
+	{
+		case IDD_DIALOG_ABOUT: return IDD_DIALOG_ABOUT_ND;
+		case IDD_DIALOG_GUILD_CHOOSER: return IDD_DIALOG_GUILD_CHOOSER_ND;
+		case IDD_DIALOG_LOGON: return IDD_DIALOG_LOGON_ND;
+		case IDD_DIALOG_NOTIFICATIONS: return IDD_DIALOG_NOTIFICATIONS_ND;
+		case IDD_DIALOG_PINNEDMESSAGES: return IDD_DIALOG_PINNEDMESSAGES_ND;
+		case IDD_DIALOG_PROFILE_POPOUT: return IDD_DIALOG_PROFILE_POPOUT_ND;
+		case IDD_DIALOG_QUICK_SWITCHER: return IDD_DIALOG_QUICK_SWITCHER_ND;
+		case IDD_DIALOG_UPLOADFILES: return IDD_DIALOG_UPLOADFILES_ND;
+		case IDD_DIALOG_UPLOADING: return IDD_DIALOG_UPLOADING_ND;
+
+		default: // no mapping
+			DbgPrintW("Warning, no non-dialogex-mapping for dialog id %d", iid);
+			return iid;
 	}
 }
 

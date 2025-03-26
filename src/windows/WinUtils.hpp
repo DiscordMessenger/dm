@@ -86,7 +86,9 @@ void DownloadFileDialog(HWND hWnd, const std::string& url, const std::string& fi
 void DownloadOnRequestFail(HWND hWnd, NetRequest* pRequest);
 SIZE EnsureMaximumSize(int width, int height, int maxWidth, int maxHeight);
 bool Supports32BitIcons(); // Really, this checks if we are using Windows 2000 or older.
+bool SupportsDialogEx(); // Really, this checks if we are using Windows NT 3.51 or older.
 int MapIconToOldIfNeeded(int iconID);
+int MapDialogToOldIfNeeded(int dialogID);
 void InitializeStatusIcons();
 void DrawMentionStatus(HDC hdc, int x, int y, int mentionCount);
 void DrawActivityStatus(HDC hdc, int x, int y, eActiveStatus status);
@@ -110,6 +112,7 @@ void DbgPrintW(const char* fmt, ...);
 
 // Convenience macro
 #define DMIC(iid) MapIconToOldIfNeeded((iid))
+#define DMDI(iid) MapDialogToOldIfNeeded((iid))
 
 // File utils
 bool FileExists(const std::string& path);
