@@ -518,7 +518,8 @@ MemberList* MemberList::Create(HWND hWnd, LPRECT rect)
 
 	if (!list->m_listHwnd) {
 		DbgPrintW("Couldn't create Member List list window!");
-		return list;
+		delete list;
+		return nullptr;
 	}
 
 	list->Initialize();

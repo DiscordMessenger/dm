@@ -46,7 +46,7 @@ MemberListOld* MemberListOld::Create(HWND hWnd, LPRECT rect)
 	);
 
 	if (!list->m_listHwnd) {
-		DbgPrintW("Couldn't create Member List list window!");
+		DbgPrintW("Couldn't create Member List list window! (Old)");
 		return list;
 	}
 
