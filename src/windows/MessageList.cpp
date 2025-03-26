@@ -3241,7 +3241,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (si.nTrackPos > si.nMax) si.nTrackPos = si.nMax;
 			ri::SetScrollInfo(pThis->m_hwnd, SB_VERT, &si, false);
 
-			wParam = SB_THUMBTRACK;
+			wParam = SB_THUMBTRACK | (si.nTrackPos << 16);
 			goto _lbl;
 		}
 		case WM_GESTURE:
@@ -3278,7 +3278,10 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					// nPos is correct
 					break;
 				case SB_THUMBTRACK:
-					si.nPos = si.nTrackPos;
+					if (ri::SupportsScrollInfo())
+						si.nPos = si.nTrackPos;
+					else
+						si.nPos = (short) HIWORD(wParam);
 					break;
 				case SB_LINEUP:
 					si.nPos -= yChar;
