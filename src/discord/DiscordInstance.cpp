@@ -2257,24 +2257,19 @@ void DiscordInstance::HandleREADY(Json& j)
 		{
 			idx++;
 
-			if (!meme.is_array())
-				continue;
+			for (auto& memesub : meme)
+			{
+				Snowflake sf = GetSnowflake(memesub, "user_id");
+				GuildMember& gm = pf->m_guildMembers[guildIds[idx]];
+				gm.m_nick = GetFieldSafe(memesub, "nick");
+				gm.m_avatar = GetFieldSafe(memesub, "avatar");
 
-			if (meme.empty())
-				continue;
-
-			// I don't know why there's another array, just pick the first one
-			Json& memesub = meme[0];
-			Snowflake sf = GetSnowflake(memesub, "user_id");
-			GuildMember& gm = pf->m_guildMembers[guildIds[idx]];
-			gm.m_nick = GetFieldSafe(memesub, "nick");
-			gm.m_avatar = GetFieldSafe(memesub, "avatar");
-
-			// add all roles
-			gm.m_roles.clear();
-			for (auto& role : memesub["roles"]) {
-				Snowflake roleid = GetSnowflakeFromJsonObject(role);
-				gm.m_roles.push_back(roleid);
+				// add all roles
+				gm.m_roles.clear();
+				for (auto& role : memesub["roles"]) {
+					Snowflake roleid = GetSnowflakeFromJsonObject(role);
+					gm.m_roles.push_back(roleid);
+				}
 			}
 		}
 	}
