@@ -1,15 +1,15 @@
 #pragma once
 
 #include "Main.hpp"
+#include "IChannelView.hpp"
 
 #define C_MAX_CHANNEL_MEMBER_LEN (64)
 
 #define T_CHANNEL_VIEW_CONTAINER_CLASS TEXT("ChannelViewContainer")
 
-class ChannelView
+class ChannelView : public IChannelView
 {
 public:
-	HWND m_hwnd = NULL;
 	HWND m_treeHwnd = NULL;
 	HWND m_listHwnd = NULL;
 
@@ -49,18 +49,24 @@ private:
 	int m_hotItem = -1;
 
 public:
-	~ChannelView();
+	~ChannelView() override;
 
-	void ClearChannels();
-	void UpdateAcknowledgement(Snowflake sf);
-	void AddChannel(const Channel& ch);
-	void RemoveCategoryIfNeeded(const Channel& ch);
+	void ClearChannels() override;
+	void UpdateAcknowledgement(Snowflake sf) override;
+	void AddChannel(const Channel& ch) override;
+	void RemoveCategoryIfNeeded(const Channel& ch) override;
+	void OnUpdateSelectedChannel(Snowflake newCh) override;
+	void SetMode(bool listMode) override;
+	void OnUpdateAvatar(Snowflake sf) override;
+	HWND GetListHWND() override { return m_listHwnd; }
+	HWND GetTreeHWND() override { return m_treeHwnd; }
+	void CommitChannels() override {}
+
+public:
+	void SetItemIcon(HTREEITEM hItem, int icon);
 	bool OnNotifyTree(LRESULT& lres, WPARAM wParam, LPARAM lParam);
 	bool OnNotifyList(LRESULT& lres, WPARAM wParam, LPARAM lParam);
-	void SetItemIcon(HTREEITEM hItem, int icon);
-	void OnUpdateSelectedChannel(Snowflake newCh);
-	void SetMode(bool listMode);
-	void OnUpdateAvatar(Snowflake sf);
+
 
 private:
 	int GetIcon(const Channel& ch, bool bIsExpanded);

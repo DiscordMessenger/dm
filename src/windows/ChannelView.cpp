@@ -440,7 +440,6 @@ ChannelView* ChannelView::Create(HWND hwnd, LPRECT rect)
 		view
 	);
 
-	assert(view->m_hwnd);
 	if (!view->m_hwnd) {
 		DbgPrintW("ChannelView::Create: Could not create main window!");
 		delete view;
@@ -482,7 +481,7 @@ ChannelView* ChannelView::Create(HWND hwnd, LPRECT rect)
 		view
 	);
 	if (!view->m_listHwnd) {
-		DbgPrintW("ChannelView::Create: Could not create tree sub-window!");
+		DbgPrintW("ChannelView::Create: Could not create list sub-window!");
 		delete view;
 		return NULL;
 	}

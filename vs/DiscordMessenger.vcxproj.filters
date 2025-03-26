@@ -407,7 +407,6 @@
     <None Include="..\res\animations\upload_hc.avi">
       <Filter>Resource Files\Resources\Animations</Filter>
     </None>
-    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\res\app.manifest">
@@ -648,6 +647,12 @@
     <ClInclude Include="..\deps\mwas\include\ri\reimpl.hpp">
       <Filter>Source Files\Deps\Mwas</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\windows\IChannelView.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\ChannelViewOld.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\windows\ProfileView.cpp">
@@ -826,6 +831,12 @@
     </ClCompile>
     <ClCompile Include="..\src\discord\GuildListItem.cpp">
       <Filter>Source Files\Discord</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\IChannelView.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\ChannelViewOld.cpp">
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

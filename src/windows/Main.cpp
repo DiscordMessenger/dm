@@ -3,7 +3,7 @@
 #include "AboutDialog.hpp"
 #include "OptionsDialog.hpp"
 #include "MessageList.hpp"
-#include "ChannelView.hpp"
+#include "IChannelView.hpp"
 #include "ProfileView.hpp"
 #include "MessageEditor.hpp"
 #include "GuildHeader.hpp"
@@ -48,11 +48,11 @@ int g_ChannelViewListWidth2;
 
 StatusBar  * g_pStatusBar;
 MessageList* g_pMessageList;
-ChannelView* g_pChannelView;
 ProfileView* g_pProfileView;
 GuildHeader* g_pGuildHeader;
 GuildLister* g_pGuildLister;
 MemberList * g_pMemberList;
+IChannelView* g_pChannelView;
 MessageEditor* g_pMessageEditor;
 LoadingMessage* g_pLoadingMessage;
 
@@ -944,6 +944,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					g_pChannelView->AddChannel(ch);
 				for (auto& ch : pGuild->m_channels)
 					g_pChannelView->RemoveCategoryIfNeeded(ch);
+
+				g_pChannelView->CommitChannels();
 			}
 
 			break;
@@ -1103,12 +1105,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_DownloadIcon = (HICON) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_DOWNLOAD)), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 
 			MessageList::InitializeClass();
-			ChannelView::InitializeClass();
 			ProfileView::InitializeClass();
 			GuildHeader::InitializeClass();
 			GuildLister::InitializeClass();
 			MemberList ::InitializeClass();
 			AutoComplete::InitializeClass();
+			IChannelView::InitializeClasses();
 			MessageEditor::InitializeClass();
 			LoadingMessage::InitializeClass();
 
@@ -1129,11 +1131,11 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			g_pStatusBar   = StatusBar::Create(hWnd);
 			g_pMessageList = MessageList::Create(hWnd, &rect);
-			g_pChannelView = ChannelView::Create(hWnd, &rect);
 			g_pProfileView = ProfileView::Create(hWnd, &rect, CID_PROFILEVIEW, true);
 			g_pGuildHeader = GuildHeader::Create(hWnd, &rect);
 			g_pGuildLister = GuildLister::Create(hWnd, &rect);
 			g_pMemberList  = MemberList ::Create(hWnd, &rect);
+			g_pChannelView = IChannelView::CreateChannelView(hWnd, &rect);
 			g_pMessageEditor = MessageEditor::Create(hWnd, &rect);
 			g_pLoadingMessage = LoadingMessage::Create(hWnd, &rcLoading);
 
@@ -1822,8 +1824,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 				case WM_CHAR:
 
-					if (msg.hwnd == g_pChannelView->m_listHwnd ||
-						msg.hwnd == g_pChannelView->m_treeHwnd ||
+					if (msg.hwnd == g_pChannelView->GetListHWND() ||
+						msg.hwnd == g_pChannelView->GetTreeHWND() ||
 						msg.hwnd == g_pMemberList->m_listHwnd ||
 						msg.hwnd == g_pMemberList->m_mainHwnd ||
 						msg.hwnd == g_pGuildLister->m_hwnd ||
