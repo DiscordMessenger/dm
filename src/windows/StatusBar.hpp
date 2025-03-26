@@ -48,7 +48,7 @@ public:
 	void UpdateCharacterCounter(int nChars, int nCharsMax);
 
 public:
-	HWND m_hwnd;
+	HWND m_hwnd = NULL;
 
 private:
 	std::vector<TypingUser> m_typingUsers;

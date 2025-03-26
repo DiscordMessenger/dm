@@ -10,27 +10,38 @@ enum {
 
 StatusBar* StatusBar::Create(HWND hParent)
 {
-    StatusBar* pBar = new StatusBar;
-    pBar->m_hwnd = CreateWindowEx(
-        0,
-        STATUSCLASSNAME,
-        NULL,
-        WS_CHILD | WS_VISIBLE,
-        0, 0, 0, 0,
-        hParent,
-        (HMENU)CID_STATUSBAR,
-        g_hInstance,
-        NULL
-    );
+	StatusBar* pBar = new StatusBar;
+	pBar->m_hwnd = CreateWindowEx(
+		0,
+		STATUSCLASSNAME,
+		NULL,
+		WS_CHILD | WS_VISIBLE,
+		0, 0, 0, 0,
+		hParent,
+		(HMENU)CID_STATUSBAR,
+		g_hInstance,
+		NULL
+	);
 
-    if (!pBar->m_hwnd) {
-        delete pBar;
-        pBar = nullptr;
-    }
+	if (!pBar->m_hwnd)
+	{
+		// try it with CreateStatusWindow
+		pBar->m_hwnd = ri::CreateStatusWindowANSI(
+			WS_CHILD | WS_VISIBLE,
+			"",
+			hParent,
+			CID_STATUSBAR
+		);
+	}
+
+	if (!pBar->m_hwnd) {
+		delete pBar;
+		pBar = nullptr;
+	}
 
 	SetWindowFont(pBar->m_hwnd, g_MessageTextFont, TRUE);
 	SetWindowLongPtr(pBar->m_hwnd, GWLP_USERDATA, (LONG_PTR) pBar);
-    return pBar;
+	return pBar;
 }
 
 void StatusBar::TimerProc(HWND hWnd, UINT uMsg, UINT_PTR uTimerId, DWORD dwTime)
@@ -276,19 +287,19 @@ StatusBar::~StatusBar()
 
 void StatusBar::UpdateParts(int width)
 {
-    INT Widths[4];
-    // Part 0 - Under the guild list and channel view
-    // Part 1 - Under the message editor widget, list of typing users
-    // Part 2 - Under the send button, character count
-    // Part 3 - Under the member list, some controls, I don't know
+	INT Widths[4];
+	// Part 0 - Under the guild list and channel view
+	// Part 1 - Under the message editor widget, list of typing users
+	// Part 2 - Under the send button, character count
+	// Part 3 - Under the member list, some controls, I don't know
 	
-    int scaled10 = ScaleByDPI(10);
-    Widths[IDP_CNTRLS] = width;
-    Widths[IDP_CHRCNT] = width - g_MemberListWidth - scaled10 * 3 / 2;
-    Widths[IDP_TYPING] = Widths[IDP_CHRCNT] - g_SendButtonWidth - scaled10;
-    Widths[IDP_NOTIFS] = g_GuildListerWidth + g_ChannelViewListWidth + scaled10 * 3;
+	int scaled10 = ScaleByDPI(10);
+	Widths[IDP_CNTRLS] = width;
+	Widths[IDP_CHRCNT] = width - g_MemberListWidth - scaled10 * 3 / 2;
+	Widths[IDP_TYPING] = Widths[IDP_CHRCNT] - g_SendButtonWidth - scaled10;
+	Widths[IDP_NOTIFS] = g_GuildListerWidth + g_ChannelViewListWidth + scaled10 * 3;
 
-    SendMessage(m_hwnd, SB_SETPARTS, _countof(Widths), (LPARAM) Widths);
+	SendMessage(m_hwnd, SB_SETPARTS, _countof(Widths), (LPARAM) Widths);
 
-    SendMessage(m_hwnd, SB_SETTEXT, 1 | SBT_OWNERDRAW, 0);
+	SendMessage(m_hwnd, SB_SETTEXT, 1 | SBT_OWNERDRAW, 0);
 }
