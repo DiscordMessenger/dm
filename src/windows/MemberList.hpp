@@ -3,17 +3,18 @@
 #include <vector>
 #include <map>
 #include "Main.hpp"
+#include "IMemberList.hpp"
 
 #define T_MEMBER_LIST_CLASS TEXT("MemberList")
 
-class MemberList
+class MemberList : public IMemberList
 {
 private:
 	HWND m_hwndParent;
 
 public:
 	HWND m_listHwnd;
-	HWND m_mainHwnd;
+	//HWND m_mainHwnd;
 	WNDPROC m_origListWndProc;
 	Snowflake m_guild = 0;
 	int m_nextItem = 0;
@@ -27,13 +28,14 @@ public:
 
 public:
 	~MemberList();
+	void ClearMembers() override;
+	void SetGuild(Snowflake g) override;
+	void Update() override;
+	void OnUpdateAvatar(Snowflake user, bool bAlsoUpdateText = false) override;
+	void UpdateMembers(std::set<Snowflake>& mems) override;
+	HWND GetListHWND() override { return m_listHwnd; }
 	void StartUpdate();
 	void StopUpdate();
-	void ClearMembers();
-	void SetGuild(Snowflake g);
-	void Update();
-	void OnUpdateAvatar(Snowflake user, bool bAlsoUpdateText = false);
-	void UpdateMembers(std::set<Snowflake>& mems);
 
 public:
 	static MemberList* Create(HWND hWnd, LPRECT lpRect);

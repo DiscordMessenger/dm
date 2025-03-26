@@ -494,7 +494,12 @@ MemberList* MemberList::Create(HWND hWnd, LPRECT rect)
 		list
 	);
 
-	assert(list->m_mainHwnd);
+	//assert(list->m_mainHwnd);
+	if (!list->m_mainHwnd) {
+		DbgPrintW("Couldn't create Member List main window!");
+		delete list;
+		return nullptr;
+	}
 
 	list->m_listHwnd = CreateWindowEx(
 		0,
@@ -511,7 +516,10 @@ MemberList* MemberList::Create(HWND hWnd, LPRECT rect)
 		NULL
 	);
 
-	assert(list->m_listHwnd);
+	if (!list->m_listHwnd) {
+		DbgPrintW("Couldn't create Member List list window!");
+		return list;
+	}
 
 	list->Initialize();
 

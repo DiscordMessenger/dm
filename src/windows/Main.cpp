@@ -1,9 +1,10 @@
 #include "Config.hpp"
 #include "Main.hpp"
+#include "IChannelView.hpp"
+#include "IMemberList.hpp"
 #include "AboutDialog.hpp"
 #include "OptionsDialog.hpp"
 #include "MessageList.hpp"
-#include "IChannelView.hpp"
 #include "ProfileView.hpp"
 #include "MessageEditor.hpp"
 #include "GuildHeader.hpp"
@@ -14,7 +15,6 @@
 #include "ProfilePopout.hpp"
 #include "ImageViewer.hpp"
 #include "PinList.hpp"
-#include "MemberList.hpp"
 #include "LogonDialog.hpp"
 #include "QRCodeDialog.hpp"
 #include "LoadingMessage.hpp"
@@ -51,7 +51,7 @@ MessageList* g_pMessageList;
 ProfileView* g_pProfileView;
 GuildHeader* g_pGuildHeader;
 GuildLister* g_pGuildLister;
-MemberList * g_pMemberList;
+IMemberList* g_pMemberList;
 IChannelView* g_pChannelView;
 MessageEditor* g_pMessageEditor;
 LoadingMessage* g_pLoadingMessage;
@@ -1108,8 +1108,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			ProfileView::InitializeClass();
 			GuildHeader::InitializeClass();
 			GuildLister::InitializeClass();
-			MemberList ::InitializeClass();
 			AutoComplete::InitializeClass();
+			IMemberList::InitializeClasses();
 			IChannelView::InitializeClasses();
 			MessageEditor::InitializeClass();
 			LoadingMessage::InitializeClass();
@@ -1134,7 +1134,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pProfileView = ProfileView::Create(hWnd, &rect, CID_PROFILEVIEW, true);
 			g_pGuildHeader = GuildHeader::Create(hWnd, &rect);
 			g_pGuildLister = GuildLister::Create(hWnd, &rect);
-			g_pMemberList  = MemberList ::Create(hWnd, &rect);
+			g_pMemberList  = IMemberList::CreateMemberList(hWnd, &rect);
 			g_pChannelView = IChannelView::CreateChannelView(hWnd, &rect);
 			g_pMessageEditor = MessageEditor::Create(hWnd, &rect);
 			g_pLoadingMessage = LoadingMessage::Create(hWnd, &rcLoading);
@@ -1281,7 +1281,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			RECT rc{};
 			GetChildRect(hWnd, g_pMemberList->m_mainHwnd, &rc);
 			SAFE_DELETE(g_pMemberList);
-			g_pMemberList = MemberList::Create(hWnd, &rc);
+			g_pMemberList = IMemberList::CreateMemberList(hWnd, &rc);
 			WindowProc(hWnd, WM_UPDATEMEMBERLIST, 0, 0);
 			break;
 		}
@@ -1685,6 +1685,8 @@ static bool ForceSingleInstance(LPCTSTR pClassName)
 	return false;
 }
 
+#include "MemberListOld.hpp"
+
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nShowCmd)
 {
 	LPCTSTR pClassName = TEXT("DiscordMessengerClass");
@@ -1826,7 +1828,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 					if (msg.hwnd == g_pChannelView->GetListHWND() ||
 						msg.hwnd == g_pChannelView->GetTreeHWND() ||
-						msg.hwnd == g_pMemberList->m_listHwnd ||
+						msg.hwnd == g_pMemberList->GetListHWND() ||
 						msg.hwnd == g_pMemberList->m_mainHwnd ||
 						msg.hwnd == g_pGuildLister->m_hwnd ||
 						msg.hwnd == g_pMessageList->m_hwnd)
