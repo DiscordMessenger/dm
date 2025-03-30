@@ -4,11 +4,18 @@
 
 BOOL LogonDialogOnCommand(HWND hWnd, WPARAM wParam)
 {
-	switch (wParam) {
+	switch (LOWORD(wParam))
+	{
 		case IDOK:
 		{
 			// Log In
-			if (IsDlgButtonChecked(hWnd, IDC_RADIO_TOKEN))
+			if (IsDlgButtonChecked(hWnd, IDC_RADIO_EMAILPASS))
+			{
+				DbgPrintW("TODO: Log In Using E-mail And Password");
+				EndDialog(hWnd, IDCANCEL);
+				return TRUE;
+			}
+			else
 			{
 				// Log In Using Token
 				TCHAR buff[256];
@@ -26,12 +33,6 @@ BOOL LogonDialogOnCommand(HWND hWnd, WPARAM wParam)
 				if (GetDiscordInstance())
 					GetDiscordInstance()->ResetGatewayURL();
 				EndDialog(hWnd, IDOK);
-				return TRUE;
-			}
-			else
-			{
-				DbgPrintW("TODO: Log In Using E-mail And Password");
-				EndDialog(hWnd, IDCANCEL);
 				return TRUE;
 			}
 

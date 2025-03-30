@@ -727,7 +727,7 @@ BEGIN
     DEFPUSHBUTTON   "Log In",IDOK,162,64,50,14
     PUSHBUTTON      "Quit",IDCANCEL,217,64,50,14
     EDITTEXT        IDC_EDIT_TOKEN,7,39,259,14,ES_AUTOHSCROLL
-    LTEXT           "Welcome to Discord Messenger!\r\n\r\nTo use Discord Messenger you will need to log in using a token.",IDC_LBL_PASSWORD,7,7,259,31
+    LTEXT           "Welcome to Discord Messenger!\r\n\r\nTo use Discord Messenger you will need to log in using a token.",IDC_LOGON_BANNER,7,7,259,31
 END
 
 IDD_DIALOG_NOTIFICATIONS_ND DIALOG 0, 0, 349, 239
@@ -752,7 +752,6 @@ END
 
 IDD_DIALOG_PROFILE_POPOUT_ND DIALOG 0, 0, 126, 134
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP
-EXSTYLE WS_EX_NOACTIVATE
 FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "Status",IDC_PROFILE_STATUS,65,18,19,8,SS_CENTERIMAGE | SS_WORDELLIPSIS

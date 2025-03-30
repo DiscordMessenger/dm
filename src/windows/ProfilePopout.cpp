@@ -453,7 +453,7 @@ void ProfilePopout::Paint(HWND hWnd, HDC hdc)
 	RECT rect = {};
 	GetClientRect(hWnd, &rect);
 
-	ri::DrawEdge(hdc, &rect, EDGE_RAISED, BF_RECT);
+	ri::DrawEdge(hdc, &rect, EDGE_RAISED, BF_RECT | BF_MIDDLE);
 }
 
 void ProfilePopout::FlushNote()
@@ -567,7 +567,7 @@ void ProfilePopout::DeferredShow(const ShowProfilePopoutParams& params)
 	m_user = user;
 	m_guild = guild;
 	m_size = { 10, 10 };
-	m_hwnd = CreateDialog(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG_PROFILE_POPOUT), g_Hwnd, &Proc);
+	m_hwnd = CreateDialog(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_PROFILE_POPOUT)), g_Hwnd, &Proc);
 
 	// calculated in WM_CREATE
 	int wndWidth = m_size.cx;

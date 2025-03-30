@@ -25,6 +25,7 @@ public:
 
 	bool m_bIsScrollBarVisible = false;
 	SCROLLINFO m_simulatedScrollInfo{};
+	int m_hackTrackPos = 0;
 	int m_oldPos = 0;
 
 	Snowflake m_rightClickedGuild = 0;
