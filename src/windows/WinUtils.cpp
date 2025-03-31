@@ -526,6 +526,8 @@ void FillGradientColors(HDC hdc, const LPRECT lpRect, COLORREF c1, COLORREF c2, 
 				}
 			}
 
+			ri::CommitDIBSection(hdc, hbm, &bmi, puBits);
+
 			// Write the object onto the main DC
 			BLENDFUNCTION bf{};
 			bf.BlendOp = AC_SRC_OVER;

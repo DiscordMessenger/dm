@@ -254,6 +254,7 @@ HImage* ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& ou
 			}
 			else {
 				memcpy(pvBits, pixels, sizeof(uint32_t) * pixelCount);
+				ri::CommitDIBSection(hdc, hbm, &bmi, pvBits);
 			}
 
 			if (needDeletePixels)
