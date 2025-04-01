@@ -853,8 +853,6 @@ SIZE EnsureMaximumSize(int width, int height, int maxWidth, int maxHeight)
 
 bool SupportsDialogEx()
 {
-	return false;
-
 	static bool _initted = false;
 	static bool _supports = false;
 

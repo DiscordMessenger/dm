@@ -52,6 +52,16 @@ void QuickSwitcher::ShowDialog()
 	g_qsItems.clear();
 }
 
+int QuickSwitcher::GetItemCount(HWND hwnd)
+{
+	HWND hWnd = GetDlgItem(hwnd, IDC_CHANNEL_LIST);
+	
+	if (SupportsDialogEx())
+		return ListView_GetItemCount(hWnd);
+	else
+		return ListBox_GetCount(hWnd);
+}
+
 LRESULT QuickSwitcher::TextWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	WNDPROC oldWndProc = (WNDPROC) GetWindowLongPtr(hWnd, GWLP_USERDATA);
@@ -90,7 +100,12 @@ void QuickSwitcher::OnUpdateQuery(HWND hWnd, const std::string& query)
 	}
 
 	HWND hList = GetDlgItem(hWnd, IDC_CHANNEL_LIST);
-	ListView_DeleteAllItems(hList);
+	
+	if (SupportsDialogEx())
+		ListView_DeleteAllItems(hList);
+	else
+		ListBox_ResetContent(hList);
+
 	g_qsItems.clear();
 
 	for (auto& match : foundChannels)
@@ -98,6 +113,7 @@ void QuickSwitcher::OnUpdateQuery(HWND hWnd, const std::string& query)
 		std::string name = "";
 		std::string guildName = "";
 		std::string categName = "";
+		std::string namePfx = "";
 
 		int iconIdx = ICN_GUILD;
 		Snowflake guildID = 0;
@@ -113,6 +129,7 @@ void QuickSwitcher::OnUpdateQuery(HWND hWnd, const std::string& query)
 
 			iconIdx = GetIconFromChannel(pChan);
 			name = pChan->m_name;
+			namePfx = pChan->GetTypeSymbol();
 
 			Guild* pGuild = GetDiscordInstance()->GetGuild(pChan->m_parentGuild);
 			if (!pGuild) {
@@ -143,17 +160,40 @@ void QuickSwitcher::OnUpdateQuery(HWND hWnd, const std::string& query)
 		int idx = int(g_qsItems.size());
 		g_qsItems.push_back(QuickSwitchItem(match, iconIdx, name, categName, guildName, guildID));
 
-		LVITEM lv{};
-		lv.mask = LVIF_TEXT | LVIF_IMAGE;
-		lv.iItem = idx;
-		lv.iImage = g_qsImlIdxs[iconIdx];
-		lv.pszText = LPSTR_TEXTCALLBACK;
-		ListView_InsertItem(hList, &lv);
+		if (SupportsDialogEx())
+		{
+			LVITEM lv{};
+			lv.mask = LVIF_TEXT | LVIF_IMAGE;
+			lv.iItem = idx;
+			lv.iImage = g_qsImlIdxs[iconIdx];
+			lv.pszText = LPSTR_TEXTCALLBACK;
+			ListView_InsertItem(hList, &lv);
+		}
+		else
+		{
+			std::string listItemName = namePfx + name;
+			if (!categName.empty())
+				listItemName += " (" + categName + ")";
+
+			if (!guildName.empty() && guildName != TmGetString(IDS_DIRECT_MESSAGES))
+				listItemName += " - " + guildName;
+
+			LPTSTR tstr = ConvertCppStringToTString(listItemName);
+			ListBox_AddString(hList, tstr);
+			free(tstr);
+		}
 	}
 
-	//SetFocus(hList);
-	ListView_SetItemState(hList, 0, LVIS_SELECTED, LVIS_SELECTED);
-	ListView_EnsureVisible(hList, 0, TRUE);
+	if (SupportsDialogEx())
+	{
+		ListView_SetItemState(hList, 0, LVIS_SELECTED, LVIS_SELECTED);
+		ListView_EnsureVisible(hList, 0, TRUE);
+	}
+	else
+	{
+		ListBox_SetCurSel(hList, 0);
+		EnableWindow(GetDlgItem(hWnd, IDOK), ListBox_GetCount(hList));
+	}
 }
 
 void QuickSwitcher::SwitchToChannelAtIndex(int idx)
@@ -173,7 +213,12 @@ void QuickSwitcher::SwitchToChannelAtIndex(int idx)
 
 void QuickSwitcher::SwitchToSelectedChannel(HWND hWnd)
 {
-	int iPos = ListView_GetNextItem(GetDlgItem(hWnd, IDC_CHANNEL_LIST), -1, LVNI_SELECTED);
+	int iPos = -1;
+	
+	if (SupportsDialogEx())
+		iPos = ListView_GetNextItem(GetDlgItem(hWnd, IDC_CHANNEL_LIST), -1, LVNI_SELECTED);
+	else
+		iPos = ListBox_GetCurSel(GetDlgItem(hWnd, IDC_CHANNEL_LIST));
 
 	if (iPos == -1) {
 		// TODO: disable the go button unless some item is selected
@@ -226,12 +271,12 @@ void QuickSwitcher::HandleItemChanged(HWND hWnd, NMLISTVIEW* pInfo)
 	EnableWindow(GetDlgItem(hWnd, IDOK), !!(pInfo->uNewState & LVIS_SELECTED));
 }
 
-void QuickSwitcher::HandleItemActivate(HWND hWnd, NMITEMACTIVATE* pInfo)
+void QuickSwitcher::HandleItemActivate(HWND hWnd, int iItem)
 {
-	if (pInfo->iItem < 0 || pInfo->iItem >= int(g_qsItems.size()))
+	if (iItem < 0 || iItem >= int(g_qsItems.size()))
 		return;
 
-	SwitchToChannelAtIndex(pInfo->iItem);
+	SwitchToChannelAtIndex(iItem);
 	EndDialog(hWnd, IDOK);
 }
 
@@ -275,6 +320,9 @@ LRESULT QuickSwitcher::HandleCustomDraw(HWND hWnd, NMLVCUSTOMDRAW* pInfo)
 
 void QuickSwitcher::CreateImageList()
 {
+	if (!SupportsDialogEx())
+		return;
+
 	if (g_qsIml)
 		DestroyImageList();
 
@@ -313,6 +361,14 @@ LRESULT QuickSwitcher::HijackWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 			SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR) oldWndProc);
 			break;
 			
+		case WM_COMMAND:
+			if (HIWORD(wParam) == LBN_DBLCLK && LOWORD(wParam) == IDC_CHANNEL_LIST) {
+				// fake NMITEMACTIVATE as I don't feel like refactoring that part
+				HandleItemActivate(hWnd, ListBox_GetCurSel(GetDlgItem(hWnd, IDC_CHANNEL_LIST)));
+			}
+
+			break;
+
 		case WM_NOTIFY:
 			NMHDR* phdr = (NMHDR*)lParam;
 			if (phdr->idFrom == IDC_CHANNEL_LIST && phdr->code == UINT(NM_CUSTOMDRAW))
@@ -356,37 +412,40 @@ INT_PTR QuickSwitcher::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			GetClientRect(hList, &rect);
 			width = rect.right - rect.left - GetSystemMetrics(SM_CXVSCROLL);
 
-			// Add columns
-			int c1w, c2w;
-			TCHAR chanStr[] = TEXT("Channel");
-			TCHAR catgStr[] = TEXT("Category");
-			TCHAR srvrStr[] = TEXT("Server");
-			LVCOLUMN col{};
-			col.mask = LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
-			col.pszText = chanStr;
-			col.cx = c1w = MulDiv(width, 50, 100);
-			col.iSubItem = 0;
-			col.fmt = LVCFMT_LEFT;
-			ListView_InsertColumn(hList, COL_CHANNEL_NAME, &col);
+			if (SupportsDialogEx())
+			{
+				// Add columns
+				int c1w, c2w;
+				TCHAR chanStr[] = TEXT("Channel");
+				TCHAR catgStr[] = TEXT("Category");
+				TCHAR srvrStr[] = TEXT("Server");
+				LVCOLUMN col{};
+				col.mask = LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
+				col.pszText = chanStr;
+				col.cx = c1w = MulDiv(width, 50, 100);
+				col.iSubItem = 0;
+				col.fmt = LVCFMT_LEFT;
+				ListView_InsertColumn(hList, COL_CHANNEL_NAME, &col);
 
-			col.pszText = catgStr;
-			col.cx = c2w = MulDiv(width, 20, 100);
-			col.fmt = LVCFMT_RIGHT;
-			ListView_InsertColumn(hList, COL_CATEGORY_NAME, &col);
+				col.pszText = catgStr;
+				col.cx = c2w = MulDiv(width, 20, 100);
+				col.fmt = LVCFMT_RIGHT;
+				ListView_InsertColumn(hList, COL_CATEGORY_NAME, &col);
 
-			col.pszText = srvrStr;
-			col.cx = width - c1w - c2w;
-			col.fmt = LVCFMT_RIGHT;
-			ListView_InsertColumn(hList, COL_GUILD_NAME, &col);
+				col.pszText = srvrStr;
+				col.cx = width - c1w - c2w;
+				col.fmt = LVCFMT_RIGHT;
+				ListView_InsertColumn(hList, COL_GUILD_NAME, &col);
 
-			ListView_SetImageList(hList, g_qsIml, LVSIL_NORMAL);
-			ListView_SetImageList(hList, g_qsIml, LVSIL_SMALL);
+				ListView_SetImageList(hList, g_qsIml, LVSIL_NORMAL);
+				ListView_SetImageList(hList, g_qsIml, LVSIL_SMALL);
+			}
 
 			OnUpdateQuery(hWnd, "");
 
 			// Go button is disabled by default, enabled when an item is selected.
 			// If the list isn't empty, then a selected item exists.
-			EnableWindow(GetDlgItem(hWnd, IDOK), ListView_GetItemCount(hList) != 0);
+			EnableWindow(GetDlgItem(hWnd, IDOK), GetItemCount(hWnd) != 0);
 
 			ListView_SetExtendedListViewStyle(hList, LVS_EX_FULLROWSELECT);
 			// Instantly focus on the searcher
@@ -460,7 +519,7 @@ INT_PTR QuickSwitcher::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 					break;
 
 				case NM_DBLCLK:
-					HandleItemActivate(hWnd, (NMITEMACTIVATE*) lParam);
+					HandleItemActivate(hWnd, ((NMITEMACTIVATE*) lParam)->iItem);
 					break;
 			}
 

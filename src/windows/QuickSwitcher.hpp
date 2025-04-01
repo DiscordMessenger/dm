@@ -19,8 +19,9 @@ private:
 	static void SwitchToSelectedChannel(HWND hWnd);
 	static void HandleGetDispInfo(NMLVDISPINFO* pInfo);
 	static void HandleItemChanged(HWND hWnd, NMLISTVIEW* pInfo);
-	static void HandleItemActivate(HWND hWnd, NMITEMACTIVATE* pInfo);
+	static void HandleItemActivate(HWND hWnd, int iItem);
 	static LRESULT HandleCustomDraw(HWND hWnd, NMLVCUSTOMDRAW* pInfo);
 	static void CreateImageList();
 	static void DestroyImageList();
+	static int GetItemCount(HWND hWnd);
 };
