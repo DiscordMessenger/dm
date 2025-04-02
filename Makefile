@@ -78,8 +78,9 @@ MNSSV = $(XL) --minor-subsystem-version $(XL)
 MJOSV = $(XL) --major-os-version $(XL)
 MNOSV = $(XL) --minor-os-version $(XL)
 
-# Give it a subsystem version of 3.10 and an OS version of 1.0
-SSYSVER = $(MJSSV) 3 $(MNSSV) 10 $(MJOSV) 1 $(MNOSV) 0
+# Give it a subsystem version of 4.0 and an OS version of 1.0
+# (replace with 3.10 if you intend to run on NT 3.1)
+SSYSVER = $(MJSSV) 4 $(MNSSV) 0 $(MJOSV) 1 $(MNOSV) 0
 
 CXXFLAGS = \
 	$(INC_DIRS)    \
