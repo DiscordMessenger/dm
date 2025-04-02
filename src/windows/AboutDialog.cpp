@@ -7,6 +7,9 @@ static LRESULT CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 	{
 		case WM_INITDIALOG: {
 			std::string name = TmGetString(IDS_PROGRAM_NAME) + " " + GetAppVersionString();
+#ifdef IS_64_BIT
+			name += " (x64)";
+#endif
 			LPTSTR tstr = ConvertCppStringToTString(name);
 
 			SetDlgItemText(hWnd, IDC_PROGRAM_NAME, tstr);
