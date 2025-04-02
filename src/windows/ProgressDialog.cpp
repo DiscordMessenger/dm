@@ -90,7 +90,7 @@ LRESULT ProgressDialog::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	return lres;
 }
 
-BOOL ProgressDialog::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR ProgressDialog::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
@@ -158,7 +158,7 @@ BOOL ProgressDialog::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			std::string etaStr;
 			if (bytesPerSec) {
 				uint64_t eta = bytesPerSec ? (uint64_t(m_length - m_offset) / bytesPerSec) : 0;
-				etaStr = Format(TmGetString(IDS_ETA_STRING).c_str(), FormatDuration(eta).c_str(), strProgress.c_str());
+				etaStr = Format(TmGetString(IDS_ETA_STRING).c_str(), FormatDuration((int) eta).c_str(), strProgress.c_str());
 			}
 			else {
 				etaStr = TmGetString(IDS_CALCULATING);

@@ -34,8 +34,8 @@ struct ImagePlace {
 	std::string GetURL() const;
 };
 
-#define HIMAGE_LOADING ((HImage*) 0xDDCCBBAA)
-#define HIMAGE_ERROR   ((HImage*) 0xDDCCBBAB)
+#define HIMAGE_LOADING ((HImage*) (uintptr_t) 0xDDCCBBAA)
+#define HIMAGE_ERROR   ((HImage*) (uintptr_t) 0xDDCCBBAB)
 
 // Kind of a misnomer as it also handles attachment resources.
 class AvatarCache

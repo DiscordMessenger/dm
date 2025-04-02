@@ -183,7 +183,7 @@ void NotificationViewer::MarkAllAsRead()
 		notif.m_bRead = true;
 }
 
-BOOL NotificationViewer::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR NotificationViewer::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{

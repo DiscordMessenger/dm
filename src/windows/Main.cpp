@@ -432,7 +432,7 @@ void CloseCleanup(HWND hWnd)
 	g_pLoadingMessage->Hide();
 }
 
-BOOL HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (LOWORD(wParam))
 	{
@@ -672,7 +672,7 @@ void AddOrRemoveAppFromStartup()
 		const std::string sPath = "\"" + MakeStringFromTString(tPath) + "\" " + std::string(g_StartupArg);
 		const LPTSTR finalPath = ConvertCppStringToTString(sPath);
 
-		RegSetValueEx(hkey, value, 0, REG_SZ, (BYTE *)finalPath, (_tcslen(finalPath) + 1) * sizeof(TCHAR));
+		RegSetValueEx(hkey, value, 0, REG_SZ, (BYTE *)finalPath, (DWORD)((_tcslen(finalPath) + 1) * sizeof(TCHAR)));
 	}
 	else
 	{
@@ -1672,7 +1672,7 @@ static bool ForceSingleInstance(LPCTSTR pClassName)
 	HWND hWnd = FindWindow(pClassName, NULL);
 	if (hWnd)
 	{
-		DWORD dwResult = 0; // ignored
+		DWORD_PTR dwResult = 0; // ignored
 		if (SendMessageTimeout(hWnd, WM_RESTOREAPP, 0, 0, SMTO_BLOCK | SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 3000, &dwResult))
 			// The message was received by the app to restore its window.
 			return false;
@@ -1689,6 +1689,7 @@ static bool ForceSingleInstance(LPCTSTR pClassName)
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nShowCmd)
 {
+	ERR_load_crypto_strings();
 	LPCTSTR pClassName = TEXT("DiscordMessengerClass");
 
 	g_hInstance = hInstance;

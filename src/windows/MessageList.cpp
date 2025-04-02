@@ -3418,7 +3418,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (!pMsg) break;
 
-			int test = GetMenuItemID((HMENU)lParam, wParam);
+			int test = GetMenuItemID((HMENU) lParam, (int) wParam);
 
 			switch (test)
 			{
@@ -3905,8 +3905,8 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 	// It's a strange bug with a strange workaround.
 	//
 	// TODO: Look into this. Is it just a red herring?
-	if (scrollInfo.nMax < scrollInfo.nPage && LOBYTE(GetVersion()) < 4)
-		scrollInfo.nMax = scrollInfo.nPage;
+	if (scrollInfo.nMax < (int) scrollInfo.nPage && LOBYTE(GetVersion()) < 4)
+		scrollInfo.nMax = (int) scrollInfo.nPage;
 
 	int posNow = scrollInfo.nPos;
 	ri::SetScrollInfo(m_hwnd, SB_VERT, &scrollInfo, true);

@@ -1,5 +1,8 @@
 #define WIN32_LEAN_AND_MEAN
+#ifndef FKG_FORCED_USAGE
 #define FKG_FORCED_USAGE
+#endif
+
 #include <algorithm>
 #include <windows.h>
 #include <commctrl.h>
@@ -237,7 +240,7 @@ LPTSTR ConvertCppStringToTString(const std::string& sstr, size_t* lenOut)
 	TCHAR* str = (TCHAR*)calloc(sz, sizeof(TCHAR));
 
 #ifdef UNICODE
-	size_t convertedChars = MultiByteToWideChar(CP_UTF8, 0, sstr.c_str(), -1, str, sz);
+	size_t convertedChars = MultiByteToWideChar(CP_UTF8, 0, sstr.c_str(), -1, str, (int) sz);
 #else // ANSI
 	strncpy(str, sstr.c_str(), sz);
 	str[sz - 1] = 0;
@@ -293,7 +296,7 @@ std::string MakeStringFromUnicodeString(LPCWSTR wstr)
 	size_t slmax = (sl + 1) * 4; // whatever
 	char* chr = (char*)malloc(slmax);
 	//_wcstombs_s_l(&sz, chr, slmax, wstr, slmax, CP_UTF8);
-	WideCharToMultiByte(CP_UTF8, 0, wstr, -1, chr, slmax, NULL, NULL);
+	WideCharToMultiByte(CP_UTF8, 0, wstr, -1, chr, (int) slmax, NULL, NULL);
 
 	chr[slmax - 1] = 0; // ensure the null terminator is there
 	std::string final_str(chr);
@@ -721,7 +724,7 @@ void DownloadFileResponse(NetRequest* pRequest)
 	if (hnd == INVALID_HANDLE_VALUE)
 		goto _error;
 
-	if (!WriteFile(hnd, pData, nSize, &written, NULL))
+	if (!WriteFile(hnd, pData, (DWORD) nSize, &written, NULL))
 		goto _error;
 
 	if (written != (DWORD)nSize)
@@ -1120,7 +1123,7 @@ std::string CutOutURLPath(const std::string& url)
 	return actualUrl;
 }
 
-int HandleGestureMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, float mulDeltas)
+LRESULT HandleGestureMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, float mulDeltas)
 {
 	// N.B.  If WINVER is less than Windows 7, then MWAS will take on winuser's duties
 	// of defining the structs and constants used.

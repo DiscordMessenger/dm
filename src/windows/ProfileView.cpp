@@ -213,7 +213,7 @@ ProfileView* ProfileView::Create(HWND hwnd, LPRECT pRect, int id, bool autonomou
 		pRect->left, pRect->top,
 		width, height,
 		hwnd,
-		(HMENU) id,
+		(HMENU) (uintptr_t) id,
 		g_hInstance,
 		newThis
 	);

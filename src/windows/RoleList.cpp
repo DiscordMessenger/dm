@@ -235,10 +235,10 @@ LRESULT CALLBACK RoleList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			eMessageStyle style = GetLocalSettings()->GetMessageStyle();
 			switch (style) {
 				default:
-					SetClassLong(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)ri::GetSysColorBrush(COLOR_3DFACE));
+					SetClassLongPtr(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)ri::GetSysColorBrush(COLOR_3DFACE));
 					break;
 				case MS_FLATBR:
-					SetClassLong(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)ri::GetSysColorBrush(COLOR_WINDOW));
+					SetClassLongPtr(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)ri::GetSysColorBrush(COLOR_WINDOW));
 					break;
 			}
 			break;
@@ -402,7 +402,7 @@ RoleList* RoleList::Create(HWND hwnd, LPRECT pRect, int comboId, bool border, bo
 		pRect->left, pRect->top,
 		width, height,
 		hwnd,
-		(HMENU)comboId,
+		(HMENU) (uintptr_t) comboId,
 		g_hInstance,
 		newThis
 	);

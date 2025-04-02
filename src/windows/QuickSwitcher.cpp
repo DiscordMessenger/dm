@@ -293,7 +293,7 @@ LRESULT QuickSwitcher::HandleCustomDraw(HWND hWnd, NMLVCUSTOMDRAW* pInfo)
 		case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
 			HWND hList = GetDlgItem(hWnd, IDC_CHANNEL_LIST);
 
-			int idx = pInfo->nmcd.dwItemSpec;
+			int idx = (int) pInfo->nmcd.dwItemSpec;
 			int sta = ListView_GetItemState(hList, idx, LVIS_SELECTED);
 
 			if (sta & LVIS_SELECTED) {

@@ -290,7 +290,7 @@ void UploadDialogShowWithFileData(uint8_t* fileData, size_t fileSize, LPCTSTR lp
 
 	UploadDialogData* data = new UploadDialogData;
 	data->m_lpstrFileTitle = lpstrFileTitle;
-	data->m_fileSize = fileSize;
+	data->m_fileSize = (DWORD) fileSize;
 	data->m_pFileData = new uint8_t[fileSize];
 	memcpy(data->m_pFileData, fileData, fileSize);
 

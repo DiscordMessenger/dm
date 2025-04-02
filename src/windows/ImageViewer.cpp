@@ -241,7 +241,7 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 				HGDIOBJ oldObject = SelectObject(hdc, g_MessageTextFont);
 
 				LPCTSTR str = TmGetTString(IDS_PLEASE_WAIT);
-				TextOut(hdc, 10, 10, str, _tcslen(str));
+				TextOut(hdc, 10, 10, str, (int) _tcslen(str));
 
 				SelectObject(hdc, oldObject);
 				SetBkColor(hdc, oldBk);

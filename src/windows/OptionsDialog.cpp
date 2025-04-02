@@ -641,7 +641,7 @@ HRESULT OnPreferenceDialogInit(HWND hWnd)
 	int cyMargin = HIWORD(dwDlgBase) / 8;
 
 	DialogHeader* pHeader = new DialogHeader;
-	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG)pHeader);
+	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) pHeader);
 
 	// Get the tab control. Note the hardcoded sizes:
 	HWND hwndTab = GetDlgItem(hWnd, IDC_OPTIONS_TABS);
@@ -758,5 +758,5 @@ static INT_PTR CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 int ShowOptionsDialog()
 {
-	return DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_OPTIONS)), g_Hwnd, DialogProc);
+	return (int) DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_OPTIONS)), g_Hwnd, DialogProc);
 }

@@ -29,7 +29,7 @@ protected:
 
 private:
 	static void AddMessage(Snowflake channelID, const Message& msg);
-	static BOOL CALLBACK DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
 	static Snowflake m_channel, m_guild;

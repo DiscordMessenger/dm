@@ -29,7 +29,7 @@ private:
 	static void FlushNote();
 	static bool Layout(HWND hWnd, SIZE& fullSize);
 	static void Paint(HWND hWnd, HDC hDC);
-	static BOOL CALLBACK Proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK Proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	static Snowflake m_user, m_guild;
 	static RoleList* m_pRoleList;

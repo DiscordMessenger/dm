@@ -164,7 +164,7 @@ void GuildLister::UpdateTooltips()
 		ti.rect = r;
 		idx++;
 
-		int rm = SendMessage(m_tooltip_hwnd, TTM_ADDTOOL, 0, (LPARAM) &ti);
+		(void) SendMessage(m_tooltip_hwnd, TTM_ADDTOOL, 0, (LPARAM)&ti);
 		free(tstr);
 
 		y += height;
@@ -257,7 +257,7 @@ void GuildLister::SetScrollInfo(SCROLLINFO* pInfo, bool redraw)
 	if (pInfo->fMask & SIF_PAGE) {
 		si.nPage = pInfo->nPage;
 		if (si.nPage < 0) si.nPage = 0;
-		if (si.nPage > si.nMax-si.nMin+1) si.nPage = si.nMax-si.nMin+1;
+		if (si.nPage > (UINT)(si.nMax - si.nMin + 1)) si.nPage = (UINT)(si.nMax - si.nMin + 1);
 	}
 
 	if (pInfo->fMask & SIF_POS) {
@@ -266,8 +266,8 @@ void GuildLister::SetScrollInfo(SCROLLINFO* pInfo, bool redraw)
 
 		if (pos < si.nMin)
 			pos = si.nMin;
-		if (pos > si.nMax - std::max(si.nPage - 1, 0U))
-			pos = si.nMax - std::max(si.nPage - 1, 0U);
+		if (pos > si.nMax - (int) std::max(si.nPage - 1, 0U))
+			pos = si.nMax - (int) std::max(si.nPage - 1, 0U);
 	}
 }
 
@@ -966,10 +966,10 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						// If the folder, when opened, is more than a page, reveal
 						// the top, else reveal the bottom.
 						int yRev = yBot;
-						if (yBot > yTop + si.nPage)
-							yRev = yTop + si.nPage;
+						if (yBot > yTop + (int) si.nPage)
+							yRev = yTop + (int) si.nPage;
 
-						if (yRev - si.nPos > si.nPage) {
+						if (yRev - si.nPos > (int) si.nPage) {
 							diff += yRev - si.nPos - si.nPage;
 							si.nPos += diff;
 							selectedRect.top = std::max(selectedRect.top - diff, rect.top);
@@ -1167,7 +1167,7 @@ struct GuildChooserData
 	std::vector<Snowflake> m_guildIDs;
 };
 
-BOOL GuildLister::ChooserDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR GuildLister::ChooserDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	GuildChooserData* pData = (GuildChooserData*) GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	switch (uMsg)

@@ -139,7 +139,7 @@ void PinList::OnClickMessage(Snowflake sf)
 	GetDiscordInstance()->JumpToMessage(m_guild, m_channel, sf);
 }
 
-BOOL CALLBACK PinList::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK PinList::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{

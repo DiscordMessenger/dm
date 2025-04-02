@@ -61,7 +61,7 @@ Point MdMeasureString(DrawingContext* context, const String& word, int styleFlag
 
 		if (styleFlags & (WORD_MLCODE | WORD_NOFORMAT)) {
 			SIZE sz;
-			GetTextExtentPoint(hdc, word.GetWrapped(), word.GetSize(), &sz);
+			GetTextExtentPoint(hdc, word.GetWrapped(), (int) word.GetSize(), &sz);
 
 			outWasWordWrapped = sz.cx > rect.right - rect.left;
 

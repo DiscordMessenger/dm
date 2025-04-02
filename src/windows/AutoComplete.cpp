@@ -384,7 +384,7 @@ LRESULT CALLBACK AutoComplete::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 				WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_NOCOLUMNHEADER | LVS_SINGLESEL,
 				0, 0, 1, 1,
 				hWnd,
-				(HMENU)idList,
+				(HMENU) (uintptr_t) idList,
 				g_hInstance,
 				NULL
 			);
@@ -502,7 +502,7 @@ LRESULT AutoComplete::HandleCustomDraw(HWND hWnd, NMLVCUSTOMDRAW* pInfo)
 		case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
 			HWND hList = m_listHwnd;
 
-			int idx = pInfo->nmcd.dwItemSpec;
+			int idx = (int) pInfo->nmcd.dwItemSpec;
 			int sta = ListView_GetItemState(hList, idx, LVIS_SELECTED);
 
 			if (sta & LVIS_SELECTED) {

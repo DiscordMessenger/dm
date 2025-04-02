@@ -95,7 +95,7 @@ void DrawActivityStatus(HDC hdc, int x, int y, eActiveStatus status);
 void DrawLoadingBox(HDC hdc, RECT rect);
 void DrawErrorBox(HDC hdc, RECT rect);
 bool GetDataFromBitmap(HDC hdc, HBITMAP hbm, BYTE*& pBytes, int& width, int& height, int& bpp);
-int HandleGestureMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, float mulDeltas = 1.0f);
+LRESULT HandleGestureMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, float mulDeltas = 1.0f);
 std::string CutOutURLPath(const std::string& url);
 int MessageBoxHooked(HWND hWnd, LPCTSTR title, LPCTSTR caption, int flags, int overID, LPCTSTR overText);
 int MessageBoxHooked(HWND hWnd, LPCTSTR title, LPCTSTR caption, int flags, int overCount, const int* overID, const LPCTSTR*  overText);

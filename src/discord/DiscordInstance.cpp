@@ -474,6 +474,10 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 	std::string str;
 	bool bExitAfterError = false, bShowMessageBox = false, bSendLoggedOutMessage = false, bJustExitMate = false;
 
+	// OpenSSL debug stuff
+	unsigned long err_code;
+	char errStringBuffer[260]; // OpenSSL says buffer must be >256 bytes
+
 	switch (pRequest->result)
 	{
 		case HTTP_UNAUTHORIZED:
@@ -604,6 +608,11 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 		default:
 			str = "Unknown HTTP code " + std::to_string(pRequest->result) + " (" + pRequest->ErrorMessage() + ")\n"
 				"URL requested: " + pRequest->url + "\n\nResponse:" + pRequest->response;
+
+			while ((err_code = ERR_get_error()) != 0) {
+				str += "\nAdditional OpenSSL Error: " + std::string(ERR_error_string(err_code, errStringBuffer));
+			}
+
 			bExitAfterError = false;
 			bShowMessageBox = true;
 			break;

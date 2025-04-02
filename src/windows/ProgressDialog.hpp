@@ -18,7 +18,7 @@ public:
 	static bool Update(Snowflake key, size_t offset, size_t length);
 
 private:
-	static BOOL CALLBACK DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static UpdateInfo& FindUpdateOneSecondAgo();
 	static void ResetUpdates();

@@ -429,7 +429,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			{
 				nameRect = pThis->m_rectLeft;
 				nameRect.left += ScaleByDPI(8);
-				DrawText(hdc, ctstrName, _tcslen(ctstrName), &nameRect, DT_SINGLELINE | DT_CALCRECT | DT_NOPREFIX | ri::GetWordEllipsisFlag());
+				DrawText(hdc, ctstrName, (int) _tcslen(ctstrName), &nameRect, DT_SINGLELINE | DT_CALCRECT | DT_NOPREFIX | ri::GetWordEllipsisFlag());
 				int nameHeight = nameRect.bottom - nameRect.top;
 
 				nameRect = pThis->m_rectLeft;
@@ -444,7 +444,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				nameRect.bottom = nameRect.top + nameHeight;
 
 				// draw the name text.
-				DrawText(hdc, ctstrName, _tcslen(ctstrName), &nameRect, DT_SINGLELINE | DT_NOPREFIX | ri::GetWordEllipsisFlag());
+				DrawText(hdc, ctstrName, (int) _tcslen(ctstrName), &nameRect, DT_SINGLELINE | DT_NOPREFIX | ri::GetWordEllipsisFlag());
 				// also draw the subtitle text
 				SelectObject(hdc, g_GuildSubtitleFont);
 				nameRect.top += nameHeight;
