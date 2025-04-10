@@ -76,6 +76,7 @@ public:
 	int GetMinimumHeight() override;
 	int GetDefaultWidth() override;
 	int GetDefaultHeight() override;
+	bool UseGradientByDefault() override;
 
 #ifdef USE_DEBUG_PRINTS
 	void DebugPrint(const char* fmt, va_list vl) override;

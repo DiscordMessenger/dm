@@ -109,6 +109,9 @@ public:
 	// Debugging
 #ifdef USE_DEBUG_PRINTS
 	virtual void DebugPrint(const char* fmt, va_list vl) = 0;
+
+	// Theming
+	virtual bool UseGradientByDefault() = 0;
 #endif
 };
 

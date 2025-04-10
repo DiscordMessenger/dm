@@ -44,7 +44,10 @@ bool LocalSettings::Load()
 		return false;
 	}
 
-	m_messageStyle = MS_GRADIENT;
+	if (GetFrontend()->UseGradientByDefault())
+		m_messageStyle = MS_GRADIENT;
+	else
+		m_messageStyle = MS_3DFACE;
 
 	json j = json::parse(data);
 

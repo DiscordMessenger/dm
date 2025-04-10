@@ -550,3 +550,9 @@ int Frontend_Win32::GetDefaultHeight()
 {
 	return ScaleByDPI(700);
 }
+
+bool Frontend_Win32::UseGradientByDefault()
+{
+	// Are we using Windows 5.00 at least? (2000)
+	return LOWORD(GetVersion()) >= 5;
+}
