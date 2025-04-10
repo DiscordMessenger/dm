@@ -78,36 +78,42 @@ void FindBasePath()
 	}
 }
 
-void SetupCachePathIfNeeded()
+bool TryThisBasePath()
 {
-	FindBasePath();
-
 	LPCTSTR p1 = NULL, p2 = NULL;
 	p1 = ConvertCppStringToTString(GetBasePath());
 	p2 = ConvertCppStringToTString(GetCachePath());
 
+	bool result = true;
+	
 	// if these already exist, it's fine..
-	if (!CreateDirectory(p1, NULL))
+	if (!CreateDirectory(p1, NULL) || !CreateDirectory(p2, NULL))
 	{
 		if (GetLastError() != ERROR_ALREADY_EXISTS)
-			goto _failure;
-	}
-	if (!CreateDirectory(p2, NULL))
-	{
-		if (GetLastError() != ERROR_ALREADY_EXISTS)
-			goto _failure;
+			result = false;
 	}
 
 	if (p1) free((void*)p1);
 	if (p2) free((void*)p2);
 
 	return;
-_failure:
+}
+
+void SetupCachePathIfNeeded()
+{
+	SetProgramNamePath("DiscordMessenger");
+	FindBasePath();
+
+	if (TryThisBasePath())
+		return;
+	
+	// Ok, try the SFN version
+	SetProgramNamePath("Discordm");
+	if (TryThisBasePath())
+		return;
+
 	MessageBox(g_Hwnd, TmGetTString(IDS_NO_CACHE_DIR), TmGetTString(IDS_NON_CRITICAL_ERROR), MB_OK | MB_ICONERROR);
 	SetBasePath(".");
-
-	if (p1) free((void*)p1);
-	if (p2) free((void*)p2);
 }
 
 DiscordInstance* g_pDiscordInstance;

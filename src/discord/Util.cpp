@@ -9,24 +9,28 @@
 #include "Frontend.hpp"
 
 std::string g_BasePath = "";
+std::string g_ProgramNamePath = "";
+
+void SetProgramNamePath(const std::string& programName)
+{
+	g_ProgramNamePath = programName;
+}
 
 void SetBasePath(const std::string& path)
 {
 	g_BasePath = path;
 	if (!path.empty() && path[path.size() - 1] != '\\')
 		g_BasePath += '\\';
-
-	g_BasePath += "DiscordMessenger";
 }
 
 std::string GetBasePath()
 {
-	return g_BasePath;
+	return g_BasePath + g_ProgramNamePath;
 }
 
 std::string GetCachePath()
 {
-	return g_BasePath + "\\cache";
+	return g_BasePath + g_ProgramNamePath + "\\cache";
 }
 
 unsigned long long BitMix(uint64_t lol)

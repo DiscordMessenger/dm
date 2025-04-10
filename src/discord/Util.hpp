@@ -10,6 +10,7 @@
 
 std::string GetBasePath();
 std::string GetCachePath();
+void SetProgramNamePath(const std::string& programName);
 void SetBasePath(const std::string& appDataPath);
 uint64_t HashStringLong(const char* str, int len);
 std::string CombineNicely(Snowflake sf, std::string avkey);
