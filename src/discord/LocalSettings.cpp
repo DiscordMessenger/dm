@@ -36,12 +36,16 @@ bool LocalSettings::Load()
 {
 	m_bIsFirstStart = false;
 
-	std::string fileName = GetBasePath() + "/settings.json";
-	std::string data = LoadEntireTextFile(fileName);
+	std::string data = LoadEntireTextFile(GetBasePath() + "/settings.json");
 
 	if (data.empty()) {
-		m_bIsFirstStart = true;
-		return false;
+		// ok, check if settings.jso (8.3) exists at least
+		data = LoadEntireTextFile(GetBasePath() + "/settings.jso");
+
+		if (data.empty()) {
+			m_bIsFirstStart = true;
+			return false;
+		}
 	}
 
 	if (GetFrontend()->UseGradientByDefault())
@@ -201,9 +205,16 @@ bool LocalSettings::Save()
 	// save the file
 	std::string fileName = GetBasePath() + "/settings.json";
 	std::ofstream of(fileName.c_str(), std::ios::trunc);
-	
+
 	if (!of.is_open())
-		return false;
+	{
+		// ok, try settings.jso
+		fileName = GetBasePath() + "/settings.jso";
+		of.open(fileName, std::ios::trunc);
+
+		if (!of.is_open())
+			return false;
+	}
 
 	of << j.dump();
 	of.close();
