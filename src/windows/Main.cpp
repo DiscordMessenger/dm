@@ -96,7 +96,7 @@ bool TryThisBasePath()
 	if (p1) free((void*)p1);
 	if (p2) free((void*)p2);
 
-	return;
+	return result;
 }
 
 void SetupCachePathIfNeeded()

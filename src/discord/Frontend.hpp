@@ -109,10 +109,10 @@ public:
 	// Debugging
 #ifdef USE_DEBUG_PRINTS
 	virtual void DebugPrint(const char* fmt, va_list vl) = 0;
+#endif
 
 	// Theming
 	virtual bool UseGradientByDefault() = 0;
-#endif
 };
 
 // Defined in the specific platform that this application is compiled for.
