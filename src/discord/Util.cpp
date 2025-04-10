@@ -45,20 +45,40 @@ uint64_t HashStringLong(const char* str, int len)
 	if (len == 0) len = int(strlen(str));
 	for (int i = 0; i < len - 7; i += 8)
 	{
-		uint64_t lol = *(uint64_t*)&str[i];
-		lol = BitMix(lol);
-		startHash ^= lol;
+		uint64_t j = *(uint64_t*)&str[i];
+		j = BitMix(j);
+		startHash ^= j;
 	}
 	int remStart = len / 8;
 	remStart *= 8;
-	uint64_t tbh = 0;
+	uint64_t v = 0;
 	for (int i = remStart; i < len; i++)
-	{
-		tbh |= (1LL << (8LL * (i - remStart))) * str[i];
-	}
-	tbh = BitMix(tbh);
-	startHash ^= tbh;
+		v |= (1LL << (8LL * (i - remStart))) * str[i];
+
+	v = BitMix(v);
+	startHash ^= v;
 	return startHash;
+}
+
+uint32_t HashString(const char* str, size_t len)
+{
+	if (!str) return 0;
+
+	unsigned char* n = (unsigned char*)str;
+	uint32_t acc = 0x55555555;
+
+	if (len == 0)
+	{
+		while (*n)
+			acc = (acc >> 27) + (acc << 5) + *n++;
+	}
+	else
+	{
+		for (size_t i = 0; i < len; i++)
+			acc = (acc >> 27) + (acc << 5) + *n++;
+	}
+
+	return acc;
 }
 
 std::string CombineNicely(Snowflake sf, std::string avkey)

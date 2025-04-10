@@ -26,6 +26,7 @@
 #include "AutoComplete.hpp"
 #include "ShellNotification.hpp"
 #include "InstanceMutex.hpp"
+#include "GameScanner.hpp"
 #include "../discord/LocalSettings.hpp"
 #include "../discord/WebsocketClient.hpp"
 #include "../discord/UpdateChecker.hpp"
@@ -1085,9 +1086,29 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				GetLocalSettings()->SetCheckUpdates(check);
 			}
 
+			if (GetLocalSettings()->AskToCheckGames())
+			{
+				bool check = MessageBox(
+					hWnd,
+					TmGetTString(IDS_SCAN_GAMES_QUESTION),
+					TmGetTString(IDS_PROGRAM_NAME),
+					MB_ICONQUESTION | MB_YESNO
+				) == IDYES;
+
+				GetLocalSettings()->SetCheckGames(check);
+			}
+
 			if (GetLocalSettings()->CheckUpdates())
 			{
 				UpdateChecker::StartCheckingForUpdates();
+			}
+
+			if (GetLocalSettings()->CheckGames())
+			{
+				if (!GameScanner::HasDetectableCache())
+					GameScanner::DownloadDetectables();
+				else
+					GameScanner::LoadDetectableCache();
 			}
 
 			if (g_SendIcon)     DeleteObject(g_SendIcon);

@@ -12,6 +12,7 @@ std::string GetBasePath();
 std::string GetCachePath();
 void SetBasePath(const std::string& appDataPath);
 uint64_t HashStringLong(const char* str, int len);
+uint32_t HashString(const char* str, size_t len);
 std::string CombineNicely(Snowflake sf, std::string avkey);
 bool ReadEntireFile(const std::string& fileName, char** data, size_t* size, bool readBinary);
 std::string LoadEntireTextFile(const std::string& fileName);

@@ -317,6 +317,7 @@
 #define IDS_CHAT                        766
 #define IDS_WINDOW                      767
 #define IDS_TERMINATE_HUNG_PROCESS      768
+#define IDS_SCAN_GAMES_QUESTION         769
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803
@@ -419,6 +420,7 @@
 #define IDC_OPEN_ON_STARTUP             902
 #define IDC_START_MINIMIZED             903
 #define IDC_MINIMIZE_TO_NOTIF           904
+#define IDC_SCAN_FOR_GAMES              907
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
 #define ID_FILE_EXIT                    1003
@@ -499,7 +501,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        102
 #define _APS_NEXT_COMMAND_VALUE         1079
-#define _APS_NEXT_CONTROL_VALUE         907
+#define _APS_NEXT_CONTROL_VALUE         909
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif
 #endif

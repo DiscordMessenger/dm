@@ -208,6 +208,18 @@ public:
 	void SetFlashOnNotification(bool b) {
 		m_bFlashOnNotification = b;
 	}
+	bool CheckGames() const {
+		return m_bCheckGames;
+	}
+	bool AskToCheckGames() const {
+		return m_bAskToCheckGames;
+	}
+	void SetCheckGames(bool b) {
+		m_bCheckGames = b;
+	}
+	void AskedToCheckGames() {
+		m_bAskToCheckGames = false;
+	}
 
 private:
 	std::string m_token;
@@ -237,6 +249,8 @@ private:
 	bool m_bShowEmbedContent = true;
 	bool m_bEnableNotifications = true;
 	bool m_bFlashOnNotification = true;
+	bool m_bCheckGames = false;
+	bool m_bAskToCheckGames = false;
 	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
 	int m_height = 700;

@@ -35,6 +35,7 @@ LocalSettings::LocalSettings()
 bool LocalSettings::Load()
 {
 	m_bIsFirstStart = false;
+	m_bAskToCheckGames = true;
 
 	std::string fileName = GetBasePath() + "/settings.json";
 	std::string data = LoadEntireTextFile(fileName);
@@ -120,6 +121,11 @@ bool LocalSettings::Load()
 	if (j.contains("FlashOnNotification"))
 		m_bFlashOnNotification = j["FlashOnNotification"];
 
+	if (j.contains("CheckActiveGames")) {
+		m_bAskToCheckGames = false;
+		m_bCheckGames = j["CheckActiveGames"];
+	}
+
 	if (m_bSaveWindowSize)
 	{
 		if (j.contains("WindowWidth"))
@@ -189,6 +195,7 @@ bool LocalSettings::Save()
 	j["ShowEmbedContent"] = m_bShowEmbedContent;
 	j["EnableNotifications"] = m_bEnableNotifications;
 	j["FlashOnNotification"] = m_bFlashOnNotification;
+	j["CheckActiveGames"] = m_bCheckGames;
 	
 	if (m_bSaveWindowSize) {
 		j["WindowWidth"] = m_width;

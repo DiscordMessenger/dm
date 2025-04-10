@@ -706,6 +706,9 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,32,60,216,10
     CONTROL         "Minimize to notification area when clicking the close button",IDC_MINIMIZE_TO_NOTIF,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,74,236,10
+    GROUPBOX        "Game Activity",IDC_STATIC,6,93,248,35
+    CONTROL         "Scan my computer for running games and show my game as a status to friends",IDC_SCAN_FOR_GAMES,
+                    "Button",BS_AUTOCHECKBOX | BS_VCENTER | BS_MULTILINE | WS_TABSTOP,12,105,236,18
 END
 
 IDD_DIALOG_ABOUT_ND DIALOG 0, 0, 247, 77
@@ -1589,6 +1592,7 @@ STRINGTABLE
 BEGIN
     IDS_TERMINATE_HUNG_PROCESS 
                             "An instance of Discord Messenger is already running, but is currently frozen. Before trying to re-open this application, you should terminate the current instance of Discord Messenger."
+    IDS_SCAN_GAMES_QUESTION "Do you want to allow Discord Messenger to scan your computer for running games periodically?\n\nYou can change this in the settings. This dialog will not pop up again."
 END
 
 #endif    // English (United States) resources
