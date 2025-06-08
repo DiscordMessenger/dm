@@ -1695,19 +1695,20 @@ static bool ForceSingleInstance(LPCTSTR pClassName)
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nShowCmd)
 {
-#ifdef ALLOW_ABORT_HIJACKING
-	HijackAbortFunction();
-#endif
+	g_hInstance = hInstance;
 
-	XSetProcessDPIAware();
+	PrepareCutDownFlags(pCmdLine);
+
+	ri::InitReimplementation();
+	ri::SetProcessDPIAware();
+
+#ifdef ALLOW_ABORT_HIJACKING
+	SetupAbortDebugging();
+#endif
 
 	ERR_load_crypto_strings();
 	LPCTSTR pClassName = TEXT("DiscordMessengerClass");
 
-	PrepareCutDownFlags(pCmdLine);
-
-	g_hInstance = hInstance;
-	ri::InitReimplementation();
 
 	InitializeCOM(); // important because otherwise TTS/shell stuff might not work
 	InitCommonControls(); // actually a dummy but adds the needed reference to comctl32

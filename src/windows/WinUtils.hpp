@@ -40,6 +40,12 @@
 #define WAsnprintf _snprintf
 #endif
 
+#ifdef _MSC_VER
+#define NORETURN __declspec(noreturn)
+#else
+#define NORETURN __attribute__((noreturn))
+#endif
+
 struct NetRequest;
 
 #if _WIN32_WINNT < 0x0600
@@ -176,5 +182,5 @@ void InitializeCOM(); // used by TTS and shell stuff
 extern "C" void Terminate(const char*, ...);
 
 #ifdef ALLOW_ABORT_HIJACKING
-void HijackAbortFunction();
+void SetupAbortDebugging();
 #endif

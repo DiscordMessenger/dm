@@ -1589,7 +1589,7 @@ void AddFoundModule(const char* name)
 {
 	HMODULE hmod = GetModuleHandleA(name);
 	if (hmod)
-		g_loadedModules.push_back({ std::string(name), (uintptr_t) hmod, 0xFFFFFFFF });
+		g_loadedModules.push_back({ std::string(name), (uintptr_t) hmod, 0x2000000 }); // bogus size
 }
 
 // Returned pair: [dll name, offset]
@@ -1598,14 +1598,21 @@ std::pair<const char*, uintptr_t> ResolveName(uintptr_t fun)
 	const char* max = "?";
 	uintptr_t maxbase = 0;
 	for (const auto& mod : g_loadedModules) {
-		if (maxbase < mod.base && mod.base < fun && (mod.size == 0xFFFFFFFF || fun < mod.base + mod.size))
-			maxbase = mod.base, max = mod.name.c_str();
+		if (maxbase < mod.base && mod.base < fun && fun < mod.base + mod.size)
+			maxbase = mod.base, max = TrimPathComponents(mod.name.c_str());
 	}
 
 	return { max, maxbase };
 }
 
-void HijackedAbort()
+NORETURN void AbortMessage(const char* message, ...);
+
+NORETURN void WINAPI HijackedAbort()
+{
+	AbortMessage("Oops! DiscordMessenger just called abort()!");
+}
+
+NORETURN void AbortMessage(const char* message, ...)
 {
 	static bool Aborted = false;
 
@@ -1621,8 +1628,13 @@ void HijackedAbort()
 
 	char stackTraceBuffer[8192];
 	char smallerBuffer[128];
-	
-	strcpy(stackTraceBuffer, "Oops, DiscordMessenger called abort()!\n\nHere is a stack trace.  Send this to iProgramInCpp right away!\n"
+
+	va_list vl;
+	va_start(vl, message);
+	vsnprintf(stackTraceBuffer, 1024, message, vl);
+	va_end(vl);
+
+	strcat(stackTraceBuffer, "\nSend this to iProgramInCpp right away!\n"
 		"Hint: Press Ctrl-C to copy the whole message box's text.\n\n"
 		"Windows Version ");
 
@@ -1658,9 +1670,45 @@ void HijackedAbort()
 	);
 	strcat(stackTraceBuffer, smallerBuffer);
 
-	strcat(stackTraceBuffer, "\n\n-> abort()\n");
+	// there's gotta be a better way ...
+#ifdef _MSC_VER
+	const char* mingwOrMsvc = "MSVC";
+#else
+	const char* mingwOrMsvc = "MinGW";
+#endif
 
-	// Figure out a stack trace.
+#ifdef UNICODE
+	const char* unicodeOrAnsi = "Unicode";
+#else
+	const char* unicodeOrAnsi = "ANSI";
+#endif
+
+#ifdef UNICODE
+	const char* debugOrRelease = "debug";
+#else
+	const char* debugOrRelease = "release";
+#endif
+
+#ifdef _WIN64
+	const char* x64Orx86 = "x64";
+#else
+	const char* x64Orx86 = "x86";
+#endif
+
+	snprintf(
+		smallerBuffer,
+		sizeof smallerBuffer,
+		"\nDiscordMessenger Version %.2f %s %s %s %s\n\nHere is a stack trace:\n",
+		GetAppVersion(),
+		mingwOrMsvc,
+		unicodeOrAnsi,
+		debugOrRelease,
+		x64Orx86
+	);
+
+	strcat(stackTraceBuffer, smallerBuffer);
+
+	// Figure out the current stack trace.
 	StackFrame* sf = (StackFrame*)GetRbp();
 
 	int depth = 0;
@@ -1690,34 +1738,62 @@ void HijackedAbort()
 	ExitProcess(1);
 }
 
-void(*HijackedAbortPtr)() = &HijackedAbort;
+void *HijackedAbortPtr = (void*) &HijackedAbort;
 
 bool FindLoadedDLLsAutomatically()
 {
-	HANDLE ths = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, 0);
+	HANDLE ths = ri::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, 0);
 	if (!ths)
 		return false;
 
 	MODULEENTRY32 me32;
 	me32.dwSize = sizeof(MODULEENTRY32);
 
-	if (!Module32First(ths, &me32))
+	if (!ri::Module32First(ths, &me32))
 		return false;
 
 	do {
-		std::string str = MakeStringFromUnicodeString(me32.szModule);
+		std::string str = MakeStringFromTString(me32.szModule);
 		uintptr_t base = (uintptr_t) me32.modBaseAddr;
 		size_t size = (size_t) me32.modBaseSize;
 
 		g_loadedModules.push_back ({ str, base, size });
 	}
-	while (Module32Next(ths, &me32));
+	while (ri::Module32Next(ths, &me32));
 
+	CloseHandle(ths);
 	return true;
 }
 
-// Hijacks the Abort function from MSVCRT.DLL or UCRTBASE.DLL
-void HijackAbortFunction()
+
+LONG WINAPI DMUnhandledExceptionFilter(PEXCEPTION_POINTERS ExceptionInfo)
+{
+	auto er = ExceptionInfo->ExceptionRecord;
+	auto cr = ExceptionInfo->ContextRecord;
+
+	AbortMessage(
+		"Oops! DiscordMessenger just crashed!\n"
+		"Exception Code: %08x\n"
+		"Exception Address: %p\n"
+		"Exception Parameters: %p %p\n"
+		"EIP=%08x EFL=%08x \n"
+		"EAX=%08x EBX=%08x ECX=%08x EDX=%08x\n"
+		"ESI=%08x EDI=%08x ESP=%08x EBP=%08x\n",
+		er->ExceptionCode,
+		er->ExceptionAddress,
+		er->NumberParameters >= 1 ? er->ExceptionInformation[0] : 0,
+		er->NumberParameters >= 2 ? er->ExceptionInformation[1] : 0,
+		cr->Eip, cr->EFlags,
+		cr->Eax, cr->Ebx, cr->Ecx, cr->Edx,
+		cr->Esi, cr->Edi, cr->Esp, cr->Ebp
+	);
+}
+
+
+// Hijacks the Abort function from MSVCRT.DLL or UCRTBASE.DLL,
+// gets information on loaded modules, and sets up an unhandled
+// exception filter.
+void SetupAbortDebugging()
 {
 	// Step 1. Hijack abort()
 	if (sizeof(uintptr_t) > 4)
@@ -1778,6 +1854,9 @@ void HijackAbortFunction()
 		AddFoundModule("libgcc.dll");
 		AddFoundModule("lstdcpp.dll");
 	}
+
+	// Step 3. Set the unhandled exception filter.
+	SetUnhandledExceptionFilter(DMUnhandledExceptionFilter);
 }
 
 #endif

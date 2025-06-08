@@ -3070,8 +3070,6 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 
 LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	abort();
-
 	MessageList* pThis = (MessageList*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	if (!pThis && uMsg != WM_NCCREATE)
 		return DefWindowProc(hWnd, uMsg, wParam, lParam);
