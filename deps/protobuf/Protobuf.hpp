@@ -11,6 +11,8 @@
 #define _countof(x) (sizeof(x) / sizeof(*(x)))
 #endif
 
+#define DISABLE_PROTOBUF
+
 namespace Protobuf
 {
 	typedef uint64_t FieldNumber;
@@ -806,6 +808,10 @@ namespace Protobuf
 	}
 	static void DecodeBlock(const char* data, size_t sz, ObjectBaseMessage* block, DecodeHint* pHint = nullptr)
 	{
+#ifdef DISABLE_PROTOBUF
+		return;
+#endif
+
 		if (!pHint)
 			pHint = block->GetDecodeHint();
 

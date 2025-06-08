@@ -10,6 +10,20 @@
 #include "../discord/ActiveStatus.hpp"
 #include "../discord/Frontend.hpp"
 
+// Cut Down Flags
+#define DMCDF_USER32   0x0001
+#define DMCDF_GDI32    0x0002
+#define DMCDF_SHELL32  0x0004
+#define DMCDF_MSIMG32  0x0008
+#define DMCDF_SHLWAPI  0x0010
+#define DMCDF_CRYPT32  0x0020
+#define DMCDF_WS2_32   0x0040
+#define DMCDF_OLE32    0x0080
+#define DMCDF_COMCTL32 0x0100
+#define DMCDF_ALL      0x01FF
+#define DMCDF_NODLGEX  0x0200
+#define DMCDF_NODRIEX  0x0400
+
 #ifdef UNICODE
 #define WAsnprintf _snwprintf
 #else
@@ -103,6 +117,8 @@ void DrawIconInvert(HDC hdc, HICON hIcon, int x, int y, int sizeX, int sizeY, bo
 HBITMAP ResizeWithBackgroundColor(HDC hdc, HBITMAP hBitmap, HBRUSH backgroundColor, bool bHasAlpha, int newSizeX, int newSizeY, int oldSizeX, int oldSizeY);
 int GetGradientActiveCaptionColor();
 int GetGradientInactiveCaptionColor();
+void PrepareCutDownFlags(LPSTR cmdLine);
+int GetCutDownFlags();
 
 #ifdef USE_DEBUG_PRINTS
 void DbgPrintW(const char* fmt, ...);

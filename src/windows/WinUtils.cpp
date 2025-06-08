@@ -190,7 +190,7 @@ std::string GetStringFromHResult(HRESULT hr)
 {
 	LPTSTR tstr = GetTStringFromHResult(hr);
 	std::string str = MakeStringFromTString(tstr);
-	LocalFree(tstr);
+	free(tstr);
 	return str;
 }
 
@@ -854,6 +854,63 @@ SIZE EnsureMaximumSize(int width, int height, int maxWidth, int maxHeight)
 	return sz;
 }
 
+int g_cutDownFlags = -1;
+
+void PrepareCutDownFlags(LPSTR cmdLine)
+{
+	// Okay, calculate it.
+	LPSTR found = strstr(cmdLine, "/help");
+	if (found)
+	{
+		// Well they asked for help so we should give them help shouldn't we?
+		MessageBox(
+			NULL,
+			TEXT(
+				"You found the secret Discord Messenger command line help!\n\n"
+				"Okay, just kidding.  But have some potentially useful command line switches:\n\n"
+				"/startup - Used when the \"Open Discord Messenger when your computer starts\" option is checked.  Starts the application minimized.\n"
+				"/help - Shows this text box.  This is the only setting right now."
+				"/disable=[hexmask] - Disables certain DLLs from loading within MWAS.\n"
+				"\t001 - user32.dll\n"
+				"\t002 - gdi32.dll\n"
+				"\t004 - shell32.dll\n"
+				"\t008 - msimg32.dll\n"
+				"\t010 - shlwapi.dll\n"
+				"\t020 - crypt32.dll\n"
+				"\t040 - ws2_32.dll\n"
+				"\t080 - ole32.dll\n"
+				"\t100 - comctl32.dll\n"
+				"\t1FF - all of the DLLs\n\n"
+				"If you are running on beta builds of Windows 95, approximately build 263 or so, "
+				"the suggested disable flags are \"/disable=FFF\" to disable everything and make "
+				"the application run with the bare minimum of dependencies."
+			),
+			TEXT("Hey, a secret"),
+			MB_ICONINFORMATION | MB_OK
+		);
+
+		exit(1);
+	}
+
+	found = strstr(cmdLine, "/disable=");
+	if (!found) {
+		g_cutDownFlags = 0;
+		return;
+	}
+
+	int disableFlags = 0;
+
+	found += 9; // length of "/disable="
+	(void) sscanf(found, "%x", &disableFlags);
+
+	g_cutDownFlags = disableFlags;
+}
+
+int GetCutDownFlags()
+{
+	return g_cutDownFlags;
+}
+
 bool SupportsDialogEx()
 {
 	static bool _initted = false;
@@ -861,6 +918,12 @@ bool SupportsDialogEx()
 
 	if (_initted)
 		return _supports;
+
+	if (GetCutDownFlags() & DMCDF_NODLGEX) {
+		_initted = true;
+		_supports = false;
+		return false;
+	}
 
 	// I know GetVersion() is deprecated, but what are you gonna do?
 	// It'll return 6.2.9200, but fine, that's still not Windows 2000.

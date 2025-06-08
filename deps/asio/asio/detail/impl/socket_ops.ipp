@@ -2553,13 +2553,13 @@ int inet_pton(int af, const char* src, void* dest,
     unsigned long* scope_id, asio::error_code& ec)
 {
   clear_last_error();
-#if defined(ASIO_WINDOWS_RUNTIME)
+#if defined(ASIO_WINDOWS_RUNTIME) || defined(MINGW_SPECIFIC_HACKS)
   using namespace std; // For sscanf.
   unsigned char* bytes = static_cast<unsigned char*>(dest);
   if (af == ASIO_OS_DEF(AF_INET))
   {
     unsigned int b0, b1, b2, b3;
-    if (sscanf_s(src, "%u.%u.%u.%u", &b0, &b1, &b2, &b3) != 4)
+    if (sscanf(src, "%u.%u.%u.%u", &b0, &b1, &b2, &b3) != 4)
     {
       ec = asio::error::invalid_argument;
       return -1;

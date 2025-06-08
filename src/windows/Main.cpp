@@ -1695,8 +1695,12 @@ static bool ForceSingleInstance(LPCTSTR pClassName)
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nShowCmd)
 {
+	XSetProcessDPIAware();
+
 	ERR_load_crypto_strings();
 	LPCTSTR pClassName = TEXT("DiscordMessengerClass");
+
+	PrepareCutDownFlags(pCmdLine);
 
 	g_hInstance = hInstance;
 	ri::InitReimplementation();
@@ -1704,7 +1708,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	InitializeCOM(); // important because otherwise TTS/shell stuff might not work
 	InitCommonControls(); // actually a dummy but adds the needed reference to comctl32
 	// (see https://devblogs.microsoft.com/oldnewthing/20050718-16/?p=34913 )
-	XSetProcessDPIAware();
 
 	if (!ForceSingleInstance(pClassName))
 		return 0;
