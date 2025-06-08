@@ -10,6 +10,16 @@
 #include "../discord/ActiveStatus.hpp"
 #include "../discord/Frontend.hpp"
 
+// Whether to allow DM to hijack its abort() function so that it can show
+// info that's More Useful (such as a stack trace!!)
+//
+// MinGW builds will always do this while only released MSVC builds will.
+// No x64 builds will allow this.
+#if (defined MINGW_SPECIFIC_HACKS || true) && !defined _WIN64
+//#if (defined MINGW_SPECIFIC_HACKS || !defined _DEBUG) && !defined _WIN64
+#define ALLOW_ABORT_HIJACKING
+#endif
+
 // Cut Down Flags
 #define DMCDF_USER32   0x0001
 #define DMCDF_GDI32    0x0002
@@ -164,3 +174,7 @@ void InitializeCOM(); // used by TTS and shell stuff
 #include "ri/reimpl.hpp"
 
 extern "C" void Terminate(const char*, ...);
+
+#ifdef ALLOW_ABORT_HIJACKING
+void HijackAbortFunction();
+#endif

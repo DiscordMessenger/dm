@@ -1695,6 +1695,10 @@ static bool ForceSingleInstance(LPCTSTR pClassName)
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nShowCmd)
 {
+#ifdef ALLOW_ABORT_HIJACKING
+	HijackAbortFunction();
+#endif
+
 	XSetProcessDPIAware();
 
 	ERR_load_crypto_strings();

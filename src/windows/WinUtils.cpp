@@ -8,6 +8,7 @@
 #include <commctrl.h>
 #include <commdlg.h>
 #include <shellapi.h>
+#include <tlhelp32.h>
 #include "WinUtils.hpp"
 
 #include "../resource.h"
@@ -1530,3 +1531,253 @@ time_t MakeGMTime(const tm* ptime)
 
 	return FileTimeToTimeT(&ft);
 }
+
+#ifdef ALLOW_ABORT_HIJACKING
+
+bool PatchMemory(void* address, const void* patch, size_t size)
+{
+	DWORD oldProtect;
+	if (VirtualProtect(address, size, PAGE_EXECUTE_READWRITE, &oldProtect))
+	{
+		memcpy(address, patch, size);
+		VirtualProtect(address, size, oldProtect, &oldProtect);
+		FlushInstructionCache(GetCurrentProcess(), address, size);
+		return true;
+	}
+	else
+	{
+		// handle error
+		DbgPrintW("ERROR with PatchMemory's VirtualProtect call: %08x", GetLastError());
+		return false;
+	}
+}
+
+struct StackFrame {
+	StackFrame* next;
+	void* ip;
+};
+
+#ifdef _MSC_VER
+__declspec(naked) uintptr_t GetRbp() {
+	__asm {
+		mov eax, ebp
+		ret
+	}
+}
+#else
+#define GetRbp() __builtin_frame_address(0)
+#endif
+
+struct LoadedModule {
+	std::string name;
+	uintptr_t base;
+	size_t size;
+};
+
+std::vector<LoadedModule> g_loadedModules;
+
+const char* TrimPathComponents(const char* path)
+{
+	const char* ptr1, *ptr = path;
+	while ((ptr1 = strchr(ptr, '\\')) || (ptr1 = strchr(ptr, '/'))) {
+		ptr = ptr1 + 1;
+	}
+	return ptr;
+}
+
+void AddFoundModule(const char* name)
+{
+	HMODULE hmod = GetModuleHandleA(name);
+	if (hmod)
+		g_loadedModules.push_back({ std::string(name), (uintptr_t) hmod, 0xFFFFFFFF });
+}
+
+// Returned pair: [dll name, offset]
+std::pair<const char*, uintptr_t> ResolveName(uintptr_t fun)
+{
+	const char* max = "?";
+	uintptr_t maxbase = 0;
+	for (const auto& mod : g_loadedModules) {
+		if (maxbase < mod.base && mod.base < fun && (mod.size == 0xFFFFFFFF || fun < mod.base + mod.size))
+			maxbase = mod.base, max = mod.name.c_str();
+	}
+
+	return { max, maxbase };
+}
+
+void HijackedAbort()
+{
+	static bool Aborted = false;
+
+	// The abort has been hijacked.
+	// Let's figure out where we are.
+	if (Aborted)
+	{
+		// Already aborted - either recursive abort or screwed up so badly
+		ExitThread(0);
+	}
+
+	Aborted = true;
+
+	char stackTraceBuffer[8192];
+	char smallerBuffer[128];
+	
+	strcpy(stackTraceBuffer, "Oops, DiscordMessenger called abort()!\n\nHere is a stack trace.  Send this to iProgramInCpp right away!\n"
+		"Hint: Press Ctrl-C to copy the whole message box's text.\n\n"
+		"Windows Version ");
+
+	OSVERSIONINFO osvi;
+	osvi.dwOSVersionInfoSize = sizeof osvi;
+	ri::GetVersionEx(&osvi);
+
+	const char* csd = nullptr;
+#ifdef UNICODE
+	constexpr size_t CNT = sizeof(osvi.szCSDVersion) / sizeof(osvi.szCSDVersion[0]);
+	char smallerBuffer2[CNT];
+	for (int i = 0; i < CNT; i++) {
+		WCHAR wchr = osvi.szCSDVersion[i];
+		smallerBuffer2[i] = ((wchr < 0x7E && wchr >= 0x20) || wchr == 0) ? (char)wchr : '?';
+	}
+	csd = smallerBuffer2;
+#else
+	csd = osvi.szCSDVersion;
+#endif
+
+	if (strlen(csd) == 0)
+		csd = "nothing";
+
+	snprintf(
+		smallerBuffer,
+		sizeof smallerBuffer,
+		"%d.%d.%d [%s] (%s)",
+		osvi.dwMajorVersion,
+		osvi.dwMinorVersion,
+		osvi.dwBuildNumber,
+		osvi.dwPlatformId == VER_PLATFORM_WIN32_NT ? "NT" : "9X",
+		csd
+	);
+	strcat(stackTraceBuffer, smallerBuffer);
+
+	strcat(stackTraceBuffer, "\n\n-> abort()\n");
+
+	// Figure out a stack trace.
+	StackFrame* sf = (StackFrame*)GetRbp();
+
+	int depth = 0;
+
+	while (sf)
+	{
+		if (sf->ip == 0)
+			break;
+
+		if (depth++ > 48)
+			strcat(stackTraceBuffer, "[stack trace goes deeper]");
+		
+		auto pr = ResolveName((uintptr_t)sf->ip);
+		snprintf(smallerBuffer, sizeof smallerBuffer, "* %p [%s(%p)+%X]\n", sf->ip, pr.first, (void*) pr.second, ((uintptr_t)sf->ip - pr.second));
+		strcat(stackTraceBuffer, smallerBuffer);
+
+		if (sf->next != 0 && abs((intptr_t)sf->next - (intptr_t)sf) > 0x10000)
+		{
+			strcat(stackTraceBuffer, "[stack trace diff too big, stopping now to avoid a crash]");
+			break;
+		}
+
+		sf = sf->next;
+	}
+
+	MessageBoxA(NULL, stackTraceBuffer, "Discord Messenger fatal error! (Press CTRL-C to copy!)", MB_ICONERROR);
+	ExitProcess(1);
+}
+
+void(*HijackedAbortPtr)() = &HijackedAbort;
+
+bool FindLoadedDLLsAutomatically()
+{
+	HANDLE ths = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, 0);
+	if (!ths)
+		return false;
+
+	MODULEENTRY32 me32;
+	me32.dwSize = sizeof(MODULEENTRY32);
+
+	if (!Module32First(ths, &me32))
+		return false;
+
+	do {
+		std::string str = MakeStringFromUnicodeString(me32.szModule);
+		uintptr_t base = (uintptr_t) me32.modBaseAddr;
+		size_t size = (size_t) me32.modBaseSize;
+
+		g_loadedModules.push_back ({ str, base, size });
+	}
+	while (Module32Next(ths, &me32));
+
+	return true;
+}
+
+// Hijacks the Abort function from MSVCRT.DLL or UCRTBASE.DLL
+void HijackAbortFunction()
+{
+	// Step 1. Hijack abort()
+	if (sizeof(uintptr_t) > 4)
+	{
+		DbgPrintW("Abort hijack disabled.  The target is 64-bit.");
+		return;
+	}
+	
+	uintptr_t Patch[2];
+	Patch[0] = 0x25FF9090;                     // NOP; NOP; JMP [modrm]
+	Patch[1] = (uintptr_t) &HijackedAbortPtr;  // [absolute indirect 32-bit address]
+	
+	if (!PatchMemory((void*) &abort, Patch, sizeof Patch))
+	{
+		DbgPrintW("Abort hijack disabled.  Could not write 8 bytes to %p.", &abort);
+		return;
+	}
+	
+	DbgPrintW("Abort hijack engaged.");
+
+	// Step 2. Find all loaded modules.
+	// We either import toolhelp32 functions from Kernel32.dll and find
+	// them that way, or just come with our own hardcoded list.
+	if (!FindLoadedDLLsAutomatically())
+	{
+		// our own module
+		char moduleName[1024];
+		strcpy(moduleName, "dummy.exe");
+		GetModuleFileNameA(g_hInstance, moduleName, sizeof moduleName);
+
+		// maybe just cut out all the path components though
+		AddFoundModule(TrimPathComponents(moduleName));
+
+		// base system DLLs
+		AddFoundModule("ntdll.dll");
+		AddFoundModule("kernel32.dll");
+		AddFoundModule("user32.dll");
+		AddFoundModule("gdi32.dll");
+		AddFoundModule("shell32.dll");
+		AddFoundModule("msimg32.dll");
+		AddFoundModule("shlwapi.dll");
+		AddFoundModule("crypt32.dll");
+		AddFoundModule("ws2_32.dll");
+		AddFoundModule("ole32.dll");
+		AddFoundModule("comctl32.dll");
+		AddFoundModule("msvcrt.dll");
+		AddFoundModule("ucrtbase.dll");
+
+		// long file name versions of dependencies
+		AddFoundModule("libcrypto-3.dll");
+		AddFoundModule("libssl-3.dll");
+		AddFoundModule("libgcc_s_dw2-1.dll");
+		AddFoundModule("libstdc++-6.dll");
+
+		// short file name versions of dependencies
+		AddFoundModule("libcrypt.dll");
+		AddFoundModule("libssl.dll");
+		AddFoundModule("libgcc.dll");
+		AddFoundModule("lstdcpp.dll");
+	}
+}
+
+#endif

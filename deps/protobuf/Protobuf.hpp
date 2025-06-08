@@ -23,6 +23,8 @@ namespace Protobuf
 		T value = 0;
 		int error = 0;
 
+		ErrorOr(const T& val, int err) : value(val), error(err) {}
+
 		operator T& () {
 			return value;
 		}
