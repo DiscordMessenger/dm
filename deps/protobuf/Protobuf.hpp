@@ -11,10 +11,23 @@
 #define _countof(x) (sizeof(x) / sizeof(*(x)))
 #endif
 
-#define DISABLE_PROTOBUF
+//#define DISABLE_PROTOBUF
+
+#define returnIfNonNull(r) do { auto __ = (r); if (__ != 0) return __; } while (0)
 
 namespace Protobuf
 {
+	template<typename T>
+	struct ErrorOr
+	{
+		T value = 0;
+		int error = 0;
+
+		operator T& () {
+			return value;
+		}
+	};
+
 	typedef uint64_t FieldNumber;
 
 	enum
@@ -32,6 +45,7 @@ namespace Protobuf
 		ERROR_UNKNOWNTAG = 3,
 		ERROR_SUPPOSEDTOBEUNIQUE = 4,
 		ERROR_CANTADDROOTMSG = 5, // you can't add embedded messages into a root message! Maybe I should fix that
+		ERROR_NOTSUPPORTED = 6,
 	};
 	
 	// ===== DECODE HINT =====
@@ -265,10 +279,10 @@ namespace Protobuf
 				delete m_pDecodeHint;
 		}
 
-		ObjectBaseMessage* AddObject(ObjectBase* ob)
+		int AddObject(ObjectBase* ob)
 		{
 			if (ob->IsMessageObject() && !ob->IsEmbeddedMessageObject())
-				throw ERROR_CANTADDROOTMSG;
+				return ERROR_CANTADDROOTMSG;
 
 			FieldNumber fieldNum = ob->GetFieldNumber();
 			if (!m_fieldsUnique[fieldNum] || m_objects[fieldNum].empty()) {
@@ -284,7 +298,7 @@ namespace Protobuf
 			}
 
 			ob->SetParent(this);
-			return this;
+			return 0;
 		}
 
 		ObjectBaseMessage* Clear()
@@ -393,7 +407,7 @@ namespace Protobuf
 		}
 
 		// This completely guts the other message, because I can't be bothered to make a virtual clone function.
-		void MergeWith(ObjectBaseMessage* pOtherMsg)
+		int MergeWith(ObjectBaseMessage* pOtherMsg)
 		{
 			for (auto& obj : pOtherMsg->m_objects)
 			{
@@ -429,14 +443,16 @@ namespace Protobuf
 				}
 
 				if (dstVec.size() != 1 && srcVec.size() != 1)
-					throw ERROR_SUPPOSEDTOBEUNIQUE;
+					return ERROR_SUPPOSEDTOBEUNIQUE;
 
 				// If this is a message object, recursively merge it.
 				if (dstVec[0]->IsMessageObject())
 				{
 					ObjectBaseMessage* pMsg = (ObjectBaseMessage*)dstVec[0];
 					ObjectBaseMessage* pMsg2 = (ObjectBaseMessage*)srcVec[0];
-					pMsg->MergeWith(pMsg2);
+					
+					returnIfNonNull(pMsg->MergeWith(pMsg2));
+
 					// N.B. Gonna leave it alone. I hope there are no memory leaks!!
 					continue;
 				}
@@ -447,7 +463,10 @@ namespace Protobuf
 				dstVec[0]->SetParent(this);
 				srcVec.clear();
 			}
+
 			MarkDirty();
+
+			return 0;
 		}
 
 	public:
@@ -783,7 +802,7 @@ namespace Protobuf
 	};
 
 	// ===== DECODE =====
-	static uint64_t DecodeVarInt(const char* data, size_t& offset, size_t sz)
+	static ErrorOr<uint64_t> DecodeVarInt(const char* data, size_t& offset, size_t sz)
 	{
 		uint8_t bytes[16];
 		int byteCount = 0;
@@ -791,9 +810,9 @@ namespace Protobuf
 		while (true)
 		{
 			if (offset >= sz)
-				throw ERROR_OUTOFBOUNDS;
+				return { 0, ERROR_OUTOFBOUNDS };
 			if (byteCount >= _countof(bytes))
-				throw ERROR_VARINTTOOBIG;
+				return { 0, ERROR_VARINTTOOBIG };
 
 			uint8_t byte = bytes[byteCount++] = data[offset++];
 			if (~byte & 0x80)
@@ -804,12 +823,13 @@ namespace Protobuf
 		for (int i = byteCount - 1; i >= 0; i--)
 			result = result * 128 + (bytes[i] % 128);
 
-		return result;
+		return { result, 0 };
 	}
-	static void DecodeBlock(const char* data, size_t sz, ObjectBaseMessage* block, DecodeHint* pHint = nullptr)
+
+	static int DecodeBlock(const char* data, size_t sz, ObjectBaseMessage* block, DecodeHint* pHint = nullptr)
 	{
 #ifdef DISABLE_PROTOBUF
-		return;
+		return ERROR_NOTSUPPORTED;
 #endif
 
 		if (!pHint)
@@ -819,7 +839,9 @@ namespace Protobuf
 		while (offset < sz)
 		{
 			// read tag
-			uint64_t fieldNumAndTag = DecodeVarInt(data, offset, sz);
+			auto fieldNumAndTag = DecodeVarInt(data, offset, sz);
+			returnIfNonNull(fieldNumAndTag.error);
+
 			FieldNumber fieldNum = fieldNumAndTag >> 3;
 			int tag = int(fieldNumAndTag & 0x7);
 
@@ -827,17 +849,21 @@ namespace Protobuf
 			{
 			case TAG_VARINT:
 			{
-				uint64_t value = DecodeVarInt(data, offset, sz);
-				block->AddObject(new ObjectVarInt(fieldNum, value));
+				auto value = DecodeVarInt(data, offset, sz);
+				returnIfNonNull(value.error);
+				returnIfNonNull(block->AddObject(new ObjectVarInt(fieldNum, value)));
 				break;
 			}
 			case TAG_LEN:
 			{
-				size_t length = (size_t)DecodeVarInt(data, offset, sz);
+				auto lengthE = DecodeVarInt(data, offset, sz);
+				returnIfNonNull(lengthE.error);
+
+				size_t length = (size_t)lengthE;
 
 				// read [length] more bytes
 				if (offset + length > sz)
-					throw ERROR_OUTOFBOUNDS;
+					return ERROR_OUTOFBOUNDS;
 
 				const char* dataSubset = &data[offset];
 				offset += length;
@@ -868,25 +894,28 @@ namespace Protobuf
 				{
 					// it's a string!
 				parse_string:
-					block->AddObject(new ObjectString(fieldNum, std::string(dataSubset, length)));
+					returnIfNonNull(block->AddObject(new ObjectString(fieldNum, std::string(dataSubset, length))));
 				}
 				else
 				{
 				try_parse_object:
 					// try and parse the data subset
 					pChld = new ObjectMessage(fieldNum);
-					try {
-						DecodeBlock(dataSubset, length, pChld, pChildHint);
-						block->AddObject(pChld);
+					
+					if (DecodeBlock(dataSubset, length, pChld, pChildHint) == 0)
+					{
+						returnIfNonNull(block->AddObject(pChld));
 					}
-					catch (Protobuf::ErrorCode) {
+					else
+					{
 						// if it failed, just treat it as bytes.
 						delete pChld;
 						isBytes = true;
 					}
+
 					if (isBytes) {
 					parse_bytes:
-						block->AddObject(new ObjectBytes(fieldNum, dataSubset, length));
+						returnIfNonNull(block->AddObject(new ObjectBytes(fieldNum, dataSubset, length)));
 					}
 				}
 
@@ -895,31 +924,35 @@ namespace Protobuf
 			case TAG_I64:
 			{
 				if (offset + sizeof(uint64_t) > sz)
-					throw ERROR_OUTOFBOUNDS;
+					return ERROR_OUTOFBOUNDS;
 
-				block->AddObject(new ObjectFixed64(fieldNum, *((uint64_t*)&data[offset])));
+				returnIfNonNull(block->AddObject(new ObjectFixed64(fieldNum, *((uint64_t*)&data[offset]))));
 				offset += sizeof(uint64_t);
 				break;
 			}
 			case TAG_I32:
 			{
 				if (offset + sizeof(uint32_t) > sz)
-					throw ERROR_OUTOFBOUNDS;
+					return ERROR_OUTOFBOUNDS;
 
-				block->AddObject(new ObjectFixed32(fieldNum, *((uint32_t*)&data[offset])));
+				returnIfNonNull(block->AddObject(new ObjectFixed32(fieldNum, *((uint32_t*)&data[offset]))));
 				offset += sizeof(uint32_t);
 				break;
 			}
 			default:
-				throw ERROR_UNKNOWNTAG;
+				return ERROR_UNKNOWNTAG;
 			}
 
 			if (offset > sz)
-				throw ERROR_OUTOFBOUNDS;
+				return ERROR_OUTOFBOUNDS;
+
 		}
+		
+		return 0;
 	}
-	static void DecodeBlock(const uint8_t* data, size_t sz, ObjectBaseMessage* block)
+
+	static int DecodeBlock(const uint8_t* data, size_t sz, ObjectBaseMessage* block)
 	{
-		DecodeBlock((const char*)data, sz, block);
+		return DecodeBlock((const char*)data, sz, block);
 	}
 }
