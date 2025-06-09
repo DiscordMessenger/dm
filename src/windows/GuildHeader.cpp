@@ -157,8 +157,12 @@ HICON GuildHeader::GetIcon(int iconID, int iconSize)
 	if (!hicon)
 	{
 		// Note, not shared but we do delete them in the destructor
-		m_hIcons[iconID] = hicon =
-			(HICON)ri::LoadImage(g_hInstance, MAKEINTRESOURCE(iconID), IMAGE_ICON, iconSize, iconSize, LR_CREATEDIBSECTION);
+		hicon = (HICON)ri::LoadImage(g_hInstance, MAKEINTRESOURCE(iconID), IMAGE_ICON, iconSize, iconSize, LR_CREATEDIBSECTION);
+
+		if (!hicon)
+			hicon = LoadIcon(g_hInstance, MAKEINTRESOURCE(iconID));
+
+		m_hIcons[iconID] = hicon;
 	}
 
 	return hicon;
