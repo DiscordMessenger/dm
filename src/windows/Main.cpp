@@ -26,6 +26,7 @@
 #include "AutoComplete.hpp"
 #include "ShellNotification.hpp"
 #include "InstanceMutex.hpp"
+#include "CrashDebugger.hpp"
 #include "../discord/LocalSettings.hpp"
 #include "../discord/WebsocketClient.hpp"
 #include "../discord/UpdateChecker.hpp"
@@ -1703,8 +1704,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	ri::SetProcessDPIAware();
 
 #ifdef ALLOW_ABORT_HIJACKING
-	SetupAbortDebugging();
+	SetupCrashDebugging();
 #endif
+	
+	abort();
 
 	ERR_load_crypto_strings();
 	LPCTSTR pClassName = TEXT("DiscordMessengerClass");

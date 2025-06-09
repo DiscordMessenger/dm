@@ -659,6 +659,9 @@
     <ClInclude Include="..\src\windows\MemberListOld.hpp">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\windows\CrashDebugger.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\windows\ProfileView.cpp">
@@ -848,6 +851,9 @@
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\IMemberList.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\CrashDebugger.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
   </ItemGroup>
