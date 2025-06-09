@@ -4,6 +4,17 @@
 #include "Main.hpp"
 
 #ifdef _MSC_VER
+#define UsedCompiler "MSVC"
+#else
+#define UsedCompiler "MinGW"
+#endif
+#ifdef UNICODE
+#define ActiveCharset "Unicode"
+#else
+#define ActiveCharset "ANSI"
+#endif
+
+#ifdef _MSC_VER
 #include <intrin.h>
 __declspec(naked) uintptr_t GetRbp() {
 	__asm {
@@ -141,12 +152,12 @@ NORETURN void AbortMessage(const char* message, ...)
 
 	Aborted = true;
 
-	char stackTraceBuffer[8192];
+	static char stackTraceBuffer[32768];
 	char smallerBuffer[128];
 
 	va_list vl;
 	va_start(vl, message);
-	vsnprintf(stackTraceBuffer, 1024, message, vl);
+	vsnprintf(stackTraceBuffer, 8192, message, vl);
 	va_end(vl);
 
 	// NOTE: I *assume* Windows 2000 was the first to support the "copy from message box"
@@ -196,18 +207,6 @@ NORETURN void AbortMessage(const char* message, ...)
 	strcat(stackTraceBuffer, smallerBuffer);
 
 	// there's gotta be a better way ...
-#ifdef _MSC_VER
-	const char* mingwOrMsvc = "MSVC";
-#else
-	const char* mingwOrMsvc = "MinGW";
-#endif
-
-#ifdef UNICODE
-	const char* unicodeOrAnsi = "Unicode";
-#else
-	const char* unicodeOrAnsi = "ANSI";
-#endif
-
 #ifdef UNICODE
 	const char* debugOrRelease = "debug";
 #else
@@ -225,8 +224,8 @@ NORETURN void AbortMessage(const char* message, ...)
 		sizeof smallerBuffer,
 		"\nDiscordMessenger Version %.2f %s %s %s %s\n\nHere is a stack trace:\n",
 		GetAppVersion(),
-		mingwOrMsvc,
-		unicodeOrAnsi,
+		UsedCompiler,
+		ActiveCharset,
 		debugOrRelease,
 		x64Orx86
 	);
@@ -534,4 +533,23 @@ void SetupCrashDebugging()
 
 	// Step 3. Set the unhandled exception filter.
 	SetUnhandledExceptionFilter(DMUnhandledExceptionFilter);
+}
+
+// This function calls std::terminate() after showing a message box.
+extern "C" void Terminate(const char* message, ...)
+{
+	va_list vargs;
+	va_start(vargs, message);
+	char buffer[4096];
+	vsnprintf(buffer, sizeof buffer, message, vargs);
+	va_end(vargs);
+
+	AbortMessage(
+		"A fatal error has occurred within Discord Messenger. Please report it to iProgramInCpp!\r\n"
+		"You are using the " UsedCompiler "-" ActiveCharset " version.\r\n\r\n"
+		"Details about the error:\r\n\r\n"
+		"%s\r\n\r\n"
+		"Discord Messenger will now close.",
+		buffer
+	);
 }

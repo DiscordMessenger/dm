@@ -1706,8 +1706,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 #ifdef ALLOW_ABORT_HIJACKING
 	SetupCrashDebugging();
 #endif
-	
-	abort();
 
 	ERR_load_crypto_strings();
 	LPCTSTR pClassName = TEXT("DiscordMessengerClass");

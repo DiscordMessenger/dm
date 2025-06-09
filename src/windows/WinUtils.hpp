@@ -170,7 +170,3 @@ void InitializeCOM(); // used by TTS and shell stuff
 #include "ri/reimpl.hpp"
 
 extern "C" void Terminate(const char*, ...);
-
-#ifdef ALLOW_ABORT_HIJACKING
-void SetupAbortDebugging();
-#endif
