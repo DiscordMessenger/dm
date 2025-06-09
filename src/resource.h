@@ -98,7 +98,7 @@
 #define IDI_SCROLL                      98
 #define IDI_NOTIFICATION                99
 #define IDI_NOTIFICATION_2K             100
-#define IDR_NOTIFICATION_CONTEXT        101
+#define IDI_FOLDER                      101
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -149,6 +149,7 @@
 #define IDR_GUILD_CONTEXT               503
 #define IDR_CHANNEL_CONTEXT             505
 #define IDR_DMCHANNEL_CONTEXT           506
+#define IDR_NOTIFICATION_CONTEXT        507
 #define IDS_PROGRAM_NAME                601
 #define IDS_MY_ACCOUNT                  602
 #define IDS_WELCOME_MSG                 603

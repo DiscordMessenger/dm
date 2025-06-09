@@ -1758,8 +1758,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 	// Find the folder icons within shell32.
 	HMODULE hshell32 = GetModuleHandle(TEXT("shell32.dll"));
-	g_folderClosedIcon = LoadIcon(hshell32, MAKEINTRESOURCE(4));
-	g_folderOpenIcon   = LoadIcon(hshell32, MAKEINTRESOURCE(5));
+	if (hshell32) {
+		g_folderClosedIcon = LoadIcon(hshell32, MAKEINTRESOURCE(4));
+		g_folderOpenIcon   = LoadIcon(hshell32, MAKEINTRESOURCE(5));
+	}
+
+	if (!g_folderClosedIcon) g_folderClosedIcon = LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_FOLDER));
+	if (!g_folderOpenIcon)   g_folderOpenIcon   = LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_FOLDER));
 
 	InitializeStatusIcons();
 

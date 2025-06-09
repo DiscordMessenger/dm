@@ -412,6 +412,8 @@ IDI_NOTIFICATION        ICON                    "../res/icons/icon_notification.
 
 IDI_NOTIFICATION_2K     ICON                    "../res/icons/icon_notification_2k.ico"
 
+IDI_FOLDER              ICON                    "../res/icons/icon_folder.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
