@@ -632,11 +632,11 @@ void MessageEditor::Layout()
 		rcClient.top = rcMentionArea.bottom;
 
 		RECT rc = rcMentionArea;
-		rc.left = rc.right - ScaleByDPI(25);
+		rc.left = rc.right - ScaleByDPI(25) - m_cancelTextWidth;
 		MoveWindow(m_mentionCancel_hwnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 
 		rc.right = rc.left;
-		rc.left = rc.right - ScaleByDPI(25);
+		rc.left = rc.right - ScaleByDPI(25) - m_jumpTextWidth;
 		MoveWindow(m_mentionJump_hwnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 
 		// Reposition the mention text and check windows
@@ -670,7 +670,7 @@ void MessageEditor::Layout()
 		rcClient.top = rcMentionArea.bottom;
 
 		RECT rc = rcMentionArea;
-		rc.left = rc.right - ScaleByDPI(25);
+		rc.left = rc.right - ScaleByDPI(25) - m_cancelTextWidth;
 		MoveWindow(m_mentionCancel_hwnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 
 		rc.right = rc.left;
@@ -694,6 +694,9 @@ void MessageEditor::Layout()
 	bool isUploadingAllowed = IsUploadingAllowed();
 	RECT rcButton = rc;
 	rcButton.right = rcButton.left + ScaleByDPI(30);
+	if (NT31SimplifiedInterface())
+		rcButton.right += m_uploadTextWidth;
+
 	if (isUploadingAllowed)
 	{
 		RECT rc2 = rcButton;
@@ -851,19 +854,23 @@ MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
 		newThis
 	);
 
-	// Add the mention items
+
+	int bs_icon = NT31SimplifiedInterface() ? 0 : BS_ICON;
 	LPCTSTR editingText  = TmGetTString(IDS_EDITING_MESSAGE);
 	LPCTSTR replyingText = TmGetTString(IDS_REPLYING_TO_MESSAGE);
 	LPCTSTR mentionText  = TmGetTString(IDS_MENTION);
+	LPCTSTR cancelText   = g_CancelIcon ? TEXT("") : TEXT("Cancel"); // TODO: fetch these from resources
+	LPCTSTR jumpText     = g_JumpIcon   ? TEXT("") : TEXT("Jump");   // TODO: fetch these from resources
+	LPCTSTR uploadText   = g_UploadIcon ? TEXT("") : TEXT("Upload"); // TODO: fetch these from resources
 	newThis->m_editingMessage_hwnd = CreateWindow(WC_STATIC, editingText,  WS_CHILD | SS_SIMPLE | SS_CENTERIMAGE, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEEDITINGLBL,  g_hInstance, NULL);
 	newThis->m_mentionText_hwnd    = CreateWindow(WC_STATIC, replyingText, WS_CHILD | SS_SIMPLE | SS_CENTERIMAGE, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYTO,     g_hInstance, NULL);
 	newThis->m_mentionName_hwnd    = CreateWindow(WC_STATIC, TEXT("UNH"),  WS_CHILD | SS_SIMPLE | SS_CENTERIMAGE, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYUSER,   g_hInstance, NULL);
 	newThis->m_mentionCheck_hwnd   = CreateWindow(WC_BUTTON, mentionText,  WS_CHILD | BS_AUTOCHECKBOX,            0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEMENTCHECK,   g_hInstance, NULL);
-	newThis->m_mentionCancel_hwnd  = CreateWindow(WC_BUTTON, TEXT(""),     WS_CHILD | BS_PUSHBUTTON | BS_ICON,    0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYCANCEL, g_hInstance, NULL);
-	newThis->m_mentionJump_hwnd    = CreateWindow(WC_BUTTON, TEXT(""),     WS_CHILD | BS_PUSHBUTTON | BS_ICON,    0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYJUMP,   g_hInstance, NULL);
+	newThis->m_mentionCancel_hwnd  = CreateWindow(WC_BUTTON, cancelText,   WS_CHILD | BS_PUSHBUTTON | bs_icon,    0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYCANCEL, g_hInstance, NULL);
+	newThis->m_mentionJump_hwnd    = CreateWindow(WC_BUTTON, jumpText,     WS_CHILD | BS_PUSHBUTTON | bs_icon,    0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYJUMP,   g_hInstance, NULL);
 
 	// Add icon buttons
-	newThis->m_btnUpload_hwnd = CreateWindow(WC_BUTTON, TEXT(""), WS_CHILD | BS_PUSHBUTTON | BS_ICON, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEUPLOAD, g_hInstance, NULL);
+	newThis->m_btnUpload_hwnd = CreateWindow(WC_BUTTON, uploadText, WS_CHILD | BS_PUSHBUTTON | bs_icon, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEUPLOAD, g_hInstance, NULL);
 
 	// Pull some initial measurements.
 	HDC hdc = GetDC(newThis->m_hwnd);
@@ -876,6 +883,18 @@ MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
 	SetRectEmpty(&rcMeasure);
 	DrawText(hdc, replyingText, -1, &rcMeasure, DT_CALCRECT);
 	newThis->m_replyToTextWidth = rcMeasure.right - rcMeasure.left + 1;
+
+	SetRectEmpty(&rcMeasure);
+	DrawText(hdc, cancelText, -1, &rcMeasure, DT_CALCRECT);
+	newThis->m_cancelTextWidth = rcMeasure.right - rcMeasure.left + 1;
+
+	SetRectEmpty(&rcMeasure);
+	DrawText(hdc, jumpText, -1, &rcMeasure, DT_CALCRECT);
+	newThis->m_jumpTextWidth = rcMeasure.right - rcMeasure.left + 1;
+
+	SetRectEmpty(&rcMeasure);
+	DrawText(hdc, uploadText, -1, &rcMeasure, DT_CALCRECT);
+	newThis->m_uploadTextWidth = rcMeasure.right - rcMeasure.left + 1;
 
 	SelectObject(hdc, objOld);
 	ReleaseDC(newThis->m_hwnd, hdc);
@@ -891,6 +910,12 @@ MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
 
 	SendMessage(newThis->m_edit_hwnd, WM_SETFONT, (WPARAM)g_SendButtonFont, TRUE);
 	SendMessage(newThis->m_send_hwnd, WM_SETFONT, (WPARAM)g_SendButtonFont, TRUE);
+
+	if (NT31SimplifiedInterface()) {
+		SendMessage(newThis->m_mentionJump_hwnd,   WM_SETFONT, (WPARAM)g_SendButtonFont, TRUE);
+		SendMessage(newThis->m_mentionCancel_hwnd, WM_SETFONT, (WPARAM)g_SendButtonFont, TRUE);
+		SendMessage(newThis->m_btnUpload_hwnd,     WM_SETFONT, (WPARAM)g_SendButtonFont, TRUE);
+	}
 
 	SendMessage(newThis->m_send_hwnd,          BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)g_SendIcon);
 	SendMessage(newThis->m_btnUpload_hwnd,     BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)g_UploadIcon);

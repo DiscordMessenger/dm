@@ -397,7 +397,9 @@ LRESULT MemberList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				// draw profile picture frame
 				int sz = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 				int szDraw = GetProfileBorderSize();
-				ri::DrawIconEx(hdc, rcItem.left, rcItem.top, g_ProfileBorderIcon, szDraw, szDraw, 0, NULL, DI_NORMAL | DI_COMPAT);
+
+				if (!NT31SimplifiedInterface())
+					ri::DrawIconEx(hdc, rcItem.left, rcItem.top, g_ProfileBorderIcon, szDraw, szDraw, 0, NULL, DI_NORMAL | DI_COMPAT);
 
 				// draw profile picture
 				bool hasAlpha = false;

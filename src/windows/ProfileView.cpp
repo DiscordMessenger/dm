@@ -108,7 +108,10 @@ void ProfileView::Paint(HDC hdc)
 	RECT rcProfile = rect;
 	rcProfile.right = pfpX + pfpBorderSize - ScaleByDPI(6);
 	FillRect(hdc, &rcProfile, ri::GetSysColorBrush(PROFILE_VIEW_COLOR));
-	ri::DrawIconEx(hdc, pfpX - ScaleByDPI(6), pfpY - ScaleByDPI(4), g_ProfileBorderIcon, pfpBorderSizeDrawn, pfpBorderSizeDrawn, 0, NULL, DI_NORMAL | DI_COMPAT);
+
+	if (!NT31SimplifiedInterface())
+		ri::DrawIconEx(hdc, pfpX - ScaleByDPI(6), pfpY - ScaleByDPI(4), g_ProfileBorderIcon, pfpBorderSizeDrawn, pfpBorderSizeDrawn, 0, NULL, DI_NORMAL | DI_COMPAT);
+
 	DrawBitmap(hdc, hbm, pfpX, pfpY, NULL, CLR_NONE, pfpSize, 0, hasAlpha);
 
 	DrawActivityStatus(hdc, pfpX, pfpY, activeStatus);

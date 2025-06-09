@@ -126,6 +126,8 @@ int GetGradientInactiveCaptionColor();
 void PrepareCutDownFlags(LPSTR cmdLine);
 int GetCutDownFlags();
 
+#define NT31SimplifiedInterface() (!SupportsDialogEx())
+
 #ifdef USE_DEBUG_PRINTS
 void DbgPrintW(const char* fmt, ...);
 #else

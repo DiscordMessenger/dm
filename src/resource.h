@@ -115,6 +115,8 @@
 #define IDB_STATUS_MASK_MOON            213
 #define IDB_LOGON_BANNER                214
 #define IDB_EMPTY                       215
+#define IDB_DEFAULT_4BPP                216
+#define IDB_EMPTY_4BPP                  217
 #define IDC_ZOOMIN                      350
 #define IDC_ZOOMOUT                     351
 #define IDD_DIALOG_ABOUT                401

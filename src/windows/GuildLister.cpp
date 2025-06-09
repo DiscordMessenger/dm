@@ -32,7 +32,6 @@ GuildLister::~GuildLister()
 		m_hwnd = NULL;
 	}
 
-	assert(!m_more_btn_hwnd);
 	assert(!m_bar_btn_hwnd);
 	assert(!m_tooltip_hwnd);
 	assert(!m_scrollable_hwnd);
@@ -73,8 +72,14 @@ void GuildLister::ProperlyResizeSubWindows()
 	rect = rect2;
 
 	int buttonWidth = (rect.right - rect.left) / 2;
-	MoveWindow(m_more_btn_hwnd, rect.left, rect.bottom - buttonHeight, buttonWidth, buttonHeight, true);
-	MoveWindow(m_bar_btn_hwnd,  rect.right - buttonWidth, rect.bottom - buttonHeight, buttonWidth, buttonHeight, true);
+
+	if (m_more_btn_hwnd) {
+		MoveWindow(m_more_btn_hwnd, rect.left, rect.bottom - buttonHeight, buttonWidth, buttonHeight, true);
+		MoveWindow(m_bar_btn_hwnd,  rect.right - buttonWidth, rect.bottom - buttonHeight, buttonWidth, buttonHeight, true);
+	}
+	else {
+		MoveWindow(m_bar_btn_hwnd, rect.left, rect.bottom - buttonHeight, rect.right - rect.left, buttonHeight, true);
+	}
 
 	UpdateTooltips();
 }
@@ -485,11 +490,14 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 	m_selectedGuild = GetDiscordInstance()->GetCurrentGuildID();
 	if (hdc && hicon)
 	{
-		HICON hborder;
-		if (isCurrent)
-			hborder = g_ProfileBorderIconGold;
-		else
-			hborder = g_ProfileBorderIcon;
+		HICON hborder = NULL;
+
+		if (!NT31SimplifiedInterface()) {
+			if (isCurrent)
+				hborder = g_ProfileBorderIconGold;
+			else
+				hborder = g_ProfileBorderIcon;
+		}
 
 		RECT rcProfile = {
 			rect.left + BORDER_SIZE,
@@ -534,7 +542,8 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 		}
 
 		if (!isFolderIcon) {
-			ri::DrawIconEx(hdc, rect.left + BORDER_SIZE, rect.top + BORDER_SIZE + y, hborder, pfpBorderSize2, pfpBorderSize2, 0, NULL, DI_COMPAT | DI_NORMAL);
+			if (hborder)
+				ri::DrawIconEx(hdc, rect.left + BORDER_SIZE, rect.top + BORDER_SIZE + y, hborder, pfpBorderSize2, pfpBorderSize2, 0, NULL, DI_COMPAT | DI_NORMAL);
 			DrawBitmap(hdc, hicon, rect.left + BORDER_SIZE + ScaleByDPI(6), rect.top + BORDER_SIZE + y + ScaleByDPI(4), NULL, CLR_NONE, GetProfilePictureSize(), GetProfilePictureSize(), hasAlpha);
 		}
 
@@ -1110,13 +1119,15 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				
 				if (sf == 0)
 				{
+					int id = NT31SimplifiedInterface() ? IDB_DEFAULT_4BPP : IDB_DEFAULT;
 					loadedByLoadBitmap = true;
-					hbm = LoadBitmap(g_hInstance, MAKEINTRESOURCE(IDB_DEFAULT));
+					hbm = LoadBitmap(g_hInstance, MAKEINTRESOURCE(id));
 				}
 				else if (avatarlnk.empty())
 				{
+					int id = NT31SimplifiedInterface() ? IDB_EMPTY_4BPP : IDB_EMPTY;
 					loadedByLoadBitmap = true;
-					hbm = LoadBitmap(g_hInstance, MAKEINTRESOURCE(IDB_EMPTY));
+					hbm = LoadBitmap(g_hInstance, MAKEINTRESOURCE(id));
 					textOver = MakeIconStringFromName(name);
 				}
 				else
@@ -1354,13 +1365,21 @@ GuildLister* GuildLister::Create(HWND hwnd, LPRECT pRect)
 		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, newThis->m_scrollable_hwnd, NULL, g_hInstance, NULL
 	);
 
-	newThis->m_more_btn_hwnd = CreateWindow(
-		WC_BUTTON, TEXT(""), BS_PUSHBUTTON | BS_ICON | WS_CHILD | WS_VISIBLE,
-		0, 0, 1, 1, newThis->m_hwnd, (HMENU) GCMD_MORE, g_hInstance, NULL
-	);
+	if (!NT31SimplifiedInterface()) {
+		newThis->m_more_btn_hwnd = CreateWindow(
+			WC_BUTTON, TEXT(""), BS_PUSHBUTTON | BS_ICON | WS_CHILD | WS_VISIBLE,
+			0, 0, 1, 1, newThis->m_hwnd, (HMENU)GCMD_MORE, g_hInstance, NULL
+		);
+	}
+	else {
+		newThis->m_more_btn_hwnd = NULL;
+	}
+
+	LPCTSTR barText = NT31SimplifiedInterface() ? TEXT("Scroll") : TEXT("");
+	int ic = NT31SimplifiedInterface() ? 0 : BS_ICON;
 
 	newThis->m_bar_btn_hwnd = CreateWindow(
-		WC_BUTTON, TEXT(""), BS_PUSHBUTTON | BS_ICON | WS_CHILD | WS_VISIBLE,
+		WC_BUTTON, barText, BS_PUSHBUTTON | ic | WS_CHILD | WS_VISIBLE,
 		0, 0, 1, 1, newThis->m_hwnd, (HMENU) GCMD_BAR, g_hInstance, NULL
 	);
 
@@ -1368,8 +1387,14 @@ GuildLister* GuildLister::Create(HWND hwnd, LPRECT pRect)
 
 	// TODO: other icons
 	int smcx = GetSystemMetrics(SM_CXSMICON);
-	SendMessage(newThis->m_more_btn_hwnd, BM_SETIMAGE, (WPARAM) IMAGE_ICON, (LPARAM) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_GUILDS), IMAGE_ICON, smcx, smcx, LR_SHARED | LR_CREATEDIBSECTION));
-	SendMessage(newThis->m_bar_btn_hwnd,  BM_SETIMAGE, (WPARAM) IMAGE_ICON, (LPARAM) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_SCROLL), IMAGE_ICON, smcx, smcx, LR_SHARED | LR_CREATEDIBSECTION));
+
+	if (!NT31SimplifiedInterface()) {
+		SendMessage(newThis->m_more_btn_hwnd, BM_SETIMAGE, (WPARAM) IMAGE_ICON, (LPARAM) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_GUILDS), IMAGE_ICON, smcx, smcx, LR_SHARED | LR_CREATEDIBSECTION));
+		SendMessage(newThis->m_bar_btn_hwnd,  BM_SETIMAGE, (WPARAM) IMAGE_ICON, (LPARAM) ri::LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_SCROLL), IMAGE_ICON, smcx, smcx, LR_SHARED | LR_CREATEDIBSECTION));
+	}
+	else {
+		SendMessage(newThis->m_bar_btn_hwnd, WM_SETFONT, (WPARAM)g_SendButtonFont, TRUE);
+	}
 
 	SetWindowPos(newThis->m_tooltip_hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 	

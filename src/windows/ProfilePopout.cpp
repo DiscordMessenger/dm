@@ -55,6 +55,8 @@ bool ProfilePopout::Layout(HWND hWnd, SIZE& fullSize)
 		bShouldNoteBeEditable = true;
 	}
 
+	std::string pfx = NT31SimplifiedInterface() ? "DC: " : "";
+
 	Guild* gld = GetDiscordInstance()->GetGuild(m_guild);
 	GuildMember* gm = nullptr;
 	if (pProf->HasGuildMemberProfile(m_guild))
@@ -67,7 +69,7 @@ bool ProfilePopout::Layout(HWND hWnd, SIZE& fullSize)
 	LPTSTR pronouns    = ConvertCppStringToTString(pProf->m_pronouns);
 	LPTSTR bio         = ConvertToTStringAddCR(pProf->m_bio);
 	LPTSTR note        = ConvertToTStringAddCR(pProf->m_note);
-	LPTSTR dscJoinedAt = ConvertCppStringToTString(pProf->m_snowflake ? FormatDate(ExtractTimestamp(pProf->m_snowflake) / 1000) : "");
+	LPTSTR dscJoinedAt = ConvertCppStringToTString(pfx + (pProf->m_snowflake ? FormatDate(ExtractTimestamp(pProf->m_snowflake) / 1000) : ""));
 	LPTSTR gldJoinedAt = ConvertCppStringToTString((gm && gm->m_joinedAt) ? FormatDate(gm->m_joinedAt) : "");
 
 	// Get a HDC to measure the user information.
@@ -353,18 +355,26 @@ bool ProfilePopout::Layout(HWND hWnd, SIZE& fullSize)
 		if (rcMemberSinceDiscord.bottom) {
 			int icsz = GetSystemMetrics(SM_CXSMICON);
 			hChild = GetDlgItem(hWnd, IDC_ICON_DISCORD);
-			ShowWindow(hChild, SW_SHOW);
-			MoveWindow(hChild, pos.x, pos.y, joinedAtIconSize, joinedAtIconSize, TRUE);
 
-			// note: the old icon may have been set by the dialog itself.
-			HICON hic = (HICON) SendMessage(hChild, STM_SETIMAGE, IMAGE_ICON, (LPARAM)ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)), IMAGE_ICON, icsz, icsz, LR_CREATEDIBSECTION));
-			if (hic) DestroyIcon(hic);
+			int jais = joinedAtIconSize;
+			if (NT31SimplifiedInterface()) {
+				ShowWindow(hChild, SW_HIDE);
+				jais = 0;
+			}
+			else {
+				ShowWindow(hChild, SW_SHOW);
+				MoveWindow(hChild, pos.x, pos.y, joinedAtIconSize, joinedAtIconSize, TRUE);
+
+				// note: the old icon may have been set by the dialog itself.
+				HICON hic = (HICON) SendMessage(hChild, STM_SETIMAGE, IMAGE_ICON, (LPARAM)ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)), IMAGE_ICON, icsz, icsz, LR_CREATEDIBSECTION));
+				if (hic) DestroyIcon(hic);
+			}
 
 			hChild = GetDlgItem(hWnd, IDC_DISCORD_JOIN_DATE);
 			ShowWindow(hChild, SW_SHOW);
 			SetWindowText(hChild, dscJoinedAt);
 			SetWindowFont(hChild, g_MessageTextFont, TRUE);
-			MoveWindow(hChild, pos.x + joinedAtIconSize + ScaleByDPI(4), pos.y, rcMemberSinceDiscord.right, rcMemberSinceDiscord.bottom, TRUE);
+			MoveWindow(hChild, pos.x + jais + ScaleByDPI(4), pos.y, rcMemberSinceDiscord.right, rcMemberSinceDiscord.bottom, TRUE);
 		}
 		else {
 			ShowWindow(GetDlgItem(hWnd, IDC_ICON_DISCORD), SW_HIDE);

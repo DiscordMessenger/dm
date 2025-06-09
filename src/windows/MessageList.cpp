@@ -1951,7 +1951,10 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 			int pfpBordOffY = MulDiv(ScaleByDPI(4), ScaleByDPI(16), GetProfilePictureSize());
 			int pfpX = rcReply.left;
 			int pfpY = rcReply.top + (rcReply.bottom - rcReply.top - pfpSize) / 2;
-			ri::DrawIconEx(hdc, pfpX - pfpBordOffX, pfpY - pfpBordOffY, g_ProfileBorderIcon, pfpBordSize, pfpBordSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+			
+			if (!NT31SimplifiedInterface())
+				ri::DrawIconEx(hdc, pfpX - pfpBordOffX, pfpY - pfpBordOffY, g_ProfileBorderIcon, pfpBordSize, pfpBordSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+			
 			bool hasAlpha = false;
 			GetAvatarCache()->AddImagePlace(refMsg.m_avatar, eImagePlace::AVATARS, refMsg.m_avatar, refMsg.m_author_snowflake);
 			HBITMAP hbm = GetAvatarCache()->GetImage(refMsg.m_avatar, hasAlpha)->GetFirstFrame();
@@ -2695,7 +2698,9 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			};
 			item.m_avatarRect = pfRect;
 
-			ri::DrawIconEx(hdc, pfRect.left - offs1, pfRect.top - offs2, g_ProfileBorderIcon, szScaled, szScaled, 0, NULL, DI_NORMAL | DI_COMPAT);
+			if (!NT31SimplifiedInterface())
+				ri::DrawIconEx(hdc, pfRect.left - offs1, pfRect.top - offs2, g_ProfileBorderIcon, szScaled, szScaled, 0, NULL, DI_NORMAL | DI_COMPAT);
+
 			if (inView)
 			{
 				// draw the avatar

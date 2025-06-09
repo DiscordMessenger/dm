@@ -27,6 +27,9 @@ private:
 	int m_initialHeight = 0;
 	int m_mentionTextWidth = 0;
 	int m_replyToTextWidth = 0;
+	int m_cancelTextWidth = 0;
+	int m_jumpTextWidth = 0;
+	int m_uploadTextWidth = 0;
 	int m_mentionAreaHeight = 0;
 	int m_textLength = 0;
 	bool m_bReplying = false;

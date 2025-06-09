@@ -1323,6 +1323,10 @@ IDB_LOGON_BANNER        BITMAP                  "../res/bitmaps/bmp_banner.bmp"
 
 IDB_EMPTY               BITMAP                  "../res/bitmaps/bmp_empty.bmp"
 
+IDB_DEFAULT_4BPP        BITMAP                  "../res/bitmaps/bmp_default_4bpp.bmp"
+
+IDB_EMPTY_4BPP          BITMAP                  "../res/bitmaps/bmp_empty_4bpp.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
