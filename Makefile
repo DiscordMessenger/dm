@@ -68,9 +68,9 @@ else
 endif
 
 ifeq ($(DEBUG), yes)
-	DEBUG_DEF = -D_DEBUG -g -O0
+	DEBUG_DEF = -D_DEBUG -g -O0 -fno-omit-frame-pointer
 else
-	DEBUG_DEF = -DNDEBUG -O2
+	DEBUG_DEF = -DNDEBUG -O2 -fno-omit-frame-pointer
 endif
 
 XL = -Xlinker

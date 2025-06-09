@@ -12,6 +12,7 @@
 #define __MINGW32__ // so that it doesn't use inet_pton
 #endif
 
+#define CPPHTTPLIB_NO_EXCEPTIONS
 #include <httplib/httplib.h>
 
 constexpr size_t REPORT_PROGRESS_EVERY_BYTES = 15360; // arbitrary

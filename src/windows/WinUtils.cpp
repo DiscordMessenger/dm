@@ -1558,14 +1558,18 @@ struct StackFrame {
 };
 
 #ifdef _MSC_VER
+#include <intrin.h>
+
 __declspec(naked) uintptr_t GetRbp() {
 	__asm {
 		mov eax, ebp
 		ret
 	}
 }
+#define GetReturnAddress() _ReturnAddress()
 #else
 #define GetRbp() __builtin_frame_address(0)
+#define GetReturnAddress() __builtin_return_address(0)
 #endif
 
 struct LoadedModule {
@@ -1609,7 +1613,48 @@ NORETURN void AbortMessage(const char* message, ...);
 
 NORETURN void WINAPI HijackedAbort()
 {
-	AbortMessage("Oops! DiscordMessenger just called abort()!");
+	AbortMessage("Oops! DiscordMessenger just called abort()! ReturnAddress=%p", GetReturnAddress());
+}
+
+//#define D(...) do { FILE *__ = fopen("somethingelse.txt", "a+"); fprintf(__, __VA_ARGS__); fprintf(__, "\n"); fclose(__); } while (0)
+
+bool SafeMemcpy(void* dst, const void* src, size_t sz)
+{
+	if ((uintptr_t) src >= 0x80000000) {
+		// it seems that on 9x it doesn't bother anyone that
+		// we're querying in kernel space...
+		return false;
+	}
+	
+	// Probe this address with VirtualQuery
+	MEMORY_BASIC_INFORMATION mbi;
+	memset(&mbi, 0, sizeof mbi);
+	DWORD res = VirtualQuery((void*) src, &mbi, sizeof(mbi));
+	
+	if (res == 0)
+		return false;
+	
+	// is this memory free
+	if (mbi.Type == MEM_FREE)
+		return false;
+
+	if (mbi.Protect & PAGE_NOACCESS)
+		return false;
+	
+	if (mbi.Protect & PAGE_GUARD)
+		return false;
+	
+	// highly unlikely that this stack frame wouldn't be aligned to at least 4 bytes
+	if (sz == 4 && ((uintptr_t)src & 3) != 0)
+		return false;
+	
+	// also highly unlikely that stuff below a megabyte is safe to access
+	if ((uintptr_t) src < 0x100000)
+		return false;
+
+	// no it's not. therefore this is safe
+	memcpy(dst, src, sz);
+	return true;
 }
 
 NORETURN void AbortMessage(const char* message, ...)
@@ -1694,7 +1739,9 @@ NORETURN void AbortMessage(const char* message, ...)
 #else
 	const char* x64Orx86 = "x86";
 #endif
-
+	
+	MessageBoxA(NULL, message, "adsd", 0);
+	
 	snprintf(
 		smallerBuffer,
 		sizeof smallerBuffer,
@@ -1710,35 +1757,72 @@ NORETURN void AbortMessage(const char* message, ...)
 
 	// Figure out the current stack trace.
 	StackFrame* sf = (StackFrame*)GetRbp();
+	StackFrame* first = sf;
 
 	int depth = 0;
 
 	while (sf)
 	{
-		if (sf->ip == 0)
-			break;
-
-		if (depth++ > 48)
+		if (depth++ > 48) {
 			strcat(stackTraceBuffer, "[stack trace goes deeper]");
-		
-		auto pr = ResolveName((uintptr_t)sf->ip);
-		snprintf(smallerBuffer, sizeof smallerBuffer, "* %p [%s(%p)+%X]\n", sf->ip, pr.first, (void*) pr.second, ((uintptr_t)sf->ip - pr.second));
-		strcat(stackTraceBuffer, smallerBuffer);
-
-		if (sf->next != 0 && abs((intptr_t)sf->next - (intptr_t)sf) > 0x10000)
-		{
-			strcat(stackTraceBuffer, "[stack trace diff too big, stopping now to avoid a crash]");
 			break;
 		}
+		
+		//snprintf(smallerBuffer,sizeof smallerBuffer,"Depth = %d  SF=%p", depth, sf);
+		//MessageBoxA(NULL, smallerBuffer, NULL, 0);
+		
+		void* ip;
+		if (!SafeMemcpy(&ip, &sf->ip, sizeof(void*))) {
+			snprintf(smallerBuffer, sizeof smallerBuffer, "[stack trace failed to fetch from %p]", &sf->ip);
+			strcat(stackTraceBuffer, smallerBuffer);
+			break;
+		}
+		
+		if (ip == NULL)
+			break;
 
+		auto pr = ResolveName((uintptr_t) ip);
+		snprintf(smallerBuffer, sizeof smallerBuffer, "* [F:%p] %p [%s(%p)+%X]\n", sf, sf->ip, pr.first, (void*) pr.second, ((uintptr_t)sf->ip - pr.second));
+		strcat(stackTraceBuffer, smallerBuffer);
+		
+		if (sf == sf->next) {
+			strcat(stackTraceBuffer, "[infinite loop detected]");
+			break;
+		}
+		//if ((uintptr_t)sf->next < (uintptr_t)sf) {
+		//	snprintf(smallerBuffer, sizeof smallerBuffer, "[stack trace found to go backwards  %p to %p]", sf, sf->next);
+		//	strcat(stackTraceBuffer, smallerBuffer);
+		//	break;
+		//}
+		
 		sf = sf->next;
 	}
+	
+	strcat(stackTraceBuffer, "\nAnd here's a stack dump.\n");
+	uint8_t* sfu = (uint8_t*)first;
+	for (int i = 0; i < 128; i += 16) {
+		snprintf(smallerBuffer, sizeof smallerBuffer, "%08x: ", sfu+i);
+		strcat(stackTraceBuffer, smallerBuffer);
+		for (int j = 0; j < 16; j++) {
+			uint8_t s;
+			strcat(stackTraceBuffer, " ");
+			
+			if (!SafeMemcpy(&s, &sfu[i+j], 1)) {
+				strcat(stackTraceBuffer, "??");
+			}
+			else {
+				snprintf(smallerBuffer, sizeof smallerBuffer, "%02x", s);
+				strcat(stackTraceBuffer, smallerBuffer);
+			}
+		}
+		strcat(stackTraceBuffer, "\n");
+	}
+	
+	strcat(stackTraceBuffer, "Enjoy debugging this thing!");
 
 	MessageBoxA(NULL, stackTraceBuffer, "Discord Messenger fatal error! (Press CTRL-C to copy!)", MB_ICONERROR);
 	ExitProcess(1);
 }
-
-void *HijackedAbortPtr = (void*) &HijackedAbort;
 
 bool FindLoadedDLLsAutomatically()
 {
@@ -1789,31 +1873,139 @@ LONG WINAPI DMUnhandledExceptionFilter(PEXCEPTION_POINTERS ExceptionInfo)
 	);
 }
 
+#include <csignal>
+
+//#define FILE_DEBUG_HIJACKER
+//#define ABORT_ON_EXCEPTION
+
+#ifdef FILE_DEBUG_HIJACKER
+#define HijackDbgPrint(...) do { fprintf(something, __VA_ARGS__); fprintf(something, "\n"); } while (0)
+#else
+#define HijackDbgPrint(...) DbgPrintW(__VA_ARGS__)
+#endif
+
+void SignalAbort(int signum)
+{
+	AbortMessage("Oops! DiscordMessenger caught signal number %d! (SIGABRT = %d)", signum, SIGABRT);
+}
+
+void CppTerminateAbort()
+{
+	AbortMessage("Oops! DiscordMessenger called std::terminate or something!");
+}
+
+void *HijackedAbortPtr = (void*) &HijackedAbort;
+void *CppTerminateAbortPtr = (void*) &CppTerminateAbort;
 
 // Hijacks the Abort function from MSVCRT.DLL or UCRTBASE.DLL,
 // gets information on loaded modules, and sets up an unhandled
 // exception filter.
 void SetupAbortDebugging()
 {
+#ifdef FILE_DEBUG_HIJACKER
+	FILE* something = fopen("something.txt", "w");
+#endif
+	
 	// Step 1. Hijack abort()
 	if (sizeof(uintptr_t) > 4)
 	{
-		DbgPrintW("Abort hijack disabled.  The target is 64-bit.");
+		HijackDbgPrint("Abort hijack disabled.  The target is 64-bit.");
 		return;
+	}
+	
+	void* patchAt = (void*) &abort;
+	
+	// We need to find the actual address of abort() from within the loaded libraries.
+	// This means that just "&abort" does not do as it links to our thunk which jumps
+	// indirectly to the actual loaded abort().
+	//
+	// Now, import thunks are typically encoded in FF 25 XX XX XX XX. So, check for
+	// those bytes' presence.
+	uint8_t* abortPtr = (uint8_t*) &abort;
+	if (abortPtr[0] != 0xFF || abortPtr[1] != 0x25)
+	{
+		// Wow! It looks like this ain't an import thunk of a known kind.
+		auto x = abortPtr;
+		HijackDbgPrint("Abort hijack may be ineffective.  The import thunk looks weird.  Here is a dump:");
+		HijackDbgPrint("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
+			x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7],
+			x[8], x[9], x[10], x[11], x[12], x[13], x[14], x[15]);
+	}
+	else
+	{
+		// It is.  This means that the address we're looking for is after the FF 25 bytes.
+		void*** ptr = (void***)(abortPtr + 2);
+		
+		// ptr - The address of the offset of the FF 25 XX XX XX XX instruction
+		// *ptr - The address where the JMP loads the address to jump to
+		// **ptr = The address to jump to
+		
+		HijackDbgPrint("Found import thunk at %p, jumping to indirection via %p", ptr, *ptr);
+		HijackDbgPrint("The indirection leads to %p", **ptr);
+		
+		patchAt = **ptr;
 	}
 	
 	uintptr_t Patch[2];
 	Patch[0] = 0x25FF9090;                     // NOP; NOP; JMP [modrm]
 	Patch[1] = (uintptr_t) &HijackedAbortPtr;  // [absolute indirect 32-bit address]
 	
-	if (!PatchMemory((void*) &abort, Patch, sizeof Patch))
+	if (!PatchMemory((void*) patchAt, Patch, sizeof Patch))
 	{
-		DbgPrintW("Abort hijack disabled.  Could not write 8 bytes to %p.", &abort);
+		HijackDbgPrint("Abort hijack disabled.  Could not write 8 bytes to %p.", &abort);
 		return;
 	}
 	
-	DbgPrintW("Abort hijack engaged.");
-
+	HijackDbgPrint("Abort hijack engaged.  abort() = %p, patched at %p, hijacked to %p", &abort, patchAt, &HijackedAbort);
+	
+	// also register a signal handler, because as it turns out, MSVCRT from Win98
+	// *does*, indeed, emit a SIGABRT, and as it also turns out, our hijack method
+	// isn't 100% reliable.
+	signal(SIGABRT, SignalAbort);
+	
+	// Step 1.5.  <sigh> I have to debug this separately don't I?
+#ifdef ABORT_ON_EXCEPTION
+	HMODULE hmod = GetModuleHandleA("libstdc++-6.dll");
+	if (!hmod) {
+		hmod = GetModuleHandleA("lstdcpp.dll");
+	}
+	
+	if (!hmod) {
+		HijackDbgPrint("C++ terminate hijack failed.  Libstdc++-6.dll not loaded.");
+	}
+	else {
+		const char* fname = "__cxa_throw";
+		FARPROC fp = GetProcAddress(hmod, fname);
+		if (!fp) {
+			HijackDbgPrint("C++ terminate hijack failed. Cannot find %s.", fname);
+		}
+		else {
+			// Patch that thing as well
+			// 
+			// It starts with push ebp; push edi; push esi; push ebx; sub esp, 0x2C (55 57 56 53 83 EC 2C)
+			// I was going to allow restoration but for debugging I won't.
+			uint8_t* patch = (uint8_t*) fp;
+			void* destptr = &CppTerminateAbortPtr;
+			uint8_t patch_data[6];
+			patch_data[0] = 0xFF; // jmp
+			patch_data[1] = 0x25; // mod_rm
+			memcpy(&patch_data[2], &destptr, sizeof(void*));
+			
+			// now we can patch
+			if (!PatchMemory((void*) fp, patch_data, 6)) {
+				HijackDbgPrint("C++ terminate hijack failed. Cannot patch 6 bytes.");
+			}
+			else {
+				HijackDbgPrint("C++ terminate hijack engaged.  Function = %p, hijacked to %p", patch, &CppTerminateAbort);
+			}
+		}
+	}
+#endif
+	
+#ifdef FILE_DEBUG_HIJACKER
+	fclose(something);
+#endif
+	
 	// Step 2. Find all loaded modules.
 	// We either import toolhelp32 functions from Kernel32.dll and find
 	// them that way, or just come with our own hardcoded list.
