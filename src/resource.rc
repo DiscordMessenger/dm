@@ -82,7 +82,7 @@ BEGIN
     END
     POPUP "&Actions"
     BEGIN
-        MENUITEM "&Search...\tCtrl+F",          ID_ACTIONS_SEARCH
+        MENUITEM "&Search...\tCtrl+F",          ID_ACTIONS_SEARCH, GRAYED
         MENUITEM "Quick Switcher...\tCtrl+K",   ID_ACTIONS_QUICKSWITCHER
         MENUITEM SEPARATOR
         MENUITEM "New Group &DM...",            ID_ACTIONS_NEWGROUPDM, GRAYED
@@ -836,9 +836,9 @@ BEGIN
     PUSHBUTTON      "Done",IDOK,174,274,50,14
     GROUPBOX        "My Account",IDC_STATIC,7,7,218,36
     GROUPBOX        "Appearance",IDC_STATIC,7,45,218,77
-    LTEXT           "Static",IDC_MY_ACCOUNT_NAME,53,17,135,8
+    LTEXT           "Static",IDC_MY_ACCOUNT_NAME,52,17,135,8
     LTEXT           "Username:",IDC_STATIC,12,17,36,8
-    LTEXT           "*****@*****.***",IDC_EMAIL_DISPLAY,54,29,114,8
+    LTEXT           "*****@*****.***",IDC_EMAIL_DISPLAY,52,29,114,8
     LTEXT           "Email:",IDC_STATIC,12,29,20,8
     PUSHBUTTON      "Reveal",IDC_REVEALEMAIL,169,26,50,14
     CONTROL         "Cozy",IDC_APPEARANCE_COZY,"Button",BS_AUTORADIOBUTTON,80,56,32,10

@@ -356,13 +356,22 @@ LPTSTR ConvertCppStringToTString(const std::string& sstr, size_t* lenOut)
 		if (sz > INT_MAX - 2)
 			sz = INT_MAX - 2;
 
+		CHAR defaultChar = 0x7F;
+
 		str = (LPTSTR) calloc(sz + 1, sizeof(TCHAR));
-		int sz2 = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DEFAULTCHAR, wcs, index, str, sz + 1, NULL, NULL);
-		if (sz2 == 0) {
-			DbgPrintW("Second WideCharToMultiByte failed: %d", GetLastError());
-			free(wcs);
-			free(str);
-			goto dumbConversion;
+		int sz2 = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DEFAULTCHAR, wcs, index, str, sz + 1, &defaultChar, NULL);
+		if (sz2 == 0)
+		{
+			// CP_ACP might be UTF-8 for some reason, try with the default one
+			sz2 = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DEFAULTCHAR, wcs, index, str, sz + 1, NULL, NULL);
+			
+			if (sz2 == 0)
+			{
+				DbgPrintW("Second WideCharToMultiByte failed: %d", GetLastError());
+				free(wcs);
+				free(str);
+				goto dumbConversion;
+			}
 		}
 
 		// converted!
