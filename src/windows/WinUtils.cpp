@@ -914,7 +914,6 @@ int GetCutDownFlags()
 
 bool SupportsDialogEx()
 {
-	return false;
 	static bool _initted = false;
 	static bool _supports = false;
 
@@ -951,7 +950,6 @@ bool SupportsDialogEx()
 
 bool Supports32BitIcons()
 {
-	return false;
 	static bool _initted = false;
 	static bool _supports = false;
 

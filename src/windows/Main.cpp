@@ -1730,7 +1730,29 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	g_backgroundBrush = ri::GetSysColorBrush(COLOR_3DFACE);
 
 	SetupCachePathIfNeeded();
-	GetLocalSettings()->Load();
+
+	LocalSettings* pSettings = GetLocalSettings();
+	DWORD version = GetVersion();
+
+	// Load the settings, and fix up some settings that are
+	// actually bad to leave on on NT 3.x or NT 4
+	pSettings->Load();
+
+	if (LOBYTE(version) < 5 && pSettings->GetMessageStyle() == MS_GRADIENT)
+	{
+		// You probably shouldn't be using the Gradient
+		// theme by default because it looks like crap.
+		// That's why I disabled it.
+		pSettings->SetMessageStyle(MS_3DFACE);
+	}
+
+	if (LOBYTE(version) < 4)
+	{
+		// You definitely shouldn't minimize yourself to the
+		// taskbar because there is no taskbar to minimize
+		// yourself to.
+		pSettings->SetMinimizeToNotif(false);
+	}
 
 	SetUserScale(GetLocalSettings()->GetUserScale());
 
