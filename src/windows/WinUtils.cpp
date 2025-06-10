@@ -4,6 +4,7 @@
 #endif
 
 #include <algorithm>
+#include <climits>
 #include <windows.h>
 #include <commctrl.h>
 #include <commdlg.h>
