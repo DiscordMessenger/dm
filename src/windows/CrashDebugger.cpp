@@ -335,6 +335,10 @@ bool FindLoadedDLLsAutomatically()
 
 LONG WINAPI DMUnhandledExceptionFilter(PEXCEPTION_POINTERS ExceptionInfo)
 {
+	// Is this NT status a "warning"
+	if ((ExceptionInfo->ExceptionRecord->ExceptionCode & 0xF0000000) == 0x40000000)
+		return EXCEPTION_CONTINUE_SEARCH;
+
 	auto er = ExceptionInfo->ExceptionRecord;
 	auto cr = ExceptionInfo->ContextRecord;
 
@@ -345,12 +349,14 @@ LONG WINAPI DMUnhandledExceptionFilter(PEXCEPTION_POINTERS ExceptionInfo)
 
 	AbortMessage(
 		"Oops! DiscordMessenger just crashed!\n\n"
-		"Exception Code: %08Xs\n"
+		"Thread ID: %u\n"
+		"Exception Code: %08X\n"
 		"Exception Address: %p\n"
 		"Exception Parameters: %p %p%s\n"
 		"EIP=%08X EFLAGS=%08X \n"
 		"EAX=%08X EBX=%08X ECX=%08X EDX=%08X\n"
 		"ESI=%08X EDI=%08X ESP=%08X EBP=%08X\n",
+		GetCurrentThreadId(),
 		er->ExceptionCode,
 		er->ExceptionAddress,
 		er->NumberParameters >= 1 ? er->ExceptionInformation[0] : 0,

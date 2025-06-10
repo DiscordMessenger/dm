@@ -459,6 +459,8 @@ public:
 		return m_bInvertTextColors ? (color ^ 0xFFFFFF) : color;
 	}
 
+	void DrawReplyPieceIcon(HDC hdc, int leftX, int topY);
+
 public:
 	MessageList();
 	~MessageList();

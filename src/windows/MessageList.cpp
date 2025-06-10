@@ -1901,6 +1901,27 @@ COLORREF MessageList::DrawMentionBackground(HDC hdc, RECT& rc, COLORREF chosenBk
 	return color;
 }
 
+void MessageList::DrawReplyPieceIcon(HDC hdc, int leftX, int topY)
+{
+	if (g_ReplyPieceIcon) {
+		const int iconSize = ScaleByDPI(32);
+		ri::DrawIconEx(hdc, leftX, topY, g_ReplyPieceIcon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+		return;
+	}
+
+	HPEN hpen = CreatePen(PS_SOLID, 3, InvertIfNeeded(GetSysColor(COLOR_WINDOWTEXT)));
+	HGDIOBJ old = SelectObject(hdc, hpen);
+
+	POINT ptold = {};
+	MoveToEx(hdc, leftX + 24, topY + 22, &ptold);
+	LineTo(hdc, leftX + 1, topY + 22);
+	LineTo(hdc, leftX + 1, topY + 31);
+	MoveToEx(hdc, ptold.x, ptold.y, NULL);
+
+	SelectObject(hdc, old);
+	DeletePen(hpen);
+}
+
 int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 {
 	const int pfpOffset = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
@@ -1930,12 +1951,18 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 			rcReply.bottom + ScaleByDPI(5)
 		);
 		SelectClipRgn(hdc, rgn);
-		ri::DrawIconEx(hdc, rcReply.left + iconOffset, rcReply.bottom + ScaleByDPI(5) - iconSize, g_ReplyPieceIcon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+
+		DrawReplyPieceIcon(hdc, rcReply.left + iconOffset, rcReply.bottom + ScaleByDPI(5) - iconSize);
+		if (g_ReplyPieceIcon)
+			ri::DrawIconEx(hdc, rcReply.left + iconOffset, rcReply.bottom + ScaleByDPI(5) - iconSize, g_ReplyPieceIcon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+
 		SelectClipRgn(hdc, NULL);
 		DeleteRgn(rgn);
 	}
 	else {
-		ri::DrawIconEx(hdc, rcReply.left + iconOffset, rcReply.bottom + ScaleByDPI(5) - iconSize, g_ReplyPieceIcon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
+		DrawReplyPieceIcon(hdc, rcReply.left + iconOffset, rcReply.bottom + ScaleByDPI(5) - iconSize);
+		if (g_ReplyPieceIcon)
+			ri::DrawIconEx(hdc, rcReply.left + iconOffset, rcReply.bottom + ScaleByDPI(5) - iconSize, g_ReplyPieceIcon, iconSize, iconSize, 0, NULL, DI_COMPAT | DI_NORMAL);
 	}
 
 	rcReply.left += offset2 + offset3;
@@ -3724,7 +3751,8 @@ void MessageList::InitializeClass()
 
 	RegisterClass(&wc);
 
-	g_ReplyPieceIcon = LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_REPLY_PIECE)));
+	if (!NT31SimplifiedInterface())
+		g_ReplyPieceIcon = LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_REPLY_PIECE)));
 }
 
 void MessageList::UpdateBackgroundBrush()
