@@ -235,23 +235,144 @@ void CopyStringToClipboard(const std::string& str)
 	}
 }
 
+// Borrowed from NanoShellOS: https://github.com/iProgramMC/NanoShellOS/blob/master/src/utf8.c
+#define REPLACEMENT_CHAR 0xFFFD
+int Utf8DecodeCharacter(const char* pByteSeq, int* pSizeOut)
+{
+	const uint8_t* chars = (const uint8_t*)pByteSeq;
+
+	uint8_t char0 = chars[0];
+
+	if (char0 < 0x80)
+	{
+		// 1 byte ASCII character. Fine
+		if (pSizeOut) *pSizeOut = 1;
+		return char0;
+	}
+
+	char char1 = chars[1];
+	if (char1 == 0) return REPLACEMENT_CHAR; // this character is broken.
+	if (char0 < 0xE0)
+	{
+		// 2 byte character.
+		int codepoint = ((char0 & 0x1F) << 6) | (char1 & 0x3F);
+		if (pSizeOut) *pSizeOut = 2;
+		return codepoint;
+	}
+
+	char char2 = chars[2];
+	if (char2 == 0) return REPLACEMENT_CHAR; // this character is broken.
+	if (char0 < 0xF0)
+	{
+		// 3 byte character.
+		int codepoint = ((char0 & 0xF) << 12) | ((char1 & 0x3F) << 6) | (char2 & 0x3F);
+		if (pSizeOut) *pSizeOut = 3;
+		return codepoint;
+	}
+
+	char char3 = chars[3];
+	// 4 byte character.
+	if (char3 == 0) return REPLACEMENT_CHAR;
+
+	int codepoint = ((char0 & 0x07) << 18) | ((char1 & 0x3F) << 12) | ((char2 & 0x3F) << 6) | (char3 & 0x3F);
+	if (pSizeOut) *pSizeOut = 4;
+	return codepoint;
+}
+
 LPTSTR ConvertCppStringToTString(const std::string& sstr, size_t* lenOut)
 {
+#ifdef UNICODE
 	size_t sz = sstr.size() + 1;
 	TCHAR* str = (TCHAR*)calloc(sz, sizeof(TCHAR));
-
-#ifdef UNICODE
-	size_t convertedChars = MultiByteToWideChar(CP_UTF8, 0, sstr.c_str(), -1, str, (int) sz);
+	size_t convertedChars = (size_t)MultiByteToWideChar(CP_UTF8, 0, sstr.c_str(), -1, str, (int) sz);
 #else // ANSI
-	strncpy(str, sstr.c_str(), sz);
-	str[sz - 1] = 0;
-	size_t convertedChars = sz - 1;
+	size_t convertedChars = 0;
+	LPTSTR str = NULL;
+
+	// check if this string is pure ASCII
+	bool isPureAscii = true;
+	const char* ptr = sstr.c_str();
+	while (*ptr) {
+		if (((int)*ptr) & 0x80) {
+			isPureAscii = false;
+			break;
+		}
+		ptr++;
+	}
+
+	if (isPureAscii)
+	{
+	dumbConversion:
+		size_t sz = sstr.size() + 1;
+		str = (TCHAR*)calloc(sz, sizeof(TCHAR));
+		strncpy(str, sstr.c_str(), sz);
+		str[sz - 1] = 0;
+		convertedChars = sz - 1;
+	}
+	else
+	{
+		// not pure ASCII
+		// decode all of the UTF-8 characters into a wide character string
+		size_t index = 0, maxsz = sstr.size() + 2;
+		WCHAR* wcs = (WCHAR*) calloc(maxsz, sizeof(WCHAR));
+
+		ptr = sstr.c_str();
+		while (*ptr && index + 1 < maxsz)
+		{
+			int sz = 0;
+			int decoded = Utf8DecodeCharacter(ptr, &sz);
+			if (sz == 0) {
+				sz = 1;
+				decoded = REPLACEMENT_CHAR;
+			}
+
+			if (decoded > 0xFFFF)
+				decoded = REPLACEMENT_CHAR;
+
+			wcs[index++] = (WCHAR) decoded;
+			ptr += sz;
+		}
+
+		wcs[index] = 0;
+
+		// This is a scam and causes the app to not parse the UTF-8 at all.
+		// Believe it or not I also tried to add the info that we support UTF-8
+		// to the manifest but it still doesn't work.
+		//int codepage = CP_ACP;
+		//if (LOBYTE(GetVersion()) >= 6)
+		//	codepage = CP_UTF8;
+
+		// and then try to turn it into a multi-byte string
+		int sz = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DEFAULTCHAR, wcs, index, NULL, 0, NULL, NULL);
+		if (sz == 0) {
+			// failure ... just do the dumb conversion
+			DbgPrintW("WideCharToMultiByte failed: %d", GetLastError());
+			free(wcs);
+			goto dumbConversion;
+		}
+
+		// avoid overflow
+		if (sz > INT_MAX - 2)
+			sz = INT_MAX - 2;
+
+		str = (LPTSTR) calloc(sz + 1, sizeof(TCHAR));
+		int sz2 = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DEFAULTCHAR, wcs, index, str, sz + 1, NULL, NULL);
+		if (sz2 == 0) {
+			DbgPrintW("Second WideCharToMultiByte failed: %d", GetLastError());
+			free(wcs);
+			free(str);
+			goto dumbConversion;
+		}
+
+		// converted!
+		convertedChars = (size_t) sz2;
+	}
 #endif
 
 	if (lenOut)
 		*lenOut = convertedChars;
 
-	return (LPTSTR)str;
+	return (LPTSTR) str;
 }
 
 LPTSTR ConvertToTStringAddCR(const std::string& str, size_t* lenOut)
