@@ -278,7 +278,7 @@ NORETURN void AbortMessage(const char* message, ...)
 	strcat(stackTraceBuffer, "\nAnd here's a stack dump.\n");
 	uint8_t* sfu = (uint8_t*)first;
 	for (int i = 0; i < 128; i += 16) {
-		snprintf(smallerBuffer, sizeof smallerBuffer, "%08x: ", sfu+i);
+		snprintf(smallerBuffer, sizeof smallerBuffer, "%p: ", sfu+i);
 		strcat(stackTraceBuffer, smallerBuffer);
 		for (int j = 0; j < 16; j++) {
 			uint8_t s;
@@ -338,22 +338,33 @@ LONG WINAPI DMUnhandledExceptionFilter(PEXCEPTION_POINTERS ExceptionInfo)
 	auto er = ExceptionInfo->ExceptionRecord;
 	auto cr = ExceptionInfo->ContextRecord;
 
+	const char* something = "";
+	if (er->ExceptionCode == EXCEPTION_ACCESS_VIOLATION &&
+		er->ExceptionInformation[1] < 0x10000)
+		something = " (https://www.youtube.com/watch?v=bLHL75H_VEM)";
+
 	AbortMessage(
 		"Oops! DiscordMessenger just crashed!\n\n"
-		"Exception Code: %08x\n"
+		"Exception Code: %08Xs\n"
 		"Exception Address: %p\n"
-		"Exception Parameters: %p %p\n"
-		"EIP=%08x EFLAGS=%08x \n"
-		"EAX=%08x EBX=%08x ECX=%08x EDX=%08x\n"
-		"ESI=%08x EDI=%08x ESP=%08x EBP=%08x\n",
+		"Exception Parameters: %p %p%s\n"
+		"EIP=%08X EFLAGS=%08X \n"
+		"EAX=%08X EBX=%08X ECX=%08X EDX=%08X\n"
+		"ESI=%08X EDI=%08X ESP=%08X EBP=%08X\n",
 		er->ExceptionCode,
 		er->ExceptionAddress,
 		er->NumberParameters >= 1 ? er->ExceptionInformation[0] : 0,
 		er->NumberParameters >= 2 ? er->ExceptionInformation[1] : 0,
+		something,
 		cr->Eip, cr->EFlags,
 		cr->Eax, cr->Ebx, cr->Ecx, cr->Edx,
 		cr->Esi, cr->Edi, cr->Esp, cr->Ebp
 	);
+}
+
+LONG WINAPI DMVectoredExceptionHandler(PEXCEPTION_POINTERS ExceptionInfo)
+{
+	return DMUnhandledExceptionFilter(ExceptionInfo);
 }
 
 #include <csignal>
@@ -533,6 +544,7 @@ void SetupCrashDebugging()
 
 	// Step 3. Set the unhandled exception filter.
 	SetUnhandledExceptionFilter(DMUnhandledExceptionFilter);
+	ri::AddVectoredExceptionHandler(TRUE, DMVectoredExceptionHandler);
 }
 
 // This function calls std::terminate() after showing a message box.

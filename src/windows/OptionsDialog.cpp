@@ -307,9 +307,8 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 
 INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (LOWORD(wParam) == IDOK) {
+	if (LOWORD(wParam) == IDOK)
 		return EndDialog(hWnd, IDOK);
-	}
 	
 	switch (pageNum)
 	{
