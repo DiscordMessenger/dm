@@ -96,12 +96,57 @@ void ChannelViewOld::OnUpdateSelectedChannel(Snowflake sf)
 	ListBox_SetCurSel(m_listHwnd, m_idToIdx[sf]);
 }
 
-void ChannelViewOld::UpdateAcknowledgement(Snowflake sf)
+void ChannelViewOld::SetMode(bool listMode)
 {
 }
 
-void ChannelViewOld::SetMode(bool listMode)
+static std::string toString(int t) {
+	std::stringstream ss;
+	ss << t;
+	return ss.str();
+}
+
+static std::string GetChannelString(const Channel& ch)
 {
+	std::string categBeg = ch.IsCategory() ? "--- " : (ch.m_parentCateg ? "        " : "");
+	std::string categEnd = ch.IsCategory() ? " ---" : "";
+
+	std::string mentions = "";
+	std::string unreadMarker = "";
+	if (ch.WasMentioned()) {
+		mentions = "(" + toString(ch.m_mentionCount) + ") ";
+	}
+
+	if (ch.HasUnreadMessages()) {
+		unreadMarker = " *";
+	}
+
+	return categBeg + mentions + ch.GetTypeSymbol() + ch.m_name + categEnd + unreadMarker;
+}
+
+void ChannelViewOld::UpdateAcknowledgement(Snowflake sf)
+{
+	for (size_t i = 0; i < m_items.size(); i++)
+	{
+		auto& item = m_items[i];
+		if (item.m_id != sf)
+			continue;
+
+		Channel* pChan = GetDiscordInstance()->GetChannel(sf);
+		if (!pChan) {
+			DbgPrintW("ERROR: No channel");
+			break;
+		}
+
+		LPTSTR tstr = ConvertCppStringToTString(GetChannelString(*pChan));
+		// but why can't I just set the string's data?
+		int oldsel = ListBox_GetCurSel(m_listHwnd);
+		ListBox_DeleteString(m_listHwnd, i);
+		ListBox_InsertString(m_listHwnd, i, tstr);
+		ListBox_SetCurSel(m_listHwnd, oldsel);
+		free(tstr);
+		break;
+	}
 }
 
 void ChannelViewOld::AddChannel(const Channel& ch)
@@ -113,14 +158,12 @@ void ChannelViewOld::AddChannel(const Channel& ch)
 			return;
 	}
 
-	// TODO: Implement category order sorting. For now, they're sorted by ID
-	std::string categBeg = ch.IsCategory() ? "--- " : (ch.m_parentCateg ? "        " : "");
-	std::string categEnd = ch.IsCategory() ? " ---" : "";
-
+	// TODO: Implement category order sorting. For now, they're sorted by ID.
+	// 11/06/2025 - Are they!?
 	int categIndex = ch.IsCategory() ? ++m_nextCategIndex : 0;
 
 	m_idToIdx[ch.m_snowflake] = (int) m_items.size();
-	m_items.push_back({ ch.m_parentCateg, ch.m_snowflake, ch.m_channelType, categBeg + ch.GetTypeSymbol() + ch.m_name + categEnd, categIndex });
+	m_items.push_back({ ch.m_parentCateg, ch.m_snowflake, ch.m_channelType, GetChannelString(ch), categIndex});
 }
 
 void ChannelViewOld::RemoveCategoryIfNeeded(const Channel& ch)

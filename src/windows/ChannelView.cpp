@@ -322,7 +322,7 @@ void ChannelView::UpdateAcknowledgement(Snowflake sf)
 		SetItemIcon(item, GetIcon(*pChan, false)); // note: assume it's false because, like, categories don't get acknowledged
 	}
 	else {
-		// TODO
+		ListView_RedrawItems(m_listHwnd, index, index);
 	}
 }
 
@@ -770,6 +770,19 @@ LRESULT ChannelView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				rcText.top = (top + bottom) / 2;
 				rcText.bottom = bottom;
 				DrawText(hdc, statTstr, -1, &rcText, DT_NOPREFIX | DT_TOP | DT_SINGLELINE);
+			}
+
+			if (pChan->WasMentioned())
+			{
+				int pfpSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF);
+				int iconSize = ScaleByDPI(16);
+				int ypos = (rcItem.bottom + rcItem.top - iconSize) / 2 - ScaleByDPI(2);
+				int xpos = rcItem.right - ScaleByDPI(iconSize + 2);
+
+				// NOTE: bad hack
+				xpos += iconSize - pfpSize;
+				ypos += iconSize - pfpSize;
+				DrawMentionStatus(hdc, xpos, ypos, pChan->m_mentionCount);
 			}
 
 			SelectObject(hdc, oldObj);
