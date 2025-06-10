@@ -1055,6 +1055,9 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 			updateRect.bottom = rect.bottom, updateRect.top = rect.top, scrollAnyway = 0, eraseWhenUpdating = TRUE;
 		else
 			updateRect.bottom += scrollAdded + repaintSize;
+
+		if (GetLocalSettings()->GetMessageStyle() == MS_3DFACE)
+			updateRect.bottom += 8;
 	}
 
 	if (!wasAnythingLoaded && m_previousLastReadMessage != pChan->m_lastSentMsg)
