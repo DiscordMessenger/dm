@@ -577,6 +577,7 @@ private:
 	void Paint(HDC hdc, RECT& rcPaint);
 
 	void RequestMarkRead();
+	void HandleRightClickMenuCommand(int command);
 
 	// [Left] [Author] [pinned] [a message](uid) [ to this channel.
 

@@ -3100,6 +3100,129 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 		SetBkColor(hdc, oldBkColor);
 }
 
+void MessageList::HandleRightClickMenuCommand(int command)
+{
+	// NOTE!!! If you block for any reason (e.g. using a messagebox/dialog), you need to re-fetch this.
+	// Otherwise a message may come in the background and delete the message you are using, among loads
+	// of other things.
+	MessageItem* pMsg = NULL;
+	Snowflake rightClickedMessage = m_rightClickedMessage;
+	Snowflake messageBeforeRightClickedMessage = 0;
+
+	for (auto iter = m_messages.rbegin(); iter != m_messages.rend(); ++iter)
+	{
+		if (iter->m_msg.m_snowflake == m_rightClickedMessage)
+		{
+			pMsg = &(*iter);
+
+			++iter;
+			if (iter != m_messages.rend())
+				messageBeforeRightClickedMessage = iter->m_msg.m_snowflake;
+			break;
+		}
+	}
+
+	m_rightClickedMessage = 0;
+
+	if (!pMsg) return;
+
+	switch (command)
+	{
+		case ID_DUMMYPOPUP_MARKUNREAD:
+		{
+			if (messageBeforeRightClickedMessage == 0) {
+				uint64_t timeStamp = rightClickedMessage >> 22;
+				timeStamp--; // in milliseconds since Discord epoch - irrelevant because we just want to take ONE millisecond
+				messageBeforeRightClickedMessage = timeStamp << 22;
+			}
+
+			assert(messageBeforeRightClickedMessage < rightClickedMessage);
+
+			GetDiscordInstance()->RequestAcknowledgeMessages(m_channelID, messageBeforeRightClickedMessage);
+
+			// Block acknowledgements until we switch to the channel again.
+			m_bAcknowledgeNow = false;
+			break;
+		}
+		case ID_DUMMYPOPUP_COPYMESSAGELINK:
+		{
+			// Copy the message link.
+			std::string msgLink = CreateMessageLink(m_guildID, m_channelID, pMsg->m_msg.m_snowflake);
+			CopyStringToClipboard(msgLink);
+			break;
+		}
+		case ID_DUMMYPOPUP_EDITMESSAGE:
+		{
+			SendMessage(g_Hwnd, WM_STARTEDITING, 0, (LPARAM) &rightClickedMessage);
+			break;
+		}
+		case ID_DUMMYPOPUP_COPYTEXT:
+		{
+			CopyStringToClipboard(pMsg->m_msg.m_message);
+			break;
+		}
+		case ID_DUMMYPOPUP_COPYID:
+		{
+			std::string msgID = std::to_string(rightClickedMessage);
+			CopyStringToClipboard(msgID);
+			break;
+		}
+		case ID_DUMMYPOPUP_DELETEMESSAGE:
+		{
+			static char buffer[8192];
+			snprintf(buffer, sizeof buffer, TmGetString(IDS_CONFIRM_DELETE).c_str(), pMsg->m_msg.m_author.c_str(), pMsg->m_msg.m_dateFull.c_str(), pMsg->m_msg.m_message.c_str());
+			LPCTSTR xstr = ConvertCppStringToTString(buffer);
+			if (MessageBox(g_Hwnd, xstr, TmGetTString(IDS_CONFIRM_DELETE_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES)
+			{
+				GetDiscordInstance()->RequestDeleteMessage(m_channelID, rightClickedMessage);
+			}
+
+			free((void*)xstr);
+			break;
+		}
+		case ID_DUMMYPOPUP_REPLY:
+		{
+			Snowflake sf[2];
+			sf[0] = pMsg->m_msg.m_snowflake;
+			sf[1] = pMsg->m_msg.m_author_snowflake;
+			SendMessage(g_Hwnd, WM_STARTREPLY, 0, (LPARAM)sf);
+			break;
+		}
+		case ID_DUMMYPOPUP_PINMESSAGE:
+		{
+			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			if (!pChan)
+				break;
+
+			static char buffer[8192];
+			snprintf(buffer, sizeof buffer, TmGetString(IDS_CONFIRM_PIN).c_str(), pChan->m_name.c_str(), pMsg->m_msg.m_author.c_str(), pMsg->m_msg.m_dateFull.c_str(), pMsg->m_msg.m_message.c_str());
+
+			LPCTSTR xstr = ConvertCppStringToTString(buffer);
+
+			if (MessageBox(g_Hwnd, xstr, TmGetTString(IDS_CONFIRM_PIN_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES)
+			{
+				// TODO
+			}
+
+			free((void*)xstr);
+			break;
+		}
+		case ID_DUMMYPOPUP_SPEAKMESSAGE:
+		{
+			if (IsActionMessage(pMsg->m_msg.m_type))
+				break;
+					
+			std::string action = " said ";
+			if (pMsg->m_msg.m_type == MessageType::REPLY &&
+				pMsg->m_msg.m_pReferencedMessage != nullptr)
+				action = " replied to " + pMsg->m_msg.m_pReferencedMessage->m_author + " ";
+
+			TextToSpeech::Speak(pMsg->m_msg.m_author + action + GetDiscordInstance()->ReverseMentions(pMsg->m_msg.m_message, m_guildID, true));
+			break;
+		}
+	}
+}
+
 LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	MessageList* pThis = (MessageList*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
@@ -3345,6 +3468,20 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			break;
 		}
+		case WM_RBUTTONUP:
+		{
+			if (!NT31SimplifiedInterface())
+				break;
+			
+			// NT 3.1 doesn't implement WM_CONTEXTMENU, so send it ourselves
+			POINT pt;
+			pt.x = GET_X_LPARAM(lParam);
+			pt.y = GET_Y_LPARAM(lParam);
+			ClientToScreen(hWnd, &pt);
+
+			WndProc(hWnd, WM_CONTEXTMENU, (WPARAM) hWnd, MAKELPARAM(pt.x, pt.y));
+			break;
+		}
 		case WM_CONTEXTMENU:
 		{
 			int xPos = GET_X_LPARAM(lParam);
@@ -3387,14 +3524,6 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			pThis->m_rightClickedMessage = pRCMsg->m_msg.m_snowflake;
 
-			// TODO: Why does this require this hackery yet the guild lister context menu doesn't?
-			MENUINFO cmi{};
-			cmi.cbSize = sizeof cmi;
-			cmi.fMask  = MIM_STYLE;
-			ri::GetMenuInfo(menu, &cmi);
-			cmi.dwStyle   |= MNS_NOTIFYBYPOS;
-			ri::SetMenuInfo(menu, &cmi);
-
 			// disable the Delete button if we're not the user
 			Profile* ourPf = GetDiscordInstance()->GetProfile();
 			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
@@ -3424,129 +3553,9 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			TrackPopupMenu(menu, TPM_RIGHTBUTTON, xPos, yPos, 0, hWnd, NULL);
 			break;
 		}
-		case WM_MENUCOMMAND:
+		case WM_COMMAND:
 		{
-			// NOTE!!! If you block for any reason (e.g. using a messagebox/dialog), you need to re-fetch this.
-			// Otherwise a message may come in the background and delete the message you are using, among loads
-			// of other things.
-			MessageItem* pMsg = NULL;
-			Snowflake rightClickedMessage = pThis->m_rightClickedMessage;
-			Snowflake messageBeforeRightClickedMessage = 0;
-
-			for (auto iter = pThis->m_messages.rbegin(); iter != pThis->m_messages.rend(); ++iter)
-			{
-				if (iter->m_msg.m_snowflake == pThis->m_rightClickedMessage)
-				{
-					pMsg = &(*iter);
-
-					++iter;
-					if (iter != pThis->m_messages.rend())
-						messageBeforeRightClickedMessage = iter->m_msg.m_snowflake;
-					break;
-				}
-			}
-
-			pThis->m_rightClickedMessage = 0;
-
-			if (!pMsg) break;
-
-			int test = GetMenuItemID((HMENU) lParam, (int) wParam);
-
-			switch (test)
-			{
-				case ID_DUMMYPOPUP_MARKUNREAD:
-				{
-					if (messageBeforeRightClickedMessage == 0) {
-						uint64_t timeStamp = rightClickedMessage >> 22;
-						timeStamp--; // in milliseconds since Discord epoch - irrelevant because we just want to take ONE millisecond
-						messageBeforeRightClickedMessage = timeStamp << 22;
-					}
-
-					assert(messageBeforeRightClickedMessage < rightClickedMessage);
-
-					GetDiscordInstance()->RequestAcknowledgeMessages(pThis->m_channelID, messageBeforeRightClickedMessage);
-
-					// Block acknowledgements until we switch to the channel again.
-					pThis->m_bAcknowledgeNow = false;
-					break;
-				}
-				case ID_DUMMYPOPUP_COPYMESSAGELINK:
-				{
-					// Copy the message link.
-					std::string msgLink = CreateMessageLink(pThis->m_guildID, pThis->m_channelID, pMsg->m_msg.m_snowflake);
-					CopyStringToClipboard(msgLink);
-					break;
-				}
-				case ID_DUMMYPOPUP_EDITMESSAGE:
-				{
-					SendMessage(g_Hwnd, WM_STARTEDITING, 0, (LPARAM) &rightClickedMessage);
-					break;
-				}
-				case ID_DUMMYPOPUP_COPYTEXT:
-				{
-					CopyStringToClipboard(pMsg->m_msg.m_message);
-					break;
-				}
-				case ID_DUMMYPOPUP_COPYID:
-				{
-					std::string msgID = std::to_string(rightClickedMessage);
-					CopyStringToClipboard(msgID);
-					break;
-				}
-				case ID_DUMMYPOPUP_DELETEMESSAGE:
-				{
-					static char buffer[8192];
-					snprintf(buffer, sizeof buffer, TmGetString(IDS_CONFIRM_DELETE).c_str(), pMsg->m_msg.m_author.c_str(), pMsg->m_msg.m_dateFull.c_str(), pMsg->m_msg.m_message.c_str());
-					LPCTSTR xstr = ConvertCppStringToTString(buffer);
-					if (MessageBox(g_Hwnd, xstr, TmGetTString(IDS_CONFIRM_DELETE_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES)
-					{
-						GetDiscordInstance()->RequestDeleteMessage(pThis->m_channelID, rightClickedMessage);
-					}
-
-					free((void*)xstr);
-					break;
-				}
-				case ID_DUMMYPOPUP_REPLY:
-				{
-					Snowflake sf[2];
-					sf[0] = pMsg->m_msg.m_snowflake;
-					sf[1] = pMsg->m_msg.m_author_snowflake;
-					SendMessage(g_Hwnd, WM_STARTREPLY, 0, (LPARAM)sf);
-					break;
-				}
-				case ID_DUMMYPOPUP_PINMESSAGE:
-				{
-					Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
-					if (!pChan)
-						break;
-
-					static char buffer[8192];
-					snprintf(buffer, sizeof buffer, TmGetString(IDS_CONFIRM_PIN).c_str(), pChan->m_name.c_str(), pMsg->m_msg.m_author.c_str(), pMsg->m_msg.m_dateFull.c_str(), pMsg->m_msg.m_message.c_str());
-
-					LPCTSTR xstr = ConvertCppStringToTString(buffer);
-
-					if (MessageBox(g_Hwnd, xstr, TmGetTString(IDS_CONFIRM_PIN_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES)
-					{
-						// TODO
-					}
-
-					free((void*)xstr);
-					break;
-				}
-				case ID_DUMMYPOPUP_SPEAKMESSAGE:
-				{
-					if (IsActionMessage(pMsg->m_msg.m_type))
-						break;
-					
-					std::string action = " said ";
-					if (pMsg->m_msg.m_type == MessageType::REPLY &&
-						pMsg->m_msg.m_pReferencedMessage != nullptr)
-						action = " replied to " + pMsg->m_msg.m_pReferencedMessage->m_author + " ";
-
-					TextToSpeech::Speak(pMsg->m_msg.m_author + action + GetDiscordInstance()->ReverseMentions(pMsg->m_msg.m_message, pThis->m_guildID, true));
-					break;
-				}
-			}
+			pThis->HandleRightClickMenuCommand(LOWORD(wParam));
 			break;
 		}
 		case WM_LBUTTONDOWN:
@@ -4639,6 +4648,11 @@ void MessageList::EditMessage(const Message& newMsg)
 		// in case the message shrunk in size
 		oldMsgRect.top += oldHeight - mi.m_height;
 
+		if (GetLocalSettings()->GetMessageStyle() == MS_3DFACE) {
+			oldMsgRect.top -= 4;
+			oldMsgRect.bottom += 4;
+		}
+
 		// do it better
 		InvalidateRect(m_hwnd, &oldMsgRect, false);
 	}
@@ -4806,7 +4820,7 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool upda
 	bool needUpdateAboveMessage = GetLocalSettings()->GetMessageStyle() == MS_3DFACE;
 	if (needUpdateAboveMessage && mi.m_placeInChain != 0) {
 		RECT rcUpdate = rcClient;
-		rcUpdate.top = rcUpdate.bottom - 2;
+		rcUpdate.top = rcUpdate.bottom - 4 - mi.m_height;
 		InvalidateRect(m_hwnd, &rcUpdate, FALSE);
 	}
 }

@@ -1167,6 +1167,20 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			HandleGestureMessage(hWnd, uMsg, wParam, lParam, 3.0f);
 			break;
 		}
+		case WM_RBUTTONUP:
+		{
+			if (!NT31SimplifiedInterface())
+				break;
+			
+			// NT 3.1 doesn't implement WM_CONTEXTMENU, so send it ourselves
+			POINT pt;
+			pt.x = GET_X_LPARAM(lParam);
+			pt.y = GET_Y_LPARAM(lParam);
+			ClientToScreen(hWnd, &pt);
+
+			WndProc(hWnd, WM_CONTEXTMENU, (WPARAM) hWnd, MAKELPARAM(pt.x, pt.y));
+			break;
+		}
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
