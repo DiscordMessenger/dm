@@ -38,7 +38,8 @@ enum ePage
 	PG_CHAT,
 	PG_WINDOW,
 	PG_CONNECTION,
-	PG_PAGE_COUNT
+	PG_PAGE_COUNT,
+	PG_FIRST = PG_ACCOUNT_AND_PRIVACY
 };
 
 #define C_PAGES (int(PG_PAGE_COUNT))
@@ -116,23 +117,8 @@ HRESULT XEnableThemeDialogTexture(HWND hWnd, DWORD dwFlags)
 }
 #endif
 
-void WINAPI OnChildDialogInit(HWND hwndDlg)
+void OptionsInitPage(HWND hwndDlg, int pageNum)
 {
-	HWND hwndParent = GetParent(hwndDlg);
-	DialogHeader* pHdr = (DialogHeader*)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
-
-	SetWindowPos(hwndDlg, NULL, pHdr->rcDisplay.left,
-		pHdr->rcDisplay.top,//-2,
-		(pHdr->rcDisplay.right - pHdr->rcDisplay.left),
-		(pHdr->rcDisplay.bottom - pHdr->rcDisplay.top),
-		SWP_SHOWWINDOW);
-
-#ifdef NEW_WINDOWS
-	XEnableThemeDialogTexture(hwndDlg, ETDT_ENABLETAB);
-#endif
-
-	int pageNum = pHdr->pageNum;
-
 	//if the page is 0 (Account & Privacy)
 	switch (pageNum)
 	{
@@ -297,334 +283,366 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 		}
 	}
 
-	return;
 }
 
-INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+void WINAPI OnChildDialogInit(HWND hwndDlg)
+{
+	HWND hwndParent = GetParent(hwndDlg);
+	DialogHeader* pHdr = (DialogHeader*)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+
+	SetWindowPos(hwndDlg, NULL, pHdr->rcDisplay.left,
+		pHdr->rcDisplay.top,//-2,
+		(pHdr->rcDisplay.right - pHdr->rcDisplay.left),
+		(pHdr->rcDisplay.bottom - pHdr->rcDisplay.top),
+		SWP_SHOWWINDOW);
+
+#ifdef NEW_WINDOWS
+	XEnableThemeDialogTexture(hwndDlg, ETDT_ENABLETAB);
+#endif
+
+	int pageNum = pHdr->pageNum;
+
+	OptionsInitPage(hwndDlg, pageNum);
+}
+
+INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	if (LOWORD(wParam) == IDOK) {
+		return EndDialog(hWnd, IDOK);
+	}
+	
+	switch (pageNum)
+	{
+		case PG_ACCOUNT_AND_PRIVACY:
+		{
+			switch (LOWORD(wParam))
+			{
+				case IDC_REVEALEMAIL: {
+					Profile* pProfile = GetDiscordInstance()->GetProfile();
+					HWND hwndText = GetDlgItem(hWnd, IDC_EMAIL_DISPLAY);
+					LPCTSTR lpctstr = ConvertCppStringToTString(pProfile->m_email);
+					SetWindowText(hwndText, lpctstr);
+					free((void*)lpctstr);
+					break;
+				}
+				case IDC_LOG_OUT: {
+					if (MessageBox(hWnd, TmGetTString(IDS_LOG_OUT_MESSAGE), TmGetTString(IDS_PROGRAM_NAME), MB_YESNO | MB_ICONQUESTION) == IDYES)
+					{
+						// Log them out!
+						if (hWnd != hwndParent)
+							EndDialog(hWnd, 0);
+						EndDialog(hwndParent, OPTIONS_RESULT_LOGOUT);
+						return TRUE;
+					}
+					break;
+				}
+				case IDC_SDM_LEVEL0:
+					GetSettingsManager()->SetExplicitFilter(FILTER_NONE);
+					GetSettingsManager()->FlushSettings();
+					break;
+				case IDC_SDM_LEVEL1:
+					GetSettingsManager()->SetExplicitFilter(FILTER_EXCEPTFRIENDS);
+					GetSettingsManager()->FlushSettings();
+					break;
+				case IDC_SDM_LEVEL2:
+					GetSettingsManager()->SetExplicitFilter(FILTER_TOTAL);
+					GetSettingsManager()->FlushSettings();
+					break;
+				case IDC_ENABLE_DMS:
+				{
+					bool updateAllServers = MessageBox(
+						hwndParent,
+						TmGetTString(IDS_DMBLOCK_APPLY_RETROACTIVELY),
+						TmGetTString(IDS_PROGRAM_NAME),
+						MB_ICONQUESTION | MB_YESNO | MB_DEFBUTTON2
+					) == IDYES;
+
+					bool isChecked = IsDlgButtonChecked(hWnd, IDC_ENABLE_DMS);
+
+					std::vector<Snowflake> blocklist;
+					if (updateAllServers)
+					{
+						if (!isChecked)
+							GetDiscordInstance()->GetGuildIDs(blocklist, false);
+
+						GetSettingsManager()->SetGuildDMBlocklist(blocklist);
+					}
+
+					GetSettingsManager()->SetDMBlockDefault(!isChecked);
+					GetSettingsManager()->FlushSettings();
+					break;
+				}
+			}
+			break;
+		}
+		case PG_APPEARANCE:
+		{
+			switch (LOWORD(wParam))
+			{
+				case IDC_MESSAGE_STYLE:
+				{
+					if (HIWORD(wParam) != CBN_SELCHANGE)
+						break;
+							
+					bool beforeW2K = LOBYTE(GetVersion()) < 5;
+					const eMessageStyle* table = beforeW2K ? g_indexToMessageStyleNT4 : g_indexToMessageStyle;
+					size_t tableCount = beforeW2K ? _countof(g_indexToMessageStyleNT4) : _countof(g_indexToMessageStyle);
+
+					int sel = ComboBox_GetCurSel((HWND) lParam);
+					if (sel == CB_ERR || sel < 0 || sel >= int(tableCount))
+						break;
+
+					eMessageStyle style = table[sel];
+					GetLocalSettings()->SetMessageStyle(style);
+
+					bool enable = style == MS_IMAGE;
+					EnableWindow(GetDlgItem(hWnd, IDC_ACTIVE_IMAGE_EDIT),   enable);
+					EnableWindow(GetDlgItem(hWnd, IDC_ACTIVE_IMAGE_BROWSE), enable);
+					EnableWindow(GetDlgItem(hWnd, IDC_COMBO_ALIGNMENT),     enable);
+
+					SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
+					break;
+				}
+				case IDC_COMBO_ALIGNMENT:
+				{
+					if (HIWORD(wParam) != CBN_SELCHANGE)
+						break;
+
+					int sel = ComboBox_GetCurSel((HWND)lParam);
+					if (sel == CB_ERR || sel < 0 || sel >= int(ALIGN_COUNT))
+						break;
+
+					eImageAlignment align = eImageAlignment(sel);
+					GetLocalSettings()->SetImageAlignment(align);
+
+					if (GetLocalSettings()->GetMessageStyle() == MS_IMAGE)
+						SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
+
+					break;
+				}
+				case IDC_COMBO_GUI_SCALE:
+				{
+					if (HIWORD(wParam) != CBN_SELCHANGE)
+						break;
+
+					int sel = ComboBox_GetCurSel((HWND)lParam);
+					if (sel == CB_ERR || sel < 0 || sel >= int(_countof(g_indexToUserInterfaceScale)))
+						break;
+
+					GetLocalSettings()->SetUserScale(g_indexToUserInterfaceScale[sel]);
+					MessageBox(hWnd, TmGetTString(IDS_GUI_SCALE_CHANGED), TmGetTString(IDS_PROGRAM_NAME), MB_OK | MB_ICONINFORMATION);
+					break;
+				}
+				case IDC_ACTIVE_IMAGE_BROWSE:
+				{
+					const int MAX_FILE = 4096;
+					TCHAR buffer[MAX_FILE];
+					buffer[0] = 0;
+
+				#ifdef WEBP_SUP
+				#define COND_WEBP ";*.webp"
+				#else
+				#define COND_WEBP ""
+				#endif
+
+					OPENFILENAME ofn{};
+					ofn.lStructSize    = SIZEOF_OPENFILENAME_NT4;
+					ofn.hwndOwner      = g_Hwnd;
+					ofn.hInstance      = g_hInstance;
+					ofn.nMaxFile       = MAX_FILE;
+					ofn.lpstrFile      = buffer;
+					ofn.nMaxFileTitle  = 0;
+					ofn.lpstrFileTitle = NULL;
+					ofn.lpstrFilter    = TEXT("Image files\0*.bmp;*.png;*.jpg;*.jpeg;*.gif;*.tga" COND_WEBP "\0\0");
+					ofn.lpstrTitle     = TmGetTString(IDS_SELECT_BACKGROUND_IMAGE);
+
+					if (!GetOpenFileName(&ofn)) {
+						// operation cancelled
+						break;
+					}
+
+					std::string fileName = MakeStringFromTString(ofn.lpstrFile);
+					GetLocalSettings()->SetImageBackgroundFileName(fileName);
+					SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
+					SetDlgItemText(hWnd, IDC_ACTIVE_IMAGE_EDIT, ofn.lpstrFile);
+					break;
+				}
+
+				case IDC_APPEARANCE_COZY:
+					GetSettingsManager()->SetMessageCompact(false);
+					GetSettingsManager()->FlushSettings();
+					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+					break;
+				case IDC_APPEARANCE_COMPACT:
+					GetSettingsManager()->SetMessageCompact(true);
+					GetSettingsManager()->FlushSettings();
+					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+					break;
+				case IDC_COMPACT_MEMBER_LIST:
+					GetLocalSettings()->SetCompactMemberList(IsDlgButtonChecked(hWnd, IDC_COMPACT_MEMBER_LIST));
+					SendMessage(g_Hwnd, WM_RECREATEMEMBERLIST, 0, 0);
+					break;
+			}
+			break;
+		}
+		case PG_NOTIFICATIONS:
+		{
+			switch (LOWORD(wParam))
+			{
+				case IDC_ENABLE_BALLOON_NOTIFS:
+					GetLocalSettings()->SetEnableNotifications(IsDlgButtonChecked(hWnd, IDC_ENABLE_BALLOON_NOTIFS));
+					break;
+				case IDC_FLASH_TASKBAR:
+					GetLocalSettings()->SetFlashOnNotification(IsDlgButtonChecked(hWnd, IDC_FLASH_TASKBAR));
+					break;
+			}
+			break;
+		}
+		case PG_CHAT:
+		{
+			switch (LOWORD(wParam))
+			{
+				case IDC_DISABLE_FORMATTING:
+					GetLocalSettings()->SetDisableFormatting(IsDlgButtonChecked(hWnd, IDC_DISABLE_FORMATTING));
+					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+					break;
+				case IDC_IMAGES_WHEN_UPLOADED:
+					GetLocalSettings()->SetShowAttachmentImages(IsDlgButtonChecked(hWnd, IDC_IMAGES_WHEN_UPLOADED));
+					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+					break;
+				case IDC_IMAGES_WHEN_EMBEDDED:
+					GetLocalSettings()->SetShowEmbedImages(IsDlgButtonChecked(hWnd, IDC_IMAGES_WHEN_EMBEDDED));
+					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+					break;
+				case IDC_SHOW_EMBEDS:
+					GetLocalSettings()->SetShowEmbedContent(IsDlgButtonChecked(hWnd, IDC_SHOW_EMBEDS));
+					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+					break;
+			}
+			break;
+		}
+		case PG_WINDOW:
+		{
+			switch (LOWORD(wParam))
+			{
+				case IDC_SAVE_WINDOW_SIZE:
+					GetLocalSettings()->SetSaveWindowSize(IsDlgButtonChecked(hWnd, IDC_SAVE_WINDOW_SIZE));
+					break;
+				case IDC_START_MAXIMIZED:
+					GetLocalSettings()->SetStartMaximized(IsDlgButtonChecked(hWnd, IDC_START_MAXIMIZED));
+					break;
+				case IDC_OPEN_ON_STARTUP:
+				{
+					const bool checked = IsDlgButtonChecked(hWnd, IDC_OPEN_ON_STARTUP);
+					GetLocalSettings()->SetOpenOnStartup(checked);
+					EnableWindow(GetDlgItem(hWnd, IDC_START_MINIMIZED), checked);
+					break;
+				}
+				case IDC_START_MINIMIZED:
+					GetLocalSettings()->SetStartMinimized(IsDlgButtonChecked(hWnd, IDC_START_MINIMIZED));
+					break;
+				case IDC_MINIMIZE_TO_NOTIF:
+					GetLocalSettings()->SetMinimizeToNotif(IsDlgButtonChecked(hWnd, IDC_MINIMIZE_TO_NOTIF));
+					break;
+			}
+			break;
+		}
+		case PG_CONNECTION:
+		{
+			switch (LOWORD(wParam))
+			{
+				case IDC_ENABLE_TLS_CHECKS:
+				{
+					bool state = IsDlgButtonChecked(hWnd, IDC_ENABLE_TLS_CHECKS);
+					if (!state) {
+						if (MessageBox(hWnd, TmGetTString(IDS_CERT_SETTING_CONFIRM), TmGetTString(IDS_PROGRAM_NAME), MB_ICONWARNING | MB_YESNO) != IDYES)
+						{
+							CheckDlgButton(hWnd, IDC_ENABLE_TLS_CHECKS, BST_CHECKED);
+							break;
+						}
+					}
+
+					GetLocalSettings()->SetEnableTLSVerification(state);
+					break;
+				}
+
+				case IDC_CHECK_UPDATES:
+				{
+					GetLocalSettings()->SetCheckUpdates(IsDlgButtonChecked(hWnd, IDC_CHECK_UPDATES));
+					break;
+				}
+
+				case IDC_TOGGLE_XSUPERPROPS:
+				{
+					GetLocalSettings()->SetAddExtraHeaders(IsDlgButtonChecked(hWnd, IDC_TOGGLE_XSUPERPROPS));
+					break;
+				}
+
+				case IDC_REVERTTODEFAULT:
+				case IDC_UPDATE:
+				{
+					std::string api, cdn;
+
+					if (wParam == IDC_REVERTTODEFAULT)
+					{
+						api = OFFICIAL_DISCORD_API;
+						cdn = OFFICIAL_DISCORD_CDN;
+					}
+					else
+					{
+						TCHAR tchrAPI[512], tchrCDN[512];
+						if (!GetDlgItemText(hWnd, IDC_EDIT_DISCORDAPI, tchrAPI, _countof(tchrAPI)) ||
+							!GetDlgItemText(hWnd, IDC_EDIT_DISCORDCDN, tchrCDN, _countof(tchrCDN))) {
+							MessageBox(hWnd, TmGetTString(IDS_URL_EMPTY), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
+							break;
+						}
+
+						api = MakeStringFromTString(tchrAPI);
+						cdn = MakeStringFromTString(tchrCDN);
+					}
+
+					if (api.empty() || cdn.empty()) {
+						MessageBox(hWnd, TmGetTString(IDS_URL_EMPTY), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
+						break;
+					}
+
+					if (api[api.size() - 1] != '/') api += '/';
+					if (cdn[cdn.size() - 1] != '/') cdn += '/';
+
+					if (MessageBox(hWnd, TmGetTString(wParam == IDC_UPDATE ? IDS_CONFIRM_SET_URLS : IDS_CONFIRM_OFFICIAL_URLS),
+						TmGetTString(IDS_PROGRAM_NAME), MB_ICONQUESTION | MB_YESNO) != IDYES)
+						break;
+							
+					// Ok!... your choice.
+					GetLocalSettings()->SetToken("");
+					GetLocalSettings()->SetDiscordAPI(api);
+					GetLocalSettings()->SetDiscordCDN(cdn);
+					GetDiscordInstance()->ResetGatewayURL();
+					
+					if (hWnd != hwndParent)
+						EndDialog(hWnd, 0);
+					
+					EndDialog(hwndParent, OPTIONS_RESULT_LOGOUT);
+
+					break;
+				}
+			}
+			break;
+		}
+	}
+
+	return 0;
+}
+
+INT_PTR CALLBACK OptionsChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hWnd);
 	DialogHeader* pHdr = (DialogHeader*)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 	switch (uMsg)
 	{
 		case WM_COMMAND:
-		{
-			switch (pHdr->pageNum)
-			{
-				case PG_ACCOUNT_AND_PRIVACY:
-				{
-					switch (wParam)
-					{
-						case IDC_REVEALEMAIL: {
-							Profile* pProfile = GetDiscordInstance()->GetProfile();
-							HWND hwndText = GetDlgItem(hWnd, IDC_EMAIL_DISPLAY);
-							LPCTSTR lpctstr = ConvertCppStringToTString(pProfile->m_email);
-							SetWindowText(hwndText, lpctstr);
-							free((void*)lpctstr);
-							break;
-						}
-						case IDC_LOG_OUT: {
-							if (MessageBox(hWnd, TmGetTString(IDS_LOG_OUT_MESSAGE), TmGetTString(IDS_PROGRAM_NAME), MB_YESNO | MB_ICONQUESTION) == IDYES)
-							{
-								// Log them out!
-								EndDialog(hWnd, 0);
-								EndDialog(hwndParent, OPTIONS_RESULT_LOGOUT);
-								return TRUE;
-							}
-							break;
-						}
-						case IDC_SDM_LEVEL0:
-							GetSettingsManager()->SetExplicitFilter(FILTER_NONE);
-							GetSettingsManager()->FlushSettings();
-							break;
-						case IDC_SDM_LEVEL1:
-							GetSettingsManager()->SetExplicitFilter(FILTER_EXCEPTFRIENDS);
-							GetSettingsManager()->FlushSettings();
-							break;
-						case IDC_SDM_LEVEL2:
-							GetSettingsManager()->SetExplicitFilter(FILTER_TOTAL);
-							GetSettingsManager()->FlushSettings();
-							break;
-						case IDC_ENABLE_DMS:
-						{
-							bool updateAllServers = MessageBox(
-								hwndParent,
-								TmGetTString(IDS_DMBLOCK_APPLY_RETROACTIVELY),
-								TmGetTString(IDS_PROGRAM_NAME),
-								MB_ICONQUESTION | MB_YESNO | MB_DEFBUTTON2
-							) == IDYES;
+			return OptionsHandleCommand(hwndParent, hWnd, pHdr->pageNum, uMsg, wParam, lParam);
 
-							bool isChecked = IsDlgButtonChecked(hWnd, IDC_ENABLE_DMS);
-
-							std::vector<Snowflake> blocklist;
-							if (updateAllServers)
-							{
-								if (!isChecked)
-									GetDiscordInstance()->GetGuildIDs(blocklist, false);
-
-								GetSettingsManager()->SetGuildDMBlocklist(blocklist);
-							}
-
-							GetSettingsManager()->SetDMBlockDefault(!isChecked);
-							GetSettingsManager()->FlushSettings();
-							break;
-						}
-					}
-					break;
-				}
-				case PG_APPEARANCE:
-				{
-					switch (LOWORD(wParam))
-					{
-						case IDC_MESSAGE_STYLE:
-						{
-							if (HIWORD(wParam) != CBN_SELCHANGE)
-								break;
-							
-							bool beforeW2K = LOBYTE(GetVersion()) < 5;
-							const eMessageStyle* table = beforeW2K ? g_indexToMessageStyleNT4 : g_indexToMessageStyle;
-							size_t tableCount = beforeW2K ? _countof(g_indexToMessageStyleNT4) : _countof(g_indexToMessageStyle);
-
-							int sel = ComboBox_GetCurSel((HWND) lParam);
-							if (sel == CB_ERR || sel < 0 || sel >= int(tableCount))
-								break;
-
-							eMessageStyle style = table[sel];
-							GetLocalSettings()->SetMessageStyle(style);
-
-							bool enable = style == MS_IMAGE;
-							EnableWindow(GetDlgItem(hWnd, IDC_ACTIVE_IMAGE_EDIT),   enable);
-							EnableWindow(GetDlgItem(hWnd, IDC_ACTIVE_IMAGE_BROWSE), enable);
-							EnableWindow(GetDlgItem(hWnd, IDC_COMBO_ALIGNMENT),     enable);
-
-							SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
-							break;
-						}
-						case IDC_COMBO_ALIGNMENT:
-						{
-							if (HIWORD(wParam) != CBN_SELCHANGE)
-								break;
-
-							int sel = ComboBox_GetCurSel((HWND)lParam);
-							if (sel == CB_ERR || sel < 0 || sel >= int(ALIGN_COUNT))
-								break;
-
-							eImageAlignment align = eImageAlignment(sel);
-							GetLocalSettings()->SetImageAlignment(align);
-
-							if (GetLocalSettings()->GetMessageStyle() == MS_IMAGE)
-								SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
-
-							break;
-						}
-						case IDC_COMBO_GUI_SCALE:
-						{
-							if (HIWORD(wParam) != CBN_SELCHANGE)
-								break;
-
-							int sel = ComboBox_GetCurSel((HWND)lParam);
-							if (sel == CB_ERR || sel < 0 || sel >= int(_countof(g_indexToUserInterfaceScale)))
-								break;
-
-							GetLocalSettings()->SetUserScale(g_indexToUserInterfaceScale[sel]);
-							MessageBox(hWnd, TmGetTString(IDS_GUI_SCALE_CHANGED), TmGetTString(IDS_PROGRAM_NAME), MB_OK | MB_ICONINFORMATION);
-							break;
-						}
-						case IDC_ACTIVE_IMAGE_BROWSE:
-						{
-							const int MAX_FILE = 4096;
-							TCHAR buffer[MAX_FILE];
-							buffer[0] = 0;
-
-						#ifdef WEBP_SUP
-						#define COND_WEBP ";*.webp"
-						#else
-						#define COND_WEBP ""
-						#endif
-
-							OPENFILENAME ofn{};
-							ofn.lStructSize    = SIZEOF_OPENFILENAME_NT4;
-							ofn.hwndOwner      = g_Hwnd;
-							ofn.hInstance      = g_hInstance;
-							ofn.nMaxFile       = MAX_FILE;
-							ofn.lpstrFile      = buffer;
-							ofn.nMaxFileTitle  = 0;
-							ofn.lpstrFileTitle = NULL;
-							ofn.lpstrFilter    = TEXT("Image files\0*.bmp;*.png;*.jpg;*.jpeg;*.gif;*.tga" COND_WEBP "\0\0");
-							ofn.lpstrTitle     = TmGetTString(IDS_SELECT_BACKGROUND_IMAGE);
-
-							if (!GetOpenFileName(&ofn)) {
-								// operation cancelled
-								break;
-							}
-
-							std::string fileName = MakeStringFromTString(ofn.lpstrFile);
-							GetLocalSettings()->SetImageBackgroundFileName(fileName);
-							SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
-							SetDlgItemText(hWnd, IDC_ACTIVE_IMAGE_EDIT, ofn.lpstrFile);
-							break;
-						}
-
-						case IDC_APPEARANCE_COZY:
-							GetSettingsManager()->SetMessageCompact(false);
-							GetSettingsManager()->FlushSettings();
-							SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
-							break;
-						case IDC_APPEARANCE_COMPACT:
-							GetSettingsManager()->SetMessageCompact(true);
-							GetSettingsManager()->FlushSettings();
-							SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
-							break;
-						case IDC_COMPACT_MEMBER_LIST:
-							GetLocalSettings()->SetCompactMemberList(IsDlgButtonChecked(hWnd, IDC_COMPACT_MEMBER_LIST));
-							SendMessage(g_Hwnd, WM_RECREATEMEMBERLIST, 0, 0);
-							break;
-					}
-					break;
-				}
-				case PG_NOTIFICATIONS:
-				{
-					switch (LOWORD(wParam))
-					{
-						case IDC_ENABLE_BALLOON_NOTIFS:
-							GetLocalSettings()->SetEnableNotifications(IsDlgButtonChecked(hWnd, IDC_ENABLE_BALLOON_NOTIFS));
-							break;
-						case IDC_FLASH_TASKBAR:
-							GetLocalSettings()->SetFlashOnNotification(IsDlgButtonChecked(hWnd, IDC_FLASH_TASKBAR));
-							break;
-					}
-					break;
-				}
-				case PG_CHAT:
-				{
-					switch (LOWORD(wParam))
-					{
-						case IDC_DISABLE_FORMATTING:
-							GetLocalSettings()->SetDisableFormatting(IsDlgButtonChecked(hWnd, IDC_DISABLE_FORMATTING));
-							SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
-							break;
-						case IDC_IMAGES_WHEN_UPLOADED:
-							GetLocalSettings()->SetShowAttachmentImages(IsDlgButtonChecked(hWnd, IDC_IMAGES_WHEN_UPLOADED));
-							SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
-							break;
-						case IDC_IMAGES_WHEN_EMBEDDED:
-							GetLocalSettings()->SetShowEmbedImages(IsDlgButtonChecked(hWnd, IDC_IMAGES_WHEN_EMBEDDED));
-							SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
-							break;
-						case IDC_SHOW_EMBEDS:
-							GetLocalSettings()->SetShowEmbedContent(IsDlgButtonChecked(hWnd, IDC_SHOW_EMBEDS));
-							SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
-							break;
-					}
-					break;
-				}
-				case PG_WINDOW:
-				{
-					switch (LOWORD(wParam))
-					{
-						case IDC_SAVE_WINDOW_SIZE:
-							GetLocalSettings()->SetSaveWindowSize(IsDlgButtonChecked(hWnd, IDC_SAVE_WINDOW_SIZE));
-							break;
-						case IDC_START_MAXIMIZED:
-							GetLocalSettings()->SetStartMaximized(IsDlgButtonChecked(hWnd, IDC_START_MAXIMIZED));
-							break;
-						case IDC_OPEN_ON_STARTUP:
-						{
-							const bool checked = IsDlgButtonChecked(hWnd, IDC_OPEN_ON_STARTUP);
-							GetLocalSettings()->SetOpenOnStartup(checked);
-							EnableWindow(GetDlgItem(hWnd, IDC_START_MINIMIZED), checked);
-							break;
-						}
-						case IDC_START_MINIMIZED:
-							GetLocalSettings()->SetStartMinimized(IsDlgButtonChecked(hWnd, IDC_START_MINIMIZED));
-							break;
-						case IDC_MINIMIZE_TO_NOTIF:
-							GetLocalSettings()->SetMinimizeToNotif(IsDlgButtonChecked(hWnd, IDC_MINIMIZE_TO_NOTIF));
-							break;
-					}
-					break;
-				}
-				case PG_CONNECTION:
-				{
-					switch (wParam)
-					{
-						case IDC_ENABLE_TLS_CHECKS:
-						{
-							bool state = IsDlgButtonChecked(hWnd, IDC_ENABLE_TLS_CHECKS);
-							if (!state) {
-								if (MessageBox(hWnd, TmGetTString(IDS_CERT_SETTING_CONFIRM), TmGetTString(IDS_PROGRAM_NAME), MB_ICONWARNING | MB_YESNO) != IDYES)
-								{
-									CheckDlgButton(hWnd, IDC_ENABLE_TLS_CHECKS, BST_CHECKED);
-									break;
-								}
-							}
-
-							GetLocalSettings()->SetEnableTLSVerification(state);
-							break;
-						}
-
-						case IDC_CHECK_UPDATES:
-						{
-							GetLocalSettings()->SetCheckUpdates(IsDlgButtonChecked(hWnd, IDC_CHECK_UPDATES));
-							break;
-						}
-
-						case IDC_TOGGLE_XSUPERPROPS:
-						{
-							GetLocalSettings()->SetAddExtraHeaders(IsDlgButtonChecked(hWnd, IDC_TOGGLE_XSUPERPROPS));
-							break;
-						}
-
-						case IDC_REVERTTODEFAULT:
-						case IDC_UPDATE:
-						{
-							std::string api, cdn;
-
-							if (wParam == IDC_REVERTTODEFAULT)
-							{
-								api = OFFICIAL_DISCORD_API;
-								cdn = OFFICIAL_DISCORD_CDN;
-							}
-							else
-							{
-								TCHAR tchrAPI[512], tchrCDN[512];
-								if (!GetDlgItemText(hWnd, IDC_EDIT_DISCORDAPI, tchrAPI, _countof(tchrAPI)) ||
-									!GetDlgItemText(hWnd, IDC_EDIT_DISCORDCDN, tchrCDN, _countof(tchrCDN))) {
-									MessageBox(hWnd, TmGetTString(IDS_URL_EMPTY), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
-									break;
-								}
-
-								api = MakeStringFromTString(tchrAPI);
-								cdn = MakeStringFromTString(tchrCDN);
-							}
-
-							if (api.empty() || cdn.empty()) {
-								MessageBox(hWnd, TmGetTString(IDS_URL_EMPTY), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
-								break;
-							}
-
-							if (api[api.size() - 1] != '/') api += '/';
-							if (cdn[cdn.size() - 1] != '/') cdn += '/';
-
-							if (MessageBox(hWnd, TmGetTString(wParam == IDC_UPDATE ? IDS_CONFIRM_SET_URLS : IDS_CONFIRM_OFFICIAL_URLS),
-								TmGetTString(IDS_PROGRAM_NAME), MB_ICONQUESTION | MB_YESNO) != IDYES)
-								break;
-							
-							// Ok!... your choice.
-							GetLocalSettings()->SetToken("");
-							GetLocalSettings()->SetDiscordAPI(api);
-							GetLocalSettings()->SetDiscordCDN(cdn);
-							GetDiscordInstance()->ResetGatewayURL();
-							EndDialog(hWnd, 0);
-							EndDialog(hwndParent, OPTIONS_RESULT_LOGOUT);
-
-							break;
-						}
-					}
-					break;
-				}
-			}
-			break;
-		}
 		case WM_INITDIALOG:
 		{
 			OnChildDialogInit(hWnd);
@@ -639,6 +657,9 @@ INT_PTR CALLBACK ChildDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 //
 void OnSelChanged(HWND hwndDlg)
 {
+	if (NT31SimplifiedInterface())
+		return;
+
 	// Get the dialog header data.
 	DialogHeader *pHdr = (DialogHeader*) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
@@ -652,7 +673,7 @@ void OnSelChanged(HWND hwndDlg)
 	// Create the new child dialog box. Note that g_hInst is the
 	// global instance handle.
 	pHdr->pageNum     = iSel;
-	pHdr->hwndDisplay = CreateDialogIndirect(g_hInstance, (DLGTEMPLATE *)pHdr->apRes[iSel], hwndDlg, ChildDialogProc);
+	pHdr->hwndDisplay = CreateDialogIndirect(g_hInstance, (DLGTEMPLATE *)pHdr->apRes[iSel], hwndDlg, OptionsChildDialogProc);
 
 	return;
 }
@@ -665,6 +686,17 @@ HRESULT OnPreferenceDialogInit(HWND hWnd)
 	iccex.dwICC  = ICC_TAB_CLASSES;
 	InitCommonControlsEx(&iccex);
 #endif
+
+	bool simplifiedUI = NT31SimplifiedInterface();
+
+	if (simplifiedUI)
+	{
+		// The simplified UI only consists of controls, no tabs.
+		for (int i = PG_FIRST; i < PG_PAGE_COUNT; i++)
+			OptionsInitPage(hWnd, i);
+
+		return 0;
+	}
 
 	DWORD dwDlgBase = GetDialogBaseUnits();
 	int cxMargin = LOWORD(dwDlgBase) / 4;
@@ -775,6 +807,18 @@ static INT_PTR CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 				delete pData;
 
 			// fallthrough
+		}
+		case WM_COMMAND:
+		{
+			// The non-simplified interface can't handle commands.
+			if (!NT31SimplifiedInterface())
+				return 0L;
+
+			// Just do it for every page... if it doesn't recognize the button ID then it just does nothing
+			for (int i = PG_FIRST; i < PG_PAGE_COUNT; i++)
+				OptionsHandleCommand(hWnd, hWnd, i, uMsg, wParam, lParam);
+
+			break;
 		}
 		case WM_CLOSE:
 		{

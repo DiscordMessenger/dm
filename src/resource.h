@@ -146,6 +146,7 @@
 #define IDD_DIALOG_UPLOADFILES_ND       425
 #define IDD_DIALOG_UPLOADING_ND         426
 #define IDD_DIALOG_GUILD_CHOOSER_ND     427
+#define IDD_DIALOG_PREFERENCES_ND       428
 #define IDR_MAINMENU                    501
 #define IDR_MESSAGE_CONTEXT             502
 #define IDR_GUILD_CONTEXT               503
@@ -500,9 +501,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        102
+#define _APS_NEXT_RESOURCE_VALUE        104
 #define _APS_NEXT_COMMAND_VALUE         1079
-#define _APS_NEXT_CONTROL_VALUE         907
+#define _APS_NEXT_CONTROL_VALUE         916
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif
 #endif

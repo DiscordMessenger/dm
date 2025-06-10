@@ -455,8 +455,10 @@
     <Image Include="..\res\bitmaps\bmp_category.bmp" />
     <Image Include="..\res\bitmaps\bmp_channel.bmp" />
     <Image Include="..\res\bitmaps\bmp_default.bmp" />
+    <Image Include="..\res\bitmaps\bmp_default_4bpp.bmp" />
     <Image Include="..\res\bitmaps\bmp_dm.bmp" />
     <Image Include="..\res\bitmaps\bmp_empty.bmp" />
+    <Image Include="..\res\bitmaps\bmp_empty_4bpp.bmp" />
     <Image Include="..\res\bitmaps\bmp_groupdm.bmp" />
     <Image Include="..\res\bitmaps\bmp_profile.bmp" />
     <Image Include="..\res\bitmaps\bmp_status_dnd.bmp" />
@@ -492,6 +494,7 @@
     <Image Include="..\res\icons\icon_download.ico" />
     <Image Include="..\res\icons\icon_file.ico" />
     <Image Include="..\res\icons\icon_file_2k.ico" />
+    <Image Include="..\res\icons\icon_folder.ico" />
     <Image Include="..\res\icons\icon_groupdm.ico" />
     <Image Include="..\res\icons\icon_groupdm_2k.ico" />
     <Image Include="..\res\icons\icon_guilds.ico" />

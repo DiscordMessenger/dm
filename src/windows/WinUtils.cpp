@@ -1157,6 +1157,7 @@ int MapDialogToOldIfNeeded(int iid)
 		case IDD_DIALOG_QUICK_SWITCHER: return IDD_DIALOG_QUICK_SWITCHER_ND;
 		case IDD_DIALOG_UPLOADFILES: return IDD_DIALOG_UPLOADFILES_ND;
 		case IDD_DIALOG_UPLOADING: return IDD_DIALOG_UPLOADING_ND;
+		case IDD_DIALOG_OPTIONS: return IDD_DIALOG_PREFERENCES_ND;
 
 		default: // no mapping
 			DbgPrintW("Warning, no non-dialogex-mapping for dialog id %d", iid);
