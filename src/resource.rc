@@ -834,39 +834,39 @@ CAPTION "Preferences"
 FONT 8, "MS Shell Dlg"
 BEGIN
     PUSHBUTTON      "Done",IDOK,174,274,50,14
-    GROUPBOX        "My Account",IDC_STATIC,7,7,215,36
-    GROUPBOX        "Appearance",IDC_STATIC,7,45,215,77
+    GROUPBOX        "My Account",IDC_STATIC,7,7,218,36
+    GROUPBOX        "Appearance",IDC_STATIC,7,45,218,77
     LTEXT           "Static",IDC_MY_ACCOUNT_NAME,53,17,135,8
-    LTEXT           "Username:",IDC_STATIC,13,17,36,8
+    LTEXT           "Username:",IDC_STATIC,12,17,36,8
     LTEXT           "*****@*****.***",IDC_EMAIL_DISPLAY,54,29,114,8
-    LTEXT           "Email:",IDC_STATIC,13,29,20,8
+    LTEXT           "Email:",IDC_STATIC,12,29,20,8
     PUSHBUTTON      "Reveal",IDC_REVEALEMAIL,169,26,50,14
     CONTROL         "Cozy",IDC_APPEARANCE_COZY,"Button",BS_AUTORADIOBUTTON,80,56,32,10
     CONTROL         "Compact",IDC_APPEARANCE_COMPACT,"Button",BS_AUTORADIOBUTTON,114,56,44,10
     COMBOBOX        IDC_MESSAGE_STYLE,80,70,137,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Message theme:",IDC_STATIC,13,72,62,8
-    LTEXT           "Message display:",IDC_STATIC,13,56,56,8
-    LTEXT           "Background image:",IDC_STATIC,13,88,62,8
-    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,79,86,86,14,ES_AUTOHSCROLL | ES_READONLY
-    PUSHBUTTON      "Change...",IDC_ACTIVE_IMAGE_BROWSE,168,86,50,14
-    LTEXT           "Aligned to:",IDC_STATIC,13,105,65,8
+    LTEXT           "Message theme:",IDC_STATIC,12,72,62,8
+    LTEXT           "Message display:",IDC_STATIC,12,56,56,8
+    LTEXT           "Background image:",IDC_STATIC,12,88,62,8
+    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,80,86,86,14,ES_AUTOHSCROLL | ES_READONLY
+    PUSHBUTTON      "Change...",IDC_ACTIVE_IMAGE_BROWSE,169,86,50,14
+    LTEXT           "Aligned to:",IDC_STATIC,12,105,65,8
     COMBOBOX        IDC_COMBO_ALIGNMENT,80,104,137,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Chat",IDC_STATIC,7,123,216,63
+    GROUPBOX        "Chat",IDC_STATIC,7,123,218,63
     CONTROL         "Disable markdown formatting",IDC_DISABLE_FORMATTING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,134,205,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,134,205,10
     CONTROL         "Display images when uploaded directly to Discord",IDC_IMAGES_WHEN_UPLOADED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,147,205,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,147,205,10
     CONTROL         "Display images when posted as links in chat",IDC_IMAGES_WHEN_EMBEDDED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,160,205,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,160,205,10
     CONTROL         "Show embeds and preview links in chat",IDC_SHOW_EMBEDS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,173,205,10
-    GROUPBOX        "Window",IDC_STATIC,7,187,217,38
-    CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,198,203,10
-    CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,211,203,10
-    GROUPBOX        "Check for updates",IDC_STATIC,7,227,217,44
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,173,205,10
+    GROUPBOX        "Window",IDC_STATIC,7,187,218,38
+    CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,198,203,10
+    CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,211,203,10
+    GROUPBOX        "Check for updates",IDC_STATIC,7,227,218,44
     CONTROL         "Check for updates using the GitHub API",IDC_CHECK_UPDATES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,238,203,10
-    LTEXT           "iProgramInCpp cannot see your IP address through the update service.",IDC_STATIC,13,250,204,17
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,238,203,10
+    LTEXT           "iProgramInCpp cannot see your IP address through the update service.",IDC_STATIC,12,250,204,17
     LTEXT           "Changes apply automatically.",IDC_STATIC,7,276,163,8
 END
 

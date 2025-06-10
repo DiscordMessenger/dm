@@ -398,7 +398,7 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 					EnableWindow(GetDlgItem(hWnd, IDC_ACTIVE_IMAGE_EDIT),   enable);
 					EnableWindow(GetDlgItem(hWnd, IDC_ACTIVE_IMAGE_BROWSE), enable);
 					EnableWindow(GetDlgItem(hWnd, IDC_COMBO_ALIGNMENT),     enable);
-
+					
 					SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
 					break;
 				}
