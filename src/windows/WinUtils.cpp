@@ -672,6 +672,7 @@ void FillGradientColors(HDC hdc, const LPRECT lpRect, COLORREF c1, COLORREF c2, 
 
 			ri::AlphaBlend(hdc, lpRect->left, lpRect->top, rc.right, rc.bottom, hdcDest, 0, 0, rc.right, rc.bottom, bf);
 
+			ri::ReleaseDIBSection(puBits);
 			DeleteObject(hbm);
 			DeleteDC(hdcDest);
 			hdcDest = hdc;

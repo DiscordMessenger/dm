@@ -553,6 +553,11 @@ void SetupCrashDebugging()
 	ri::AddVectoredExceptionHandler(TRUE, DMVectoredExceptionHandler);
 }
 
+void KeepOverridingTheFilter()
+{
+	SetUnhandledExceptionFilter(DMUnhandledExceptionFilter);
+}
+
 // This function calls std::terminate() after showing a message box.
 extern "C" void Terminate(const char* message, ...)
 {

@@ -691,6 +691,8 @@ int g_agerCounter = 0;
 
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	KeepOverridingTheFilter();
+
 	g_agerCounter++;
 	if (g_agerCounter >= 50) {
 		g_agerCounter = 0;

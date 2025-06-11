@@ -16,3 +16,4 @@
 
 // ** Setup **
 void SetupCrashDebugging();
+void KeepOverridingTheFilter();

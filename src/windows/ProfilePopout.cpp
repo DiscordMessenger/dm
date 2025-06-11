@@ -542,6 +542,21 @@ INT_PTR CALLBACK ProfilePopout::Proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 			}
 			return TRUE;
 		}
+
+		case WM_CTLCOLOREDIT: // Windows NT 3.1 seems to send this intead of WM_CTLCOLORSTATIC for my disabled text boxes
+			// If the window is disabled, set the background color below
+			if (IsWindowEnabled((HWND)lParam))
+				break;
+
+			// fall through
+		case WM_CTLCOLOR:
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSTATIC:
+		case WM_CTLCOLORBTN: // Windows NT 3.1 seems to send this instead of WM_CTLCOLORSTATIC for my group boxes
+		{
+			SetBkColor((HDC) wParam, GetSysColor(COLOR_3DFACE));
+			return (INT_PTR)ri::GetSysColorBrush(COLOR_3DFACE);
+		}
 	}
 
 	return FALSE;

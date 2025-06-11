@@ -777,15 +777,15 @@ LRESULT MessageEditor::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			}
 			break;
 		}
+		// Windows NT 3.1 doesn't seem to send wm_ctlcolorstatic here for some weird
+		// reason. I don't know how to fix that, I tried.
 		case WM_CTLCOLORSTATIC:
 		{
 			if ((HWND) lParam == pThis->m_mentionName_hwnd)
-			{
 				SetTextColor((HDC) wParam, pThis->m_userNameColor);
-				SetBkColor((HDC) wParam, GetSysColor(COLOR_3DFACE));
-				return (LRESULT) ri::GetSysColorBrush(COLOR_3DFACE);
-			}
-			break;
+
+			SetBkColor((HDC) wParam, GetSysColor(COLOR_3DFACE));
+			return (LRESULT)ri::GetSysColorBrush(COLOR_3DFACE);
 		}
 	}
 
