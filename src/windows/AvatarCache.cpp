@@ -63,6 +63,8 @@ void AvatarCache::SetImage(const std::string& resource, HImage* him, bool hasAlp
 			break;
 	}
 
+	AgeBitmaps();
+
 	auto iter = m_profileToBitmap.find(id);
 	if (iter != m_profileToBitmap.end())
 	{
@@ -273,6 +275,9 @@ bool AvatarCache::TrimBitmap()
 
 int AvatarCache::TrimBitmaps(int count)
 {
+	if (count < 0)
+		return 0;
+
 	int trimCount = 0;
 	for (int i = 0; i < count; i++) {
 		if (!TrimBitmap())

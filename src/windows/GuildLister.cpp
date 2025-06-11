@@ -539,6 +539,7 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 			SelectObject(hdc, oldBrush);
 
 			SelectClipRgn(hdc, NULL);
+			DeleteRgn(hrgn);
 		}
 
 		if (!isFolderIcon) {
@@ -1069,10 +1070,12 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					rc.top += y;
 					rc.bottom = rc.top + C_GUILD_GAP_HEIGHT;
 					FillRect(hdc, &rc, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
-					COLORREF oldPenColor = ri::SetDCPenColor(hdc, GetSysColor(COLOR_3DLIGHT));
+					COLORREF oldPenColor = ri::SetDCPenColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+					HGDIOBJ oldobj = SelectObject(hdc, ri::GetDCPen());
 					POINT pt2;
 					MoveToEx(hdc, rc.left + BORDER_SIZE, rc.top + BORDER_SIZE, &pt2);
 					LineTo(hdc, rc.right - BORDER_SIZE, rc.top + BORDER_SIZE);
+					SelectObject(hdc, oldobj);
 					ri::SetDCPenColor(hdc, oldPenColor);
 					y += C_GUILD_GAP_HEIGHT;
 					continue;
