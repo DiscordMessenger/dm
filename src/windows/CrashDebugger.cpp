@@ -335,8 +335,8 @@ bool FindLoadedDLLsAutomatically()
 
 LONG WINAPI DMUnhandledExceptionFilter(PEXCEPTION_POINTERS ExceptionInfo)
 {
-	// Is this NT status a "warning"
-	if ((ExceptionInfo->ExceptionRecord->ExceptionCode & 0xF0000000) == 0x40000000)
+	// Is this NT status not an "error"
+	if ((ExceptionInfo->ExceptionRecord->ExceptionCode & 0xF0000000) != ERROR_SEVERITY_ERROR)
 		return EXCEPTION_CONTINUE_SEARCH;
 
 	auto er = ExceptionInfo->ExceptionRecord;
