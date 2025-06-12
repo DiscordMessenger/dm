@@ -475,6 +475,7 @@ public:
 		LPCTSTR strReplyMsg,
 		LPCTSTR strReplyAuth,
 		bool isAuthorBot,
+		bool isForward,
 		const RECT& msgRect,
 		int& height,
 		int& authheight,

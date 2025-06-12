@@ -113,8 +113,10 @@ void RichEmbedItem::Update()
 	m_authorName.Set(m_pEmbed->m_authorName);
 	m_footerText.Set(m_pEmbed->m_footerText);
 	m_providerName.Set(m_pEmbed->m_providerName);
-	if (m_dateTime >= 0)
+	if (m_dateTime > 0)
 		m_date.Set(FormatTimeLong(m_dateTime));
+	else
+		m_date.Set("");
 
 	const size_t sz = m_pEmbed->m_fields.size();
 	m_fields.resize(sz);
@@ -378,9 +380,9 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 		if (sizeY) sizeY += gap;
 		RECT rcText = rc;
 		rcText.top = rc.top + sizeY;
-		rcText.bottom = rcText.top + m_footerSize.cy;
+		rcText.bottom = rcText.top + m_dateSize.cy;
 		DrawText(hdc, m_date.GetWrapped(), -1, &rcText, DT_SINGLELINE | DT_WORDBREAK | ri::GetWordEllipsisFlag());
-		sizeY += m_footerSize.cy;
+		sizeY += m_dateSize.cy;
 	}
 
 	SetBkColor(hdc, oldColor);
@@ -396,6 +398,7 @@ void MessageList::MeasureMessage(
 	LPCTSTR strReplyMsg,
 	LPCTSTR strReplyAuth,
 	bool isAuthorBot,
+	bool isForward,
 	const RECT& msgRect,
 	int& textheight,
 	int& authheight,
@@ -430,7 +433,7 @@ void MessageList::MeasureMessage(
 		authwidth = authheight = 0;
 	}
 	
-	if (placeinchain == 0 && (strReplyMsg || strReplyAuth))
+	if (placeinchain == 0 && (strReplyMsg || strReplyAuth) && !isForward)
 	{
 		int replyheight2 = 0;
 		SelectObject(hdc, g_ReplyTextFont);
@@ -3916,6 +3919,7 @@ void MessageList::UpdateMembers(std::set<Snowflake>& mems)
 			msg.m_replyMsg,
 			msg.m_replyAuth,
 			msg.m_msg.m_bIsAuthorBot,
+			msg.m_msg.m_bIsForward,
 			msg.m_messageRect,
 			height,
 			authHeight,
@@ -4571,6 +4575,7 @@ void MessageList::DetermineMessageMeasurements(MessageItem& mi, HDC _hdc, LPRECT
 		strReplyMsg,
 		strReplyAuth,
 		mi.m_msg.m_bIsAuthorBot,
+		mi.m_msg.m_bIsForward,
 		rect,
 		mi.m_textHeight,
 		mi.m_authHeight,
