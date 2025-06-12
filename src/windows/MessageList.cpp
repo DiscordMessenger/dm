@@ -1594,6 +1594,18 @@ void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem
 	attachItem.m_boxRect = childAttachRect;
 }
 
+bool MessageList::IsReplyableActionMessage(MessageType::eType msgType)
+{
+	if (!IsActionMessage(msgType))
+		return true;
+
+	switch (msgType)
+	{
+		case MessageType::USER_JOIN:
+			return true;
+	}
+}
+
 // XXX: Keep IsActionMessage and DetermineMessageData in sync, please.
 bool MessageList::IsActionMessage(MessageType::eType msgType)
 {
@@ -3579,22 +3591,30 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			bool isThisMyMessage   = pRCMsg->m_msg.m_author_snowflake == ourPf->m_snowflake;
 			bool mayManageMessages = pChan->HasPermission(PERM_MANAGE_MESSAGES);
+			bool isActionMessage = IsActionMessage(pRCMsg->m_msg.m_type) || IsClientSideMessage(pRCMsg->m_msg.m_type);
+			bool isForward = pRCMsg->m_msg.m_bIsForward;
 
+			bool mayCopy   = !isForward && !isActionMessage;
 			bool mayDelete = isThisMyMessage || mayManageMessages;
-			bool mayEdit   = isThisMyMessage;
+			bool mayEdit   = isThisMyMessage && !isForward && !isActionMessage;
 			bool mayPin    = mayManageMessages;
-			bool maySpeak  = !IsActionMessage(pRCMsg->m_msg.m_type) && !pRCMsg->m_msg.m_message.empty();
+			bool maySpeak  = !isActionMessage && !pRCMsg->m_msg.m_message.empty();
+			bool mayReply  = !isActionMessage || IsReplyableActionMessage(pRCMsg->m_msg.m_type);
 
 #ifdef OLD_WINDOWS
 			EnableMenuItem(menu, ID_DUMMYPOPUP_DELETEMESSAGE, mayDelete ? MF_ENABLED : MF_GRAYED);
 			EnableMenuItem(menu, ID_DUMMYPOPUP_EDITMESSAGE,   mayEdit   ? MF_ENABLED : MF_GRAYED);
 			EnableMenuItem(menu, ID_DUMMYPOPUP_PINMESSAGE,    mayPin    ? MF_ENABLED : MF_GRAYED);
 			EnableMenuItem(menu, ID_DUMMYPOPUP_SPEAKMESSAGE,  maySpeak  ? MF_ENABLED : MF_GRAYED);
+			EnableMenuItem(menu, ID_DUMMYPOPUP_COPYTEXT,      mayCopy   ? MF_ENABLED : MF_GRAYED);
+			EnableMenuItem(menu, ID_DUMMYPOPUP_REPLY,         mayReply  ? MF_ENABLED : MF_GRAYED);
 #else
 			if (!mayDelete) RemoveMenu(menu, ID_DUMMYPOPUP_DELETEMESSAGE, MF_BYCOMMAND);
 			if (!mayEdit)   RemoveMenu(menu, ID_DUMMYPOPUP_EDITMESSAGE,   MF_BYCOMMAND);
 			if (!mayPin)    RemoveMenu(menu, ID_DUMMYPOPUP_PINMESSAGE,    MF_BYCOMMAND);
 			if (!maySpeak)  RemoveMenu(menu, ID_DUMMYPOPUP_SPEAKMESSAGE,  MF_BYCOMMAND);
+			if (!mayCopy)   RemoveMenu(menu, ID_DUMMYPOPUP_COPYTEXT,      MF_BYCOMMAND);
+			if (!mayReply)  RemoveMenu(menu, ID_DUMMYPOPUP_REPLY,         MF_BYCOMMAND);
 #endif
 
 			TrackPopupMenu(menu, TPM_RIGHTBUTTON, xPos, yPos, 0, hWnd, NULL);

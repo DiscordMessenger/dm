@@ -555,6 +555,7 @@ public:
 protected:
 	friend class MessageItem;
 	static bool IsActionMessage(MessageType::eType msgType);
+	static bool IsReplyableActionMessage(MessageType::eType msgType); // is this an action message that one can reply to
 	static bool IsClientSideMessage(MessageType::eType msgType);
 
 private:

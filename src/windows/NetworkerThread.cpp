@@ -379,7 +379,8 @@ void NetworkerThread::PrepareQuit()
 	while (!m_requests.empty())
 		m_requests.pop();
 
-	m_requests.push(NetRequest(0, 0, 0, NetRequest::QUIT));
+	for (int i = 0; i < C_AMT_NETWORKER_THREADS; i++)
+		m_requests.push(NetRequest(0, 0, 0, NetRequest::QUIT));
 
 	m_requestLock.unlock();
 }
