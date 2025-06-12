@@ -20,6 +20,7 @@ struct ReferenceMessage
 	std::string m_message;
 	std::string m_author;
 	std::string m_avatar;
+	time_t m_timestamp;
 	bool m_bHasAttachments = false;
 	bool m_bHasComponents = false;
 	bool m_bHasEmbeds = false;
@@ -111,6 +112,7 @@ public:
 	bool m_bMentionedEveryone = false;
 	bool m_bIsAuthorBot = false;
 	bool m_bRead = false; // valid only for the notification viewer messages
+	bool m_bIsForward = false;
 	Snowflake m_refMessageGuild = 0;
 	Snowflake m_refMessageChannel = 0;
 	Snowflake m_refMessageSnowflake = 0;
@@ -133,6 +135,10 @@ public:
 
 	bool IsWebHook() const {
 		return m_webhookId != 0;
+	}
+	
+	bool IsReply() const {
+		return m_pReferencedMessage && !m_bIsForward;
 	}
 
 public:

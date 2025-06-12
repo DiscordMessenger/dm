@@ -1589,7 +1589,6 @@ void DiscordInstance::LaunchURL(const std::string& url)
 			JumpToMessage(gldid, chan, msg);
 			return;
 		}
-		else return;
 	}
 
 	GetFrontend()->LaunchURL(url);

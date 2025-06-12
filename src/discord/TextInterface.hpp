@@ -102,4 +102,5 @@ int MdLineHeight(DrawingContext* context, int styleFlags);
 int MdSpaceWidth(DrawingContext* context, int styleFlags);
 void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, int styleFlags);
 void MdDrawCodeBackground(DrawingContext* context, const Rect& rect);
+void MdDrawForwardBackground(DrawingContext* context, const Rect& rect);
 int MdGetQuoteIndentSize();

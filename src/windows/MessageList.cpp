@@ -530,7 +530,48 @@ void MessageItem::Update(Snowflake guildID)
 	if (!isAction)
 	{
 		if (m_message.Empty())
-			m_message.SetMessage(m_msg.m_message);
+		{
+			if (m_msg.m_bIsForward)
+			{
+				std::string data = m_msg.m_message;
+				if (!data.empty())
+					data += "\n\n";
+
+				std::stringstream link;
+				link << "https://discord.com/channels/";
+				
+				if (m_msg.m_refMessageGuild)
+					link << m_msg.m_refMessageGuild;
+				else
+					link << "@me";
+
+				link << "/" << m_msg.m_refMessageChannel << "/" << m_msg.m_refMessageSnowflake;
+
+				// N.B. using 0x1F and 0x1E to signify that that's where the forwarded message starts and ends
+				std::string date = FormatDate(m_msg.m_pReferencedMessage->m_timestamp);
+				std::string server = "", jumptomessage = "";
+
+				Guild* pGld = GetDiscordInstance()->GetGuild(m_msg.m_refMessageGuild);
+				if (pGld)
+				{
+					server = "From " + pGld->m_name + " \\* ";
+
+					Channel* pChan = pGld->GetChannel(m_msg.m_refMessageChannel);
+					if (pChan && pChan->HasPermission(PERM_VIEW_CHANNEL) && pChan->HasPermission(PERM_READ_MESSAGE_HISTORY))
+						jumptomessage = " \\* [Jump to message](" + link.str() + ")";
+				}
+
+				data += "**Forwarded:**\n" + std::string(1, char(0x1F));
+				data += m_msg.m_pReferencedMessage->m_message + std::string(1, char(0x1E)) + "\n";
+				data += "*" + server + date + jumptomessage + "*";
+
+				m_message.SetMessage(data);
+			}
+			else
+			{
+				m_message.SetMessage(m_msg.m_message);
+			}
+		}
 
 		auto& words = m_message.GetWords();
 		for (size_t i = 0; i < words.size(); i++) {
@@ -2447,7 +2488,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	// draw the reply if needed
 	int replyOffset = 0;
 
-	if (item.m_msg.m_pReferencedMessage != nullptr && !isActionMessage && isChainBegin)
+	if (item.m_msg.IsReply() && !isActionMessage && isChainBegin)
 		replyOffset = DrawMessageReply(hdc, item, rc);
 
 	rc.top += replyOffset;

@@ -32,14 +32,22 @@ struct Token
 		EVERYONE,
 		HERE,
 		CUSTOM_EMOJI,
+		FORWARD,
+		FORWARDE,
 	};
 
 	int m_type = TEXT;
 	std::string m_text;
+	std::string m_alttext;
 
 	Token(int type, const std::string& text) :
 		m_type(type),
 		m_text(text)
+	{}
+	Token(int type, const std::string& text, const std::string& alttext) :
+		m_type(type),
+		m_text(text),
+		m_alttext(alttext)
 	{}
 };
 
@@ -64,6 +72,8 @@ struct Token
 #define WORD_CEMOJI    (1 << 18) // Custom emoji.
 #define WORD_HEADER1   (1 << 19) // Header 1 style. Currently only used by emoji.
 #define WORD_NOFORMAT  (1 << 20) // Not actually formatted.
+#define WORD_FORWARD   (1 << 21) // start of forwarded message
+#define WORD_FORWARDE  (1 << 22) // end of forwarded message
 
 struct Word
 {

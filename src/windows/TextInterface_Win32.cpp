@@ -238,6 +238,23 @@ void MdDrawCodeBackground(DrawingContext* context, const Rect& rect)
 	ri::DrawEdge(context->m_hdc, &rc, BDR_SUNKEN, BF_RECT);
 }
 
+void MdDrawForwardBackground(DrawingContext* context, const Rect& rect)
+{
+	RECT rc = RectToNative(rect);
+
+	rc.right = rc.left - ScaleByDPI(3);
+	rc.left = rc.right - ScaleByDPI(3);
+
+	if (context->m_bInvertTextColor) {
+		COLORREF old = ri::SetDCBrushColor(context->m_hdc, context->InvertIfNeeded(GetSysColor(COLOR_GRAYTEXT)));
+		FillRect(context->m_hdc, &rc, ri::GetDCBrush());
+		ri::SetDCBrushColor(context->m_hdc, old);
+	}
+	else {
+		FillRect(context->m_hdc, &rc, ri::GetSysColorBrush(COLOR_GRAYTEXT));
+	}
+}
+
 int MdGetQuoteIndentSize()
 {
 	return ScaleByDPI(SIZE_QUOTE_INDENT);
