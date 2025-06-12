@@ -319,7 +319,7 @@ void Message::Load(Json& data, Snowflake guild)
 
 			Json& msgShot = msgShots[0]["message"];
 
-			m_snowflake = m_refMessageSnowflake;
+			rMsg.m_snowflake = m_refMessageSnowflake;
 			rMsg.m_author_snowflake = 0;
 			rMsg.m_author = "---";
 			rMsg.m_avatar = "";

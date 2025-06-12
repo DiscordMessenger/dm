@@ -416,19 +416,41 @@ void UpdateMainWindowTitle(HWND hWnd)
 	free(tstr);
 }
 
-int OnSSLError(const std::string& url)
+int OnHTTPError(const std::string& url, const std::string& reasonString, bool isSSL)
 {
 	LPTSTR urlt = ConvertCppStringToTString(url);
+	LPTSTR rstt = ConvertCppStringToTString(reasonString);
+	LPCTSTR title;
 	static TCHAR buffer[8192];
-	_tcscpy(buffer, TmGetTString(IDS_SSL_ERROR_1));
-	_tcscat(buffer, urlt);
-	_tcscat(buffer, TmGetTString(IDS_SSL_ERROR_2));
-	_tcscat(buffer, TmGetTString(IDS_SSL_ERROR_3));
+
+	if (isSSL) {
+		title = TmGetTString(IDS_SSL_ERROR_TITLE);
+		_tcscpy(buffer, TmGetTString(IDS_SSL_ERROR_1));
+		_tcscat(buffer, urlt);
+		_tcscat(buffer, TEXT("\n\n"));
+		_tcscat(buffer, rstt);
+		_tcscat(buffer, TEXT("\n\n"));
+		_tcscat(buffer, TmGetTString(IDS_SSL_ERROR_2));
+		_tcscat(buffer, TEXT("\n\n"));
+		_tcscat(buffer, TmGetTString(IDS_SSL_ERROR_3));
+	}
+	else {
+		title = TmGetTString(IDS_CONNECT_ERROR_TITLE);
+		_tcscpy(buffer, TmGetTString(IDS_CONNECT_ERROR_1));
+		_tcscat(buffer, urlt);
+		_tcscat(buffer, TEXT("\n\n"));
+		_tcscat(buffer, rstt);
+		_tcscat(buffer, TEXT("\n\n"));
+		_tcscat(buffer, TmGetTString(IDS_CONNECT_ERROR_2));
+		_tcscat(buffer, TEXT("\n\n"));
+		_tcscat(buffer, TmGetTString(IDS_CONNECT_ERROR_3));
+	}
+
 	free(urlt);
-
+	free(rstt);
+	
 	size_t l = _tcslen(buffer);
-
-	return MessageBox(g_Hwnd, buffer, TmGetTString(IDS_SSL_ERROR_TITLE), MB_ABORTRETRYIGNORE | MB_ICONWARNING);
+	return MessageBox(g_Hwnd, buffer, title, (isSSL ? MB_ABORTRETRYIGNORE : MB_RETRYCANCEL) | MB_ICONWARNING);
 }
 
 void CloseCleanup(HWND hWnd)
@@ -461,6 +483,13 @@ LRESULT HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					return TRUE;
 				}
 			}
+			break;
+		}
+		case ID_FILE_RECONNECTTODISCORD:
+		{
+			if (!GetDiscordInstance()->IsGatewayConnected())
+				SendMessage(hWnd, WM_LOGINAGAIN, 0, 0);
+
 			break;
 		}
 		case ID_FILE_EXIT:
@@ -720,9 +749,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				ProfilePopout::Update();
 			break;
 		}
-		case WM_SSLERROR:
+		case WM_HTTPERROR:
 		{
-			return OnSSLError(CutOutURLPath(std::string((const char*)lParam)));
+			const char** arr = (const char**) lParam;
+			return OnHTTPError(CutOutURLPath(std::string((const char*) arr[0])), std::string((const char*) arr[1]), (bool)wParam);
 		}
 		case WM_FORCERESTART:
 		{
@@ -1162,6 +1192,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_CONNECTERROR:
 			// try it again
+			EnableMenuItem(GetSubMenu(GetMenu(hWnd), 0), ID_FILE_RECONNECTTODISCORD, MF_ENABLED);
 			DbgPrintW("Trying to connect to websocket again in %d ms", g_tryAgainTimerElapse);
 			TryConnectAgainIn(g_tryAgainTimerElapse);
 			g_tryAgainTimerElapse = g_tryAgainTimerElapse * 115 / 100;
@@ -1180,6 +1211,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (g_bFromStartup && GetLocalSettings()->GetStartMinimized()) {
 				GetFrontend()->HideWindow();
 			}
+
+			EnableMenuItem(GetSubMenu(GetMenu(hWnd), 0), ID_FILE_RECONNECTTODISCORD, MF_GRAYED);
 			break;
 		case WM_CONNECTING: {
 			if (!g_bFromStartup || !GetLocalSettings()->GetStartMinimized())
@@ -1416,7 +1449,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				TmGetTString(IDS_PROGRAM_NAME),
 				MB_ICONERROR | MB_OK
 			);
-			PostQuitMessage(0);
+
+			EnableMenuItem(GetSubMenu(GetMenu(hWnd), 0), ID_FILE_RECONNECTTODISCORD, MF_ENABLED);
 			break;
 		}
 		case WM_SHOWPROFILEPOPOUT:

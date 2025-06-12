@@ -56,6 +56,7 @@ BEGIN
     BEGIN
         MENUITEM "&Preferences",                ID_FILE_PREFERENCES
         MENUITEM SEPARATOR
+        MENUITEM "&Reconnect to Discord",       ID_FILE_RECONNECTTODISCORD
         MENUITEM "&STOP All Speech",            ID_FILE_STOPALLSPEECH
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_FILE_EXIT
@@ -1316,7 +1317,7 @@ END
 #else
  FILEFLAGS 0x0L
 #endif
- FILEOS 0x00000004L
+ FILEOS 0x4L
  FILETYPE 0x1L
  FILESUBTYPE 0x0L
 BEGIN
@@ -1591,7 +1592,7 @@ BEGIN
     IDS_CANT_LAUNCH_URL_MEM "Whoa, like, can't launch the URL %s! Yer' outta memory, duuude!"
     IDS_CANT_LAUNCH_URL_ERR "Can't launch URL %s. ShellExecute returned error %d.  Look up ""ShellExecute error %d"" if you care."
     IDS_SSL_ERROR_1         "WARNING:  Your connection may not be private\n\nDiscord Messenger could not verify that it is connecting to the following URL: "
-    IDS_SSL_ERROR_2         "\n\nThis could be because:\no   Your computer does not trust the certificate that the service has declared because it is wrong,\no   Your computer does not trust the certificate that the service has declared because it doesn't trust the root certificate,\no   Your computer does not trust the certificate that the service has declared because your date and time are incorrect,\no   The website reported a protocol which the client is outdated for and cannot handle, or\no   SOMEONE IS EAVESDROPPING ON YOU RIGHT NOW! (man-in-the-middle attack)\n\nIt is not recommended to proceed if you see this error. Please ensure you can connect to the URL using a capable device on the same network as this one.  If you are able to connect, export the root certificate from that device and import it into Windows, so that you won't get this error again.\n\nYou may also disable SSL server verification, and then restart the application. However, you have to take into account the risks that this entails."
+    IDS_SSL_ERROR_2         "This could be because:\no   Your computer does not trust the certificate that the service has declared because it is wrong,\no   Your computer does not trust the certificate that the service has declared because it doesn't trust the root certificate,\no   Your computer does not trust the certificate that the service has declared because your date and time are incorrect,\no   The website reported a protocol which the client is outdated for and cannot handle, or\no   SOMEONE IS EAVESDROPPING ON YOU RIGHT NOW! (man-in-the-middle attack)\n\nIt is not recommended to proceed if you see this error. Please ensure you can connect to the URL using a capable device on the same network as this one.  If you are able to connect, export the root certificate from that device and import it into Windows, so that you won't get this error again.\n\nYou may also disable SSL server verification, and then restart the application. However, you have to take into account the risks that this entails."
     IDS_SSL_ERROR_TITLE     "Discord Messenger - SECURITY ALERT"
     IDS_UNKNOWN_FILE_NAME   "unknown.png"
     IDS_RESTART_CONFIG_CHANGE 
@@ -1608,7 +1609,7 @@ STRINGTABLE
 BEGIN
     IDS_CANNOT_CONNECT_WS   "ERROR: Could not connect to the websocket gateway.\nConnection was closed with code: %d\n\nMessage: %s"
     IDS_SSL_ERROR_WS        "WARNING: Your connection may not be private\n\nDiscord Messenger could not verify that it is connecting to the WebSocket service required to use Discord Messenger in real time."
-    IDS_SSL_ERROR_3         "\n\nUse one of the following buttons to determine how to proceed:\no   ABORT: Declare this HTTP request a failure.\no   RETRY: Retry this HTTP request.  Keep in mind that you will need to restart the app if you have installed a new certificate.\no   IGNORE: This error and future SSL errors will be ignored.  This option is RISKY because it could expose you to man-in-the-middle attacks. If you wish to enable SSL server verification again after clicking Ignore, you can go to the File > Preferences menu, Connection tab, and check the relevant checkbox."
+    IDS_SSL_ERROR_3         "Use one of the following buttons to determine how to proceed:\no   ABORT: Declare this HTTP request a failure.\no   RETRY: Retry this HTTP request.  Keep in mind that you will need to restart the app if you have installed a new certificate.\no   IGNORE: This error and future SSL errors will be ignored.  This option is RISKY because it could expose you to man-in-the-middle attacks. If you wish to enable SSL server verification again after clicking Ignore, you can go to the File > Preferences menu, Connection tab, and check the relevant checkbox."
     IDS_IS_TYPING           " is typing..."
     IDS_ARE_TYPING          " are typing..."
     IDS_CANNOT_CONNECT_WS_2 "\n\nClick Retry to try connecting again, or Cancel to quit."
@@ -1650,6 +1651,10 @@ STRINGTABLE
 BEGIN
     IDS_TERMINATE_HUNG_PROCESS 
                             "An instance of Discord Messenger is already running, but is currently frozen. Before trying to re-open this application, you should terminate the current instance of Discord Messenger."
+    IDS_CONNECT_ERROR_1     "Discord Messenger could not access the following URL: "
+    IDS_CONNECT_ERROR_2     "Check your Internet connection."
+    IDS_CONNECT_ERROR_3     "Use one of the following buttons to determine how to proceed:\no   RETRY: Retries the request. Use this once you have ensured a connection to the internet.\no   CANCEL: Cancels the request with unloaded data."
+    IDS_CONNECT_ERROR_TITLE "Discord Messenger - Connection Error"
 END
 
 #endif    // English (United States) resources

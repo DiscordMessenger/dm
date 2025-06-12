@@ -321,6 +321,10 @@
 #define IDS_CHAT                        766
 #define IDS_WINDOW                      767
 #define IDS_TERMINATE_HUNG_PROCESS      768
+#define IDS_CONNECT_ERROR_1             769
+#define IDS_CONNECT_ERROR_2             770
+#define IDS_CONNECT_ERROR_3             771
+#define IDS_CONNECT_ERROR_TITLE         772
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803
@@ -492,6 +496,7 @@
 #define ID_ACTIONS_QUICKSWITCHER        1067
 #define ID_NOTIFICATION_SHOW            1068
 #define ID_NOTIFICATION_EXIT            1069
+#define ID_FILE_RECONNECTTODISCORD      1079
 #define IDR_MAIN_ACCELS                 1201
 #define IDA_SEARCH                      1301
 #define IDA_QUICKSWITCHER               1302
@@ -502,7 +507,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        104
-#define _APS_NEXT_COMMAND_VALUE         1079
+#define _APS_NEXT_COMMAND_VALUE         1080
 #define _APS_NEXT_CONTROL_VALUE         916
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif

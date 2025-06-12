@@ -82,8 +82,10 @@ bool NetworkerThread::ProcessResult(NetRequest& req, const httplib::Result& res)
 {
 	using namespace httplib;
 
-	if (res.error() == Error::SSLServerVerification)
+	if (!res || res.error() == Error::SSLServerVerification)
 	{
+		bool isSSLError = res.error() == Error::SSLServerVerification;
+
 		g_sslErrorMutex.lock();
 		if (g_bQuittingFromSSLError) {
 			// we're actually quitting. Ignore
@@ -91,9 +93,14 @@ bool NetworkerThread::ProcessResult(NetRequest& req, const httplib::Result& res)
 			return false;
 		}
 
-		int result = (int) SendMessage(g_Hwnd, WM_SSLERROR, 0, (LPARAM)req.url.c_str());
+		std::string errorstr = to_string(res.error());
 
-		if (result == IDABORT)
+		const char* strarr[2];
+		strarr[0] = req.url.c_str();
+		strarr[1] = errorstr.c_str();
+		int result = (int) SendMessage(g_Hwnd, WM_HTTPERROR, (WPARAM) isSSLError, (LPARAM) strarr);
+
+		if (result == IDCANCEL || result == IDABORT)
 		{
 			// Declare it a failure
 			req.result = -1;
@@ -101,17 +108,17 @@ bool NetworkerThread::ProcessResult(NetRequest& req, const httplib::Result& res)
 
 			g_sslErrorMutex.unlock();
 		}
-		else if (result == IDIGNORE)
+		else if (isSSLError && (result == IDCONTINUE || result == IDIGNORE))
 		{
 			GetLocalSettings()->SetEnableTLSVerification(false);
 			PrepareQuit();
-			SendMessage(g_Hwnd, WM_FORCERESTART, 0, 0);
 
 			g_bQuittingFromSSLError = true;
+			SendMessage(g_Hwnd, WM_FORCERESTART, 0, 0);
 			g_sslErrorMutex.unlock();
 			return false;
 		}
-		// return true to retry
+		// return true to retry, IDTRYAGAIN or IDRETRY
 		else
 		{
 			g_sslErrorMutex.unlock();
@@ -122,11 +129,6 @@ bool NetworkerThread::ProcessResult(NetRequest& req, const httplib::Result& res)
 	{
 		req.result = HTTP_CANCELED;
 		req.response = "Operation cancelled by user";
-	}
-	else if (!res)
-	{
-		req.result = -1;
-		req.response = to_string(res.error());
 	}
 	else
 	{

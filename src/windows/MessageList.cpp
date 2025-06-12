@@ -562,7 +562,7 @@ void MessageItem::Update(Snowflake guildID)
 				}
 
 				data += "**Forwarded:**\n" + std::string(1, char(0x1F));
-				data += m_msg.m_pReferencedMessage->m_message + std::string(1, char(0x1E)) + "\n";
+				data += m_msg.m_pReferencedMessage->m_message + "\n" + std::string(1, char(0x1E));
 				data += "*" + server + date + jumptomessage + "*";
 
 				m_message.SetMessage(data);
