@@ -293,7 +293,7 @@ void Message::Load(Json& data, Snowflake guild)
 	if (!msgRef.is_null())
 	{
 		if (msgRef["guild_id"].is_null())
-			m_refMessageGuild = guild;
+			m_refMessageGuild = 0;
 		else
 			m_refMessageGuild = GetSnowflake(msgRef, "guild_id");
 
