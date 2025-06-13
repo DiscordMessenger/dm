@@ -246,8 +246,12 @@ void Message::Load(Json& data, Snowflake guild)
 	if (member.is_object() && guild)
 		authorId = GetDiscordInstance()->ParseGuildMember(guild, member, authorId);
 
-	if (data.contains("nonce"))
-		m_anchor = GetIntFromString(data["nonce"]);
+	if (data.contains("nonce")) {
+		if (data["nonce"].is_number())
+			m_anchor = (Snowflake)data["nonce"];
+		else if (data["nonce"].is_string())
+			m_anchor = GetIntFromString(data["nonce"]);
+	}
 
 	m_snowflake = messageId;
 	m_author_snowflake = authorId;
