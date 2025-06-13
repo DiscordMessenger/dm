@@ -288,7 +288,7 @@ void ProperlySizeControls(HWND hWnd)
 			- scaled10 * 2 /* Between channelview and messageview, between messageview and memberlist */
 			- g_GuildListerWidth2; /* The guild list itself. So just the channelview, messageview and memberlist summed */
 
-		const int widthOfAll3ThingsAt800px = 694;
+		int widthOfAll3ThingsAt800px = ScaleByDPI(694);
 
 		g_ChannelViewListWidth2 = MulDiv(g_ChannelViewListWidth2, widthOfAll3Things, widthOfAll3ThingsAt800px);
 		g_MemberListWidth       = MulDiv(g_MemberListWidth,       widthOfAll3Things, widthOfAll3ThingsAt800px);
