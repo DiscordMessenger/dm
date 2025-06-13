@@ -260,6 +260,9 @@ void ProperlySizeControls(HWND hWnd)
 	g_MemberListWidth      = ScaleByDPI(MEMBER_LIST_WIDTH);
 	g_MessageEditorHeight  = ScaleByDPI(MESSAGE_EDITOR_HEIGHT);
 
+	if (g_pMessageEditor)
+		g_pMessageEditor->SetJumpPresentHeight(g_BottomBarHeight - g_MessageEditorHeight - scaled10);
+
 	int guildListerWidth = g_GuildListerWidth;
 	int channelViewListWidth = g_ChannelViewListWidth;
 	if (GetLocalSettings()->ShowScrollBarOnGuildList()) {
@@ -853,7 +856,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			GetDiscordInstance()->HandledChannelSwitch();
 
-			g_pMessageList->RefetchMessages();
+			g_pMessageList->RefetchMessages(g_pMessageList->GetMessageSentTo());
 
 			InvalidateRect(g_pMessageList->m_hwnd, NULL, MessageList::MayErase());
 			g_pGuildHeader->Update();
@@ -1241,6 +1244,13 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			AddOrRemoveAppFromStartup();
 			CloseCleanup(hWnd);
 			DestroyWindow(hWnd);
+			break;
+
+		case WM_SETBROWSINGPAST:
+			if (wParam)
+				g_pMessageEditor->StartBrowsingPast();
+			else
+				g_pMessageEditor->StopBrowsingPast();
 			break;
 
 		case WM_CLOSE:

@@ -296,10 +296,16 @@ void Message::Load(Json& data, Snowflake guild)
 
 	if (!msgRef.is_null())
 	{
-		if (msgRef["guild_id"].is_null())
-			m_refMessageGuild = 0;
-		else
+		int type = GetFieldSafeInt(msgRef, "type");
+		if (msgRef["guild_id"].is_null()) {
+			if (type == 1) // is forward?
+				m_refMessageGuild = 0;
+			else // maybe a pin or something
+				m_refMessageGuild = guild;
+		}
+		else {
 			m_refMessageGuild = GetSnowflake(msgRef, "guild_id");
+		}
 
 		assert(!msgRef["channel_id"].is_null());
 
@@ -309,7 +315,6 @@ void Message::Load(Json& data, Snowflake guild)
 		m_pReferencedMessage = std::make_shared<ReferenceMessage>();
 		ReferenceMessage& rMsg = *m_pReferencedMessage;
 
-		int type = GetFieldSafeInt(msgRef, "type");
 		if (type == 1)
 		{
 			// Forwarded Message

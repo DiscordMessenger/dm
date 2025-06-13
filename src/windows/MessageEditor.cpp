@@ -83,6 +83,7 @@ MessageEditor::~MessageEditor()
 		m_mentionCheck_hwnd = NULL;
 		m_mentionCancel_hwnd = NULL;
 		m_mentionJump_hwnd = NULL;
+		m_jumpPresLbl_hwnd = NULL;
 		m_editingMessage_hwnd = NULL;
 	}
 
@@ -93,6 +94,7 @@ MessageEditor::~MessageEditor()
 	assert(!m_mentionCheck_hwnd);
 	assert(!m_mentionCancel_hwnd);
 	assert(!m_mentionJump_hwnd);
+	assert(!m_jumpPresLbl_hwnd);
 	assert(!m_editingMessage_hwnd);
 }
 
@@ -123,6 +125,13 @@ void MessageEditor::ShowOrHideEdit(bool shown)
 {
 	int nCmdShow = shown ? SW_SHOW : SW_HIDE;
 	ShowWindow(m_editingMessage_hwnd, nCmdShow);
+}
+
+void MessageEditor::ShowOrHideJumpPresent(bool shown)
+{
+	int nCmdShow = shown ? SW_SHOW : SW_HIDE;
+	ShowWindow(m_jumpPresent_hwnd, nCmdShow);
+	ShowWindow(m_jumpPresLbl_hwnd, nCmdShow);
 }
 
 void MessageEditor::UpdateCommonButtonsShown()
@@ -239,6 +248,24 @@ void MessageEditor::TryToSendMessage()
 		Expand(-m_expandedBy);
 	}
 	delete[] data;
+}
+
+void MessageEditor::StartBrowsingPast()
+{
+	if (m_bBrowsingPast)
+		return;
+
+	m_bBrowsingPast = true;
+	Expand(m_jumpPresentHeight);
+}
+
+void MessageEditor::StopBrowsingPast()
+{
+	if (!m_bBrowsingPast)
+		return;
+
+	m_bBrowsingPast = false;
+	Expand(-m_jumpPresentHeight);
 }
 
 void MessageEditor::StartReply(Snowflake messageID, Snowflake authorID)
@@ -660,6 +687,27 @@ void MessageEditor::Layout()
 		ShowOrHideReply(false);
 	}
 
+	if (m_bBrowsingPast)
+	{
+		ShowOrHideJumpPresent(true);
+
+		RECT rcJumpArea = rcClient;
+		rcJumpArea.bottom = rcJumpArea.top + m_jumpPresentHeight;
+		rcClient.top = rcJumpArea.bottom;
+
+		RECT rc = rcJumpArea;
+		rc.left = rc.right - m_jumpPresentWidth;
+		MoveWindow(m_jumpPresent_hwnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
+
+		rc = rcJumpArea;
+		rc.right -= m_jumpPresentWidth - ScaleByDPI(10);
+		MoveWindow(m_jumpPresLbl_hwnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
+	}
+	else
+	{
+		ShowOrHideJumpPresent(false);
+	}
+
 	if (m_bEditing)
 	{
 		ShowOrHideEdit(true);
@@ -748,6 +796,7 @@ LRESULT MessageEditor::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			pThis->m_mentionCheck_hwnd = NULL;
 			pThis->m_mentionCancel_hwnd = NULL;
 			pThis->m_mentionJump_hwnd = NULL;
+			pThis->m_jumpPresLbl_hwnd = NULL;
 			pThis->m_editingMessage_hwnd = NULL;
 			break;
 		}
@@ -766,12 +815,17 @@ LRESULT MessageEditor::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 					pThis->StopEdit();
 					pThis->StopReply();
 					break;
+				case CID_MESSAGEUPLOAD:
+					UploadDialogShow();
+					break;
+				case CID_MESSAGEJUMPPRESENT: {
+					Snowflake max = UINT64_MAX;
+					SendMessage(g_Hwnd, WM_SENDTOMESSAGE, 0, (LPARAM)&max);
+					break;
+				}
 				case CID_MESSAGEREPLYJUMP: {
 					if (pThis->m_replyMessage)
 						SendMessage(g_Hwnd, WM_SENDTOMESSAGE, 0, (LPARAM) &pThis->m_replyMessage);
-					break;
-				case CID_MESSAGEUPLOAD:
-					UploadDialogShow();
 					break;
 				}
 			}
@@ -859,18 +913,20 @@ MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
 	LPCTSTR editingText  = TmGetTString(IDS_EDITING_MESSAGE);
 	LPCTSTR replyingText = TmGetTString(IDS_REPLYING_TO_MESSAGE);
 	LPCTSTR mentionText  = TmGetTString(IDS_MENTION);
+	LPCTSTR jumpPresText = TEXT("Jump to Present");
+	LPCTSTR jpLabelText  = TEXT("You are browsing past messages.");
 	LPCTSTR cancelText   = g_CancelIcon ? TEXT("") : TEXT("Cancel"); // TODO: fetch these from resources
 	LPCTSTR jumpText     = g_JumpIcon   ? TEXT("") : TEXT("Jump");   // TODO: fetch these from resources
 	LPCTSTR uploadText   = g_UploadIcon ? TEXT("") : TEXT("Upload"); // TODO: fetch these from resources
 	newThis->m_editingMessage_hwnd = CreateWindow(WC_STATIC, editingText,  WS_CHILD | SS_SIMPLE | SS_CENTERIMAGE, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEEDITINGLBL,  g_hInstance, NULL);
 	newThis->m_mentionText_hwnd    = CreateWindow(WC_STATIC, replyingText, WS_CHILD | SS_SIMPLE | SS_CENTERIMAGE, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYTO,     g_hInstance, NULL);
+	newThis->m_jumpPresLbl_hwnd    = CreateWindow(WC_STATIC, jpLabelText,  WS_CHILD | SS_SIMPLE | SS_CENTERIMAGE, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEJMPPRESLBL,  g_hInstance, NULL);
 	newThis->m_mentionName_hwnd    = CreateWindow(WC_STATIC, TEXT("UNH"),  WS_CHILD | SS_SIMPLE | SS_CENTERIMAGE, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYUSER,   g_hInstance, NULL);
 	newThis->m_mentionCheck_hwnd   = CreateWindow(WC_BUTTON, mentionText,  WS_CHILD | BS_AUTOCHECKBOX,            0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEMENTCHECK,   g_hInstance, NULL);
 	newThis->m_mentionCancel_hwnd  = CreateWindow(WC_BUTTON, cancelText,   WS_CHILD | BS_PUSHBUTTON | bs_icon,    0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYCANCEL, g_hInstance, NULL);
 	newThis->m_mentionJump_hwnd    = CreateWindow(WC_BUTTON, jumpText,     WS_CHILD | BS_PUSHBUTTON | bs_icon,    0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEREPLYJUMP,   g_hInstance, NULL);
-
-	// Add icon buttons
-	newThis->m_btnUpload_hwnd = CreateWindow(WC_BUTTON, uploadText, WS_CHILD | BS_PUSHBUTTON | bs_icon, 0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEUPLOAD, g_hInstance, NULL);
+	newThis->m_jumpPresent_hwnd    = CreateWindow(WC_BUTTON, jumpPresText, WS_CHILD | BS_PUSHBUTTON,              0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEJUMPPRESENT, g_hInstance, NULL);
+	newThis->m_btnUpload_hwnd      = CreateWindow(WC_BUTTON, uploadText,   WS_CHILD | BS_PUSHBUTTON | bs_icon,    0, 0, 1, 1, newThis->m_hwnd, (HMENU)CID_MESSAGEUPLOAD, g_hInstance, NULL);
 
 	// Pull some initial measurements.
 	HDC hdc = GetDC(newThis->m_hwnd);
@@ -895,6 +951,11 @@ MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
 	SetRectEmpty(&rcMeasure);
 	DrawText(hdc, uploadText, -1, &rcMeasure, DT_CALCRECT);
 	newThis->m_uploadTextWidth = rcMeasure.right - rcMeasure.left + 1;
+
+	SetRectEmpty(&rcMeasure);
+	DrawText(hdc, jumpPresText, -1, &rcMeasure, DT_CALCRECT);
+	newThis->m_jumpPresentWidth = rcMeasure.right - rcMeasure.left + ScaleByDPI(20);
+	newThis->m_jumpPresentHeight = 0; // rcMeasure.bottom - rcMeasure.top + ScaleByDPI(5);
 
 	SelectObject(hdc, objOld);
 	ReleaseDC(newThis->m_hwnd, hdc);
@@ -926,6 +987,8 @@ MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
 	SendMessage(newThis->m_editingMessage_hwnd, WM_SETFONT, (WPARAM)g_SendButtonFont, TRUE);
 	SendMessage(newThis->m_mentionName_hwnd,    WM_SETFONT, (WPARAM)g_AuthorTextFont, TRUE);
 	SendMessage(newThis->m_mentionCheck_hwnd,   WM_SETFONT, (WPARAM)g_SendButtonFont, TRUE);
+	SendMessage(newThis->m_jumpPresent_hwnd,    WM_SETFONT, (WPARAM)g_SendButtonFont, TRUE);
+	SendMessage(newThis->m_jumpPresLbl_hwnd,    WM_SETFONT, (WPARAM)g_AuthorTextFont, TRUE);
 
 	newThis->m_autoComplete.SetEdit(newThis->m_edit_hwnd);
 	newThis->m_autoComplete.SetFont(g_SendButtonFont);

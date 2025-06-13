@@ -39,6 +39,7 @@ public:
 	void DeleteMessage(Snowflake channel, Snowflake message);
 	int GetMentionCountSince(Snowflake channel, Snowflake message, Snowflake user);
 	void ClearAllChannels();
+	bool IsMessageLoaded(Snowflake channel, Snowflake message);
 
 	// NOTE: Returned message pointer is invalidated when the specific channel is updated. So fetch
 	// as fast as possible!

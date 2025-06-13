@@ -527,8 +527,12 @@ public:
 		return m_messages.rbegin()->m_msg.m_dateTime;
 	}
 
+	Snowflake GetMessageSentTo() const {
+		return m_messageSentTo;
+	}
+
 	void ProperlyResizeSubWindows();
-	int RecalcMessageSizes(bool update, int& repaintSize, Snowflake addedMessagesBeforeThisID);
+	int RecalcMessageSizes(bool update, int& repaintSize, Snowflake addedMessagesBeforeThisID, Snowflake addedMessagesAfterThisID);
 	void FullRecalcAndRepaint();
 	void OnUpdateAttachment(Snowflake sf);
 	void OnUpdateEmbed(const std::string& res);
@@ -537,7 +541,7 @@ public:
 	void OnFailedToSendMessage(Snowflake sf);
 	void UpdateMembers(std::set<Snowflake>& mems);
 	void UpdateBackgroundBrush();
-	bool SendToMessage(Snowflake sf, bool addGapIfNeeded = true);
+	bool SendToMessage(Snowflake sf, bool addGapIfNeeded = true, bool forceInvalidate = false);
 	void UpdateAllowDrop();
 	bool ShouldBeDateGap(time_t oldTime, time_t newTime);
 

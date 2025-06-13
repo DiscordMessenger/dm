@@ -52,6 +52,17 @@ void MessageCache::ClearAllChannels()
 	m_mapMessages.clear();
 }
 
+bool MessageCache::IsMessageLoaded(Snowflake channel, Snowflake message)
+{
+	auto it = m_mapMessages.find(channel);
+	if (it == m_mapMessages.end())
+		return false;
+
+	auto& msgs = it->second.m_messages;
+	auto it2 = msgs.find(message);
+	return it2 != msgs.end();
+}
+
 Message* MessageCache::GetLoadedMessage(Snowflake channel, Snowflake message)
 {
 	return m_mapMessages[channel].GetLoadedMessage(message);

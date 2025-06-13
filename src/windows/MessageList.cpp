@@ -866,6 +866,8 @@ void MessageList::ClearMessages()
 
 void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 {
+	DbgPrintW("Refetching because of %lld", gapCulprit);
+
 	Channel* pChan = GetDiscordInstance()->GetChannel(m_channelID);
 	if (!pChan)
 		return;
@@ -877,6 +879,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 	GetClientRect(m_hwnd, &rect);
 
 	int pageHeight = rect.bottom - rect.top;
+	bool refreshEntirely = false;
 
 	bool wasAnythingLoaded = false;
 	for (auto& msg : m_messages) {
@@ -907,6 +910,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 	bool haveUpdateRect = false;
 	RECT updateRect;
 
+	Snowflake anchor = gapCulprit;
 	std::set<Snowflake> usersToLoad;
 
 	uint64_t ts = GetTimeUs();
@@ -916,6 +920,12 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 		{
 			updateRect = iter->m_rect;
 			haveUpdateRect = true;
+
+			if (iter->m_msg.IsLoadGap())
+				anchor = iter->m_msg.m_anchor;
+			else
+				anchor = gapCulprit;
+
 			break;
 		}
 	}
@@ -956,46 +966,70 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 			}
 		}
 	}
-
+	
 	std::list<Message>::iterator start = msgs.begin(), end = msgs.end();
 
-	// Find the message we are looking at.
+	Snowflake sf = anchor;
 
-	// TODO: Fix this.  It's supposed to only include messages from the island we are looking at, for
-	// a nicer experience, but it doesn't work...
-
-	/*
-	//m_firstShownMessage
-	for (auto iter = msgs.begin(); iter != msgs.end(); ++iter)
+	// find the message that triggered the load
+	std::list<Message>::iterator it1;
+	for (it1 = msgs.begin(); it1 != msgs.end(); ++it1)
 	{
-		auto iter2 = iter;
-		++iter2;
-
-		if (iter->m_snowflake <= m_firstShownMessage && m_firstShownMessage < iter2->m_snowflake) {
-			start = end = iter;
+		if (it1->m_snowflake == sf)
 			break;
+	}
+
+	// if it exists
+	if (it1 != msgs.end())
+	{
+		start = end = it1;
+
+		// start scanning for the beginning
+		while (start != msgs.begin())
+		{
+			--start;
+			
+			if (start->IsLoadGap())
+				break;
+		}
+
+		// start scanning for the end
+		while (end != msgs.end())
+		{
+			if (end->IsLoadGap())
+				break;
+
+			++end;
 		}
 	}
 
-	// Retreat the start iterator until a gap message is found.
-	for (; start != msgs.begin(); --start)
-	{
-		if (start->IsLoadGap())
-			break;
-	}
-
-	// Advance the end iterator until a gap message is found.
-	for (; end != msgs.end(); ++end)
-	{
-		if (end->IsLoadGap())
-			break;
-	}
-	
 	if (end != msgs.end())
-		++end;
-	*/
+		end++;
 
-	Snowflake insertAfter = UINT64_MAX;
+	Snowflake insertAfter = UINT64_MAX, insertBefore = 0;
+
+	// Remove messages that don't need to exist.
+	std::map<Snowflake, bool> messageExists;
+	for (auto iter = start; iter != end; ++iter)
+	{
+		auto& msg = *iter;
+		messageExists[msg.m_snowflake] = true;
+	}
+
+	// remove any messages that don't need to exist
+	for (auto iter = m_messages.begin(); iter != m_messages.end(); )
+	{
+		auto olditer = iter;
+		++iter;
+
+		if (!messageExists[iter->m_msg.m_snowflake]) {
+			refreshEntirely = true;
+			m_messages.erase(olditer);
+		}
+	}
+
+	if (m_messages.empty())
+		refreshEntirely = true;
 
 	for (auto iter = start; iter != end; ++iter)
 	{
@@ -1036,6 +1070,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 		}
 		else {
 			insertAfter = std::min(insertAfter, oldMsg->m_msg.m_snowflake);
+			insertBefore = std::max(insertBefore, oldMsg->m_msg.m_snowflake);
 
 			MessageItem item = std::move(*oldMsg);
 			// we will, however, need to clear some things
@@ -1059,10 +1094,13 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 	if (insertAfter == UINT64_MAX) {
 		insertAfter = 0;
 	}
+	if (insertBefore == 0) {
+		insertBefore = UINT64_MAX;
+	}
 
 	ts = GetTimeUs();
 	int repaintSize = 0;
-	int scrollAdded = RecalcMessageSizes(gapCulprit == 0, repaintSize, insertAfter);
+	int scrollAdded = RecalcMessageSizes(gapCulprit == 0, repaintSize, insertAfter, insertBefore);
 	te = GetTimeUs();
 	DbgPrintW("Recalculation process took %lld us", te - ts);
 
@@ -1137,13 +1175,16 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 		// Send to the message without creating a new gap.
 		m_firstShownMessage = m_messageSentTo;
 		FlashMessage(m_messageSentTo);
-		if (SendToMessage(m_messageSentTo, false))
+		if (SendToMessage(m_messageSentTo, false, refreshEntirely))
 			m_messageSentTo = 0;
 	}
 	else if (!m_bManagedByOwner)
 	{
 		if (scrollAnyway)
 			Scroll(-scrollAnyway);
+
+		if (refreshEntirely)
+			haveUpdateRect = false;
 
 		InvalidateRect(m_hwnd, haveUpdateRect ? &updateRect : NULL, eraseWhenUpdating);
 	}
@@ -1604,6 +1645,8 @@ bool MessageList::IsReplyableActionMessage(MessageType::eType msgType)
 		case MessageType::USER_JOIN:
 			return true;
 	}
+
+	return false;
 }
 
 // XXX: Keep IsActionMessage and DetermineMessageData in sync, please.
@@ -3070,6 +3113,12 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 	Snowflake lastKnownMessage = 0;
 	bool isLastKnownMessageGap = false;
 
+	size_t index = m_messages.size();
+	bool hasUnloadedMessagesBelow = false;
+
+	if (!m_messages.empty())
+		hasUnloadedMessagesBelow = m_messages.rbegin()->m_msg.IsLoadGap() && m_messages.size() > 1;
+
 	int unreadMarkerState = 0;
 	m_firstShownMessage = 0;
 	for (std::list<MessageItem>::iterator iter = m_messages.begin();
@@ -3077,8 +3126,9 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 		++iter)
 	{
 		bool isActionMessage = IsActionMessage(iter->m_msg.m_type);
-
 		bool needUpdate = false;
+
+		--index;
 
 		if (!isActionMessage) {
 			if (iter->m_message.Empty())
@@ -3103,6 +3153,7 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 
 		bool bDraw = msgRect.top <= rect.bottom && msgRect.bottom > rect.top;
 		bool bDrawNewMarker = false;
+		bool sent = false;
 
 		// Observation: We increment unreadMarkerState in this if condition.  If the conditions before aren't true, the variable
 		// isn't incremented. The variable is incremented regardless of bDraw. We just need it to increase when we stumble across
@@ -3119,6 +3170,14 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 		{
 			DrawMessage(hdc, *iter, msgRect, rect, paintRect, mddc, chosenBkColor, bDrawNewMarker);
 			lastDrawnMessage = iter->m_msg.m_snowflake;
+
+			if (index >= 100 || hasUnloadedMessagesBelow) {
+				PostMessage(g_Hwnd, WM_SETBROWSINGPAST, 1, 0);
+				sent = true;
+			}
+			else if (!sent && index <= 70) {
+				PostMessage(g_Hwnd, WM_SETBROWSINGPAST, 0, 0);
+			}
 		}
 		else
 		{
@@ -3405,7 +3464,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					}
 
 					// recalculate
-					pThis->RecalcMessageSizes(true, rpsUnused, 0);
+					pThis->RecalcMessageSizes(true, rpsUnused, 0, UINT64_MAX);
 
 					if (retrack) {
 						// find the new offset from the top of the messages
@@ -3846,17 +3905,20 @@ void MessageList::UpdateBackgroundBrush()
 		SetClassLongPtr(m_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR) ri::GetSysColorBrush(bru));
 }
 
-bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded)
+bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded, bool forceInvalidate)
 {
+	if (sf == UINT64_MAX)
+		sf = GetDiscordInstance()->GetChannel(m_channelID)->m_lastSentMsg;
+
 	m_messageSentTo = sf;
 	m_firstShownMessage = sf;
 	auto mi = FindMessage(sf);
 
-	if (mi != m_messages.end()) {
+	if (mi != m_messages.end())
+	{
 		int y = 0;
-		for (auto iter = m_messages.begin(); iter != mi && iter != m_messages.end(); ++iter) {
+		for (auto iter = m_messages.begin(); iter != mi && iter != m_messages.end(); ++iter)
 			y += iter->m_height;
-		}
 
 		// centers the message
 		RECT rcClient{};
@@ -3881,14 +3943,30 @@ bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded)
 		ri::SetScrollInfo(m_hwnd, SB_VERT, &si, true);
 
 		FlashMessage(mi->m_msg.m_snowflake);
-		SendMessage(m_hwnd, WM_VSCROLL, SB_ENDSCROLL, 0);
-		return !mi->m_msg.IsLoadGap();
+
+		if (forceInvalidate)
+			InvalidateRect(m_hwnd, NULL, MayErase());
+		else
+			SendMessage(m_hwnd, WM_VSCROLL, SB_ENDSCROLL, 0);
+
+		bool isLoadGap = !mi->m_msg.IsLoadGap();
+
+		m_messageSentTo = 0;
+		RefetchMessages(sf, true);
+
+		return isLoadGap;
 	}
 
 	if (!requestIfNeeded)
 		return false;
 
-	GetDiscordInstance()->RequestMessages(m_channelID, ScrollDir::AROUND, sf, sf);
+	// check if that message is loaded though
+	if (GetMessageCache()->IsMessageLoaded(m_channelID, sf)) {
+		RefetchMessages(sf, true);
+	}
+	else {
+		GetDiscordInstance()->RequestMessages(m_channelID, ScrollDir::AROUND, sf, sf);
+	}
 	return true;
 }
 
@@ -4219,7 +4297,7 @@ void MessageList::FullRecalcAndRepaint()
 	}
 
 	int repaintSizeUnused = 0;
-	RecalcMessageSizes(true, repaintSizeUnused, 0);
+	RecalcMessageSizes(true, repaintSizeUnused, 0, UINT64_MAX);
 }
 
 void MessageList::AdjustHeightInfo(
@@ -4371,7 +4449,7 @@ bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int
 	return false;
 }
 
-int MessageList::RecalcMessageSizes(bool update, int& repaintSize, Snowflake addedMessagesBeforeThisID)
+int MessageList::RecalcMessageSizes(bool update, int& repaintSize, Snowflake addedMessagesBeforeThisID, Snowflake addedMessagesAfterThisID)
 {
 	repaintSize = 0;
 	m_total_height = 0;
@@ -4404,10 +4482,13 @@ int MessageList::RecalcMessageSizes(bool update, int& repaintSize, Snowflake add
 				iter->m_bKeepHeightRecalc = false;
 				iter->Update(m_guildID);
 			}
+			if (iter->m_msg.m_snowflake > addedMessagesAfterThisID) {
+				iter->m_bKeepHeightRecalc = false;
+				iter->Update(m_guildID);
+			}
 		}
 
-		bool modifyChainOrder = addedMessagesBeforeThisID == 0 || iter->m_msg.m_snowflake <= addedMessagesBeforeThisID;
-
+		bool modifyChainOrder = addedMessagesBeforeThisID == 0 || iter->m_msg.m_snowflake <= addedMessagesBeforeThisID || iter->m_msg.m_snowflake >= addedMessagesAfterThisID;
 
 		bool bIsDateGap = ShouldBeDateGap(prevTime, iter->m_msg.m_dateTime);
 		bool startNewChain = isCompact || ShouldStartNewChain(prevAuthor, prevTime, prevPlaceInChain, prevType, prevAuthorName, prevAuthorAvatar, *iter, modifyChainOrder);
