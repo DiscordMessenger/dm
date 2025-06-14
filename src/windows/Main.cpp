@@ -1639,8 +1639,8 @@ void InitializeFonts()
 	}
 
 	if (haveFont) {
-		int h1 = -MulDiv(GetProfilePictureSize(), 72, 96);;
-		int h2 = MulDiv(h1, 5, 6);
+		int h1 = -MulDiv(lf.lfHeight, 8, 3);
+		int h2 = MulDiv(h1, 4, 5);
 
 		// BOLD
 		lf.lfWeight = 700;
