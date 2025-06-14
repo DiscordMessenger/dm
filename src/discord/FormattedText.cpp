@@ -911,11 +911,34 @@ void FormattedText::TokenizeAll()
 		{
 			// even, so tokenize it all the way.
 			auto& vec = m_blocks[i];
-			for (size_t j = 0; j < vec.size(); j++) {
+			for (size_t j = 0; j < vec.size(); j++)
+			{
 				if (j & 1)
-					m_tokens.push_back(Token(Token::SMALLCODE, EscapeChars(m_blocks[i][j].first)));
+				{
+					// for each word
+					auto& str = m_blocks[i][j].first;
+
+					size_t last = 0, j;
+					for (j = 0; j <= str.size(); j++)
+					{
+						if (j == str.size() || str[j] == ' ')
+						{
+							// push it *including* the space
+							std::string toInsert;
+							if (j == str.size())
+								toInsert = str.substr(last);
+							else
+								toInsert = str.substr(last, j - last + 1);
+
+							m_tokens.push_back(Token(Token::SMALLCODE, EscapeChars(toInsert)));
+							last = j + 1;
+						}
+					}
+				}
 				else
+				{
 					Tokenize(m_blocks[i][j].first, m_blocks[i][j].second);
+				}
 			}
 		}
 	}
