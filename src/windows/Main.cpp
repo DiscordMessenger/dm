@@ -1801,7 +1801,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	PrepareCutDownFlags(pCmdLine);
 
 	ri::InitReimplementation();
-	//ri::SetProcessDPIAware();
+	ri::SetProcessDPIAware();
 
 #ifdef ALLOW_ABORT_HIJACKING
 	SetupCrashDebugging();
@@ -1809,7 +1809,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 	ERR_load_crypto_strings();
 	LPCTSTR pClassName = TEXT("DiscordMessengerClass");
-
 
 	InitializeCOM(); // important because otherwise TTS/shell stuff might not work
 	InitCommonControls(); // actually a dummy but adds the needed reference to comctl32
