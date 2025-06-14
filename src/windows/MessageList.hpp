@@ -227,6 +227,7 @@ private:
 	RECT m_messageRect{};
 	RECT m_avatarRect{};
 	RECT m_refAvatarRect{};
+	RECT m_refMsgRect{};
 	int m_height = 0;
 	int m_textHeight = 0;
 	int m_authHeight = 0;
@@ -450,6 +451,7 @@ private:
 
 	std::list<MessageItem>::iterator FindMessageByPoint(POINT pt);
 	std::list<MessageItem>::iterator FindMessageByPointAuthorRect(POINT pt);
+	std::list<MessageItem>::iterator FindMessageByPointReplyRect(POINT pt);
 
 public:
 	COLORREF GetDarkerBackgroundColor() const;
@@ -563,6 +565,7 @@ protected:
 	static bool IsClientSideMessage(MessageType::eType msgType);
 
 private:
+	void HitTestReply(POINT pt, BOOL& hit);
 	void HitTestAuthor(POINT pt, BOOL& hit);
 	void HitTestAttachments(POINT pt, BOOL& hit);
 	void HitTestInteractables(POINT pt, BOOL& hit);

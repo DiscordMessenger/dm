@@ -739,6 +739,7 @@ void MessageItem::ShiftUp(int amount)
 	ShiftUpRect(m_rect, amount);
 	ShiftUpRect(m_authorRect, amount);
 	ShiftUpRect(m_refAvatarRect, amount);
+	ShiftUpRect(m_refMsgRect, amount);
 	ShiftUpRect(m_messageRect, amount);
 	
 	for (auto& word : m_message.GetWords()) {
@@ -1218,6 +1219,16 @@ bool MessageList::MayErase()
 	return GetLocalSettings()->GetMessageStyle() != MS_IMAGE;
 }
 
+void MessageList::HitTestReply(POINT pt, BOOL& hit)
+{
+	auto msg = FindMessageByPointReplyRect(pt);
+
+	if (msg == m_messages.end() || msg->m_msg.m_type != MessageType::REPLY || !PtInRect(&msg->m_refMsgRect, pt))
+		return;
+
+	hit = TRUE;
+}
+
 void MessageList::HitTestAuthor(POINT pt, BOOL& hit)
 {
 	auto msg = FindMessageByPointAuthorRect(pt);
@@ -1232,7 +1243,6 @@ void MessageList::HitTestAuthor(POINT pt, BOOL& hit)
 				msg2->m_authorHighlighted = false;
 				InvalidateRect(m_hwnd, &msg2->m_authorRect, FALSE);
 			}
-			SetCursor(LoadCursor(NULL, IDC_ARROW));
 		}
 
 		m_highlightedMessage = 0;
@@ -1241,7 +1251,6 @@ void MessageList::HitTestAuthor(POINT pt, BOOL& hit)
 			return;
 	}
 	
-	SetCursor(LoadCursor(NULL, IDC_HAND));
 	hit = TRUE;
 	if (m_highlightedMessage == msg->m_msg.m_snowflake)
 		return;
@@ -1273,8 +1282,6 @@ void MessageList::HitTestAttachments(POINT pt, BOOL& hit)
 					}
 				}
 			}
-
-			SetCursor(LoadCursor(NULL, IDC_ARROW));
 		}
 
 		m_highlightedAttachment = 0;
@@ -1301,7 +1308,6 @@ void MessageList::HitTestAttachments(POINT pt, BOOL& hit)
 		goto _fail;
 	}
 
-	SetCursor(LoadCursor(NULL, IDC_HAND));
 	hit = TRUE;
 	if (pAttach->m_pAttachment->m_id == m_highlightedAttachment)
 		return;
@@ -1338,8 +1344,6 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 					}
 				}
 			}
-
-			SetCursor(LoadCursor(NULL, IDC_ARROW));
 		}
 
 		m_highlightedInteractable = SIZE_MAX;
@@ -1363,7 +1367,6 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 		goto _fail;
 	}
 
-	SetCursor(LoadCursor(NULL, IDC_HAND));
 	hit = TRUE;
 	if (pItem->m_wordIndex == m_highlightedInteractable)
 		return;
@@ -2028,6 +2031,8 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 	const int replyOffset = item.m_replyHeight + ScaleByDPI(5);
 	RECT rcReply = rc;
 	rcReply.bottom = rcReply.top + item.m_replyHeight;
+
+	item.m_refMsgRect = rcReply;
 
 	auto& refMsg = *item.m_msg.m_pReferencedMessage;
 	const bool isActionMessage = IsActionMessage(refMsg.m_type);
@@ -3713,6 +3718,12 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						ProfilePopout::Show(authorSF, pThis->m_guildID, rect.left + msg->m_authorRect.right + 10, rect.top + msg->m_authorRect.top);
 				}
 
+				if (msg->m_msg.m_type == MessageType::REPLY && PtInRect(&msg->m_refMsgRect, pt))
+				{
+					pThis->SendToMessage(msg->m_msg.m_refMessageSnowflake);
+					break;
+				}
+
 				for (auto& att : msg->m_attachmentData)
 				{
 					if (PtInRect(&att.m_textRect, pt) || PtInRect(&att.m_addRect, pt)) {
@@ -3790,17 +3801,24 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		{
 			POINT pt = { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) };
 			BOOL hit = FALSE;
+			pThis->HitTestReply(pt, hit);
 			pThis->HitTestAuthor(pt, hit);
 			pThis->HitTestAttachments(pt, hit);
 			pThis->HitTestInteractables(pt, hit);
+
 			TRACKMOUSEEVENT tme;
 			tme.cbSize = sizeof tme;
 			tme.dwFlags = TME_LEAVE;
 			tme.hwndTrack = hWnd;
 			tme.dwHoverTime = 0;
 			ri::TrackMouseEvent(&tme);
-			if (hit)
+			if (hit) {
+				SetCursor(LoadCursor(NULL, IDC_HAND));
 				return TRUE;
+			}
+			else {
+				SetCursor(LoadCursor(NULL, IDC_ARROW));
+			}
 			break;
 		}
 		case WM_MOUSELEAVE:
@@ -4268,6 +4286,16 @@ std::list<MessageItem>::iterator MessageList::FindMessageByPointAuthorRect(POINT
 			iter->m_msg.m_type != MessageType::GAP_AROUND &&
 			iter->m_msg.m_author_snowflake != 0 &&
 			(PtInRect(&iter->m_authorRect, pt) || PtInRect(&iter->m_avatarRect, pt)))
+			return --iter.base();
+	}
+	return m_messages.end();
+}
+
+std::list<MessageItem>::iterator MessageList::FindMessageByPointReplyRect(POINT pt)
+{
+	for (auto iter = m_messages.rbegin(); iter != m_messages.rend(); ++iter)
+	{
+		if (iter->m_msg.m_type == MessageType::REPLY && PtInRect(&iter->m_refMsgRect, pt))
 			return --iter.base();
 	}
 	return m_messages.end();
