@@ -38,14 +38,15 @@
 #define CHAR_NOOP       (char(0x12)) // will be ignored in the final output
 #define CHAR_EVERYONE   (char(0x13))
 #define CHAR_HERE       (char(0x14))
-#define CHAR_ESCAPE_UNDERSCORE (char(0x15)) // _
-#define CHAR_ESCAPE_ASTERISK   (char(0x16)) // *
-#define CHAR_ESCAPE_BACKSLASH  (char(0x17)) // \.
-#define CHAR_ESCAPE_BACKTICK   (char(0x18)) // `
-#define CHAR_ESCAPE_POUND      (char(0x19)) // #
-#define CHAR_ESCAPE_MINUS      (char(0x1A)) // -
-#define CHAR_ESCAPE_PLUS       (char(0x1B)) // +
-
+#define CHAR_BEG_HEADER (char(0x15))
+#define CHAR_BEG_HDR2   (char(0x16))
+#define CHAR_ESCAPE_UNDERSCORE (char(0x17)) // _
+#define CHAR_ESCAPE_ASTERISK   (char(0x18)) // *
+#define CHAR_ESCAPE_BACKSLASH  (char(0x19)) // \.
+#define CHAR_ESCAPE_BACKTICK   (char(0x1A)) // `
+#define CHAR_ESCAPE_POUND      (char(0x1B)) // #
+#define CHAR_ESCAPE_MINUS      (char(0x1C)) // -
+#define CHAR_ESCAPE_PLUS       (char(0x1D)) // +
 #define CHAR_END_FORWARD (char(0x1E))
 #define CHAR_BEG_FORWARD (char(0x1F))
 
@@ -69,13 +70,16 @@ int g_tokenTypeTable[] = {
 	Token::QUOTE,
 	Token::LIST_ITEM,
 	0, // character means no op
+	0, // @everyone checked separately
+	0, // @here checked separately
+	Token::HEADER,
+	Token::HEADER2,
 };
 
 static REN::regex g_StrongMatch("(\\*){2}[^\\*\\r\\n].*?(\\*){2}");
 static REN::regex g_ItalicMatch("\\*[^\\*\\r\\n].*?\\*");
 static REN::regex g_UnderlMatch("(_){2}[^_\\r\\n].*?(_){2}");
 static REN::regex g_ItalieMatch("(?=[ \\_\\r\\n])_.*?_(?<=[ \\_\\r\\n])");
-static REN::regex g_QuoteMatch("^> .*?(\n|$)");
 
 // Basic Markdown syntax:
 //
@@ -199,6 +203,8 @@ void FormattedText::Tokenize(const std::string& msg, const std::string& oldmsg)
 			case CHAR_END_CODE:
 			case CHAR_BEG_QUOTE:
 			case CHAR_BEG_LITEM:
+			case CHAR_BEG_HEADER:
+			case CHAR_BEG_HDR2:
 			{
 				// The line feed is a separator. It has nothing to do with formatting, however.
 				AddAndClearToken(tokens, current, Token::TEXT);
@@ -461,6 +467,8 @@ void FormattedText::ParseText()
 			case Token::QUOTE:        style |= WORD_QUOTE;    break;
 			case Token::FORWARD:      style |= WORD_FORWARD;  break;
 			case Token::FORWARDE:     style &=~WORD_FORWARD;  break;
+			case Token::HEADER:       style |= WORD_HEADER1;  break;
+			case Token::HEADER2:      style |= WORD_HEADER2;  break;
 			case Token::CODE: {
 				if (tk.m_text.empty()) {
 					AddWord(Word(style, "``````"));
@@ -499,7 +507,7 @@ void FormattedText::ParseText()
 				break;
 			}
 			case Token::NEWLINE: {
-				style &= ~(WORD_QUOTE | WORD_LISTITEM);
+				style &= ~(WORD_QUOTE | WORD_LISTITEM | WORD_HEADER1 | WORD_HEADER2);
 				AddWord(Word(style | WORD_NEWLINE, ""));
 				break;
 			}
@@ -786,6 +794,7 @@ void FormattedText::UseRegex(std::string& str)
 	const int HAS_QUOTE  = (1 << 2);
 	const int HAS_AT     = (1 << 3);
 	const int HAS_BSLASH = (1 << 4);
+	const int HAS_HEADER = (1 << 5);
 	int flags = 0;
 
 	for (size_t i = 0; i < str.size(); i++) {
@@ -793,9 +802,10 @@ void FormattedText::UseRegex(std::string& str)
 		if (str[i] == '_') flags |= HAS_EMPHAS;
 		if (str[i] == '>') flags |= HAS_QUOTE;
 		if (str[i] == '@') flags |= HAS_AT;
+		if (str[i] == '#') flags |= HAS_HEADER;
 		if (str[i] == '\\') flags |= HAS_BSLASH;
 
-		if (flags == (HAS_STRONG | HAS_EMPHAS | HAS_QUOTE | HAS_AT | HAS_BSLASH))
+		if (flags == (HAS_STRONG | HAS_EMPHAS | HAS_QUOTE | HAS_AT | HAS_BSLASH | HAS_HEADER))
 			break;
 	}
 
@@ -829,6 +839,16 @@ void FormattedText::UseRegex(std::string& str)
 
 			if ((i == 0 || str[i - 1] == '\n') && str[i] == '>' && str[i + 1] == ' ')
 				str[i] = CHAR_BEG_QUOTE, str[i + 1] = CHAR_NOOP;
+		}
+	}
+	if (flags & HAS_HEADER)
+	{
+		for (size_t i = 0; str.size() > 2 && i < str.size() - 2; i++) {
+
+			if ((i == 0 || str[i - 1] == '\n') && str[i] == '#' && str[i + 1] == ' ')
+				str[i] = CHAR_BEG_HEADER, str[i + 1] = CHAR_NOOP;
+			if ((i == 0 || str[i - 1] == '\n') && str[i] == '#' && str[i + 1] == '#' && i + 2 < str.size() && str[i + 2] == ' ')
+				str[i] = CHAR_BEG_HDR2, str[i + 1] = CHAR_NOOP, str[i + 2] = CHAR_NOOP;
 		}
 	}
 	if (flags & HAS_AT)

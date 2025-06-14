@@ -1596,7 +1596,11 @@ HFONT
 	g_FntMdBU,
 	g_FntMdIU,
 	g_FntMdBIU,
-	g_FntMdCode;
+	g_FntMdCode,
+	g_FntMdHdr,
+	g_FntMdHdr2,
+	g_FntMdHdrI,
+	g_FntMdHdrI2;
 
 HFONT* g_FntMdStyleArray[FONT_TYPE_COUNT] = {
 	&g_FntMd,   // 0
@@ -1607,7 +1611,11 @@ HFONT* g_FntMdStyleArray[FONT_TYPE_COUNT] = {
 	&g_FntMdBU, // 4|1
 	&g_FntMdIU, // 4|2
 	&g_FntMdBIU,// 4|2|1
-	&g_FntMdCode, // 9
+	&g_FntMdCode, // 8
+	&g_FntMdHdr,  // 9
+	&g_FntMdHdrI, // 10
+	&g_FntMdHdr2, // 11
+	&g_FntMdHdrI2,// 12
 };
 
 void InitializeFonts()
@@ -1620,8 +1628,8 @@ void InitializeFonts()
 
 	lf.lfHeight = ScaleByUser(lf.lfHeight);
 
-	HFONT hf, hfb, hfi, hfbi, hfu, hfbu, hfiu, hfbiu;
-	hf = hfb = hfi = hfbi = hfu = hfbu = hfiu = hfbiu = NULL;
+	HFONT hf, hfb, hfi, hfbi, hfu, hfbu, hfiu, hfbiu, hfbh, hfbh2, hfbih, hfbih2;
+	hf = hfb = hfi = hfbi = hfu = hfbu = hfiu = hfbiu = hfbh = hfbh2 = hfbih = hfbih2 = NULL;
 
 	if (haveFont)
 		hf = CreateFontIndirect(&lf);
@@ -1631,18 +1639,53 @@ void InitializeFonts()
 	}
 
 	if (haveFont) {
+		int h1 = -MulDiv(GetProfilePictureSize(), 72, 96);;
+		int h2 = MulDiv(h1, 5, 6);
+
+		// BOLD
 		lf.lfWeight = 700;
 		hfb = CreateFontIndirect(&lf);
+
+		// BOLD h1
+		int oldh = lf.lfHeight;
+		lf.lfHeight = h1;
+		hfbh = CreateFontIndirect(&lf);
+
+		// BOLD h2
+		lf.lfHeight = h2;
+		hfbh2 = CreateFontIndirect(&lf);
+		lf.lfHeight = oldh;
+
+		// BOLD ITALIC
 		lf.lfItalic = true;
 		hfbi = CreateFontIndirect(&lf);
+		
+		// BOLD ITALIC h1
+		lf.lfHeight = h1;
+		hfbih = CreateFontIndirect(&lf);
+
+		// BOLD ITALIC h2
+		lf.lfHeight = h2;
+		hfbih2 = CreateFontIndirect(&lf);
+		lf.lfHeight = oldh;
+
+		// BOLD ITALIC UNDERLINE
 		lf.lfUnderline = true;
 		hfbiu = CreateFontIndirect(&lf);
+
+		// BOLD UNDERLINE
 		lf.lfItalic = false;
 		hfbu = CreateFontIndirect(&lf);
+
+		// UNDERLINE
 		lf.lfWeight = oldWeight;
 		hfu = CreateFontIndirect(&lf);
+
+		// ITALIC UNDERLINE
 		lf.lfItalic = true;
 		hfiu = CreateFontIndirect(&lf);
+
+		// ITALIC
 		lf.lfUnderline = false;
 		hfi = CreateFontIndirect(&lf);
 		// lf.lfItalic = false; -- yes I want it italic
@@ -1652,13 +1695,17 @@ void InitializeFonts()
 		lf.lfHeight = oldSize;
 	}
 
-	if (!hfb)   hfb = hf;
-	if (!hfi)   hfi = hf;
-	if (!hfbi)  hfbi = hf;
-	if (!hfb)   hfb = hf;
-	if (!hfbu)  hfbu = hf;
-	if (!hfiu)  hfiu = hf;
-	if (!hfbiu) hfbiu = hf;
+	if (!hfb)    hfb = hf;
+	if (!hfi)    hfi = hf;
+	if (!hfbi)   hfbi = hf;
+	if (!hfb)    hfb = hf;
+	if (!hfbu)   hfbu = hf;
+	if (!hfiu)   hfiu = hf;
+	if (!hfbiu)  hfbiu = hf;
+	if (!hfbh)   hfbh = hf;
+	if (!hfbh2)  hfbh2 = hf;
+	if (!hfbih)  hfbih = hf;
+	if (!hfbih2) hfbih2 = hf;
 
 	g_FntMd = hf;
 	g_FntMdB = hfb;
@@ -1668,6 +1715,10 @@ void InitializeFonts()
 	g_FntMdBU = hfbu;
 	g_FntMdIU = hfiu;
 	g_FntMdBIU = hfbiu;
+	g_FntMdHdr = hfbh;
+	g_FntMdHdr2 = hfbh2;
+	g_FntMdHdrI = hfbih;
+	g_FntMdHdrI2 = hfbih2;
 
 	g_MessageTextFont = hf;
 	g_AuthorTextFont = hfb;
@@ -1750,7 +1801,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	PrepareCutDownFlags(pCmdLine);
 
 	ri::InitReimplementation();
-	ri::SetProcessDPIAware();
+	//ri::SetProcessDPIAware();
 
 #ifdef ALLOW_ABORT_HIJACKING
 	SetupCrashDebugging();
@@ -1850,6 +1901,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 	// Initialize the worker thread manager
 	GetHTTPClient()->Init();
+
+	// Initialize DPI
+	ForgetSystemDPI();
+	g_ProfilePictureSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF);
 
 	// Create some fonts.
 	InitializeFonts();

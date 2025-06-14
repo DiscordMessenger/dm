@@ -9,7 +9,7 @@
 #define COLOR_MENT    RGB( 88, 101, 242)
 
 #define SIZE_QUOTE_INDENT (10)
-#define FONT_TYPE_COUNT (9)
+#define FONT_TYPE_COUNT (13)
 
 struct DrawingContext {
 	HDC m_hdc = NULL;

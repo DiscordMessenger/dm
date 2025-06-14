@@ -34,6 +34,8 @@ struct Token
 		CUSTOM_EMOJI,
 		FORWARD,
 		FORWARDE,
+		HEADER,
+		HEADER2,
 	};
 
 	int m_type = TEXT;
@@ -70,10 +72,11 @@ struct Token
 #define WORD_WRAPPED   (1 << 16) // word was wrapped.  Ignored for anything that doesn't have the WORD_MLCODE on
 #define WORD_EMOJI     (1 << 17) // Unicode emoji.  Unsupported as of yet.
 #define WORD_CEMOJI    (1 << 18) // Custom emoji.
-#define WORD_HEADER1   (1 << 19) // Header 1 style. Currently only used by emoji.
+#define WORD_HEADER1   (1 << 19) // Header 1 style.
 #define WORD_NOFORMAT  (1 << 20) // Not actually formatted.
 #define WORD_FORWARD   (1 << 21) // start of forwarded message
 #define WORD_FORWARDE  (1 << 22) // end of forwarded message
+#define WORD_HEADER2   (1 << 23) // Header 2 style.
 
 struct Word
 {
