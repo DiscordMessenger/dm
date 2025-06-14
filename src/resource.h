@@ -325,6 +325,8 @@
 #define IDS_CONNECT_ERROR_2             770
 #define IDS_CONNECT_ERROR_3             771
 #define IDS_CONNECT_ERROR_TITLE         772
+#define IDS_STRING773                   773
+#define IDS_SAVED_STRING_EXE            773
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803

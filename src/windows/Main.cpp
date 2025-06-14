@@ -32,6 +32,7 @@
 #include "../discord/UpdateChecker.hpp"
 
 #include <system_error>
+#include <shellapi.h>
 
 // proportions:
 int g_ProfilePictureSize;
@@ -1559,17 +1560,41 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_IMAGESAVED:
 		{
+			LPCTSTR file = (LPCTSTR) lParam;
+			size_t sl = _tcslen(file);
+			bool isExe = false;
+
+			if (sl > 4 && (
+				_tcscmp(file + sl - 4, TEXT(".exe")) == 0 ||
+				_tcscmp(file + sl - 4, TEXT(".scr")) == 0 ||
+				_tcscmp(file + sl - 4, TEXT(".lnk")) == 0 ||
+				_tcscmp(file + sl - 4, TEXT(".zip")) == 0 ||
+				_tcscmp(file + sl - 4, TEXT(".rar")) == 0 ||
+				_tcscmp(file + sl - 4, TEXT(".7z"))  == 0)) {
+				isExe = true;
+			}
+
 			TCHAR buff[4096];
-			WAsnprintf(buff, _countof(buff), TmGetTString(IDS_SAVED_UPDATE), (LPCTSTR) lParam);
+			WAsnprintf(
+				buff,
+				_countof(buff),
+				isExe ? TmGetTString(IDS_SAVED_STRING_EXE) : TmGetTString(IDS_SAVED_UPDATE),
+				file
+			);
 			buff[_countof(buff) - 1] = 0;
 
 			// TODO: Probably should automatically extract and install it or something
-			MessageBox(
+			int res = MessageBox(
 				hWnd,
 				buff,
 				TmGetTString(IDS_PROGRAM_NAME),
-				MB_ICONINFORMATION | MB_OK
+				MB_ICONINFORMATION | MB_YESNO
 			);
+			
+			if (res == IDYES) {
+				ShellExecute(g_Hwnd, TEXT("open"), file, NULL, NULL, SW_SHOWNORMAL);
+			}
+
 			break;
 		}
 		case WM_UPDATEAVAILABLE:

@@ -1557,7 +1557,7 @@ BEGIN
                             "Discord Messenger has had a new update!\n\nYour version: %s\nLatest version: %s\n\nWould you like to download the new version?\n\nNote: No web browser window will be opened, the app itself will download the files into a location you choose.\nNote: You won't be bugged again for 3 days."
     IDS_FAILED_UPDATE_CHECK "Failed to check for updates! (error %d, message '%s').\n\nTrying again when the app restarts."
     IDS_FAILED_TO_UPLOAD    "Error! Can't upload file %s, got error %d."
-    IDS_SAVED_UPDATE        "Your downloaded file was saved at the following path: %s."
+    IDS_SAVED_UPDATE        "Your downloaded file was saved at the following path: %s\n\nWould you like to open it?"
     IDS_MAY_CONTAIN_TOKEN   "This message may contain a Discord authentication token, which may grant an attacker access to your account. Are you sure you want to send it?"
     IDS_CANT_UPLOAD_SEVERAL "Hey! I currently only take one file at a time."
     IDS_WELCOME_TO_START_1  "Welcome to the beginning of the "
@@ -1655,6 +1655,7 @@ BEGIN
     IDS_CONNECT_ERROR_2     "Check your Internet connection."
     IDS_CONNECT_ERROR_3     "Use one of the following buttons to determine how to proceed:\no   RETRY: Retries the request. Use this once you have ensured a connection to the internet.\no   CANCEL: Cancels the request with unloaded data."
     IDS_CONNECT_ERROR_TITLE "Discord Messenger - Connection Error"
+    IDS_SAVED_STRING_EXE    "Your downloaded file was saved at the following path: %s\n\nWARNING: This file might be malicious.  Make sure you trust the sender/author of this file.\nWould you like to open it?"
 END
 
 #endif    // English (United States) resources
