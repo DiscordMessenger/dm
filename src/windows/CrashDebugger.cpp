@@ -15,17 +15,30 @@
 #endif
 
 #ifdef _MSC_VER
+
 #include <intrin.h>
-__declspec(naked) uintptr_t GetRbp() {
+
+#ifdef _WIN64
+uintptr_t GetBp() {
+	// TODO: This doesn't work on x64.
+	return 0;
+}
+#else
+__declspec(naked) uintptr_t GetBp() {
 	__asm {
 		mov eax, ebp
 		ret
 	}
 }
+#endif
+
 #define GetReturnAddress() _ReturnAddress()
+
 #else
-#define GetRbp() __builtin_frame_address(0)
+
+#define GetBp() __builtin_frame_address(0)
 #define GetReturnAddress() __builtin_return_address(0)
+
 #endif
 
 NORETURN void AbortMessage(const char* message, ...);
@@ -110,7 +123,7 @@ bool SafeMemcpy(void* dst, const void* src, size_t sz)
 	// Probe this address with VirtualQuery
 	MEMORY_BASIC_INFORMATION mbi;
 	memset(&mbi, 0, sizeof mbi);
-	DWORD res = VirtualQuery((void*) src, &mbi, sizeof(mbi));
+	SIZE_T res = VirtualQuery((void*) src, &mbi, sizeof(mbi));
 	
 	if (res == 0)
 		return false;
@@ -233,7 +246,7 @@ NORETURN void AbortMessage(const char* message, ...)
 	strcat(stackTraceBuffer, smallerBuffer);
 
 	// Figure out the current stack trace.
-	StackFrame* sf = (StackFrame*)GetRbp();
+	StackFrame* sf = (StackFrame*)GetBp();
 	StackFrame* first = sf;
 
 	int depth = 0;
@@ -259,7 +272,7 @@ NORETURN void AbortMessage(const char* message, ...)
 			break;
 
 		auto pr = ResolveName((uintptr_t) ip);
-		snprintf(smallerBuffer, sizeof smallerBuffer, "* [F:%p] %p [%s(%p)+%X]\n", sf, sf->ip, pr.first, (void*) pr.second, ((uintptr_t)sf->ip - pr.second));
+		snprintf(smallerBuffer, sizeof smallerBuffer, "* [F:%p] %p [%s(%p)+%p]\n", sf, sf->ip, pr.first, (void*) pr.second, (void*) ((uintptr_t)sf->ip - pr.second));
 		strcat(stackTraceBuffer, smallerBuffer);
 		
 		if (sf == sf->next) {
