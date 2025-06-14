@@ -245,7 +245,9 @@ void MessageEditor::TryToSendMessage()
 		m_bEditing = false;
 		m_replyMessage = 0;
 		m_replyName = "";
-		Expand(-m_expandedBy);
+
+		int otherStuff = m_bBrowsingPast ? m_jumpPresentHeight : 0;
+		Expand(-m_expandedBy - otherStuff);
 	}
 	delete[] data;
 }
@@ -589,6 +591,9 @@ LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			if (pThis->m_bEditing)
 				expandByTarget += pThis->m_mentionAreaHeight;
 			expandByTarget = std::min(expandByTarget, maxHeight);
+			
+			if (pThis->m_bBrowsingPast)
+				expandByTarget += pThis->m_jumpPresentHeight;
 
 			pThis->Expand(expandByTarget - pThis->m_expandedBy);
 			break;

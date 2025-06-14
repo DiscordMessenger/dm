@@ -866,8 +866,6 @@ void MessageList::ClearMessages()
 
 void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 {
-	DbgPrintW("Refetching because of %lld", gapCulprit);
-
 	Channel* pChan = GetDiscordInstance()->GetChannel(m_channelID);
 	if (!pChan)
 		return;
@@ -1166,17 +1164,17 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 
 	m_oldPos = scrollInfo.nPos;
 	
-	if (!MayErase())
-	{
-		InvalidateRect(m_hwnd, NULL, FALSE);
-	}
-	else if (m_messageSentTo)
+	if (m_messageSentTo)
 	{
 		// Send to the message without creating a new gap.
 		m_firstShownMessage = m_messageSentTo;
 		FlashMessage(m_messageSentTo);
-		if (SendToMessage(m_messageSentTo, false, refreshEntirely))
+		if (SendToMessage(m_messageSentTo, false, refreshEntirely || !MayErase()))
 			m_messageSentTo = 0;
+	}
+	else if (!MayErase())
+	{
+		InvalidateRect(m_hwnd, NULL, FALSE);
 	}
 	else if (!m_bManagedByOwner)
 	{
@@ -3962,6 +3960,7 @@ bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded, bool forceIn
 
 	// check if that message is loaded though
 	if (GetMessageCache()->IsMessageLoaded(m_channelID, sf)) {
+		m_messages.clear();
 		RefetchMessages(sf, true);
 	}
 	else {
