@@ -4442,7 +4442,7 @@ bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int
 	if (m_bManagedByOwner)
 		return true;
 
-	if (prevPlaceInChain >= 10 && ifChainTooLongToo)
+	if (prevPlaceInChain >= 9 && ifChainTooLongToo)
 		return true;
 
 	if (prevAuthor != item.m_msg->m_author_snowflake)

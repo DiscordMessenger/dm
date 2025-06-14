@@ -1424,6 +1424,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			m->m_snowflake = psmap->m_snowflake;
 			m->m_author_snowflake = pf->m_snowflake;
 			m->m_author = pf->m_name;
+			m->m_avatar = pf->m_avatarlnk;
 			m->m_message = psmap->m_message;
 			m->m_type = MessageType::SENDING_MESSAGE;
 			m->SetTime(time(NULL));

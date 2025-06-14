@@ -126,23 +126,19 @@ void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, j
 	bool addBefore = sd != ScrollDir::AFTER && receivedMessages >= MESSAGES_PER_REQUEST;
 	bool addAfter  = sd != ScrollDir::BEFORE;
 
-	auto msg = MakeMessage();
-	msg->m_author = "";
-	msg->m_message = "";
-	msg->m_dateFull = "";
-	msg->m_dateCompact = "";
-
 	if (receivedMessages < MESSAGES_PER_REQUEST)
 	{
+		auto msg = MakeMessage();
 		msg->m_type = MessageType::CHANNEL_HEADER;
 		msg->m_snowflake = 1;
 		msg->m_author = channelName;
 		m_messages[msg->m_snowflake] = msg;
 	}
 
-	msg->m_author = GetFrontend()->GetPleaseWaitText();
 	if (addBefore && addedMessages)
 	{
+		auto msg = MakeMessage();
+		msg->m_author = GetFrontend()->GetPleaseWaitText();
 		msg->m_type = MessageType::GAP_UP;
 		msg->m_anchor = lowestMsg;
 		msg->m_snowflake = lowestMsg - 1;
@@ -151,6 +147,8 @@ void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, j
 
 	if (addAfter && addedMessages)
 	{
+		auto msg = MakeMessage();
+		msg->m_author = GetFrontend()->GetPleaseWaitText();
 		msg->m_type = MessageType::GAP_DOWN;
 		msg->m_anchor = highestMsg;
 		msg->m_snowflake = highestMsg + 1;
