@@ -220,7 +220,7 @@ NORETURN void AbortMessage(const char* message, ...)
 	strcat(stackTraceBuffer, smallerBuffer);
 
 	// there's gotta be a better way ...
-#ifdef UNICODE
+#ifdef _DEBUG
 	const char* debugOrRelease = "debug";
 #else
 	const char* debugOrRelease = "release";
