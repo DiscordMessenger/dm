@@ -1271,18 +1271,32 @@ bool GetDataFromBitmap(HDC hdc, HBITMAP hbm, BYTE*& pBytes, int& width, int& hei
 	ZeroMemory(&bmi, sizeof bmi);
 	bmi.bmiHeader.biSize = sizeof bmi.bmiHeader;
 	bmi.bmiHeader.biWidth = bm.bmWidth;
-	bmi.bmiHeader.biHeight = -bm.bmHeight;
+	bmi.bmiHeader.biHeight = bm.bmHeight;
 	bmi.bmiHeader.biPlanes = 1;
 	bmi.bmiHeader.biBitCount = bm.bmBitsPixel;
 	bmi.bmiHeader.biCompression = BI_RGB;
 	bmi.bmiHeader.biSizeImage = 0;
 
-	pBytes = new BYTE[bm.bmWidth * bm.bmHeight * (bm.bmBitsPixel / 8)];
+	int pitch = (((bm.bmWidth * bm.bmBitsPixel) + 31) & ~31) >> 3;
 
-	if (!GetDIBits(hdc, hbm, 0, bm.bmHeight, pBytes, &bmi, DIB_RGB_COLORS)) {
+	pBytes = new BYTE[pitch * bm.bmHeight];
+
+	if (!GetDIBits(hdc, hbm, 0, bm.bmHeight, pBytes, &bmi, DIB_RGB_COLORS))
+	{
 		DbgPrintW("Error, can't get DI bits for bitmap!");
 		delete[] pBytes;
 		return false;
+	}
+
+	// swap in software, because in Windows NT 3.1, using negative height images is glitchy
+	for (int y1 = 0, y2 = bm.bmHeight - 1; y1 < y2; y1++, y2--)
+	{
+		BYTE *scan1 = &pBytes[y1 * pitch], *scan2 = &pBytes[y2 * pitch];
+		DWORD *scan1D = (DWORD*) scan1, *scan2D = (DWORD*) scan2;
+
+		for (int x = 0; x * 4 < pitch; x++) {
+			std::swap(scan1D[x], scan2D[x]);
+		}
 	}
 
 	return true;
