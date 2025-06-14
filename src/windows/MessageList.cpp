@@ -496,35 +496,35 @@ void MessageList::MeasureMessage(
 void MessageItem::Update(Snowflake guildID)
 {
 	bool isCompact = GetSettingsManager()->GetMessageCompact();
-	bool isAction = MessageList::IsActionMessage(m_msg.m_type);
+	bool isAction = MessageList::IsActionMessage(m_msg->m_type);
 
 	Clear();
 	m_bNeedUpdate = false;
-	m_author = ConvertCppStringToTString(m_msg.m_author);
-	m_date = ConvertCppStringToTString(isCompact ? m_msg.m_dateCompact : m_msg.m_dateFull);
-	m_dateEdited = ConvertCppStringToTString(isCompact ? m_msg.m_editedTextCompact : m_msg.m_editedText);
+	m_author = ConvertCppStringToTString(m_msg->m_author);
+	m_date = ConvertCppStringToTString(isCompact ? m_msg->m_dateCompact : m_msg->m_dateFull);
+	m_dateEdited = ConvertCppStringToTString(isCompact ? m_msg->m_editedTextCompact : m_msg->m_editedText);
 
-	if (m_msg.m_pReferencedMessage)
+	if (m_msg->m_pReferencedMessage)
 	{
-		std::string authorStr = m_msg.m_pReferencedMessage->m_author;
-		if (m_msg.m_pReferencedMessage->m_bMentionsAuthor) {
+		std::string authorStr = m_msg->m_pReferencedMessage->m_author;
+		if (m_msg->m_pReferencedMessage->m_bMentionsAuthor) {
 			authorStr = "@" + authorStr;
 		}
 
-		m_replyMsg = ConvertCppStringToTString(m_msg.m_pReferencedMessage->m_message);
+		m_replyMsg = ConvertCppStringToTString(m_msg->m_pReferencedMessage->m_message);
 		m_replyAuth = ConvertCppStringToTString(authorStr);
 	}
 
-	m_bWasMentioned = m_msg.CheckWasMentioned(GetDiscordInstance()->GetUserID(), guildID);
+	m_bWasMentioned = m_msg->CheckWasMentioned(GetDiscordInstance()->GetUserID(), guildID);
 
-	size_t sz = m_msg.m_attachments.size();
+	size_t sz = m_msg->m_attachments.size();
 	m_attachmentData.clear();
 	m_attachmentData.resize(sz);
 
 	for (size_t i = 0; i < sz; i++)
 	{
 		auto& item = m_attachmentData[i];
-		item.m_pAttachment = &m_msg.m_attachments[i];
+		item.m_pAttachment = &m_msg->m_attachments[i];
 		item.Update();
 	}
 
@@ -534,45 +534,45 @@ void MessageItem::Update(Snowflake guildID)
 	{
 		if (m_message.Empty())
 		{
-			if (m_msg.m_bIsForward)
+			if (m_msg->m_bIsForward)
 			{
-				std::string data = m_msg.m_message;
+				std::string data = m_msg->m_message;
 				if (!data.empty())
 					data += "\n\n";
 
 				std::stringstream link;
 				link << "https://discord.com/channels/";
 				
-				if (m_msg.m_refMessageGuild)
-					link << m_msg.m_refMessageGuild;
+				if (m_msg->m_refMessageGuild)
+					link << m_msg->m_refMessageGuild;
 				else
 					link << "@me";
 
-				link << "/" << m_msg.m_refMessageChannel << "/" << m_msg.m_refMessageSnowflake;
+				link << "/" << m_msg->m_refMessageChannel << "/" << m_msg->m_refMessageSnowflake;
 
 				// N.B. using 0x1F and 0x1E to signify that that's where the forwarded message starts and ends
-				std::string date = FormatDate(m_msg.m_pReferencedMessage->m_timestamp);
+				std::string date = FormatDate(m_msg->m_pReferencedMessage->m_timestamp);
 				std::string server = "", jumptomessage = "";
 
-				Guild* pGld = GetDiscordInstance()->GetGuild(m_msg.m_refMessageGuild);
+				Guild* pGld = GetDiscordInstance()->GetGuild(m_msg->m_refMessageGuild);
 				if (pGld)
 				{
 					server = "From " + pGld->m_name + " \\* ";
 
-					Channel* pChan = pGld->GetChannel(m_msg.m_refMessageChannel);
+					Channel* pChan = pGld->GetChannel(m_msg->m_refMessageChannel);
 					if (pChan && pChan->HasPermission(PERM_VIEW_CHANNEL) && pChan->HasPermission(PERM_READ_MESSAGE_HISTORY))
 						jumptomessage = " \\* [Jump to message](" + link.str() + ")";
 				}
 
 				data += "**Forwarded:**\n" + std::string(1, char(0x1F));
-				data += m_msg.m_pReferencedMessage->m_message + "\n" + std::string(1, char(0x1E));
+				data += m_msg->m_pReferencedMessage->m_message + "\n" + std::string(1, char(0x1E));
 				data += "*" + server + date + jumptomessage + "*";
 
 				m_message.SetMessage(data);
 			}
 			else
 			{
-				m_message.SetMessage(m_msg.m_message);
+				m_message.SetMessage(m_msg->m_message);
 			}
 		}
 
@@ -651,11 +651,11 @@ void MessageItem::Update(Snowflake guildID)
 	}
 
 	m_embedData.clear();
-	m_embedData.resize(m_msg.m_embeds.size());
-	for (size_t i = 0; i < m_msg.m_embeds.size(); i++)
+	m_embedData.resize(m_msg->m_embeds.size());
+	for (size_t i = 0; i < m_msg->m_embeds.size(); i++)
 	{
 		RichEmbedItem& item = m_embedData[i];
-		RichEmbed& embed = m_msg.m_embeds[i];
+		RichEmbed& embed = m_msg->m_embeds[i];
 
 		item.m_pEmbed = &embed;
 		item.Update();
@@ -710,10 +710,10 @@ void MessageItem::Update(Snowflake guildID)
 		}
 	}
 
-	if (m_msg.m_pMessagePoll) {
+	if (m_msg->m_pMessagePoll) {
 		SAFE_DELETE(m_pMessagePollData);
 
-		m_pMessagePollData = new MessagePollData(m_msg.m_pMessagePoll);
+		m_pMessagePollData = new MessagePollData(m_msg->m_pMessagePoll);
 		m_pMessagePollData->Update();
 	}
 }
@@ -776,7 +776,7 @@ void MessageList::DeleteMessage(Snowflake sf)
 
 	for (iter = m_messages.rbegin(); iter != m_messages.rend(); ++iter)
 	{
-		if (sf == iter->m_msg.m_snowflake)
+		if (sf == iter->m_msg->m_snowflake)
 			break;
 	}
 
@@ -810,12 +810,12 @@ void MessageList::DeleteMessage(Snowflake sf)
 		MessageType::eType et = MessageType::DEFAULT;
 		if (beforeiter != m_messages.begin()) {
 			--beforeiter;
-			sf = beforeiter->m_msg.m_author_snowflake;
-			tm = beforeiter->m_msg.m_dateTime;
-			et = beforeiter->m_msg.m_type;
+			sf = beforeiter->m_msg->m_author_snowflake;
+			tm = beforeiter->m_msg->m_dateTime;
+			et = beforeiter->m_msg->m_type;
 			pl = beforeiter->m_placeInChain;
-			nm = beforeiter->m_msg.m_author;
-			av = beforeiter->m_msg.m_avatar;
+			nm = beforeiter->m_msg->m_author;
+			av = beforeiter->m_msg->m_avatar;
 		}
 
 		afterMessageInitialHeight = afteriter->m_height;
@@ -826,7 +826,7 @@ void MessageList::DeleteMessage(Snowflake sf)
 			shouldRecalc = true;
 		}
 
-		if (ShouldBeDateGap(tm, afteriter->m_msg.m_dateTime)) {
+		if (ShouldBeDateGap(tm, afteriter->m_msg->m_dateTime)) {
 			afteriter->m_bIsDateGap = true;
 		}
 
@@ -882,7 +882,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 
 	bool wasAnythingLoaded = false;
 	for (auto& msg : m_messages) {
-		wasAnythingLoaded = !msg.m_msg.IsLoadGap();
+		wasAnythingLoaded = !msg.m_msg->IsLoadGap();
 		if (wasAnythingLoaded)
 			break;
 	}
@@ -896,7 +896,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 	// Find the position of the old message
 	int oldYMessage = 0;
 	for (auto& msg : m_messages) {
-		if (msg.m_msg.m_snowflake == m_firstShownMessage) {
+		if (msg.m_msg->m_snowflake == m_firstShownMessage) {
 			if (m_bManagedByOwner && msg.m_bIsDateGap)
 				oldYMessage += DATE_GAP_HEIGHT;
 			break;
@@ -915,13 +915,13 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 	uint64_t ts = GetTimeUs();
 	for (auto iter = m_messages.begin(); iter != m_messages.end(); ++iter)
 	{
-		if (gapCulprit == iter->m_msg.m_snowflake)
+		if (gapCulprit == iter->m_msg->m_snowflake)
 		{
 			updateRect = iter->m_rect;
 			haveUpdateRect = true;
 
-			if (iter->m_msg.IsLoadGap())
-				anchor = iter->m_msg.m_anchor;
+			if (iter->m_msg->IsLoadGap())
+				anchor = iter->m_msg->m_anchor;
 			else
 				anchor = gapCulprit;
 
@@ -937,11 +937,11 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 	for (auto it = oldMessages.begin();
 		it != oldMessages.end();
 		++it) {
-		oldMessageKey[it->m_msg.m_snowflake] = &*it;
+		oldMessageKey[it->m_msg->m_snowflake] = &*it;
 	}
 
 	// this sucks, but eh
-	std::list<Message> msgs;
+	std::list<MessagePtr> msgs;
 	GetMessageCache()->GetLoadedMessages(m_channelID, m_guildID, msgs);
 
 	// If you can't read the message history, no */messages GET requests can be issued, so do this
@@ -957,24 +957,24 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 	{
 		for (auto& msg : msgs)
 		{
-			if (msg.m_type == MessageType::GAP_UP || msg.m_type == MessageType::GAP_DOWN || msg.m_type == MessageType::GAP_AROUND)
+			if (msg->m_type == MessageType::GAP_UP || msg->m_type == MessageType::GAP_DOWN || msg->m_type == MessageType::GAP_AROUND)
 			{
-				msg.m_type = MessageType::CANT_VIEW_MSG_HISTORY;
-				msg.m_message = "";
-				msg.m_author = "#" + pChannel->m_name;
+				msg->m_type = MessageType::CANT_VIEW_MSG_HISTORY;
+				msg->m_message = "";
+				msg->m_author = "#" + pChannel->m_name;
 			}
 		}
 	}
 	
-	std::list<Message>::iterator start = msgs.begin(), end = msgs.end();
+	std::list<MessagePtr>::iterator start = msgs.begin(), end = msgs.end();
 
 	Snowflake sf = anchor;
 
 	// find the message that triggered the load
-	std::list<Message>::iterator it1;
+	std::list<MessagePtr>::iterator it1;
 	for (it1 = msgs.begin(); it1 != msgs.end(); ++it1)
 	{
-		if (it1->m_snowflake == sf)
+		if ((*it1)->m_snowflake == sf)
 			break;
 	}
 
@@ -988,14 +988,14 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 		{
 			--start;
 			
-			if (start->IsLoadGap())
+			if ((*start)->IsLoadGap())
 				break;
 		}
 
 		// start scanning for the end
 		while (end != msgs.end())
 		{
-			if (end->IsLoadGap())
+			if ((*end)->IsLoadGap())
 				break;
 
 			++end;
@@ -1012,7 +1012,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 	for (auto iter = start; iter != end; ++iter)
 	{
 		auto& msg = *iter;
-		messageExists[msg.m_snowflake] = true;
+		messageExists[msg->m_snowflake] = true;
 	}
 
 	// remove any messages that don't need to exist
@@ -1021,7 +1021,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 		auto olditer = iter;
 		++iter;
 
-		if (!messageExists[iter->m_msg.m_snowflake]) {
+		if (!messageExists[iter->m_msg->m_snowflake]) {
 			refreshEntirely = true;
 			m_messages.erase(olditer);
 		}
@@ -1035,17 +1035,17 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 		auto& msg = *iter;
 
 		// If the message is already present:
-		auto oldMsg = oldMessageKey[msg.m_snowflake];
+		auto oldMsg = oldMessageKey[msg->m_snowflake];
 
-		if (GetProfileCache()->NeedRequestGuildMember(msg.m_author_snowflake, m_guildID))
-			usersToLoad.insert(msg.m_author_snowflake);
+		if (GetProfileCache()->NeedRequestGuildMember(msg->m_author_snowflake, m_guildID))
+			usersToLoad.insert(msg->m_author_snowflake);
 
 		bool bNeedInsertNew = false;
 		if (!oldMsg) {
 			bNeedInsertNew = true;
 		}
-		else if (oldMsg->m_msg.m_message != msg.m_message ||
-			oldMsg->m_msg.m_dateTime != msg.m_dateTime) {
+		else if (oldMsg->m_msg->m_message != msg->m_message ||
+			oldMsg->m_msg->m_dateTime != msg->m_dateTime) {
 			bNeedInsertNew = true;
 		}
 
@@ -1068,8 +1068,8 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 			}
 		}
 		else {
-			insertAfter = std::min(insertAfter, oldMsg->m_msg.m_snowflake);
-			insertBefore = std::max(insertBefore, oldMsg->m_msg.m_snowflake);
+			insertAfter = std::min(insertAfter, oldMsg->m_msg->m_snowflake);
+			insertBefore = std::max(insertBefore, oldMsg->m_msg->m_snowflake);
 
 			MessageItem item = std::move(*oldMsg);
 			// we will, however, need to clear some things
@@ -1105,7 +1105,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 
 	int newYMessage = 0;
 	for (auto& msg : m_messages) {
-		if (msg.m_msg.m_snowflake == m_firstShownMessage)
+		if (msg.m_msg->m_snowflake == m_firstShownMessage)
 			break;
 		
 		newYMessage += msg.m_height;
@@ -1148,7 +1148,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 
 		for (auto& msg : m_messages)
 		{
-			if (!msg.m_msg.IsLoadGap() && msg.m_msg.m_snowflake > m_previousLastReadMessage)
+			if (!msg.m_msg->IsLoadGap() && msg.m_msg->m_snowflake > m_previousLastReadMessage)
 				break;
 
 			y += msg.m_height;
@@ -1223,7 +1223,7 @@ void MessageList::HitTestReply(POINT pt, BOOL& hit)
 {
 	auto msg = FindMessageByPointReplyRect(pt);
 
-	if (msg == m_messages.end() || msg->m_msg.m_type != MessageType::REPLY || !PtInRect(&msg->m_refMsgRect, pt))
+	if (msg == m_messages.end() || msg->m_msg->m_type != MessageType::REPLY || !PtInRect(&msg->m_refMsgRect, pt))
 		return;
 
 	hit = TRUE;
@@ -1233,7 +1233,7 @@ void MessageList::HitTestAuthor(POINT pt, BOOL& hit)
 {
 	auto msg = FindMessageByPointAuthorRect(pt);
 
-	if (msg == m_messages.end() || msg->m_msg.m_snowflake != m_highlightedMessage)
+	if (msg == m_messages.end() || msg->m_msg->m_snowflake != m_highlightedMessage)
 	{
 		if (m_highlightedMessage)
 		{
@@ -1252,13 +1252,13 @@ void MessageList::HitTestAuthor(POINT pt, BOOL& hit)
 	}
 	
 	hit = TRUE;
-	if (m_highlightedMessage == msg->m_msg.m_snowflake)
+	if (m_highlightedMessage == msg->m_msg->m_snowflake)
 		return;
 
-	m_highlightedMessage = msg->m_msg.m_snowflake;
+	m_highlightedMessage = msg->m_msg->m_snowflake;
 	msg->m_authorHighlighted = true;
 	InvalidateRect(m_hwnd, &msg->m_authorRect, FALSE);
-	DbgPrintW("Hand!  Profile ID: %lld   Message ID: %lld", msg->m_msg.m_author_snowflake, msg->m_msg.m_snowflake);
+	DbgPrintW("Hand!  Profile ID: %lld   Message ID: %lld", msg->m_msg->m_author_snowflake, msg->m_msg->m_snowflake);
 }
 
 void MessageList::HitTestAttachments(POINT pt, BOOL& hit)
@@ -1313,7 +1313,7 @@ void MessageList::HitTestAttachments(POINT pt, BOOL& hit)
 		return;
 
 	m_highlightedAttachment = pAttach->m_pAttachment->m_id;
-	m_highlightedAttachmentMessage = msg->m_msg.m_snowflake;
+	m_highlightedAttachmentMessage = msg->m_msg->m_snowflake;
 	pAttach->m_bHighlighted = true;
 
 	if (!pAttach->m_pAttachment->IsImage())
@@ -1321,7 +1321,7 @@ void MessageList::HitTestAttachments(POINT pt, BOOL& hit)
 		if (inText)
 			InvalidateRect(m_hwnd, &pAttach->m_textRect, FALSE);
 	}
-	DbgPrintW("Hand!  Attachment ID: %lld   Message ID: %lld", pAttach->m_pAttachment->m_id, msg->m_msg.m_snowflake);
+	DbgPrintW("Hand!  Attachment ID: %lld   Message ID: %lld", pAttach->m_pAttachment->m_id, msg->m_msg->m_snowflake);
 }
 
 void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
@@ -1383,12 +1383,12 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 	}
 
 	m_highlightedInteractable = pItem->m_wordIndex;
-	m_highlightedInteractableMessage = msg->m_msg.m_snowflake;
+	m_highlightedInteractableMessage = msg->m_msg->m_snowflake;
 	pItem->m_bHighlighted = true;
 	if (pItem->ShouldInvalidateOnHover())
 		InvalidateRect(m_hwnd, &pItem->m_rect, FALSE);
 
-	DbgPrintW("Hand!  Interactable IDX: %zu   Message ID: %lld", pItem->m_wordIndex, msg->m_msg.m_snowflake);
+	DbgPrintW("Hand!  Interactable IDX: %zu   Message ID: %lld", pItem->m_wordIndex, msg->m_msg->m_snowflake);
 }
 
 void MessageList::OpenAttachment(AttachmentItem* pItem)
@@ -1471,7 +1471,7 @@ void MessageList::OpenInteractable(InteractableItem* pItem, MessageItem* pMsg)
 			sf = pItem->m_affected;
 			switch (mentType) {
 				case '@': {
-					if (pMsg->m_msg.IsWebHook())
+					if (pMsg->m_msg->IsWebHook())
 						break;
 
 					RECT rect;
@@ -2034,7 +2034,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 
 	item.m_refMsgRect = rcReply;
 
-	auto& refMsg = *item.m_msg.m_pReferencedMessage;
+	auto& refMsg = *item.m_msg->m_pReferencedMessage;
 	const bool isActionMessage = IsActionMessage(refMsg.m_type);
 	const bool isCompact = IsCompact();
 
@@ -2231,17 +2231,17 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	int height = item.m_height, authheight = item.m_authHeight, authwidth = item.m_authWidth;
 	const eMessageStyle mStyle = GetLocalSettings()->GetMessageStyle();
 
-	bool isFlashed = (m_emphasizedMessage == item.m_msg.m_snowflake) && (m_flash_counter % 2 != 0);
+	bool isFlashed = (m_emphasizedMessage == item.m_msg->m_snowflake) && (m_flash_counter % 2 != 0);
 
 	COLORREF chosenTextColor = GetSysColor(COLOR_WINDOWTEXT);
-	if (item.m_msg.m_bRead)
+	if (item.m_msg->m_bRead)
 		chosenTextColor = GetSysColor(COLOR_3DSHADOW);
 
 	COLORREF textColor = InvertIfNeeded(chosenTextColor), bkgdColor = CLR_NONE;
 
 	RECT rc = msgRect;
-	if (!m_firstShownMessage && rc.bottom > clientRect.top && !item.m_msg.IsLoadGap())
-		m_firstShownMessage = item.m_msg.m_snowflake;
+	if (!m_firstShownMessage && rc.bottom > clientRect.top && !item.m_msg->IsLoadGap())
+		m_firstShownMessage = item.m_msg->m_snowflake;
 
 	const int pfpOffset = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 	const bool isChainBegin = item.m_placeInChain == 0;
@@ -2261,7 +2261,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		rc.top += DATE_GAP_HEIGHT;
 		msgRect.top += DATE_GAP_HEIGHT;
 
-		LPTSTR strDateGap = ConvertCppStringToTString("  " + item.m_msg.m_dateOnly + "  ");
+		LPTSTR strDateGap = ConvertCppStringToTString("  " + item.m_msg->m_dateOnly + "  ");
 
 		COLORREF clrText = InvertIfNeeded(bDrawNewMarker ? NEW_MARKER_COLOR : GetSysColor(COLOR_GRAYTEXT));
 		COLORREF oldTextClr = SetTextColor(hdc, clrText);
@@ -2344,7 +2344,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			if (!isFlashed)
 				bkgdColor = GetSysColor(COLOR_3DFACE);
 
-			if (item.m_msg.m_type != MessageType::CHANNEL_HEADER) {
+			if (item.m_msg->m_type != MessageType::CHANNEL_HEADER) {
 				ri::DrawEdge(hdc, &rect2, BDR_RAISED, edgeFlags);
 			}
 			else if (edgeFlags & BF_MIDDLE) {
@@ -2384,7 +2384,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			}
 
 			// note: Intentionally perform the swap again
-			if (item.m_msg.m_type == MessageType::CHANNEL_HEADER) {
+			if (item.m_msg->m_type == MessageType::CHANNEL_HEADER) {
 				COLORREF tmp = c1;
 				c1 = c2;
 				c2 = tmp;
@@ -2439,20 +2439,20 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	Snowflake actionMsgSF = 0;
 	int icon = 0;
 
-	isActionMessage = IsActionMessage(item.m_msg.m_type);
+	isActionMessage = IsActionMessage(item.m_msg->m_type);
 
 	if (isActionMessage)
 		DetermineMessageData(
 			m_guildID,
 			m_channelID,
-			item.m_msg.m_type,
-			item.m_msg.m_snowflake,
-			item.m_msg.m_author_snowflake,
-			item.m_msg.m_refMessageGuild,
-			item.m_msg.m_refMessageChannel,
-			item.m_msg.m_refMessageSnowflake,
-			item.m_msg.m_userMentions,
-			item.m_msg.m_message,
+			item.m_msg->m_type,
+			item.m_msg->m_snowflake,
+			item.m_msg->m_author_snowflake,
+			item.m_msg->m_refMessageGuild,
+			item.m_msg->m_refMessageChannel,
+			item.m_msg->m_refMessageSnowflake,
+			item.m_msg->m_userMentions,
+			item.m_msg->m_message,
 			actionMsgPart1,
 			actionMsgPart2,
 			actionMsgPart3,
@@ -2474,7 +2474,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 	if (isActionMessage)
 	{
-		if (item.m_msg.m_type == MessageType::CHANNEL_HEADER)
+		if (item.m_msg->m_type == MessageType::CHANNEL_HEADER)
 		{
 			if (Supports32BitIcons() && GetDeviceCaps(hdc, BITSPIXEL) >= 16)
 			{
@@ -2549,7 +2549,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	// draw the reply if needed
 	int replyOffset = 0;
 
-	if (item.m_msg.IsReply() && !isActionMessage && isChainBegin)
+	if (item.m_msg->IsReply() && !isActionMessage && isChainBegin)
 		replyOffset = DrawMessageReply(hdc, item, rc);
 
 	rc.top += replyOffset;
@@ -2572,7 +2572,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			}
 			else {
 				// figure out the color of the author
-				Profile* pf = GetProfileCache()->LookupProfile(item.m_msg.m_author_snowflake, "", "", "", false);
+				Profile* pf = GetProfileCache()->LookupProfile(item.m_msg->m_author_snowflake, "", "", "", false);
 				COLORREF cr = GetNameColor(pf, m_guildID);
 
 				if (cr != CLR_NONE)
@@ -2585,7 +2585,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		if (inView)
 		{
 			DrawText(hdc, strAuth, -1, &rc, DT_NOPREFIX | DT_NOCLIP);
-			if (item.m_msg.m_bIsAuthorBot)
+			if (item.m_msg->m_bIsAuthorBot)
 			{
 				int sm = GetSystemMetrics(SM_CXSMICON);
 				HICON hic = (HICON)ri::LoadImage(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_BOT)), IMAGE_ICON, sm, sm, LR_SHARED);
@@ -2611,7 +2611,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			rc.left += dateOffset;
 			rc.left -= authorOffset;
 			DrawText(hdc, strDate, -1, &rc, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP);
-			if (item.m_msg.m_timeEdited) {
+			if (item.m_msg->m_timeEdited) {
 				RECT rcMeasure{};
 				DrawText(hdc, strDate, -1, &rcMeasure, DT_SINGLELINE | DT_NOPREFIX | DT_CALCRECT);
 				rc.left += rcMeasure.right - rcMeasure.left + ScaleByDPI(5);
@@ -2779,9 +2779,9 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 				mddc.SetBackgroundColor(chosenBkColor);
 			}
 
-			if (item.m_msg.m_type == MessageType::UNSENT_MESSAGE)
+			if (item.m_msg->m_type == MessageType::UNSENT_MESSAGE)
 				oldTextColor = SetTextColor(hdc, RGB(255, 0, 0));
-			else if (item.m_msg.m_type == MessageType::SENDING_MESSAGE)
+			else if (item.m_msg->m_type == MessageType::SENDING_MESSAGE)
 				oldTextColor = SetTextColor(hdc, GetSysColor(COLOR_GRAYTEXT));
 			
 			item.m_message.Draw(&mddc, offsetY);
@@ -2837,8 +2837,8 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			{
 				// draw the avatar
 				bool hasAlpha = false;
-				GetAvatarCache()->AddImagePlace(item.m_msg.m_avatar, eImagePlace::AVATARS, item.m_msg.m_avatar, item.m_msg.m_author_snowflake);
-				HBITMAP hbm = GetAvatarCache()->GetImage(item.m_msg.m_avatar, hasAlpha)->GetFirstFrame();
+				GetAvatarCache()->AddImagePlace(item.m_msg->m_avatar, eImagePlace::AVATARS, item.m_msg->m_avatar, item.m_msg->m_author_snowflake);
+				HBITMAP hbm = GetAvatarCache()->GetImage(item.m_msg->m_avatar, hasAlpha)->GetFirstFrame();
 				DrawBitmap(hdc, hbm, pfRect.left, pfRect.top, &pfRect, CLR_NONE, GetProfilePictureSize(), 0, hasAlpha);
 			}
 		}
@@ -2916,7 +2916,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 	// draw available attachments, if any:
 	RECT attachRect = pollRect;
-	auto& attachVec = item.m_msg.m_attachments;
+	auto& attachVec = item.m_msg->m_attachments;
 	auto& attachItemVec = item.m_attachmentData;
 	sz = attachVec.size();
 
@@ -2952,15 +2952,15 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	}
 
 	bool isGap =
-		   item.m_msg.m_type == MessageType::GAP_DOWN
-		|| item.m_msg.m_type == MessageType::GAP_UP
-		|| item.m_msg.m_type == MessageType::GAP_AROUND;
+		   item.m_msg->m_type == MessageType::GAP_DOWN
+		|| item.m_msg->m_type == MessageType::GAP_UP
+		|| item.m_msg->m_type == MessageType::GAP_AROUND;
 	if (inView && isGap)
 	{
-		DbgPrintW("Loading gap message ID %lld", item.m_msg.m_anchor);
+		DbgPrintW("Loading gap message ID %lld", item.m_msg->m_anchor);
 
 		ScrollDir::eScrollDir sd;
-		switch (item.m_msg.m_type) {
+		switch (item.m_msg->m_type) {
 			default:
 			case MessageType::GAP_AROUND: sd = ScrollDir::AROUND; break;
 			case MessageType::GAP_UP:     sd = ScrollDir::BEFORE; break;
@@ -2971,8 +2971,8 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		GetDiscordInstance()->RequestMessages(
 			m_channelID,
 			sd,
-			item.m_msg.m_anchor,
-			item.m_msg.m_snowflake
+			item.m_msg->m_anchor,
+			item.m_msg->m_snowflake
 		);
 	}
 
@@ -3120,7 +3120,7 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 	bool hasUnloadedMessagesBelow = false;
 
 	if (!m_messages.empty())
-		hasUnloadedMessagesBelow = m_messages.rbegin()->m_msg.IsLoadGap() && m_messages.size() > 1;
+		hasUnloadedMessagesBelow = m_messages.rbegin()->m_msg->IsLoadGap() && m_messages.size() > 1;
 
 	int unreadMarkerState = 0;
 	m_firstShownMessage = 0;
@@ -3128,7 +3128,7 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 		iter != m_messages.end();
 		++iter)
 	{
-		bool isActionMessage = IsActionMessage(iter->m_msg.m_type);
+		bool isActionMessage = IsActionMessage(iter->m_msg->m_type);
 		bool needUpdate = false;
 
 		--index;
@@ -3151,8 +3151,8 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 		msgRect.bottom = msgRect.top + iter->m_height;
 		iter->m_rect = msgRect;
 
-		lastKnownMessage = iter->m_msg.m_snowflake;
-		isLastKnownMessageGap = iter->m_msg.IsLoadGap();
+		lastKnownMessage = iter->m_msg->m_snowflake;
+		isLastKnownMessageGap = iter->m_msg->IsLoadGap();
 
 		bool bDraw = msgRect.top <= rect.bottom && msgRect.bottom > rect.top;
 		bool bDrawNewMarker = false;
@@ -3162,8 +3162,8 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 		// isn't incremented. The variable is incremented regardless of bDraw. We just need it to increase when we stumble across
 		// the oldest unread message to know whether and where we should draw the unread marker.
 		if (m_previousLastReadMessage &&
-			iter->m_msg.m_snowflake > m_previousLastReadMessage &&
-			!iter->m_msg.IsLoadGap() &&
+			iter->m_msg->m_snowflake > m_previousLastReadMessage &&
+			!iter->m_msg->IsLoadGap() &&
 			unreadMarkerState++ == 0 &&
 			bDraw) {
 			bDrawNewMarker = true;
@@ -3172,14 +3172,16 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 		if (bDraw)
 		{
 			DrawMessage(hdc, *iter, msgRect, rect, paintRect, mddc, chosenBkColor, bDrawNewMarker);
-			lastDrawnMessage = iter->m_msg.m_snowflake;
+			lastDrawnMessage = iter->m_msg->m_snowflake;
 
-			if (index >= 100 || hasUnloadedMessagesBelow) {
-				PostMessage(g_Hwnd, WM_SETBROWSINGPAST, 1, 0);
-				sent = true;
-			}
-			else if (!sent && index <= 70) {
-				PostMessage(g_Hwnd, WM_SETBROWSINGPAST, 0, 0);
+			if (!m_bManagedByOwner) {
+				if (index >= 100 || hasUnloadedMessagesBelow) {
+					PostMessage(g_Hwnd, WM_SETBROWSINGPAST, 1, 0);
+					sent = true;
+				}
+				else if (!sent && index <= 70) {
+					PostMessage(g_Hwnd, WM_SETBROWSINGPAST, 0, 0);
+				}
 			}
 		}
 		else
@@ -3232,13 +3234,13 @@ void MessageList::HandleRightClickMenuCommand(int command)
 
 	for (auto iter = m_messages.rbegin(); iter != m_messages.rend(); ++iter)
 	{
-		if (iter->m_msg.m_snowflake == m_rightClickedMessage)
+		if (iter->m_msg->m_snowflake == m_rightClickedMessage)
 		{
 			pMsg = &(*iter);
 
 			++iter;
 			if (iter != m_messages.rend())
-				messageBeforeRightClickedMessage = iter->m_msg.m_snowflake;
+				messageBeforeRightClickedMessage = iter->m_msg->m_snowflake;
 			break;
 		}
 	}
@@ -3268,7 +3270,7 @@ void MessageList::HandleRightClickMenuCommand(int command)
 		case ID_DUMMYPOPUP_COPYMESSAGELINK:
 		{
 			// Copy the message link.
-			std::string msgLink = CreateMessageLink(m_guildID, m_channelID, pMsg->m_msg.m_snowflake);
+			std::string msgLink = CreateMessageLink(m_guildID, m_channelID, pMsg->m_msg->m_snowflake);
 			CopyStringToClipboard(msgLink);
 			break;
 		}
@@ -3279,7 +3281,7 @@ void MessageList::HandleRightClickMenuCommand(int command)
 		}
 		case ID_DUMMYPOPUP_COPYTEXT:
 		{
-			CopyStringToClipboard(pMsg->m_msg.m_message);
+			CopyStringToClipboard(pMsg->m_msg->m_message);
 			break;
 		}
 		case ID_DUMMYPOPUP_COPYID:
@@ -3291,7 +3293,7 @@ void MessageList::HandleRightClickMenuCommand(int command)
 		case ID_DUMMYPOPUP_DELETEMESSAGE:
 		{
 			static char buffer[8192];
-			snprintf(buffer, sizeof buffer, TmGetString(IDS_CONFIRM_DELETE).c_str(), pMsg->m_msg.m_author.c_str(), pMsg->m_msg.m_dateFull.c_str(), pMsg->m_msg.m_message.c_str());
+			snprintf(buffer, sizeof buffer, TmGetString(IDS_CONFIRM_DELETE).c_str(), pMsg->m_msg->m_author.c_str(), pMsg->m_msg->m_dateFull.c_str(), pMsg->m_msg->m_message.c_str());
 			LPCTSTR xstr = ConvertCppStringToTString(buffer);
 			if (MessageBox(g_Hwnd, xstr, TmGetTString(IDS_CONFIRM_DELETE_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES)
 			{
@@ -3304,8 +3306,8 @@ void MessageList::HandleRightClickMenuCommand(int command)
 		case ID_DUMMYPOPUP_REPLY:
 		{
 			Snowflake sf[2];
-			sf[0] = pMsg->m_msg.m_snowflake;
-			sf[1] = pMsg->m_msg.m_author_snowflake;
+			sf[0] = pMsg->m_msg->m_snowflake;
+			sf[1] = pMsg->m_msg->m_author_snowflake;
 			SendMessage(g_Hwnd, WM_STARTREPLY, 0, (LPARAM)sf);
 			break;
 		}
@@ -3316,7 +3318,7 @@ void MessageList::HandleRightClickMenuCommand(int command)
 				break;
 
 			static char buffer[8192];
-			snprintf(buffer, sizeof buffer, TmGetString(IDS_CONFIRM_PIN).c_str(), pChan->m_name.c_str(), pMsg->m_msg.m_author.c_str(), pMsg->m_msg.m_dateFull.c_str(), pMsg->m_msg.m_message.c_str());
+			snprintf(buffer, sizeof buffer, TmGetString(IDS_CONFIRM_PIN).c_str(), pChan->m_name.c_str(), pMsg->m_msg->m_author.c_str(), pMsg->m_msg->m_dateFull.c_str(), pMsg->m_msg->m_message.c_str());
 
 			LPCTSTR xstr = ConvertCppStringToTString(buffer);
 
@@ -3330,15 +3332,15 @@ void MessageList::HandleRightClickMenuCommand(int command)
 		}
 		case ID_DUMMYPOPUP_SPEAKMESSAGE:
 		{
-			if (IsActionMessage(pMsg->m_msg.m_type))
+			if (IsActionMessage(pMsg->m_msg->m_type))
 				break;
 					
 			std::string action = " said ";
-			if (pMsg->m_msg.m_type == MessageType::REPLY &&
-				pMsg->m_msg.m_pReferencedMessage != nullptr)
-				action = " replied to " + pMsg->m_msg.m_pReferencedMessage->m_author + " ";
+			if (pMsg->m_msg->m_type == MessageType::REPLY &&
+				pMsg->m_msg->m_pReferencedMessage != nullptr)
+				action = " replied to " + pMsg->m_msg->m_pReferencedMessage->m_author + " ";
 
-			TextToSpeech::Speak(pMsg->m_msg.m_author + action + GetDiscordInstance()->ReverseMentions(pMsg->m_msg.m_message, m_guildID, true));
+			TextToSpeech::Speak(pMsg->m_msg->m_author + action + GetDiscordInstance()->ReverseMentions(pMsg->m_msg->m_message, m_guildID, true));
 			break;
 		}
 	}
@@ -3459,7 +3461,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						// find the old offset from the top of the messages
 						for (auto& msg : pThis->m_messages) {
 							if (ypos + msg.m_height >= position) {
-								sf = msg.m_msg.m_snowflake;
+								sf = msg.m_msg->m_snowflake;
 								break;
 							}
 							ypos += msg.m_height;
@@ -3472,7 +3474,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					if (retrack) {
 						// find the new offset from the top of the messages
 						for (auto& msg : pThis->m_messages) {
-							if (msg.m_msg.m_snowflake == sf)
+							if (msg.m_msg->m_snowflake == sf)
 								break;
 
 							ypos2 += msg.m_height;
@@ -3639,11 +3641,11 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (!pRCMsg) break;
 
-			if (IsClientSideMessage(pRCMsg->m_msg.m_type)) break;
+			if (IsClientSideMessage(pRCMsg->m_msg->m_type)) break;
 
 			HMENU menu = GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_MESSAGE_CONTEXT)), 0);
 
-			pThis->m_rightClickedMessage = pRCMsg->m_msg.m_snowflake;
+			pThis->m_rightClickedMessage = pRCMsg->m_msg->m_snowflake;
 
 			// disable the Delete button if we're not the user
 			Profile* ourPf = GetDiscordInstance()->GetProfile();
@@ -3651,17 +3653,17 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (!pChan) break;
 
-			bool isThisMyMessage   = pRCMsg->m_msg.m_author_snowflake == ourPf->m_snowflake;
+			bool isThisMyMessage   = pRCMsg->m_msg->m_author_snowflake == ourPf->m_snowflake;
 			bool mayManageMessages = pChan->HasPermission(PERM_MANAGE_MESSAGES);
-			bool isActionMessage = IsActionMessage(pRCMsg->m_msg.m_type) || IsClientSideMessage(pRCMsg->m_msg.m_type);
-			bool isForward = pRCMsg->m_msg.m_bIsForward;
+			bool isActionMessage = IsActionMessage(pRCMsg->m_msg->m_type) || IsClientSideMessage(pRCMsg->m_msg->m_type);
+			bool isForward = pRCMsg->m_msg->m_bIsForward;
 
 			bool mayCopy   = !isForward && !isActionMessage;
 			bool mayDelete = isThisMyMessage || mayManageMessages;
 			bool mayEdit   = isThisMyMessage && !isForward && !isActionMessage;
 			bool mayPin    = mayManageMessages;
-			bool maySpeak  = !isActionMessage && !pRCMsg->m_msg.m_message.empty();
-			bool mayReply  = !isActionMessage || IsReplyableActionMessage(pRCMsg->m_msg.m_type);
+			bool maySpeak  = !isActionMessage && !pRCMsg->m_msg->m_message.empty();
+			bool mayReply  = !isActionMessage || IsReplyableActionMessage(pRCMsg->m_msg->m_type);
 
 #ifdef OLD_WINDOWS
 			EnableMenuItem(menu, ID_DUMMYPOPUP_DELETEMESSAGE, mayDelete ? MF_ENABLED : MF_GRAYED);
@@ -3698,29 +3700,29 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (pThis->m_bManagedByOwner)
 			{
-				Snowflake sf = msg->m_msg.m_snowflake;
+				Snowflake sf = msg->m_msg->m_snowflake;
 				SendMessage(GetParent(pThis->m_hwnd), WM_CLICKEDMESSAGE, 0, (LPARAM) &sf);
 			}
 			else
 			{
-				if (msg->m_msg.m_type != MessageType::GAP_UP &&
-					msg->m_msg.m_type != MessageType::GAP_DOWN &&
-					msg->m_msg.m_type != MessageType::GAP_AROUND &&
-					msg->m_msg.m_author_snowflake != 0 &&
+				if (msg->m_msg->m_type != MessageType::GAP_UP &&
+					msg->m_msg->m_type != MessageType::GAP_DOWN &&
+					msg->m_msg->m_type != MessageType::GAP_AROUND &&
+					msg->m_msg->m_author_snowflake != 0 &&
 					(PtInRect(&msg->m_authorRect, pt) || PtInRect(&msg->m_avatarRect, pt)))
 				{
-					Snowflake authorSF = msg->m_msg.m_author_snowflake;
+					Snowflake authorSF = msg->m_msg->m_author_snowflake;
 
 					RECT rect;
 					GetWindowRect(hWnd, &rect);
 
-					if (!msg->m_msg.IsWebHook())
+					if (!msg->m_msg->IsWebHook())
 						ProfilePopout::Show(authorSF, pThis->m_guildID, rect.left + msg->m_authorRect.right + 10, rect.top + msg->m_authorRect.top);
 				}
 
-				if (msg->m_msg.m_type == MessageType::REPLY && PtInRect(&msg->m_refMsgRect, pt))
+				if (msg->m_msg->m_type == MessageType::REPLY && PtInRect(&msg->m_refMsgRect, pt))
 				{
-					pThis->SendToMessage(msg->m_msg.m_refMessageSnowflake);
+					pThis->SendToMessage(msg->m_msg->m_refMessageSnowflake);
 					break;
 				}
 
@@ -3958,14 +3960,14 @@ bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded, bool forceIn
 		si.nPos = y;
 		ri::SetScrollInfo(m_hwnd, SB_VERT, &si, true);
 
-		FlashMessage(mi->m_msg.m_snowflake);
+		FlashMessage(mi->m_msg->m_snowflake);
 
 		if (forceInvalidate)
 			InvalidateRect(m_hwnd, NULL, MayErase());
 		else
 			SendMessage(m_hwnd, WM_VSCROLL, SB_ENDSCROLL, 0);
 
-		bool isLoadGap = !mi->m_msg.IsLoadGap();
+		bool isLoadGap = !mi->m_msg->IsLoadGap();
 
 		m_messageSentTo = 0;
 		RefetchMessages(sf, true);
@@ -3997,10 +3999,10 @@ void MessageList::UpdateMembers(std::set<Snowflake>& mems)
 
 	for (auto& msg : m_messages)
 	{
-		if (msg.m_msg.m_author_snowflake == 0 || msg.m_msg.IsWebHook())
+		if (msg.m_msg->m_author_snowflake == 0 || msg.m_msg->IsWebHook())
 			continue;
 
-		auto iter = mems.find(msg.m_msg.m_author_snowflake);
+		auto iter = mems.find(msg.m_msg->m_author_snowflake);
 		if (iter == mems.end())
 			continue; // no need to refresh
 
@@ -4009,13 +4011,13 @@ void MessageList::UpdateMembers(std::set<Snowflake>& mems)
 		rcRefresh.right = rcClient.right;
 
 		Profile* pf = GetProfileCache()->LookupProfile(*iter, "", "", "", false);
-		msg.m_msg.m_author = pf->GetName(m_guildID);
+		msg.m_msg->m_author = pf->GetName(m_guildID);
 
 		// update author text
 		if (msg.m_author)
 			free((void*) msg.m_author);
 
-		msg.m_author = ConvertCppStringToTString(msg.m_msg.m_author);
+		msg.m_author = ConvertCppStringToTString(msg.m_msg->m_author);
 
 		// recalculate author width and stuff
 		int height = 0;
@@ -4033,8 +4035,8 @@ void MessageList::UpdateMembers(std::set<Snowflake>& mems)
 			msg.m_dateEdited,
 			msg.m_replyMsg,
 			msg.m_replyAuth,
-			msg.m_msg.m_bIsAuthorBot,
-			msg.m_msg.m_bIsForward,
+			msg.m_msg->m_bIsAuthorBot,
+			msg.m_msg->m_bIsForward,
 			msg.m_messageRect,
 			height,
 			authHeight,
@@ -4261,7 +4263,7 @@ std::list<MessageItem>::iterator MessageList::FindMessage(Snowflake sf)
 {
 	for (auto iter = m_messages.rbegin(); iter != m_messages.rend(); ++iter)
 	{
-		if (iter->m_msg.m_snowflake == sf)
+		if (iter->m_msg->m_snowflake == sf)
 			return --iter.base();
 	}
 	return m_messages.end();
@@ -4281,10 +4283,10 @@ std::list<MessageItem>::iterator MessageList::FindMessageByPointAuthorRect(POINT
 {
 	for (auto iter = m_messages.rbegin(); iter != m_messages.rend(); ++iter)
 	{
-		if (iter->m_msg.m_type != MessageType::GAP_UP &&
-			iter->m_msg.m_type != MessageType::GAP_DOWN &&
-			iter->m_msg.m_type != MessageType::GAP_AROUND &&
-			iter->m_msg.m_author_snowflake != 0 &&
+		if (iter->m_msg->m_type != MessageType::GAP_UP &&
+			iter->m_msg->m_type != MessageType::GAP_DOWN &&
+			iter->m_msg->m_type != MessageType::GAP_AROUND &&
+			iter->m_msg->m_author_snowflake != 0 &&
 			(PtInRect(&iter->m_authorRect, pt) || PtInRect(&iter->m_avatarRect, pt)))
 			return --iter.base();
 	}
@@ -4295,7 +4297,7 @@ std::list<MessageItem>::iterator MessageList::FindMessageByPointReplyRect(POINT 
 {
 	for (auto iter = m_messages.rbegin(); iter != m_messages.rend(); ++iter)
 	{
-		if (iter->m_msg.m_type == MessageType::REPLY && PtInRect(&iter->m_refMsgRect, pt))
+		if (iter->m_msg->m_type == MessageType::REPLY && PtInRect(&iter->m_refMsgRect, pt))
 			return --iter.base();
 	}
 	return m_messages.end();
@@ -4348,7 +4350,7 @@ void MessageList::AdjustHeightInfo(
 		authheight = 0;
 	}
 
-	if (IsActionMessage(msg.m_msg.m_type))
+	if (IsActionMessage(msg.m_msg->m_type))
 	{
 		replyheight2 = 0;
 		height = replyheight2 + authheight + ScaleByDPI(20);
@@ -4385,7 +4387,7 @@ void MessageList::AdjustHeightInfo(
 
 	// also figure out attachment size
 	attachheight = 0;
-	for (auto& att : msg.m_msg.m_attachments)
+	for (auto& att : msg.m_msg->m_attachments)
 	{
 		// XXX improve?
 		int inc = 0;
@@ -4422,10 +4424,10 @@ void MessageList::AdjustHeightInfo(
 	if (pollheight != 0)
 		height += ScaleByDPI(5);
 
-	if (!IsActionMessage(msg.m_msg.m_type) && !IsCompact() && !isChainCont && height < minHeight)
+	if (!IsActionMessage(msg.m_msg->m_type) && !IsCompact() && !isChainCont && height < minHeight)
 		height = minHeight;
 
-	if (msg.m_msg.m_type == MessageType::CHANNEL_HEADER) {
+	if (msg.m_msg->m_type == MessageType::CHANNEL_HEADER) {
 		height = ScaleByDPI(64);
 	}
 }
@@ -4443,34 +4445,34 @@ bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int
 	if (prevPlaceInChain >= 10 && ifChainTooLongToo)
 		return true;
 
-	if (prevAuthor != item.m_msg.m_author_snowflake)
+	if (prevAuthor != item.m_msg->m_author_snowflake)
 		return true;
 
-	if (prevTime + 15 * 60 < item.m_msg.m_dateTime)
+	if (prevTime + 15 * 60 < item.m_msg->m_dateTime)
 		return true;
 
-	if (item.m_msg.IsLoadGap())
+	if (item.m_msg->IsLoadGap())
 		return true;
 
-	if (item.m_msg.m_pReferencedMessage != nullptr)
+	if (item.m_msg->m_pReferencedMessage != nullptr)
 		return true;
 
-	if (item.m_msg.m_type == MessageType::REPLY)
+	if (item.m_msg->m_type == MessageType::REPLY)
 		return true;
 
 	if (IsActionMessage(prevType))
 		return true;
 
-	if (IsActionMessage(item.m_msg.m_type))
+	if (IsActionMessage(item.m_msg->m_type))
 		return true;
 	
-	if (ShouldBeDateGap(prevTime, item.m_msg.m_dateTime))
+	if (ShouldBeDateGap(prevTime, item.m_msg->m_dateTime))
 		return true;
 
-	if (prevAuthorName != item.m_msg.m_author)
+	if (prevAuthorName != item.m_msg->m_author)
 		return true;
 
-	if (prevAuthorAvatar != item.m_msg.m_avatar)
+	if (prevAuthorAvatar != item.m_msg->m_avatar)
 		return true;
 
 	return false;
@@ -4505,19 +4507,19 @@ int MessageList::RecalcMessageSizes(bool update, int& repaintSize, Snowflake add
 		if (iter->m_message.Empty())
 		{
 			// HACK
-			if (iter->m_msg.m_snowflake < addedMessagesBeforeThisID || addedMessagesBeforeThisID == 0) {
+			if (iter->m_msg->m_snowflake < addedMessagesBeforeThisID || addedMessagesBeforeThisID == 0) {
 				iter->m_bKeepHeightRecalc = false;
 				iter->Update(m_guildID);
 			}
-			if (iter->m_msg.m_snowflake > addedMessagesAfterThisID) {
+			if (iter->m_msg->m_snowflake > addedMessagesAfterThisID) {
 				iter->m_bKeepHeightRecalc = false;
 				iter->Update(m_guildID);
 			}
 		}
 
-		bool modifyChainOrder = addedMessagesBeforeThisID == 0 || iter->m_msg.m_snowflake <= addedMessagesBeforeThisID || iter->m_msg.m_snowflake >= addedMessagesAfterThisID;
+		bool modifyChainOrder = addedMessagesBeforeThisID == 0 || iter->m_msg->m_snowflake <= addedMessagesBeforeThisID || iter->m_msg->m_snowflake >= addedMessagesAfterThisID;
 
-		bool bIsDateGap = ShouldBeDateGap(prevTime, iter->m_msg.m_dateTime);
+		bool bIsDateGap = ShouldBeDateGap(prevTime, iter->m_msg->m_dateTime);
 		bool startNewChain = isCompact || ShouldStartNewChain(prevAuthor, prevTime, prevPlaceInChain, prevType, prevAuthorName, prevAuthorAvatar, *iter, modifyChainOrder);
 
 		bool msgOldIsDateGap = iter->m_bIsDateGap;
@@ -4570,11 +4572,11 @@ int MessageList::RecalcMessageSizes(bool update, int& repaintSize, Snowflake add
 		}
 
 		prevPlaceInChain = iter->m_placeInChain;
-		prevAuthor = iter->m_msg.m_author_snowflake;
-		prevAuthorName = iter->m_msg.m_author;
-		prevAuthorAvatar = iter->m_msg.m_avatar;
-		prevTime = iter->m_msg.m_dateTime;
-		prevType = iter->m_msg.m_type;
+		prevAuthor = iter->m_msg->m_author_snowflake;
+		prevAuthorName = iter->m_msg->m_author;
+		prevAuthorAvatar = iter->m_msg->m_avatar;
+		prevTime = iter->m_msg->m_dateTime;
+		prevType = iter->m_msg->m_type;
 
 		m_total_height += iter->m_height;
 	}
@@ -4627,11 +4629,11 @@ void MessageList::OnUpdateAvatar(Snowflake sf)
 {
 	for (auto& msg : m_messages)
 	{
-		if (msg.m_msg.m_author_snowflake == sf && !IsCompact())
+		if (msg.m_msg->m_author_snowflake == sf && !IsCompact())
 			InvalidateRect(m_hwnd, &msg.m_avatarRect, false);
 
-		if (msg.m_msg.m_pReferencedMessage != nullptr &&
-			msg.m_msg.m_pReferencedMessage->m_author_snowflake == sf && !IsCompact())
+		if (msg.m_msg->m_pReferencedMessage != nullptr &&
+			msg.m_msg->m_pReferencedMessage->m_author_snowflake == sf && !IsCompact())
 			InvalidateRect(m_hwnd, &msg.m_refAvatarRect, false);
 	}
 }
@@ -4662,11 +4664,11 @@ void MessageList::OnFailedToSendMessage(Snowflake sf)
 {
 	for (auto& msg : m_messages)
 	{
-		if (msg.m_msg.m_snowflake != sf)
+		if (msg.m_msg->m_snowflake != sf)
 			continue;
 
-		msg.m_msg.m_type = MessageType::UNSENT_MESSAGE;
-		msg.m_msg.SetTime(msg.m_msg.m_dateTime);
+		msg.m_msg->m_type = MessageType::UNSENT_MESSAGE;
+		msg.m_msg->SetTime(msg.m_msg->m_dateTime);
 		msg.m_date = NULL;
 		msg.Update(m_guildID);
 
@@ -4702,8 +4704,8 @@ void MessageList::DetermineMessageMeasurements(MessageItem& mi, HDC _hdc, LPRECT
 		strDateEdit,
 		strReplyMsg,
 		strReplyAuth,
-		mi.m_msg.m_bIsAuthorBot,
-		mi.m_msg.m_bIsForward,
+		mi.m_msg->m_bIsAuthorBot,
+		mi.m_msg->m_bIsForward,
 		rect,
 		mi.m_textHeight,
 		mi.m_authHeight,
@@ -4730,10 +4732,13 @@ void MessageList::DetermineMessageMeasurements(MessageItem& mi, HDC _hdc, LPRECT
 	if (!_hdc) ReleaseDC(m_hwnd, hdc);
 }
 
-void MessageList::EditMessage(const Message& newMsg)
+void MessageList::EditMessage(Snowflake msgId)
 {
 	MessageItem mi;
-	mi.m_msg = newMsg; // please copy
+	mi.m_msg = GetMessageCache()->GetLoadedMessage(m_channelID, msgId);
+	if (!mi.m_msg)
+		return;
+
 	mi.Update(m_guildID);
 	
 	LPCTSTR strAuth = mi.m_author;
@@ -4751,7 +4756,7 @@ void MessageList::EditMessage(const Message& newMsg)
 	RECT oldMsgRect = {};
 	for (auto iter = m_messages.rbegin(); iter != m_messages.rend(); ++iter)
 	{
-		if (iter->m_msg.m_snowflake == newMsg.m_snowflake)
+		if (iter->m_msg->m_snowflake == msgId)
 		{
 			// delete it!
 			oldHeight = iter->m_height;
@@ -4773,7 +4778,7 @@ void MessageList::EditMessage(const Message& newMsg)
 		Snowflake thisSF = 0, nextSF = UINT64_MAX;
 
 		if (!firstTime)
-			thisSF = insertIter->m_msg.m_snowflake;
+			thisSF = insertIter->m_msg->m_snowflake;
 
 		auto nextiter = insertIter;
 		if (firstTime)
@@ -4782,10 +4787,10 @@ void MessageList::EditMessage(const Message& newMsg)
 			++nextiter;
 
 		if (nextiter != m_messages.end()) {
-			nextSF = nextiter->m_msg.m_snowflake;
+			nextSF = nextiter->m_msg->m_snowflake;
 		}
 
-		if (thisSF < newMsg.m_snowflake && newMsg.m_snowflake < nextSF) {
+		if (thisSF < msgId && msgId < nextSF) {
 			// note: using nextIter because list.insert(iter) shifts elements
 			// starting from iter to the right, not from iter+1. We want to insert
 			// AFTER `insertIter`.
@@ -4809,7 +4814,7 @@ void MessageList::EditMessage(const Message& newMsg)
 	mi.m_placeInChain = placeInChainOld;
 
 	DetermineMessageMeasurements(mi, NULL, NULL);
-	mi.m_msg.m_anchor = 0;
+	mi.m_msg->m_anchor = 0;
 
 	bool toStart = false;
 	m_messages.insert(insertIter, mi);
@@ -4843,8 +4848,8 @@ void MessageList::SetLastViewedMessage(Snowflake sf, bool refreshItAlso)
 	bool notExactMatch = false;
 	auto itm = m_messages.begin();
 	for (; itm != m_messages.end(); ++itm) {
-		if (itm->m_msg.m_snowflake >= sf) {
-			notExactMatch = itm->m_msg.m_snowflake != sf;
+		if (itm->m_msg->m_snowflake >= sf) {
+			notExactMatch = itm->m_msg->m_snowflake != sf;
 			break;
 		}
 	}
@@ -4857,7 +4862,7 @@ void MessageList::SetLastViewedMessage(Snowflake sf, bool refreshItAlso)
 		auto it = m_messages.rbegin();
 		auto it2 = m_messages.end();
 		for (; it != m_messages.rend(); ++it) {
-			if (it->m_msg.m_snowflake == old) {
+			if (it->m_msg->m_snowflake == old) {
 				it2 = it.base(); // returns the NEXT element.
 				break;
 			}
@@ -4919,10 +4924,17 @@ void MessageList::MessageHeightChanged(int oldHeight, int newHeight, bool toStar
 	UpdateScrollBar(newHeight - oldHeight, newHeight - oldHeight, toStart);
 }
 
-void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool updateLastViewedMessage, bool resetAnchor)
+void MessageList::AddMessageInternal(Snowflake msgId, bool toStart, bool updateLastViewedMessage, bool resetAnchor)
+{
+	AddMessageInternal(GetMessageCache()->GetLoadedMessage(m_channelID, msgId), toStart, updateLastViewedMessage, resetAnchor);
+}
+
+void MessageList::AddMessageInternal(MessagePtr msg, bool toStart, bool updateLastViewedMessage, bool resetAnchor)
 {
 	MessageItem mi;
 	mi.m_msg = msg;
+	if (!mi.m_msg)
+		return;
 
 	mi.Update(m_guildID);
 
@@ -4937,8 +4949,8 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool upda
 	int oldHeight = 0;
 
 	// If the message has a nonce, then delete it.
-	if (msg.m_anchor)
-		DeleteMessage(msg.m_anchor);
+	if (mi.m_msg->m_anchor)
+		DeleteMessage(mi.m_msg->m_anchor);
 
 	Snowflake prevAuthor = Snowflake(-1);
 	time_t prevDate = 0;
@@ -4954,16 +4966,16 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool upda
 			item = &*m_messages.rbegin();
 
 		if (item) {
-			prevAuthor = item->m_msg.m_author_snowflake;
-			prevDate = item->m_msg.m_dateTime;
-			prevType = item->m_msg.m_type;
+			prevAuthor = item->m_msg->m_author_snowflake;
+			prevDate = item->m_msg->m_dateTime;
+			prevType = item->m_msg->m_type;
 			prevPlaceInChain = item->m_placeInChain;
-			prevAuthorName = item->m_msg.m_author;
-			prevAuthorAvatar = item->m_msg.m_avatar;
+			prevAuthorName = item->m_msg->m_author;
+			prevAuthorAvatar = item->m_msg->m_avatar;
 		}
 	}
 
-	if (ShouldBeDateGap(prevDate, mi.m_msg.m_dateTime))
+	if (ShouldBeDateGap(prevDate, mi.m_msg->m_dateTime))
 		mi.m_bIsDateGap = true;
 
 	if (prevPlaceInChain < 0 || ShouldStartNewChain(prevAuthor, prevDate, prevPlaceInChain, prevType, prevAuthorName, prevAuthorAvatar, mi, true))
@@ -4974,11 +4986,11 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool upda
 	DetermineMessageMeasurements(mi, NULL, NULL);
 
 	if (resetAnchor)
-		mi.m_msg.m_anchor = 0;
+		mi.m_msg->m_anchor = 0;
 
 	Snowflake lastMessageId = 0;
 	if (!m_messages.empty())
-		lastMessageId = m_messages.rbegin()->m_msg.m_snowflake;
+		lastMessageId = m_messages.rbegin()->m_msg->m_snowflake;
 
 	if (toStart)
 		m_messages.push_front(mi);
@@ -4986,7 +4998,7 @@ void MessageList::AddMessageInternal(const Message& msg, bool toStart, bool upda
 		m_messages.push_back(mi);
 
 	if (updateLastViewedMessage) {
-		SetLastViewedMessage(mi.m_msg.m_snowflake, false);
+		SetLastViewedMessage(mi.m_msg->m_snowflake, false);
 	}
 
 	RECT rcClient{};

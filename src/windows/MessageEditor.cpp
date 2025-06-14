@@ -328,7 +328,7 @@ void MessageEditor::StopReply()
 
 void MessageEditor::StartEdit(Snowflake messageID)
 {
-	Message* pMsg = GetMessageCache()->GetLoadedMessage(GetDiscordInstance()->GetCurrentChannelID(), messageID);
+	MessagePtr pMsg = GetMessageCache()->GetLoadedMessage(GetDiscordInstance()->GetCurrentChannelID(), messageID);
 	if (!pMsg)
 		return;
 

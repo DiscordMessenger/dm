@@ -1255,7 +1255,7 @@ bool DiscordInstance::EditMessageInCurrentChannel(const std::string& msg_, Snowf
 	if (!pChan->HasPermission(PERM_SEND_MESSAGES))
 		return false;
 	
-	Message* pMsg = GetMessageCache()->GetLoadedMessage(pChan->m_snowflake, msgId);
+	MessagePtr pMsg = GetMessageCache()->GetLoadedMessage(pChan->m_snowflake, msgId);
 	if (!pMsg)
 		return false;
 
@@ -2381,7 +2381,7 @@ void DiscordInstance::HandleMessageInsertOrUpdate(Json& j, bool bIsUpdate)
 
 	Message msg;
 
-	Message *pOldMsg = GetMessageCache()->GetLoadedMessage(channelId, messageId);
+	MessagePtr pOldMsg = GetMessageCache()->GetLoadedMessage(channelId, messageId);
 	if (pOldMsg)
 	{
 		msg = *pOldMsg; // copy it asap

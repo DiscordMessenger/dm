@@ -12,7 +12,7 @@ MessageCache::MessageCache()
 {
 }
 
-void MessageCache::GetLoadedMessages(Snowflake channel, Snowflake guild, std::list<Message>& out)
+void MessageCache::GetLoadedMessages(Snowflake channel, Snowflake guild, std::list<MessagePtr>& out)
 {
 	MessageChunkList& lst = m_mapMessages[channel];
 	lst.m_guild = guild;
@@ -63,7 +63,7 @@ bool MessageCache::IsMessageLoaded(Snowflake channel, Snowflake message)
 	return it2 != msgs.end();
 }
 
-Message* MessageCache::GetLoadedMessage(Snowflake channel, Snowflake message)
+MessagePtr MessageCache::GetLoadedMessage(Snowflake channel, Snowflake message)
 {
 	return m_mapMessages[channel].GetLoadedMessage(message);
 }
@@ -76,15 +76,15 @@ MessageCache* GetMessageCache()
 MessageChunkList::MessageChunkList()
 {
 	// Add a single gap message to fetch stuff
-	Message msg;
-	msg.m_type = MessageType::GAP_UP;
-	msg.m_anchor = 0;
-	msg.m_snowflake = 0;
-	msg.m_author = GetFrontend()->GetPleaseWaitText();
-	msg.m_message = "";
-	msg.m_dateFull = "";
-	msg.m_dateCompact = "";
-	m_messages[msg.m_snowflake] = std::move(msg);
+	MessagePtr msg = MakeMessage();
+	msg->m_type = MessageType::GAP_UP;
+	msg->m_anchor = 0;
+	msg->m_snowflake = 0;
+	msg->m_author = GetFrontend()->GetPleaseWaitText();
+	msg->m_message = "";
+	msg->m_dateFull = "";
+	msg->m_dateCompact = "";
+	m_messages[msg->m_snowflake] = msg;
 }
 
 void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, json& j, const std::string& channelName)
@@ -97,7 +97,7 @@ void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, j
 	auto iter = m_messages.find(gap);
 	if (iter != m_messages.end())
 	{
-		if (iter->second.IsLoadGap())
+		if (iter->second->IsLoadGap())
 			m_messages.erase(iter);
 	}
 
@@ -105,56 +105,56 @@ void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, j
 	int receivedMessages = 0;
 	for (json& data : j)
 	{
-		Message msg;
-		msg.Load(data, m_guild);
+		auto msg = MakeMessage();
+		msg->Load(data, m_guild);
 
 		if (!addedMessages)
 		{
-			if (m_messages.find(msg.m_snowflake) == m_messages.end())
+			if (m_messages.find(msg->m_snowflake) == m_messages.end())
 				addedMessages = true;
 		}
 
-		m_messages[msg.m_snowflake] = std::move(msg);
+		m_messages[msg->m_snowflake] = msg;
 		receivedMessages++;
 
-		if (lowestMsg > msg.m_snowflake)
-			lowestMsg = msg.m_snowflake;
-		if (highestMsg < msg.m_snowflake)
-			highestMsg = msg.m_snowflake;
+		if (lowestMsg > msg->m_snowflake)
+			lowestMsg = msg->m_snowflake;
+		if (highestMsg < msg->m_snowflake)
+			highestMsg = msg->m_snowflake;
 	}
 
 	bool addBefore = sd != ScrollDir::AFTER && receivedMessages >= MESSAGES_PER_REQUEST;
 	bool addAfter  = sd != ScrollDir::BEFORE;
 
-	Message msg;
-	msg.m_author = "";
-	msg.m_message = "";
-	msg.m_dateFull = "";
-	msg.m_dateCompact = "";
+	auto msg = MakeMessage();
+	msg->m_author = "";
+	msg->m_message = "";
+	msg->m_dateFull = "";
+	msg->m_dateCompact = "";
 
 	if (receivedMessages < MESSAGES_PER_REQUEST)
 	{
-		msg.m_type = MessageType::CHANNEL_HEADER;
-		msg.m_snowflake = 1;
-		msg.m_author = channelName;
-		m_messages[msg.m_snowflake] = std::move(msg);
+		msg->m_type = MessageType::CHANNEL_HEADER;
+		msg->m_snowflake = 1;
+		msg->m_author = channelName;
+		m_messages[msg->m_snowflake] = msg;
 	}
 
-	msg.m_author = GetFrontend()->GetPleaseWaitText();
+	msg->m_author = GetFrontend()->GetPleaseWaitText();
 	if (addBefore && addedMessages)
 	{
-		msg.m_type = MessageType::GAP_UP;
-		msg.m_anchor = lowestMsg;
-		msg.m_snowflake = lowestMsg - 1;
-		m_messages[msg.m_snowflake] = std::move(msg);
+		msg->m_type = MessageType::GAP_UP;
+		msg->m_anchor = lowestMsg;
+		msg->m_snowflake = lowestMsg - 1;
+		m_messages[msg->m_snowflake] = msg;
 	}
 
 	if (addAfter && addedMessages)
 	{
-		msg.m_type = MessageType::GAP_DOWN;
-		msg.m_anchor = highestMsg;
-		msg.m_snowflake = highestMsg + 1;
-		m_messages[msg.m_snowflake] = std::move(msg);
+		msg->m_type = MessageType::GAP_DOWN;
+		msg->m_anchor = highestMsg;
+		msg->m_snowflake = highestMsg + 1;
+		m_messages[msg->m_snowflake] = std::move(msg);
 	}
 
 	GetDiscordInstance()->OnFetchedMessages(gap, sd);
@@ -165,13 +165,13 @@ void MessageChunkList::AddMessage(const Message& msg)
 	if (msg.m_anchor)
 		DeleteMessage(msg.m_anchor);
 
-	m_messages[msg.m_snowflake] = msg;
+	m_messages[msg.m_snowflake] = std::make_shared<Message>(msg);
 }
 
 void MessageChunkList::EditMessage(const Message& msg)
 {
 	DeleteMessage(msg.m_snowflake);
-	m_messages[msg.m_snowflake] = msg;
+	m_messages[msg.m_snowflake] = std::make_shared<Message>(msg);
 }
 
 void MessageChunkList::DeleteMessage(Snowflake message)
@@ -190,18 +190,18 @@ int MessageChunkList::GetMentionCountSince(Snowflake message, Snowflake user)
 		if (msg.first < message)
 			continue;
 
-		if (msg.second.CheckWasMentioned(user, m_guild))
+		if (msg.second->CheckWasMentioned(user, m_guild))
 			mentCount++;
 	}
 
 	return mentCount;
 }
 
-Message* MessageChunkList::GetLoadedMessage(Snowflake message)
+MessagePtr MessageChunkList::GetLoadedMessage(Snowflake message)
 {
 	auto iter = m_messages.find(message);
 	if (m_messages.end() == iter)
 		return nullptr;
 
-	return &iter->second;
+	return iter->second;
 }

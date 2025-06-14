@@ -151,3 +151,13 @@ public:
 
 	void Load(nlohmann::json& j, Snowflake guild);
 };
+
+typedef std::shared_ptr<Message> MessagePtr;
+
+static MessagePtr MakeMessage() {
+	return std::make_shared<Message>();
+}
+
+static MessagePtr MakeMessage(const Message& msg) {
+	return std::make_shared<Message>(msg);
+}

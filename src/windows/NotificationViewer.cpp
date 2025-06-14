@@ -55,22 +55,23 @@ void NotificationViewer::Initialize(HWND hWnd)
 	m_pMessageList->SetChannel(0);
 
 	const auto& notifs = GetNotificationManager()->GetNotifications();
-	Message msg;
 	if (notifs.empty())
 	{
-		msg.m_type = MessageType::NO_NOTIFICATIONS;
-		msg.m_snowflake = 1;
+		MessagePtr msg = MakeMessage();
+		msg->m_type = MessageType::NO_NOTIFICATIONS;
+		msg->m_snowflake = 1;
 		m_pMessageList->AddMessage(msg);
 	}
 	else for (const auto& notif : notifs)
 	{
-		msg.m_type      = MessageType::DEFAULT;
-		msg.m_avatar    = notif.m_avatarLnk;
-		msg.m_message   = notif.m_contents;
-		msg.m_snowflake = notif.m_sourceMessage;
-		msg.m_anchor    = notif.m_sourceChannel;
-		msg.m_bRead     = notif.m_bRead;
-		msg.SetTime(notif.m_timeReceived);
+		MessagePtr msg = MakeMessage();
+		msg->m_type      = MessageType::DEFAULT;
+		msg->m_avatar    = notif.m_avatarLnk;
+		msg->m_message   = notif.m_contents;
+		msg->m_snowflake = notif.m_sourceMessage;
+		msg->m_anchor    = notif.m_sourceChannel;
+		msg->m_bRead     = notif.m_bRead;
+		msg->SetTime(notif.m_timeReceived);
 
 		// special handling for the author
 		std::string guildName = "Unknown", channelName = "Unknown";
@@ -90,7 +91,7 @@ void NotificationViewer::Initialize(HWND hWnd)
 
 		std::string details = "";
 
-		msg.m_author = notif.m_author;
+		msg->m_author = notif.m_author;
 		
 		details = notif.m_bIsReply ? "replied " : "";
 		if (!channelName.empty()) {
@@ -100,9 +101,9 @@ void NotificationViewer::Initialize(HWND hWnd)
 			details += "(" + guildName + ")";
 		}
 
-		msg.m_dateFull    = details + " - " + msg.m_dateFull;
-		msg.m_dateCompact = details + " - " + msg.m_dateCompact;
-		msg.m_dateOnly    = details + " - " + msg.m_dateOnly;
+		msg->m_dateFull    = details + " - " + msg->m_dateFull;
+		msg->m_dateCompact = details + " - " + msg->m_dateCompact;
+		msg->m_dateOnly    = details + " - " + msg->m_dateOnly;
 
 		m_pMessageList->AddMessage(msg);
 	}

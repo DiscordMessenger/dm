@@ -1012,7 +1012,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			if (g_pMessageList->GetCurrentChannel() == pParms->channel)
 			{
-				g_pMessageList->AddMessage(pParms->msg, GetForegroundWindow() == hWnd);
+				g_pMessageList->AddMessage(pParms->msg.m_snowflake, GetForegroundWindow() == hWnd);
 				OnStopTyping(pParms->channel, pParms->msg.m_author_snowflake);
 			}
 
@@ -1034,7 +1034,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetMessageCache()->EditMessage(pParms->channel, pParms->msg);
 
 			if (g_pMessageList->GetCurrentChannel() == pParms->channel)
-				g_pMessageList->EditMessage(pParms->msg);
+				g_pMessageList->EditMessage(pParms->msg.m_snowflake);
 
 			break;
 		}
@@ -1420,15 +1420,15 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			time_t lastTime = g_pMessageList->GetLastSentMessageTime();
 			Profile* pf = GetDiscordInstance()->GetProfile();
-			Message m;
-			m.m_snowflake = psmap->m_snowflake;
-			m.m_author_snowflake = pf->m_snowflake;
-			m.m_author = pf->m_name;
-			m.m_message = psmap->m_message;
-			m.m_type = MessageType::SENDING_MESSAGE;
-			m.SetTime(time(NULL));
-			m.m_dateFull = "Sending...";
-			m.m_dateCompact = "Sending...";
+			MessagePtr m = MakeMessage();
+			m->m_snowflake = psmap->m_snowflake;
+			m->m_author_snowflake = pf->m_snowflake;
+			m->m_author = pf->m_name;
+			m->m_message = psmap->m_message;
+			m->m_type = MessageType::SENDING_MESSAGE;
+			m->SetTime(time(NULL));
+			m->m_dateFull = "Sending...";
+			m->m_dateCompact = "Sending...";
 			g_pMessageList->AddMessage(m, true);
 			return 0;
 		}

@@ -10,7 +10,7 @@
 struct MessageChunkList
 {
 	// int - Offset. How many messages ago was this message posted
-	std::map<Snowflake, Message> m_messages;
+	std::map<Snowflake, MessagePtr> m_messages;
 
 	bool m_lastMessagesLoaded = false;
 	Snowflake m_guild = 0;
@@ -21,7 +21,7 @@ struct MessageChunkList
 	void EditMessage(const Message& msg);
 	void DeleteMessage(Snowflake message);
 	int GetMentionCountSince(Snowflake message, Snowflake user);
-	Message* GetLoadedMessage(Snowflake message);
+	MessagePtr GetLoadedMessage(Snowflake message);
 };
 
 class MessageCache
@@ -29,7 +29,7 @@ class MessageCache
 public:
 	MessageCache();
 	
-	void GetLoadedMessages(Snowflake channel, Snowflake guild, std::list<Message>& out);
+	void GetLoadedMessages(Snowflake channel, Snowflake guild, std::list<MessagePtr>& out);
 
 	// note: scroll dir used to add gap message
 	void ProcessRequest(Snowflake channel, ScrollDir::eScrollDir sd, Snowflake anchor, nlohmann::json& j, const std::string& channelName);
@@ -41,9 +41,7 @@ public:
 	void ClearAllChannels();
 	bool IsMessageLoaded(Snowflake channel, Snowflake message);
 
-	// NOTE: Returned message pointer is invalidated when the specific channel is updated. So fetch
-	// as fast as possible!
-	Message* GetLoadedMessage(Snowflake channel, Snowflake message);
+	MessagePtr GetLoadedMessage(Snowflake channel, Snowflake message);
 
 private:
 	std::map <Snowflake, MessageChunkList> m_mapMessages;

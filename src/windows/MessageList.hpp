@@ -221,7 +221,7 @@ class MessageItem
 private:
 	friend class MessageList;
 
-	Message m_msg;
+	MessagePtr m_msg;
 	RECT m_rect; // rectangle inside scrollHwnd
 	RECT m_authorRect{};
 	RECT m_messageRect{};
@@ -298,13 +298,13 @@ public:
 
 		// Update pointers to the attachment data
 		for (size_t i = 0; i < m_attachmentData.size(); i++) {
-			ptrdiff_t offs = m_attachmentData[i].m_pAttachment - other.m_msg.m_attachments.data();
-			m_attachmentData[i].m_pAttachment = (m_msg.m_attachments.data() + offs);
+			ptrdiff_t offs = m_attachmentData[i].m_pAttachment - other.m_msg->m_attachments.data();
+			m_attachmentData[i].m_pAttachment = (m_msg->m_attachments.data() + offs);
 		}
 		// Update pointers to the embed data
 		for (size_t i = 0; i < m_embedData.size(); i++) {
-			ptrdiff_t offs = m_embedData[i].m_pEmbed - other.m_msg.m_embeds.data();
-			m_embedData[i].m_pEmbed = (m_msg.m_embeds.data() + offs);
+			ptrdiff_t offs = m_embedData[i].m_pEmbed - other.m_msg->m_embeds.data();
+			m_embedData[i].m_pEmbed = (m_msg->m_embeds.data() + offs);
 		}
 	}
 	MessageItem(MessageItem&& other) noexcept { // move
@@ -347,13 +347,13 @@ public:
 
 		// Update pointers to the attachment data
 		for (size_t i = 0; i < m_attachmentData.size(); i++) {
-			ptrdiff_t offs = m_attachmentData[i].m_pAttachment - other.m_msg.m_attachments.data();
-			m_attachmentData[i].m_pAttachment = (m_msg.m_attachments.data() + offs);
+			ptrdiff_t offs = m_attachmentData[i].m_pAttachment - other.m_msg->m_attachments.data();
+			m_attachmentData[i].m_pAttachment = (m_msg->m_attachments.data() + offs);
 		}
 		// Update pointers to the embed data
 		for (size_t i = 0; i < m_embedData.size(); i++) {
-			ptrdiff_t offs = m_embedData[i].m_pEmbed - other.m_msg.m_embeds.data();
-			m_embedData[i].m_pEmbed = (m_msg.m_embeds.data() + offs);
+			ptrdiff_t offs = m_embedData[i].m_pEmbed - other.m_msg->m_embeds.data();
+			m_embedData[i].m_pEmbed = (m_msg->m_embeds.data() + offs);
 		}
 	}
 	void ClearAttachmentDataRects() {
@@ -437,7 +437,8 @@ private:
 	void Scroll(int amount, RECT* rcClip = NULL, bool shiftAllRects = true);
 	
 	void MessageHeightChanged(int oldHeight, int newHeight, bool toStart = false);
-	void AddMessageInternal(const Message& msg, bool toStart, bool updateLastViewedMessage = false, bool resetAnchor = true);
+	void AddMessageInternal(Snowflake msgId, bool toStart, bool updateLastViewedMessage = false, bool resetAnchor = true);
+	void AddMessageInternal(MessagePtr msg, bool toStart, bool updateLastViewedMessage = false, bool resetAnchor = true);
 	void UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bool update = true, int offsetY = 0, bool addingMessage = false);
 
 	void FlashMessage(Snowflake msg);
@@ -489,13 +490,17 @@ public:
 		int placeinchain
 	);
 
-	void AddMessageStart(const Message& msg) {
-		AddMessageInternal(msg, true, false);
+	void AddMessageStart(Snowflake msgId) {
+		AddMessageInternal(msgId, true, false);
 	}
-	void AddMessage(const Message& msg, bool updateLastViewedMessage = false) {
-		AddMessageInternal(msg, false, updateLastViewedMessage);
+	void AddMessage(Snowflake msgId, bool updateLastViewedMessage = false) {
+		AddMessageInternal(msgId, false, updateLastViewedMessage);
 	}
-	void EditMessage(const Message& newMsg); // NOTE: the message HAS to have existed before!
+	void AddMessage(MessagePtr msgPtr, bool updateLastViewedMessage = false) {
+		AddMessageInternal(msgPtr, false, updateLastViewedMessage);
+	}
+
+	void EditMessage(Snowflake msgId); // NOTE: the message HAS to have existed before!
 	void DeleteMessage(Snowflake sf);
 	void SetLastViewedMessage(Snowflake sf, bool refreshItAlso);
 
@@ -526,7 +531,7 @@ public:
 
 	time_t GetLastSentMessageTime() const {
 		if (m_messages.empty()) return 0;
-		return m_messages.rbegin()->m_msg.m_dateTime;
+		return m_messages.rbegin()->m_msg->m_dateTime;
 	}
 
 	Snowflake GetMessageSentTo() const {

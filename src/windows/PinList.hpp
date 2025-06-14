@@ -10,7 +10,7 @@
 
 class MessageList;
 
-typedef std::map <Snowflake, std::vector<Message> > PinnedMap;
+typedef std::map <Snowflake, std::vector<MessagePtr> > PinnedMap;
 
 class PinList
 {
@@ -28,7 +28,7 @@ protected:
 	static void OnClickMessage(Snowflake sf);
 
 private:
-	static void AddMessage(Snowflake channelID, const Message& msg);
+	static void AddMessage(Snowflake channelID, MessagePtr msg);
 	static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:

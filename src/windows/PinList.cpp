@@ -16,7 +16,7 @@ bool PinList::IsActive()
 	return m_bActive;
 }
 
-void PinList::AddMessage(Snowflake channelID, const Message& msg)
+void PinList::AddMessage(Snowflake channelID, MessagePtr msg)
 {
 	m_map[channelID].push_back(msg);
 
@@ -59,10 +59,10 @@ void PinList::Initialize(HWND hWnd)
 	SAFE_DELETE(m_pMessageList);
 
 	if (m_map[m_channel].empty()) {
-		Message msg;
-		msg.m_type = MessageType::LOADING_PINNED_MESSAGES;
-		msg.m_author = TmGetString(IDS_PLEASE_WAIT);
-		msg.m_snowflake = 1;
+		MessagePtr msg = MakeMessage();
+		msg->m_type = MessageType::LOADING_PINNED_MESSAGES;
+		msg->m_author = TmGetString(IDS_PLEASE_WAIT);
+		msg->m_snowflake = 1;
 		AddMessage(m_channel, msg);
 
 		GetDiscordInstance()->RequestPinnedMessages(m_channel);
@@ -94,20 +94,20 @@ void PinList::OnLoadedPins(Snowflake channelID, const std::string& data)
 		m_pMessageList->ClearMessages();
 
 	if (j.empty()) {
-		Message msg;
-		msg.m_author = " ";
-		msg.m_type = MessageType::NO_PINNED_MESSAGES;
-		msg.m_anchor = 1;
-		msg.m_snowflake = 1;
+		MessagePtr msg = MakeMessage();
+		msg->m_author = " ";
+		msg->m_type = MessageType::NO_PINNED_MESSAGES;
+		msg->m_anchor = 1;
+		msg->m_snowflake = 1;
 		AddMessage(channelID, msg);
 	}
 	else
 	{
 		for (auto& msgo : j)
 		{
-			Message msg;
-			msg.Load(msgo, m_guild);
-			msg.m_anchor = 1;
+			MessagePtr msg = MakeMessage();
+			msg->Load(msgo, m_guild);
+			msg->m_anchor = 1;
 			AddMessage(channelID, msg);
 		}
 	}
@@ -162,6 +162,7 @@ INT_PTR CALLBACK PinList::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		case WM_DESTROY:
 			SAFE_DELETE(m_pMessageList);
 			m_bActive = false;
+			m_map.clear();
 			break;
 	}
 
