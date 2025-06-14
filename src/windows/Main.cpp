@@ -1572,6 +1572,37 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			);
 			break;
 		}
+		case WM_UPDATEAVAILABLE:
+		{
+			std::string* msg = (std::string*) lParam;
+			auto& url = msg[0];
+			auto& version = msg[1];
+			
+			TCHAR buff[2048];
+			LPTSTR tstr1 = ConvertCppStringToTString(GetAppVersionString());
+			LPTSTR tstr2 = ConvertCppStringToTString(version);
+			WAsnprintf(buff, _countof(buff), TmGetTString(IDS_NEW_VERSION_AVAILABLE), tstr1, tstr2);
+			free(tstr1);
+			free(tstr2);
+
+			if (MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONINFORMATION | MB_YESNO) == IDYES)
+			{
+				size_t idx = 0, idxsave = 0;
+				for (; idx != url.size(); idx++) {
+					if (url[idx] == '/')
+						idxsave = idx + 1;
+				}
+
+				DownloadFileDialog(g_Hwnd, url, url.substr(idxsave));
+			}
+			else
+			{
+				GetLocalSettings()->StopUpdateCheckTemporarily();
+			}
+
+			delete[] msg;
+			break;
+		}
 		case WM_NOTIFMANAGERCALLBACK:
 		{
 			GetShellNotification()->Callback(wParam, lParam);

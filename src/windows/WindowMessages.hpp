@@ -67,6 +67,7 @@ enum eWmUserMsgs
 	WM_RECREATEMEMBERLIST,
 	WM_CLOSEBYPASSTRAY,
 	WM_SETBROWSINGPAST,
+	WM_UPDATEAVAILABLE, // wparam=string*, lparam=string*
 
 	WM_UPDATETEXTSIZE = WM_APP, // used by the MessageEditor
 	WM_RESTOREAPP,

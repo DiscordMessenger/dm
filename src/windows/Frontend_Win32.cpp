@@ -138,27 +138,10 @@ void Frontend_Win32::OnLoadedPins(Snowflake channel, const std::string& data)
 
 void Frontend_Win32::OnUpdateAvailable(const std::string& url, const std::string& version)
 {
-	TCHAR buff[2048];
-	LPTSTR tstr1 = ConvertCppStringToTString(GetAppVersionString());
-	LPTSTR tstr2 = ConvertCppStringToTString(version);
-	WAsnprintf(buff, _countof(buff), TmGetTString(IDS_NEW_VERSION_AVAILABLE), tstr1, tstr2);
-	free(tstr1);
-	free(tstr2);
-
-	if (MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONINFORMATION | MB_YESNO) == IDYES)
-	{
-		size_t idx = 0, idxsave = 0;
-		for (; idx != url.size(); idx++) {
-			if (url[idx] == '/')
-				idxsave = idx + 1;
-		}
-
-		DownloadFileDialog(g_Hwnd, url, url.substr(idxsave));
-	}
-	else
-	{
-		GetLocalSettings()->StopUpdateCheckTemporarily();
-	}
+	std::string* msg = new std::string[2];
+	msg[0] = url;
+	msg[1] = version;
+	PostMessage(g_Hwnd, WM_UPDATEAVAILABLE, 0, (LPARAM) msg);
 }
 
 void Frontend_Win32::OnFailedToSendMessage(Snowflake channel, Snowflake message)

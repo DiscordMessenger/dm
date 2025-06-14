@@ -323,6 +323,7 @@ void NetworkerThread::Run()
 			continue;
 		}
 
+		DbgPrintW("Thread %u processing request", m_ThreadID);
 		NetRequest request = std::move(m_requests.top());
 		m_requests.pop();
 		m_requestLock.unlock();
