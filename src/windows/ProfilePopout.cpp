@@ -118,6 +118,8 @@ bool ProfilePopout::Layout(HWND hWnd, SIZE& fullSize)
 	rcAboutMe.right -= groupBoxBorder * 2 + ScaleByDPI(20);
 	DrawText2(hdc, bio, -1, &rcAboutMe, editControlFlags);
 
+	rcAboutMe.bottom = std::min(rcAboutMe.bottom, rcAboutMe.top + (LONG)ScaleByDPI(300));
+
 	rcMemberSinceGuild = rcMeasureTemplate;
 	rcMemberSinceGuild.right -= groupBoxBorder * 2 + joinedAtIconSize;
 	rcMemberSinceGuild.right /= 2;
