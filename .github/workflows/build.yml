@@ -1,0 +1,40 @@
+name: Build (MinGW)
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  OPENSSL_INC_DIR: '/tmp/dm-openssl/include'
+  OPENSSL_LIB_DIR: '/tmp/dm-openssl'
+
+jobs:
+  build-linux-mingw:
+    runs-on: ubuntu-latest
+      
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: recursive
+    
+    - name: Install Compiler Tools
+      run: sudo apt install mingw-w64 gcc-mingw-w64-x86-64-posix g++-mingw-w64-x86-64-posix
+    
+    - name: Download OpenSSL
+      run: |
+        curl -Lo "openssl-stuff.zip" https://github.com/DiscordMessenger/openssl/releases/download/release-1/openssl-stuff.zip
+        mkdir -p $OPENSSL_LIB_DIR
+        unzip openssl-stuff.zip -d $OPENSSL_LIB_DIR
+    
+    - name: Make Unicode
+      run: CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ WR=i686-w64-mingw32-windres EXTRA_FLAGS="-static-libstdc++ -static-libgcc" DEBUG=no UNICODE=yes make -j$(nproc)
+    
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: 'DiscordMessenger.exe'
+        path: bin/DiscordMessenger.exe
