@@ -43,7 +43,9 @@ jobs:
           path: bin/DiscordMessenger.exe
       
       - name: Make ANSI Build
-        run: CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ WR=i686-w64-mingw32-windres EXTRA_FLAGS="-static-libstdc++ -static-libgcc -Wl,--no-whole-archive" DEBUG=no UNICODE=no make -j$(nproc)
+        run: |
+          rm -rf build
+          CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ WR=i686-w64-mingw32-windres EXTRA_FLAGS="-static-libstdc++ -static-libgcc -Wl,--no-whole-archive" DEBUG=no UNICODE=no make -j$(nproc)
       
       - name: Upload ANSI Artifact
         uses: actions/upload-artifact@v4
