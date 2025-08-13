@@ -28,18 +28,17 @@ jobs:
           Start-Process "$vs_installer" -ArgumentList @(
             "modify",
             "--installPath", "C:\Program Files\Microsoft Visual Studio\2022\Community",
+            "--add", "Microsoft.VisualStudio.VC.MSBuild.v150.x86.v141_xp",
+            "--add", "Microsoft.VisualStudio.VC.MSBuild.v150.x64.v141_xp",
+            "--add", "Microsoft.Component.VC.Runtime.UCRTSDK",
+            "--add", "Microsoft.VisualStudio.VC.IDE.Project.Factories",
+            "--add", "Microsoft.VisualStudio.Component.VC.v141.x86.x64",
             "--add", "Microsoft.VisualStudio.Component.WinXP",
             "--add", "Microsoft.VisualStudio.Component.VC.v141.x86.x64",
             "--add", "Microsoft.VisualStudio.Component.Windows10SDK.22621",
             "--quiet"
             "--norestart"
           ) -Wait
-          
-          $vswhere = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
-          $vs_path = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
-          $vcvars = Join-Path $vs_path "VC\Auxiliary\Build\vcvarsall.bat"
-          
-          & "$vcvars" x86
 
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
