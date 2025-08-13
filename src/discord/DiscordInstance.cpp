@@ -478,6 +478,12 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 	unsigned long err_code;
 	char errStringBuffer[260]; // OpenSSL says buffer must be >256 bytes
 
+	if (pRequest->IsMediaRequest() && !pRequest->IsOk()) {
+		DbgPrintF("WARNING: Request for media from url %s failed with error %d. Message: %s", pRequest->url.c_str(), pRequest->result, pRequest->ErrorMessage().c_str());
+		GetFrontend()->OnAttachmentFailed(pRequest->itype == IMAGE, pRequest->additional_data);
+		return;
+	}
+
 	switch (pRequest->result)
 	{
 		case HTTP_UNAUTHORIZED:
@@ -556,7 +562,7 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 		{
 			DbgPrintF("Resource %s not loaded due to error %d", pRequest->url.c_str(), pRequest->result);
 
-			if (pRequest->itype == IMAGE || pRequest->itype == IMAGE_ATTACHMENT) {
+			if (pRequest->IsMediaRequest()) {
 				GetFrontend()->OnAttachmentFailed(pRequest->itype == IMAGE, pRequest->additional_data);
 				return;
 			}
