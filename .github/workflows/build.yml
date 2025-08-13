@@ -19,6 +19,19 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
+      - name: Install v141_xp build tools and Windows 10.0.22621.0 SDK
+        shell: pwsh
+        run: |
+          $vs_path = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+          $vs_installer = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
+          
+          & "$vs_installer" modify `
+            --installPath "$vs_path" `
+            --add Microsoft.VisualStudio.Component.VC.v141.x86.x64 `
+            --add Microsoft.VisualStudio.Component.WinXP `
+            --add Microsoft.VisualStudio.Component.Windows10SDK.22621 `
+            --quiet --norestart --wait
+
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
 
