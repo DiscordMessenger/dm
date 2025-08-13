@@ -26,9 +26,15 @@ SRC_DIR = src
 TARGET = $(BIN_DIR)/DiscordMessenger.exe
 
 # Location of certain utilities.  Because Win32 takes over if you don't
-MKDIR = $(MSYS_PATH)/bin/mkdir.exe
-FIND  = $(MSYS_PATH)/bin/find.exe
-WR = windres
+ifeq ($(USE_MINGW_FIND),yes)
+	MKDIR = $(MSYS_PATH)/bin/mkdir.exe
+	FIND  = $(MSYS_PATH)/bin/find.exe
+else
+	MKDIR ?= mkdir
+	FIND  ?= find
+endif
+
+WR    ?= windres
 
 INC_DIRS = \
 	$(USER_INC_DIRS) \
@@ -56,7 +62,8 @@ DEFINES = \
 	-DMINGW_SPECIFIC_HACKS        \
 	-DDISCORD_MESSENGER           \
 	-DUSE_IPROGS_REIMPL           \
-	-DASIO_DISABLE_WINDOWS_OBJECT_HANDLE
+	-DASIO_DISABLE_WINDOWS_OBJECT_HANDLE \
+	$(USER_DEFINES)
 
 #note: USE_IPROGS_REIMPL is defined so that iprogsthreads will use the mwas
 #version of certain APIs such as TryEnterCriticalSection
@@ -106,7 +113,8 @@ LDFLAGS = \
 	-lole32     \
 	-lcrypt32   \
 	-lcrypto    \
-	-lssl
+	-lssl       \
+	$(EXTRA_FLAGS)
 
 WRFLAGS = \
 	-Ihacks
