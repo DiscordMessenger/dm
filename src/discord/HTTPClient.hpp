@@ -1,8 +1,9 @@
 #pragma once
 
 #include <string>
-#include <cstring>
 #include <vector>
+#include <cstring>
+#include <cstdint>
 #include "DiscordRequest.hpp"
 
 enum eHttpResponseCodes
