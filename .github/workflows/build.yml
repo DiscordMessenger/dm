@@ -25,12 +25,13 @@ jobs:
           $vs_path = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
           $vs_installer = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
           
-          & "$vs_installer" modify `
-            --installPath "$vs_path" `
-            --add Microsoft.VisualStudio.Component.VC.v141.x86.x64 `
-            --add Microsoft.VisualStudio.Component.WinXP `
-            --add Microsoft.VisualStudio.Component.Windows10SDK.22621 `
-            --quiet --norestart --wait
+          Start-Process "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" -ArgumentList @(
+            "modify",
+            "--installPath", "C:\Program Files\Microsoft Visual Studio\2022\Community",
+            "--add", "Microsoft.VisualStudio.Component.WinXP",
+            "--add", "Microsoft.VisualStudio.Component.VC.v141.x86.x64",
+            "--quiet"
+          ) -Wait
 
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
