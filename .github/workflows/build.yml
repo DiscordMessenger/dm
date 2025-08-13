@@ -27,7 +27,7 @@ jobs:
           
           cmd.exe /c "`"$vs_installer`""
             modify"
-            --installPath", "C:\Program Files\Microsoft Visual Studio\2022\Community"
+            --installPath "C:\Program Files\Microsoft Visual Studio\2022\Community"
             --add "Microsoft.VisualStudio.VC.MSBuild.v150.x86.v141_xp"
             --add "Microsoft.VisualStudio.VC.MSBuild.v150.x64.v141_xp"
             --add "Microsoft.Component.VC.Runtime.UCRTSDK"
