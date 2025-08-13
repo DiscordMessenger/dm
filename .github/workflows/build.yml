@@ -25,18 +25,18 @@ jobs:
           $vs_path = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
           $vs_installer = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
           
-          cmd.exe /c "`"$vs_installer`""
-            modify"
-            --installPath "C:\Program Files\Microsoft Visual Studio\2022\Community"
-            --add "Microsoft.VisualStudio.VC.MSBuild.v150.x86.v141_xp"
-            --add "Microsoft.VisualStudio.VC.MSBuild.v150.x64.v141_xp"
-            --add "Microsoft.Component.VC.Runtime.UCRTSDK"
-            --add "Microsoft.VisualStudio.VC.IDE.Project.Factories"
-            --add "Microsoft.VisualStudio.Component.VC.v141.x86.x64"
-            --add "Microsoft.VisualStudio.Component.WinXP"
-            --add "Microsoft.VisualStudio.Component.VC.v141.x86.x64"
-            --add "Microsoft.VisualStudio.Component.Windows10SDK.22621"
-            --quiet
+          cmd.exe /c "`"$vs_installer`"" `
+            modify `
+            --installPath "C:\Program Files\Microsoft Visual Studio\2022\Community" `
+            --add "Microsoft.VisualStudio.VC.MSBuild.v150.x86.v141_xp" `
+            --add "Microsoft.VisualStudio.VC.MSBuild.v150.x64.v141_xp" `
+            --add "Microsoft.Component.VC.Runtime.UCRTSDK" `
+            --add "Microsoft.VisualStudio.VC.IDE.Project.Factories" `
+            --add "Microsoft.VisualStudio.Component.VC.v141.x86.x64" `
+            --add "Microsoft.VisualStudio.Component.WinXP" `
+            --add "Microsoft.VisualStudio.Component.VC.v141.x86.x64" `
+            --add "Microsoft.VisualStudio.Component.Windows10SDK.22621" `
+            --quiet `
             --norestart
 
       - name: Add msbuild to PATH
