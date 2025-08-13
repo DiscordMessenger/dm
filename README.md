@@ -35,7 +35,7 @@ A Discord server about this client can be joined here: https://discord.gg/cEDjgD
 
 - Windows XP SP2 or newer (MSVC version)
 
-- 486 CPU (MinGW version) Pentium 4 CPU (MSVC version)
+- Pentium Pro or Pentium 2 CPU (MinGW version) Pentium 4 CPU (MSVC version)
 
 - 64 MB of RAM, can do lower but might start to hit the page file
 
