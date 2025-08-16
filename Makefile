@@ -9,6 +9,8 @@ OPENSSL_LIB_DIR ?= C:/DiscordMessenger/openssl
 $(info Discord Messenger makefile)
 $(info Debug: $(DEBUG))
 $(info Unicode: $(UNICODE))
+$(info OpenSSL Include Path: $(OPENSSL_INC_DIR))
+$(info OpenSSL Library Path: $(OPENSSL_LIB_DIR))
 
 USER_INC_DIRS =
 USER_DEFINES  =
@@ -38,14 +40,14 @@ WR    ?= windres
 
 INC_DIRS = \
 	$(USER_INC_DIRS) \
-	-I$(OPENSSL_INC_DIR)         \
+	-I"$(OPENSSL_INC_DIR)"       \
 	-Ideps                       \
 	-Ideps/asio                  \
 	-Ideps/iprogsthreads/include \
 	-Ideps/mwas/include
 
 LIB_DIRS = \
-	-L$(OPENSSL_LIB_DIR)
+	-L"$(OPENSSL_LIB_DIR)"
 
 DEFINES = \
 	-DWINVER=$(WINVER)            \
