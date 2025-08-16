@@ -31,8 +31,9 @@ jobs:
       
       - name: Get Latest Tag
         id: get-latest-tag
-        run: echo "TAG=$(git describe --abbrev=0 --tags)" >> "$GITHUB_OUTPUT"
-        run: echo "COMMIT=$(git rev-parse --short=8 HEAD)" >> "$GITHUB_OUTPUT"
+        run: |
+            echo "TAG=$(git describe --abbrev=0 --tags)" >> "$GITHUB_OUTPUT"
+            echo "COMMIT=$(git rev-parse --short=8 HEAD)" >> "$GITHUB_OUTPUT"
       
       - name: Make Unicode Build
         run: CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ WR=i686-w64-mingw32-windres EXTRA_FLAGS="-static-libstdc++ -static-libgcc -Wl,--no-whole-archive" DEBUG=no UNICODE=yes COMMIT_HASH=${{ steps.get-latest-tag.outputs.COMMIT }} make -j$(nproc)
