@@ -422,7 +422,7 @@ public:
 	bool SendMessageToCurrentChannel(const std::string& msg, Snowflake& tempSf, Snowflake reply = 0, bool mentionReplied = true);
 
 	// Send a message with an attachment to the current channel.
-	bool SendMessageAndAttachmentToCurrentChannel(const std::string& msg, Snowflake& tempSf, uint8_t* pAttData, size_t szAtt, const std::string& attName);
+	bool SendMessageAndAttachmentToCurrentChannel(const std::string& msg, Snowflake& tempSf, uint8_t* pAttData, size_t szAtt, const std::string& attName, bool isSpoiler = false);
 
 	// Edit a message in the current channel.
 	bool EditMessageInCurrentChannel(const std::string& msg, Snowflake msgId);

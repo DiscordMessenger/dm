@@ -3061,7 +3061,8 @@ bool DiscordInstance::SendMessageAndAttachmentToCurrentChannel(
 	Snowflake& tempSf,
 	uint8_t* attData,
 	size_t attSize,
-	const std::string& attName)
+	const std::string& attName,
+	bool isSpoiler)
 {
 	if (!GetCurrentChannel() || !GetCurrentGuild())
 		return false;
@@ -3074,8 +3075,10 @@ bool DiscordInstance::SendMessageAndAttachmentToCurrentChannel(
 	if (!pChan->HasPermission(PERM_SEND_MESSAGES) || !pChan->HasPermission(PERM_ATTACH_FILES))
 		return false;
 	
+	std::string newAttName = (isSpoiler ? "SPOILER_" : "") + attName;
+
 	Json file;
-	file["filename"]  = attName;
+	file["filename"]  = newAttName;
 	file["file_size"] = int(attSize);
 	file["is_clip"]   = false;
 	file["id"]        = std::to_string(m_nextAttachmentID);
@@ -3086,7 +3089,7 @@ bool DiscordInstance::SendMessageAndAttachmentToCurrentChannel(
 	Json j;
 	j["files"] = files;
 
-	m_pendingUploads[m_nextAttachmentID] = PendingUpload(attName, attData, attSize, msg, tempSf, m_CurrentChannel);
+	m_pendingUploads[m_nextAttachmentID] = PendingUpload(newAttName, attData, attSize, msg, tempSf, m_CurrentChannel);
 
 	GetHTTPClient()->PerformRequest(
 		true,
@@ -3096,7 +3099,7 @@ bool DiscordInstance::SendMessageAndAttachmentToCurrentChannel(
 		m_nextAttachmentID,
 		j.dump(),
 		m_token,
-		attName,
+		newAttName,
 		nullptr // default processing
 	);
 

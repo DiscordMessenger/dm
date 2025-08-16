@@ -238,7 +238,8 @@ static void UploadDialogShowData(UploadDialogData* data)
 			sf,
 			data->m_pFileData,
 			data->m_fileSize,
-			MakeStringFromTString(data->m_lpstrFileTitle)
+			MakeStringFromTString(data->m_lpstrFileTitle),
+			data->m_bSpoiler
 		))
 	{
 		// NOTE: DiscordInstance now owns the data, not us!
