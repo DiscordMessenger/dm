@@ -503,9 +503,17 @@ float GetAppVersion()
 	return 1.09f;
 }
 
-std::string GetAppVersionString()
+// C/C++ macro memes
+#define STRINGIFY2(x) #x
+#define STRINGIFY(x) STRINGIFY2(x)
+
+const char* GetAppVersionString()
 {
+#ifdef GIT_COMMIT_HASH
+	return "V1.09 [Nightly " STRINGIFY(GIT_COMMIT_HASH) "]";
+#else
 	return "V1.09";
+#endif
 }
 
 std::string FormatDuration(int seconds)

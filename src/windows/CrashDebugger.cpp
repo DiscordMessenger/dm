@@ -221,9 +221,9 @@ NORETURN void AbortMessage(const char* message, ...)
 
 	// there's gotta be a better way ...
 #ifdef _DEBUG
-	const char* debugOrRelease = "debug";
+	const char* debugOrRelease = "Debug";
 #else
-	const char* debugOrRelease = "release";
+	const char* debugOrRelease = "Release";
 #endif
 
 #ifdef _WIN64
@@ -235,8 +235,8 @@ NORETURN void AbortMessage(const char* message, ...)
 	snprintf(
 		smallerBuffer,
 		sizeof smallerBuffer,
-		"\nDiscordMessenger Version %.2f %s %s %s %s\n\nHere is a stack trace:\n",
-		GetAppVersion(),
+		"\nDiscordMessenger %s %s %s %s %s\n\nHere is a stack trace:\n",
+		GetAppVersionString(),
 		UsedCompiler,
 		ActiveCharset,
 		debugOrRelease,

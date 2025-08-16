@@ -1604,7 +1604,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			auto& version = msg[1];
 			
 			TCHAR buff[2048];
-			LPTSTR tstr1 = ConvertCppStringToTString(GetAppVersionString());
+			LPTSTR tstr1 = ConvertCppStringToTString(std::string(GetAppVersionString()));
 			LPTSTR tstr2 = ConvertCppStringToTString(version);
 			WAsnprintf(buff, _countof(buff), TmGetTString(IDS_NEW_VERSION_AVAILABLE), tstr1, tstr2);
 			free(tstr1);

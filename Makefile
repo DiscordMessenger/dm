@@ -65,6 +65,11 @@ DEFINES = \
 	-DASIO_DISABLE_WINDOWS_OBJECT_HANDLE \
 	$(USER_DEFINES)
 
+COMMIT_HASH ?= undefined
+ifneq ($(COMMIT_HASH),undefined)
+	DEFINES += -DGIT_COMMIT_HASH=$(COMMIT_HASH)
+endif
+
 #note: USE_IPROGS_REIMPL is defined so that iprogsthreads will use the mwas
 #version of certain APIs such as TryEnterCriticalSection
 
