@@ -79,7 +79,27 @@ https://developers.google.com/speed/webp/download.  Extract the archive and plac
 
 6. Enjoy!
 
-### 2. MinGW
+### 2. MinGW (on Linux, targeting Windows)
+
+(Note: x64 compilation with MinGW is currently not supported)
+
+1. Acquire mingw-w64:
+```
+sudo apt install mingw-w64 gcc-mingw-w64-x86-64-posix g++-mingw-w64-x86-64-posix
+```
+
+2. Set `OPENSSL_INC_DIR` and `OPENSSL_LIB_DIR` in your environment variables to your OpenSSL
+include and library directories.  If you want to remember the paths, edit the Makefile to use those
+as your defaults, or `export` them (but make sure to not check in your change when sending a PR!)
+
+3. Use the following command line:
+```
+CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ WR=x86_64-w64-mingw32-windres make DEBUG=no UNICODE=[no|yes] [-j (your core count)]
+```
+
+The finished binary will be placed in `./bin/DiscordMessenger.exe`. Enjoy!
+
+### 3. MinGW (old Windows method)
 
 (Note: x64 compilation with MinGW is currently not supported)
 
