@@ -184,7 +184,7 @@ namespace Protobuf
 
 	typedef uint64_t FieldNumber;
 
-	enum
+	enum Tag
 	{
 		TAG_VARINT,
 		TAG_I64,
@@ -265,9 +265,41 @@ namespace Protobuf
 	/// <summary>
 	/// Combines a field number and wire tag into a single protobuf key.
 	/// </summary>
-	constexpr uint64_t CombineFieldNumberAndTag(FieldNumber fieldNumber, int tag) noexcept
+	constexpr uint64_t CombineFieldNumberAndTag(FieldNumber fieldNumber, Tag tag) noexcept
 	{
 		return (fieldNumber << 3) | static_cast<uint64_t>(tag);
+	}
+
+	static constexpr uint8_t MSB = 0x80;
+	static constexpr uint8_t MSBALL = ~0x7F;
+
+	static constexpr uint64_t N1 = 1ULL <<  7;
+	static constexpr uint64_t N2 = 1ULL << 14;
+	static constexpr uint64_t N3 = 1ULL << 21;
+	static constexpr uint64_t N4 = 1ULL << 28;
+	static constexpr uint64_t N5 = 1ULL << 35;
+	static constexpr uint64_t N6 = 1ULL << 42;
+	static constexpr uint64_t N7 = 1ULL << 49;
+	static constexpr uint64_t N8 = 1ULL << 56;
+	static constexpr uint64_t N9 = 1ULL << 63;
+
+	/// <summary>
+	/// Computes the number of bytes needed to encode a 64-bit unsigned integer as a protobuf varint.
+	/// </summary>
+	static size_t GetVarIntSize(uint64_t n) noexcept
+	{
+		return (
+			  n < N1 ? 1
+			: n < N2 ? 2
+			: n < N3 ? 3
+			: n < N4 ? 4
+			: n < N5 ? 5
+			: n < N6 ? 6
+			: n < N7 ? 7
+			: n < N8 ? 8
+			: n < N9 ? 9
+			:          10
+			);
 	}
 
 	/// <summary>
@@ -278,35 +310,20 @@ namespace Protobuf
 	/// <param name="num">Unsigned 64-bit integer to encode.</param>
 	static void EncodeVarInt(std::vector<uint8_t>& stream, uint64_t num)
 	{
-		uint8_t buf[10]; // max 10 bytes for uint64_t varint
+		uint8_t buf[10]; // max 10 bytes for uint64_t
 		size_t n = 0;
 
-		do {
-			uint8_t byte = static_cast<uint8_t>(num & 0x7F); // lower 7 bits
+		while (num >= 0x80)
+		{
+			buf[n++] = static_cast<uint8_t>(num & 0x7F) | 0x80; // lower 7 bits + continuation
 			num >>= 7;
-			if (num != 0) byte |= 0x80; // continuation bit
-			buf[n++] = byte;
-		} while (num != 0);
+		}
+		buf[n++] = static_cast<uint8_t>(num); // last byte, no continuation
 
 		stream.insert(stream.end(), buf, buf + n);
 	}
 
-	/// <summary>
-	/// Computes the number of bytes needed to encode a 64-bit unsigned integer as a protobuf varint.
-	/// </summary>
-	static size_t GetVarIntSize(uint64_t num) noexcept
-	{
-		if (num < 0x80ULL) return 1;
-		if (num < 0x4000ULL) return 2;
-		if (num < 0x200000ULL) return 3;
-		if (num < 0x10000000ULL) return 4;
-		if (num < 0x800000000ULL) return 5;
-		if (num < 0x40000000000ULL) return 6;
-		if (num < 0x2000000000000ULL) return 7;
-		if (num < 0x100000000000000ULL) return 8;
-		if (num < 0x8000000000000000ULL) return 9;
-		return 10;
-	}
+	
 
 	class ObjectBase
 	{
