@@ -262,37 +262,50 @@ namespace Protobuf
 		std::unordered_map<FieldNumber, std::unique_ptr<DecodeHint>> m_children;
 	};
 
-	// ===== ENCODE =====
-	constexpr uint64_t CombineFieldNumberAndTag(FieldNumber fieldNumber, int tag)
+	/// <summary>
+	/// Combines a field number and wire tag into a single protobuf key.
+	/// </summary>
+	constexpr uint64_t CombineFieldNumberAndTag(FieldNumber fieldNumber, int tag) noexcept
 	{
-		return (fieldNumber << 3) | tag;
+		return (fieldNumber << 3) | static_cast<uint64_t>(tag);
 	}
 
+	/// <summary>
+	/// Encodes a 64-bit unsigned integer as a protobuf varint and appends it to the stream.
+	/// Uses the standard little-endian base-128 encoding (LEB128).
+	/// </summary>
+	/// <param name="stream">Vector to which encoded bytes will be appended.</param>
+	/// <param name="num">Unsigned 64-bit integer to encode.</param>
 	static void EncodeVarInt(std::vector<uint8_t>& stream, uint64_t num)
 	{
-		uint8_t digits[16];
-		int numDigits = 0;
-		do
-		{
-			uint8_t thisByte = num % 128;
-			num /= 128;
-			digits[numDigits++] = thisByte | 0x80;
-		} while (num);
+		uint8_t buf[10]; // max 10 bytes for uint64_t varint
+		size_t n = 0;
 
-		digits[numDigits - 1] &= ~0x80;
-		for (int i = 0; i < numDigits; i++)
-			stream.push_back(digits[i]);
+		do {
+			uint8_t byte = static_cast<uint8_t>(num & 0x7F); // lower 7 bits
+			num >>= 7;
+			if (num != 0) byte |= 0x80; // continuation bit
+			buf[n++] = byte;
+		} while (num != 0);
+
+		stream.insert(stream.end(), buf, buf + n);
 	}
 
-	static size_t GetVarIntSize(uint64_t num)
+	/// <summary>
+	/// Computes the number of bytes needed to encode a 64-bit unsigned integer as a protobuf varint.
+	/// </summary>
+	static size_t GetVarIntSize(uint64_t num) noexcept
 	{
-		int numDigits = 0;
-		do
-		{
-			num /= 128;
-			numDigits++;
-		} while (num);
-		return size_t(numDigits);
+		if (num < 0x80ULL) return 1;
+		if (num < 0x4000ULL) return 2;
+		if (num < 0x200000ULL) return 3;
+		if (num < 0x10000000ULL) return 4;
+		if (num < 0x800000000ULL) return 5;
+		if (num < 0x40000000000ULL) return 6;
+		if (num < 0x2000000000000ULL) return 7;
+		if (num < 0x100000000000000ULL) return 8;
+		if (num < 0x8000000000000000ULL) return 9;
+		return 10;
 	}
 
 	class ObjectBase
@@ -1127,10 +1140,10 @@ namespace Protobuf
 
 			if (offset > sz)
 				return Result<ErrorCode>::failure(ErrorCode::OutOfBounds);
-		}
+	}
 
 		return Result<ErrorCode>::success();
-	}
+}
 
 	static Result<ErrorCode> DecodeBlock(const uint8_t* data, size_t sz, ObjectBaseMessage* block)
 	{
