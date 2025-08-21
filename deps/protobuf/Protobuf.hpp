@@ -7,6 +7,7 @@
 #include <cstring>
 #include <cassert>
 #include <cstdint>
+#include <stdexcept>
 
 #ifndef _countof
 #define _countof(x) (sizeof(x) / sizeof(*(x)))
@@ -14,22 +15,170 @@
 
 //#define DISABLE_PROTOBUF
 
-#define returnIfNonNull(r) do { auto __ = (r); if (__ != decltype(r){}) return __; } while (0)
+#define returnIfNonNull(expr) \
+    do { auto __ = (expr); if (!__.has_value()) return __; } while(0)
 
 namespace Protobuf
 {
-	template<typename T>
-	struct ErrorOr
-	{
-		T value = 0;
-		int error = 0;
+	/// <summary>
+	/// Represents a value or an error. Similar to C++23's `std::expected`.
+	/// </summary>
+	/// <typeparam name="T">The type of the value.</typeparam>
+	/// <typeparam name="E">The type of the error code (default: <see cref="ErrorCode" />)</typeparam>
+	template<typename T, typename E = ErrorCode>
+	class ErrorOr {
+	public:
+		/// <summary>The type of the stored value.</summary>
+		using value_type = T;
 
-		ErrorOr(const T& val, int err) : value(val), error(err) {}
+		/// <summary>The type of the error code.</summary>
+		using error_type = E;
 
-		operator T& () {
-			return value;
+		/// <summary>
+		/// Default constructor: creates a default value and default error (success).
+		/// </summary>
+		ErrorOr() : m_value(), m_error() {}
+
+		/// <summary>
+		/// Constructs with a value and optional error.
+		/// </summary>
+		/// <param name="val">The value to store.</param>
+		/// <param name="err">The error code (default: success).</param>
+		ErrorOr(const T& val, const E& err = E{}) : m_value(val), m_error(err) {}
+
+		/// <summary>Move constructor with optional error.</summary>
+		/// <param name="val">The value to store (rvalue).</param>
+		/// <param name="err">The error code (default: success).</param>
+		ErrorOr(T&& val, E&& err = E{}) : m_value(std::move(val)), m_error(std::move(err)) {}
+
+		/// <summary>Defaulted copy constructor.</summary>
+		ErrorOr(const ErrorOr&) = default;
+
+		/// <summary>Defaulted move constructor.</summary>
+		ErrorOr(ErrorOr&&) = default;
+
+		/// <summary>Defaulted copy assignment operator.</summary>
+		ErrorOr& operator=(const ErrorOr&) = default;
+
+		/// <summary>Defaulted move assignment operator.</summary>
+		ErrorOr& operator=(ErrorOr&&) = default;
+
+		/// <summary>Returns true if the stored value represents success.</summary>
+		bool has_value() const { return m_error == E{}; }
+
+		/// <summary>Explicit conversion to bool: true if success.</summary>
+		explicit operator bool() const { return has_value(); }
+
+		/// <summary>Returns the stored value. Throws if there is an error.</summary>
+		T& value() {
+			if (!has_value()) throw std::logic_error("ErrorOr: no value");
+			return m_value;
 		}
+
+		/// <summary>Returns the stored value (const). Throws if there is an error.</summary>
+		const T& value() const {
+			if (!has_value()) throw std::logic_error("ErrorOr: no value");
+			return m_value;
+		}
+
+		/// <summary>Returns the error code.</summary>
+		E error() const { return m_error; }
+
+		/// <summary>Returns the stored value or a fallback if there is an error.</summary>
+		/// <typeparam name="U">Type convertible to T.</typeparam>
+		/// <param name="fallback">The fallback value.</param>
+		template<typename U>
+		T value_or(U&& fallback) const {
+			return has_value() ? m_value : static_cast<T>(std::forward<U>(fallback));
+		}
+
+		// Helpers for creating success/failure
+
+		/// <summary>Creates a successful ErrorOr with the given value.</summary>
+		template<typename U = T>
+		static ErrorOr success(U&& val) {
+			return ErrorOr(std::forward<U>(val), E{});
+		}
+
+		/// <summary>Creates a failed ErrorOr with the given error code.</summary>
+		static ErrorOr failure(E err) {
+			return ErrorOr(T{}, std::move(err));
+		}
+
+		/// <summary>Pointer-like access to the value.</summary>
+		const T& operator*() const { return m_value; }
+		T& operator*() { return m_value; }
+
+		/// <summary>Equality comparison operator.</summary>
+		bool operator==(const ErrorOr& other) const {
+			return m_value == other.m_value && m_error == other.m_error;
+		}
+		/// <summary>Inequality comparison operator.</summary>
+		bool operator!=(const ErrorOr& other) const {
+			return !(*this == other);
+		}
+
+	private:
+		/// <summary>The stored value.</summary>
+		T m_value; 
+
+		/// <summary>The stored error code.</summary>
+		E m_error;
 	};
+
+	/// <summary>
+	/// Specialization of ErrorOr for void type (no value stored).
+	/// Useful for functions that only return success/failure.
+	/// </summary>
+	/// <typeparam name="E">The type of the error code.</typeparam>
+	template<typename E>
+	class ErrorOr<void, E> {
+	public:
+		using value_type = void; /// No value stored.
+		using error_type = E;    /// The type of the error code.
+
+		/// <summary>Default constructor: success (no error).</summary>
+		ErrorOr() : m_error() {}
+
+		/// <summary>Constructor with error code.</summary>
+		/// <param name="err">The error code to store.</param>
+		explicit ErrorOr(E err) : m_error(err) {}
+
+		ErrorOr(const ErrorOr&) = default;
+		ErrorOr(ErrorOr&&) = default;
+		ErrorOr& operator=(const ErrorOr&) = default;
+		ErrorOr& operator=(ErrorOr&&) = default;
+
+		/// <summary>Returns true if success.</summary>
+		bool has_value() const { return m_error == E{}; }
+
+		/// <summary>Explicit conversion to bool: true if success.</summary>
+		explicit operator bool() const { return has_value(); }
+
+		/// <summary>Returns the stored error code.</summary>
+		E error() const { return m_error; }
+
+		/// <summary>Creates a successful ErrorOr (no value).</summary>
+		static ErrorOr success() { return ErrorOr(); }
+
+		/// <summary>Creates a failed ErrorOr with the given error code.</summary>
+		static ErrorOr failure(E err) { return ErrorOr(err); }
+
+		/// <summary>Equality comparison operator.</summary>
+		bool operator==(const ErrorOr& other) const { return m_error == other.m_error; }
+
+		/// <summary>Inequality comparison operator.</summary>
+		bool operator!=(const ErrorOr& other) const {
+			return !(*this == other);
+		}
+
+	private:
+		E m_error;  /// Stored error code
+	};
+
+	template<typename T>
+	using Result = ErrorOr<void, T>;
+
 
 	typedef uint64_t FieldNumber;
 
@@ -41,16 +190,30 @@ namespace Protobuf
 		TAG_I32 = 5,
 	};
 
-	enum ErrorCode
+	/// <summary>
+	/// Error codes used throughout the decoding/encoding library.
+	/// </summary>
+	enum class ErrorCode : int
 	{
-		ERROR_OUTOFBOUNDS = 1,
-		ERROR_VARINTTOOBIG = 2,
-		ERROR_UNKNOWNTAG = 3,
-		ERROR_SUPPOSEDTOBEUNIQUE = 4,
-		ERROR_CANTADDROOTMSG = 5, // you can't add embedded messages into a root message! Maybe I should fix that
-		ERROR_NOTSUPPORTED = 6,
+		/// <summary>Accessed data goes out of bounds.</summary>
+		OutOfBounds = 1,
+
+		/// <summary>Variable-length integer is too large.</summary>
+		VarIntTooBig = 2,
+
+		/// <summary>Unknown tag encountered during decoding.</summary>
+		UnknownTag = 3,
+
+		/// <summary>Expected a unique field but found duplicate.</summary>
+		SupposedToBeUnique = 4,
+
+		/// <summary>Cannot add an embedded message to a root message.</summary>
+		CantAddRootMsg = 5,
+
+		/// <summary>The requested operation is not supported.</summary>
+		NotSupported = 6
 	};
-	
+
 	// ===== DECODE HINT =====
 	// Note! The decode hint should only be used on the root (the top level call to DecodeBlock)
 	class DecodeHint
@@ -228,7 +391,7 @@ namespace Protobuf
 				assert(pObj->IsMessageObject());
 			else
 				assert(!pObj->IsMessageObject());
-			
+
 			return reinterpret_cast<T*>(pObj);
 		}
 
@@ -282,10 +445,10 @@ namespace Protobuf
 				delete m_pDecodeHint;
 		}
 
-		int AddObject(ObjectBase* ob)
+		Result<ErrorCode> AddObject(ObjectBase* ob)
 		{
 			if (ob->IsMessageObject() && !ob->IsEmbeddedMessageObject())
-				return ERROR_CANTADDROOTMSG;
+				return Result<ErrorCode>::failure(ErrorCode::CantAddRootMsg);
 
 			FieldNumber fieldNum = ob->GetFieldNumber();
 			if (!m_fieldsUnique[fieldNum] || m_objects[fieldNum].empty()) {
@@ -301,7 +464,7 @@ namespace Protobuf
 			}
 
 			ob->SetParent(this);
-			return 0;
+			return Result<ErrorCode>::success();
 		}
 
 		ObjectBaseMessage* Clear()
@@ -410,7 +573,7 @@ namespace Protobuf
 		}
 
 		// This completely guts the other message, because I can't be bothered to make a virtual clone function.
-		int MergeWith(ObjectBaseMessage* pOtherMsg)
+		Result<ErrorCode> MergeWith(ObjectBaseMessage* pOtherMsg)
 		{
 			for (auto& obj : pOtherMsg->m_objects)
 			{
@@ -446,14 +609,14 @@ namespace Protobuf
 				}
 
 				if (dstVec.size() != 1 && srcVec.size() != 1)
-					return ERROR_SUPPOSEDTOBEUNIQUE;
+					return Result<ErrorCode>::failure(ErrorCode::SupposedToBeUnique);
 
 				// If this is a message object, recursively merge it.
 				if (dstVec[0]->IsMessageObject())
 				{
 					ObjectBaseMessage* pMsg = (ObjectBaseMessage*)dstVec[0];
 					ObjectBaseMessage* pMsg2 = (ObjectBaseMessage*)srcVec[0];
-					
+
 					returnIfNonNull(pMsg->MergeWith(pMsg2));
 
 					// N.B. Gonna leave it alone. I hope there are no memory leaks!!
@@ -469,7 +632,7 @@ namespace Protobuf
 
 			MarkDirty();
 
-			return 0;
+			return Result<ErrorCode>::success();
 		}
 
 	public:
@@ -807,15 +970,15 @@ namespace Protobuf
 	// ===== DECODE =====
 	static ErrorOr<uint64_t> DecodeVarInt(const char* data, size_t& offset, size_t sz)
 	{
-		uint8_t bytes[16];
+		uint8_t bytes[16]{};
 		int byteCount = 0;
 
 		while (true)
 		{
 			if (offset >= sz)
-				return { 0, ERROR_OUTOFBOUNDS };
+				return ErrorOr<uint64_t>::failure(ErrorCode::OutOfBounds);
 			if (byteCount >= _countof(bytes))
-				return { 0, ERROR_VARINTTOOBIG };
+				return ErrorOr<uint64_t>::failure(ErrorCode::VarIntTooBig);
 
 			uint8_t byte = bytes[byteCount++] = data[offset++];
 			if (~byte & 0x80)
@@ -826,99 +989,113 @@ namespace Protobuf
 		for (int i = byteCount - 1; i >= 0; i--)
 			result = result * 128 + (bytes[i] % 128);
 
-		return { result, 0 };
+		return ErrorOr<uint64_t>::success(result);
 	}
 
-	static int DecodeBlock(const char* data, size_t sz, ObjectBaseMessage* block, DecodeHint* pHint = nullptr)
+	/// <summary>
+/// Decode a buffer into an ObjectBaseMessage using optional hints.
+/// Returns a Result indicating success or failure.
+/// </summary>
+	static Result<ErrorCode> DecodeBlock(const char* data, size_t sz, ObjectBaseMessage* block, DecodeHint* pHint = nullptr)
 	{
 #ifdef DISABLE_PROTOBUF
-		return ERROR_NOTSUPPORTED;
+		return Result<ErrorCode>::failure(ErrorCode::NotSupported);
 #endif
 
 		if (!pHint)
 			pHint = block->GetDecodeHint();
 
+		Result<ErrorCode> decodeResult;
 		size_t offset = 0;
 		while (offset < sz)
 		{
 			// read tag
 			auto fieldNumAndTag = DecodeVarInt(data, offset, sz);
-			returnIfNonNull(fieldNumAndTag.error);
+			if (!fieldNumAndTag.has_value())
+				return Result<ErrorCode>::failure(fieldNumAndTag.error()); // propagate error
 
-			FieldNumber fieldNum = fieldNumAndTag >> 3;
-			int tag = int(fieldNumAndTag & 0x7);
+			FieldNumber fieldNum = fieldNumAndTag.value() >> 3;
+			int tag = int(fieldNumAndTag.value() & 0x7);
 
 			switch (tag)
 			{
 			case TAG_VARINT:
 			{
 				auto value = DecodeVarInt(data, offset, sz);
-				returnIfNonNull(value.error);
-				returnIfNonNull(block->AddObject(new ObjectVarInt(fieldNum, value)));
+				if (!value.has_value())
+					return Result<ErrorCode>::failure(value.error());
+
+				auto addResult = block->AddObject(new ObjectVarInt(fieldNum, *value));
+				if (!addResult.has_value())
+					return addResult;
+
 				break;
 			}
 			case TAG_LEN:
 			{
 				auto lengthE = DecodeVarInt(data, offset, sz);
-				returnIfNonNull(lengthE.error);
+				if (!lengthE.has_value())
+					return Result<ErrorCode>::failure(lengthE.error());
 
-				size_t length = (size_t)lengthE;
+				size_t length = static_cast<size_t>(*lengthE);
 
-				// read [length] more bytes
 				if (offset + length > sz)
-					return ERROR_OUTOFBOUNDS;
+					return Result<ErrorCode>::failure(ErrorCode::OutOfBounds);
 
 				const char* dataSubset = &data[offset];
 				offset += length;
+
+				// Detect if the data is a string
 				bool isString = true;
 				for (size_t i = 0; i < length && isString; i++) {
-					uint8_t chr = uint8_t(dataSubset[i]);
+					uint8_t chr = static_cast<uint8_t>(dataSubset[i]);
 					if (chr < ' ' || chr == 0x7F)
 						isString = false;
 				}
 
 				DecodeHint* pChildHint = nullptr;
-				
 				bool isBytes = false;
 				ObjectMessage* pChld = nullptr;
 
 				if (pHint && (pChildHint = pHint->Lookup(fieldNum)))
 				{
 					switch (pChildHint->GetType()) {
-						case DecodeHint::O_BYTES:
-							goto parse_bytes;
-						case DecodeHint::O_STRING:
-							goto parse_string;
-						case DecodeHint::O_MESSAGE:
-							goto try_parse_object;
+					case DecodeHint::O_BYTES: goto parse_bytes;
+					case DecodeHint::O_STRING: goto parse_string;
+					case DecodeHint::O_MESSAGE: goto try_parse_object;
 					}
 				}
 				else if (isString)
 				{
-					// it's a string!
 				parse_string:
-					returnIfNonNull(block->AddObject(new ObjectString(fieldNum, std::string(dataSubset, length))));
+					{
+						auto addResult = block->AddObject(new ObjectString(fieldNum, std::string(dataSubset, length)));
+						if (!addResult.has_value()) return addResult;
+					}
 				}
 				else
 				{
 				try_parse_object:
-					// try and parse the data subset
 					pChld = new ObjectMessage(fieldNum);
-					
-					if (DecodeBlock(dataSubset, length, pChld, pChildHint) == 0)
+					decodeResult = DecodeBlock(dataSubset, length, pChld, pChildHint);
+					if (!decodeResult.has_value())
 					{
-						returnIfNonNull(block->AddObject(pChld));
-					}
-					else
-					{
-						// if it failed, just treat it as bytes.
 						delete pChld;
 						isBytes = true;
 					}
+					else
+					{
+						auto addResult = block->AddObject(pChld);
+						if (!addResult.has_value()) return addResult;
+					}
 
-					if (isBytes) {
+					if (isBytes)
+					{
 					parse_bytes:
-						returnIfNonNull(block->AddObject(new ObjectBytes(fieldNum, dataSubset, length)));
+						{
+							auto addResult = block->AddObject(new ObjectBytes(fieldNum, dataSubset, length));
+							if (!addResult.has_value()) return addResult;
+						}
 					}
 				}
 
@@ -927,34 +1104,35 @@ namespace Protobuf
 			case TAG_I64:
 			{
 				if (offset + sizeof(uint64_t) > sz)
-					return ERROR_OUTOFBOUNDS;
+					return Result<ErrorCode>::failure(ErrorCode::OutOfBounds);
 
-				returnIfNonNull(block->AddObject(new ObjectFixed64(fieldNum, *((uint64_t*)&data[offset]))));
+				auto addResult = block->AddObject(new ObjectFixed64(fieldNum, *reinterpret_cast<const uint64_t*>(&data[offset])));
+				if (!addResult.has_value()) return addResult;
 				offset += sizeof(uint64_t);
 				break;
 			}
 			case TAG_I32:
 			{
 				if (offset + sizeof(uint32_t) > sz)
-					return ERROR_OUTOFBOUNDS;
+					return Result<ErrorCode>::failure(ErrorCode::OutOfBounds);
 
-				returnIfNonNull(block->AddObject(new ObjectFixed32(fieldNum, *((uint32_t*)&data[offset]))));
+				auto addResult = block->AddObject(new ObjectFixed32(fieldNum, *reinterpret_cast<const uint32_t*>(&data[offset])));
+				if (!addResult.has_value()) return addResult;
 				offset += sizeof(uint32_t);
 				break;
 			}
 			default:
-				return ERROR_UNKNOWNTAG;
+				return Result<ErrorCode>::failure(ErrorCode::UnknownTag);
 			}
 
 			if (offset > sz)
-				return ERROR_OUTOFBOUNDS;
-
+				return Result<ErrorCode>::failure(ErrorCode::OutOfBounds);
 		}
-		
-		return 0;
+
+		return Result<ErrorCode>::success();
 	}
 
-	static int DecodeBlock(const uint8_t* data, size_t sz, ObjectBaseMessage* block)
+	static Result<ErrorCode> DecodeBlock(const uint8_t* data, size_t sz, ObjectBaseMessage* block)
 	{
 		return DecodeBlock((const char*)data, sz, block);
 	}
