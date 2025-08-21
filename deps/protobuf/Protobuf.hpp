@@ -273,7 +273,7 @@ namespace Protobuf
 	static constexpr uint8_t MSB = 0x80;
 	static constexpr uint8_t MSBALL = ~0x7F;
 
-	static constexpr uint64_t N1 = 1ULL <<  7;
+	static constexpr uint64_t N1 = 1ULL << 7;
 	static constexpr uint64_t N2 = 1ULL << 14;
 	static constexpr uint64_t N3 = 1ULL << 21;
 	static constexpr uint64_t N4 = 1ULL << 28;
@@ -289,7 +289,7 @@ namespace Protobuf
 	static size_t GetVarIntSize(uint64_t n) noexcept
 	{
 		return (
-			  n < N1 ? 1
+			n < N1 ? 1
 			: n < N2 ? 2
 			: n < N3 ? 3
 			: n < N4 ? 4
@@ -298,7 +298,7 @@ namespace Protobuf
 			: n < N7 ? 7
 			: n < N8 ? 8
 			: n < N9 ? 9
-			:          10
+			: 10
 			);
 	}
 
@@ -310,27 +310,28 @@ namespace Protobuf
 	/// <param name="num">Unsigned 64-bit integer to encode.</param>
 	static void EncodeVarInt(std::vector<uint8_t>& stream, uint64_t num)
 	{
-		uint8_t buf[10]; // max 10 bytes for uint64_t
-		size_t n = 0;
+		const size_t needed = GetVarIntSize(num);
+		size_t oldSize = stream.size();
+		stream.resize(oldSize + needed);
+		uint8_t* writePtr = stream.data() + oldSize;
 
+		// write bytes from the end backwards to fill 'needed' slots
+		size_t n = 0;
 		while (num >= 0x80)
 		{
-			buf[n++] = static_cast<uint8_t>(num & 0x7F) | 0x80; // lower 7 bits + continuation
+			writePtr[n++] = static_cast<uint8_t>(num & 0x7F) | 0x80;
 			num >>= 7;
 		}
-		buf[n++] = static_cast<uint8_t>(num); // last byte, no continuation
-
-		stream.insert(stream.end(), buf, buf + n);
+		writePtr[n++] = static_cast<uint8_t>(num);
+		assert(n == needed);
 	}
 
-	
+
 
 	class ObjectBase
 	{
 	public:
-		ObjectBase(FieldNumber fieldNumber) {
-			m_fieldNumber = fieldNumber;
-		}
+		ObjectBase(FieldNumber fieldNumber) : m_fieldNumber{ fieldNumber } {}
 
 		virtual ~ObjectBase() { }
 
@@ -430,10 +431,10 @@ namespace Protobuf
 			m_bIsDirty = false;
 		}
 
-		int64_t GetFieldNumber() const {
+		FieldNumber GetFieldNumber() const {
 			return m_fieldNumber;
 		}
-		ObjectBase* SetFieldNumber(int64_t fn) {
+		ObjectBase* SetFieldNumber(FieldNumber fn) {
 			m_fieldNumber = fn;
 			return this;
 		}
@@ -455,7 +456,7 @@ namespace Protobuf
 			m_pParent = pMsg;
 		}
 	private:
-		int64_t m_fieldNumber = 0;
+		FieldNumber m_fieldNumber = 0;
 		bool m_bIsDirty = false;
 		ObjectBase* m_pParent = nullptr;
 	};
@@ -467,12 +468,9 @@ namespace Protobuf
 
 		~ObjectBaseMessage()
 		{
-			for (auto& ob : m_objects)
-				for (auto& ob2 : ob.second)
-					delete ob2;
-
-			if (m_pDecodeHint)
-				delete m_pDecodeHint;
+			for (auto& kv : m_objects)
+				for (auto& obj : kv.second)
+					delete obj;
 		}
 
 		Result<ErrorCode> AddObject(ObjectBase* ob)
@@ -481,15 +479,17 @@ namespace Protobuf
 				return Result<ErrorCode>::failure(ErrorCode::CantAddRootMsg);
 
 			FieldNumber fieldNum = ob->GetFieldNumber();
-			if (!m_fieldsUnique[fieldNum] || m_objects[fieldNum].empty()) {
-				m_objects[fieldNum].push_back(ob);
+
+			auto& vec = m_objects[fieldNum];
+			if (!m_fieldsUnique[fieldNum] || vec.empty()) {
+				vec.push_back(ob);
 				MarkDirty();
 			}
 			else {
-				for (auto& ob : m_objects[fieldNum])
-					delete ob;
-				m_objects[fieldNum].resize(1);
-				m_objects[fieldNum][0] = ob;
+				for (auto& existing : vec)
+					delete existing;
+				vec.clear();
+				vec.push_back(ob);
 				MarkDirty();
 			}
 
@@ -499,6 +499,9 @@ namespace Protobuf
 
 		ObjectBaseMessage* Clear()
 		{
+			for (auto& kv : m_objects) {
+				for (auto p : kv.second) delete p;
+			}
 			m_objects.clear();
 			return this;
 		}
@@ -518,7 +521,7 @@ namespace Protobuf
 			if (iter->second.empty())
 				return nullptr;
 
-			return iter->second[iter->second.size() - 1];
+			return iter->second.back();
 		}
 
 		ObjectBase* GetFieldObjectWithDefault(FieldNumber fieldNum, ObjectBase* pDefaultObj) override
@@ -533,7 +536,7 @@ namespace Protobuf
 			}
 
 			delete pDefaultObj;
-			return iter->second[iter->second.size() - 1];
+			return iter->second.back();
 		}
 
 		bool EraseField(FieldNumber fieldNumber) override
@@ -575,14 +578,34 @@ namespace Protobuf
 			return true;
 		}
 
-		ObjectBaseMessage(const ObjectBaseMessage&) = delete; // delete the copy constructor. You can't do that because I'm too lazy to make it possible
+		// disable copy
+		ObjectBaseMessage(const ObjectBaseMessage&) = delete;
 
-		ObjectBaseMessage(ObjectBaseMessage&& oth) noexcept : ObjectBase(std::move(oth)), m_objects(std::move(oth.m_objects)) {}
+		ObjectBaseMessage(ObjectBaseMessage&& other) noexcept
+			: ObjectBase(other.GetFieldNumber()),
+			m_objects(std::move(other.m_objects)),
+			m_fieldsUnique(std::move(other.m_fieldsUnique)),
+			m_pDecodeHint(std::move(other.m_pDecodeHint))
+		{
+			// clear other's hint pointer to avoid double-delete (unique_ptr moved)
+			other.m_pDecodeHint = nullptr;
+		}
 
 		ObjectBaseMessage& operator=(ObjectBaseMessage&& other) noexcept
 		{
-			m_objects = std::move(other.m_objects);
-			SetFieldNumber(other.GetFieldNumber());
+			if (this != &other)
+			{
+				// release current
+				for (auto& kv : m_objects)
+					for (auto p : kv.second) delete p;
+				m_objects.clear();
+
+				m_objects = std::move(other.m_objects);
+				m_fieldsUnique = std::move(other.m_fieldsUnique);
+				m_pDecodeHint = std::move(other.m_pDecodeHint);
+				SetFieldNumber(other.GetFieldNumber());
+				other.m_pDecodeHint = nullptr;
+			}
 			return *this;
 		}
 
@@ -590,19 +613,18 @@ namespace Protobuf
 		{
 			MarkDirty();
 
-			for (auto& ob : m_objects)
+			for (auto& kv : m_objects)
 			{
-				for (auto& ob2 : ob.second)
+				for (auto& obj : kv.second)
 				{
-					if (ob2->IsMessageObject())
-						reinterpret_cast<ObjectBaseMessage*>(ob2)->MarkDirtyAndChildren();
+					if (obj->IsMessageObject())
+						reinterpret_cast<ObjectBaseMessage*>(obj)->MarkDirtyAndChildren();
 					else
-						ob2->MarkDirty();
+						obj->MarkDirty();
 				}
 			}
 		}
 
-		// This completely guts the other message, because I can't be bothered to make a virtual clone function.
 		Result<ErrorCode> MergeWith(ObjectBaseMessage* pOtherMsg)
 		{
 			for (auto& obj : pOtherMsg->m_objects)
@@ -610,29 +632,26 @@ namespace Protobuf
 				auto& srcVec = obj.second;
 				auto& dstVec = m_objects[obj.first];
 
-				// If the field is repeated, clear.  I don't know how you'd encode an "add" or "remove" with protobuf.
+				// If the field is repeated, clear destination and copy src pointers.
 				if (!m_fieldsUnique[obj.first])
 				{
-					// delete all existing objects in the destination
-					for (auto obj : dstVec)
-						delete obj;
+					for (auto d : dstVec) delete d;
 					dstVec.clear();
 
-					// set all existing objects in the source
-					for (auto obj : srcVec) {
-						dstVec.push_back(obj);
-						obj->SetParent(this);
+					for (auto s : srcVec) {
+						dstVec.push_back(s);
+						s->SetParent(this);
 					}
 					srcVec.clear();
 					continue;
 				}
 
-				// The field is unique.  If the destination vector is empty, set it.
+				// Unique field
 				if (dstVec.empty())
 				{
-					for (auto obj : srcVec) {
-						dstVec.push_back(obj);
-						obj->SetParent(this);
+					for (auto s : srcVec) {
+						dstVec.push_back(s);
+						s->SetParent(this);
 					}
 					srcVec.clear();
 					continue;
@@ -644,12 +663,11 @@ namespace Protobuf
 				// If this is a message object, recursively merge it.
 				if (dstVec[0]->IsMessageObject())
 				{
-					ObjectBaseMessage* pMsg = (ObjectBaseMessage*)dstVec[0];
-					ObjectBaseMessage* pMsg2 = (ObjectBaseMessage*)srcVec[0];
+					ObjectBaseMessage* pMsg = static_cast<ObjectBaseMessage*>(dstVec[0]);
+					ObjectBaseMessage* pMsg2 = static_cast<ObjectBaseMessage*>(srcVec[0]);
 
 					returnIfNonNull(pMsg->MergeWith(pMsg2));
-
-					// N.B. Gonna leave it alone. I hope there are no memory leaks!!
+					// leave pointers in place (ownership unchanged)
 					continue;
 				}
 
@@ -661,7 +679,6 @@ namespace Protobuf
 			}
 
 			MarkDirty();
-
 			return Result<ErrorCode>::success();
 		}
 
@@ -673,9 +690,10 @@ namespace Protobuf
 		size_t GetPayloadSize() const override
 		{
 			size_t totalSize = 0;
-			for (auto& ob : m_objects)
-				for (auto& ob2 : ob.second)
-					totalSize += ob2->GetPayloadSize();
+			for (auto& kv : m_objects)
+				for (auto& obj : kv.second)
+					if (obj->IsDirty())
+						totalSize += obj->GetPayloadSize();
 
 			return totalSize;
 		}
@@ -683,51 +701,50 @@ namespace Protobuf
 		size_t GetDirtyPayloadSize() const override
 		{
 			size_t totalSize = 0;
-			for (auto& ob : m_objects)
-				for (auto& ob2 : ob.second)
-					if (ob2->IsDirty())
-						totalSize += ob2->GetDirtyPayloadSize();
+			for (auto& kv : m_objects)
+				for (auto& obj : kv.second)
+					if (obj->IsDirty())
+						totalSize += obj->GetDirtyPayloadSize();
 
 			return totalSize;
 		}
 
 		void Encode(std::vector<uint8_t>& outputStream) const override
 		{
-			for (auto& ob : m_objects)
-				for (auto& ob2 : ob.second)
-					ob2->Encode(outputStream);
+			for (auto& kv : m_objects)
+				for (auto& obj : kv.second)
+					obj->Encode(outputStream);
 		}
 
 		void EncodeDirty(std::vector<uint8_t>& outputStream) const override
 		{
-			for (auto& ob : m_objects)
-				for (auto& ob2 : ob.second)
-					if (ob2->IsDirty())
-						ob2->EncodeDirty(outputStream);
+			for (auto& kv : m_objects)
+				for (auto& obj : kv.second)
+					if (obj->IsDirty())
+						obj->EncodeDirty(outputStream);
 		}
 
 		void MarkClean() override
 		{
-			for (auto& ob : m_objects)
-				for (auto& ob2 : ob.second)
+			for (auto& kv : m_objects)
+				for (auto& ob2 : kv.second)
 					ob2->MarkClean();
+
 			ObjectBase::MarkClean();
 		}
 
 		void SetDecodingHint(DecodeHint* pHint) {
-			if (m_pDecodeHint)
-				delete m_pDecodeHint;
-			m_pDecodeHint = pHint;
+			m_pDecodeHint.reset(pHint);
 		}
 
 		DecodeHint* GetDecodeHint() {
-			return m_pDecodeHint;
+			return m_pDecodeHint.get();
 		}
 
 	private:
-		std::map<uint64_t, std::vector<ObjectBase*> > m_objects;
-		std::map<uint64_t, bool> m_fieldsUnique;
-		DecodeHint* m_pDecodeHint = nullptr;
+		std::unordered_map<uint64_t, std::vector<ObjectBase*> > m_objects;
+		std::unordered_map<uint64_t, bool> m_fieldsUnique;
+		std::unique_ptr<DecodeHint> m_pDecodeHint;
 	};
 
 	class ObjectMessage : public ObjectBaseMessage
@@ -836,7 +853,7 @@ namespace Protobuf
 			return this;
 		}
 
-		std::vector<uint8_t> GetContent() const
+		const std::vector<uint8_t>& GetContent() const
 		{
 			return m_content;
 		}
@@ -862,7 +879,6 @@ namespace Protobuf
 		}
 
 		bool IsByteStorageObject() const override { return true; }
-
 		bool IsByteArrayObject() const override { return true; }
 
 	private:
@@ -904,7 +920,7 @@ namespace Protobuf
 		}
 
 	private:
-		int64_t m_value;
+		uint64_t m_value;
 	};
 
 	class ObjectFixed64 : public ObjectBase
@@ -933,17 +949,10 @@ namespace Protobuf
 		void Encode(std::vector<uint8_t>& outputStream) const override
 		{
 			EncodeVarInt(outputStream, CombineFieldNumberAndTag(GetFieldNumber(), TAG_I64));
-
-			union {
-				uint8_t bytes[8];
-				uint64_t u64;
-			} x;
-			x.u64 = m_value;
-
-			// TODO: Big endian support here
-			//for (int i = 7; i >= 0; i--)
-			for (int i = 0; i < 8; i++)
-				outputStream.push_back(x.bytes[i]);
+			size_t old = outputStream.size();
+			outputStream.resize(old + sizeof(uint64_t));
+			// Use memcpy to avoid UB from type punning
+			memcpy(outputStream.data() + old, &m_value, sizeof(uint64_t));
 		}
 
 		bool IsEmpty() override
@@ -952,7 +961,7 @@ namespace Protobuf
 		}
 
 	private:
-		int64_t m_value;
+		uint64_t m_value;
 	};
 
 	class ObjectFixed32 : public ObjectBase
@@ -980,52 +989,45 @@ namespace Protobuf
 		void Encode(std::vector<uint8_t>& outputStream) const override
 		{
 			EncodeVarInt(outputStream, CombineFieldNumberAndTag(GetFieldNumber(), TAG_I32));
-
-			union {
-				uint8_t bytes[4];
-				uint32_t u32;
-			} x;
-			x.u32 = m_value;
-
-			// TODO: Big endian support here
-			//for (int i = 3; i >= 0; i--)
-			for (int i = 0; i < 4; i++)
-				outputStream.push_back(x.bytes[i]);
+			size_t old = outputStream.size();
+			outputStream.resize(old + sizeof(uint32_t));
+			memcpy(outputStream.data() + old, &m_value, sizeof(uint32_t));
 		}
 
 	private:
-		int32_t m_value;
+		uint32_t m_value;
 	};
 
-	// ===== DECODE =====
 	static ErrorOr<uint64_t> DecodeVarInt(const char* data, size_t& offset, size_t sz)
 	{
-		uint8_t bytes[16]{};
+		const uint8_t* ptr = reinterpret_cast<const uint8_t*>(data);
+		uint64_t result = 0;
+		int shift = 0;
 		int byteCount = 0;
 
 		while (true)
 		{
 			if (offset >= sz)
 				return ErrorOr<uint64_t>::failure(ErrorCode::OutOfBounds);
-			if (byteCount >= _countof(bytes))
-				return ErrorOr<uint64_t>::failure(ErrorCode::VarIntTooBig);
 
-			uint8_t byte = bytes[byteCount++] = data[offset++];
-			if (~byte & 0x80)
+			uint8_t byte = ptr[offset++];
+			++byteCount;
+
+			// take 7 bits
+			result |= static_cast<uint64_t>(byte & 0x7F) << shift;
+
+			if ((byte & 0x80) == 0)
 				break;
-		}
 
-		uint64_t result = 0;
-		for (int i = byteCount - 1; i >= 0; i--)
-			result = result * 128 + (bytes[i] % 128);
+			shift += 7;
+			if (shift >= 64 || byteCount >= 10)
+				return ErrorOr<uint64_t>::failure(ErrorCode::VarIntTooBig);
+		}
 
 		return ErrorOr<uint64_t>::success(result);
 	}
 
-	/// <summary>
-/// Decode a buffer into an ObjectBaseMessage using optional hints.
-/// Returns a Result indicating success or failure.
-/// </summary>
+	/// Decode a buffer into an ObjectBaseMessage using optional hints.
 	static Result<ErrorCode> DecodeBlock(const char* data, size_t sz, ObjectBaseMessage* block, DecodeHint* pHint = nullptr)
 	{
 #ifdef DISABLE_PROTOBUF
@@ -1035,14 +1037,12 @@ namespace Protobuf
 		if (!pHint)
 			pHint = block->GetDecodeHint();
 
-		Result<ErrorCode> decodeResult;
 		size_t offset = 0;
 		while (offset < sz)
 		{
-			// read tag
 			auto fieldNumAndTag = DecodeVarInt(data, offset, sz);
 			if (!fieldNumAndTag.has_value())
-				return Result<ErrorCode>::failure(fieldNumAndTag.error()); // propagate error
+				return Result<ErrorCode>::failure(fieldNumAndTag.error());
 
 			FieldNumber fieldNum = fieldNumAndTag.value() >> 3;
 			int tag = int(fieldNumAndTag.value() & 0x7);
@@ -1058,9 +1058,9 @@ namespace Protobuf
 				auto addResult = block->AddObject(new ObjectVarInt(fieldNum, *value));
 				if (!addResult.has_value())
 					return addResult;
-
 				break;
 			}
+
 			case TAG_LEN:
 			{
 				auto lengthE = DecodeVarInt(data, offset, sz);
@@ -1075,55 +1075,98 @@ namespace Protobuf
 				const char* dataSubset = &data[offset];
 				offset += length;
 
-				// Detect if the data is a string
+				// Heuristic: printable ASCII (simple)
 				bool isString = true;
-				for (size_t i = 0; i < length && isString; i++) {
+				for (size_t i = 0; i < length; ++i) {
 					uint8_t chr = static_cast<uint8_t>(dataSubset[i]);
-					if (chr < ' ' || chr == 0x7F)
-						isString = false;
+					if (chr < ' ' || chr == 0x7F) { isString = false; break; }
 				}
 
+				// Decide by hint if available
 				DecodeHint* pChildHint = nullptr;
-				bool isBytes = false;
-				ObjectMessage* pChld = nullptr;
+				if (pHint)
+					pChildHint = pHint->Lookup(fieldNum);
 
-				if (pHint && (pChildHint = pHint->Lookup(fieldNum)))
+				if (pChildHint)
 				{
-					switch (pChildHint->GetType()) {
-					case DecodeHint::O_BYTES: goto parse_bytes;
-					case DecodeHint::O_STRING: goto parse_string;
-					case DecodeHint::O_MESSAGE: goto try_parse_object;
+					switch (pChildHint->GetType())
+					{
+					case DecodeHint::O_STRING:
+					{
+						auto addResult = block->AddObject(new ObjectString(fieldNum, std::string(dataSubset, length)));
+						if (!addResult.has_value()) return addResult;
+						break;
 					}
+					case DecodeHint::O_BYTES:
+					{
+						auto addResult = block->AddObject(new ObjectBytes(fieldNum, dataSubset, length));
+						if (!addResult.has_value()) return addResult;
+						break;
+					}
+					case DecodeHint::O_MESSAGE:
+					{
+						// Try parse as nested message; on failure treat as bytes
+						ObjectMessage* pChld = new ObjectMessage(fieldNum);
+						auto decodeResult = DecodeBlock(dataSubset, length, pChld, pChildHint);
+						if (!decodeResult.has_value())
+						{
+							delete pChld;
+							auto addResult = block->AddObject(new ObjectBytes(fieldNum, dataSubset, length));
+							if (!addResult.has_value()) return addResult;
+						}
+						else
+						{
+							auto addResult = block->AddObject(pChld);
+							if (!addResult.has_value()) return addResult;
+						}
+						break;
+					}
+					default:
+					{
+						// unknown hint type -> fallback to heuristic:
+						if (isString) {
+							auto addResult = block->AddObject(new ObjectString(fieldNum, std::string(dataSubset, length)));
+							if (!addResult.has_value()) return addResult;
+						}
+						else {
+							ObjectMessage* pChld = new ObjectMessage(fieldNum);
+							auto decodeResult = DecodeBlock(dataSubset, length, pChld, pChildHint);
+							if (!decodeResult.has_value()) {
+								delete pChld;
+								auto addResult = block->AddObject(new ObjectBytes(fieldNum, dataSubset, length));
+								if (!addResult.has_value()) return addResult;
+							}
+							else {
+								auto addResult = block->AddObject(pChld);
+								if (!addResult.has_value()) return addResult;
+							}
+						}
+						break;
+					}
+					} // switch pChildHint->GetType()
 				}
-				else if (isString)
+				else
 				{
-				parse_string:
+					// No hint provided -> use heuristic
+					if (isString)
 					{
 						auto addResult = block->AddObject(new ObjectString(fieldNum, std::string(dataSubset, length)));
 						if (!addResult.has_value()) return addResult;
 					}
-				}
-				else
-				{
-				try_parse_object:
-					pChld = new ObjectMessage(fieldNum);
-					decodeResult = DecodeBlock(dataSubset, length, pChld, pChildHint);
-					if (!decodeResult.has_value())
-					{
-						delete pChld;
-						isBytes = true;
-					}
 					else
 					{
-						auto addResult = block->AddObject(pChld);
-						if (!addResult.has_value()) return addResult;
-					}
-
-					if (isBytes)
-					{
-					parse_bytes:
+						// Try parse as object; fall back to bytes
+						ObjectMessage* pChld = new ObjectMessage(fieldNum);
+						auto decodeResult = DecodeBlock(dataSubset, length, pChld, nullptr);
+						if (!decodeResult.has_value())
 						{
+							delete pChld;
 							auto addResult = block->AddObject(new ObjectBytes(fieldNum, dataSubset, length));
+							if (!addResult.has_value()) return addResult;
+						}
+						else
+						{
+							auto addResult = block->AddObject(pChld);
 							if (!addResult.has_value()) return addResult;
 						}
 					}
@@ -1131,39 +1174,46 @@ namespace Protobuf
 
 				break;
 			}
+
 			case TAG_I64:
 			{
 				if (offset + sizeof(uint64_t) > sz)
 					return Result<ErrorCode>::failure(ErrorCode::OutOfBounds);
 
-				auto addResult = block->AddObject(new ObjectFixed64(fieldNum, *reinterpret_cast<const uint64_t*>(&data[offset])));
+				uint64_t val;
+				memcpy(&val, reinterpret_cast<const uint8_t*>(data) + offset, sizeof(uint64_t));
+				auto addResult = block->AddObject(new ObjectFixed64(fieldNum, val));
 				if (!addResult.has_value()) return addResult;
 				offset += sizeof(uint64_t);
 				break;
 			}
+
 			case TAG_I32:
 			{
 				if (offset + sizeof(uint32_t) > sz)
 					return Result<ErrorCode>::failure(ErrorCode::OutOfBounds);
 
-				auto addResult = block->AddObject(new ObjectFixed32(fieldNum, *reinterpret_cast<const uint32_t*>(&data[offset])));
+				uint32_t val;
+				memcpy(&val, reinterpret_cast<const uint8_t*>(data) + offset, sizeof(uint32_t));
+				auto addResult = block->AddObject(new ObjectFixed32(fieldNum, val));
 				if (!addResult.has_value()) return addResult;
 				offset += sizeof(uint32_t);
 				break;
 			}
+
 			default:
 				return Result<ErrorCode>::failure(ErrorCode::UnknownTag);
-			}
+			} // switch(tag)
 
 			if (offset > sz)
 				return Result<ErrorCode>::failure(ErrorCode::OutOfBounds);
-	}
+		} // while
 
 		return Result<ErrorCode>::success();
-}
+	}
 
 	static Result<ErrorCode> DecodeBlock(const uint8_t* data, size_t sz, ObjectBaseMessage* block)
 	{
-		return DecodeBlock((const char*)data, sz, block);
+		return DecodeBlock(reinterpret_cast<const char*>(data), sz, block);
 	}
 }
