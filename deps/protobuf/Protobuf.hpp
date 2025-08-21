@@ -1,6 +1,7 @@
 // Homebrew implementation of the protobuf messaging protocol.
 #pragma once
 
+#include <unordered_map>
 #include <map>
 #include <vector>
 #include <string>
@@ -8,6 +9,7 @@
 #include <cassert>
 #include <cstdint>
 #include <stdexcept>
+#include <memory>
 
 #ifndef _countof
 #define _countof(x) (sizeof(x) / sizeof(*(x)))
@@ -120,7 +122,7 @@ namespace Protobuf
 
 	private:
 		/// <summary>The stored value.</summary>
-		T m_value; 
+		T m_value;
 
 		/// <summary>The stored error code.</summary>
 		E m_error;
@@ -214,52 +216,50 @@ namespace Protobuf
 		NotSupported = 6
 	};
 
-	// ===== DECODE HINT =====
-	// Note! The decode hint should only be used on the root (the top level call to DecodeBlock)
+	/// <summary>
+	/// Helps guide decoding of protobuf-like messages. Only used at root level.
+	/// </summary>
 	class DecodeHint
 	{
 	public:
-		enum {
+		/// <summary>
+		/// Type of the hinted object.
+		/// </summary>
+		enum Type {
 			O_UNKNOWN,
 			O_BYTES,
 			O_STRING,
-			O_MESSAGE,
+			O_MESSAGE
 		};
 
-		DecodeHint() {
-			m_type = O_UNKNOWN;
-		}
-		DecodeHint(int type) {
-			m_type = type;
-		}
-		~DecodeHint() {
-			for (auto& ch : m_children) {
-				delete ch.second;
-			}
+		DecodeHint(Type type = O_UNKNOWN) : m_type(type) {}
+
+		~DecodeHint() = default;
+
+		/// <summary>
+		/// Lookup a child hint for a given field number.
+		/// </summary>
+		DecodeHint* Lookup(FieldNumber fieldNum) const {
+			auto it = m_children.find(fieldNum);
+			return (it != m_children.end()) ? it->second.get() : nullptr;
 		}
 
-		DecodeHint* Lookup(FieldNumber fieldNum) {
-			auto iter = m_children.find(fieldNum);
-			if (iter == m_children.end())
-				return nullptr;
-			return iter->second;
+		/// <summary>
+		/// Add or get a child hint for a given field number.
+		/// </summary>
+		DecodeHint* AddChild(FieldNumber fieldNum, Type type = O_UNKNOWN) {
+			auto& ptr = m_children[fieldNum];
+			if (!ptr)
+				ptr = std::make_unique<DecodeHint>(type);
+			return ptr.get();
 		}
 
-		DecodeHint* AddChild(FieldNumber fieldNum, int type = O_UNKNOWN) {
-			DecodeHint*& ptr = m_children[fieldNum];
-			if (!ptr) {
-				ptr = new DecodeHint(type);
-			}
-			return ptr;
-		}
-
-		int GetType() const {
-			return m_type;
-		}
+		/// <summary>Return the type of this hint.</summary>
+		Type GetType() const { return m_type; }
 
 	private:
-		int m_type;
-		std::map<FieldNumber, DecodeHint*> m_children;
+		Type m_type;
+		std::unordered_map<FieldNumber, std::unique_ptr<DecodeHint>> m_children;
 	};
 
 	// ===== ENCODE =====
