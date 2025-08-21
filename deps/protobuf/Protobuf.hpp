@@ -14,7 +14,7 @@
 
 //#define DISABLE_PROTOBUF
 
-#define returnIfNonNull(r) do { auto __ = (r); if (__ != 0) return __; } while (0)
+#define returnIfNonNull(r) do { auto __ = (r); if (__ != decltype(r){}) return __; } while (0)
 
 namespace Protobuf
 {
