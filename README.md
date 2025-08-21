@@ -33,7 +33,7 @@ A Discord server about this client can be joined here: https://discord.gg/cEDjgD
 
 - Windows NT 3.1, Windows 95, or newer (MinGW version)
 
-- Windows XP SP2 or newer (MSVC version)
+- Windows XP SP2 or newer (MSVC version) PLEASE NOTE: you need VCredist 2015 installed to run it, get it here: https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
 - Pentium Pro or Pentium 2 CPU (MinGW version) Pentium 4 CPU (MSVC version)
 
@@ -250,3 +250,4 @@ Discord Messenger is powered by the following external libraries:
 Although these libraries are vendored, you can replace them with the latest version, and the MSVC
 build will keep working.  Adjustments were made to certain libraries to make them compile on MinGW.
 See `doc/` for details.
+
