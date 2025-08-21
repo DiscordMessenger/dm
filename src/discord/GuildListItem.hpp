@@ -70,7 +70,7 @@ public:
 
 	GuildGuildItem(Snowflake guild, const std::string& name, const std::string& avatar) {
 		m_name = name;
-		m_avatar = m_avatar;
+		m_avatar = avatar;
 		m_id = guild;
 	}
 
