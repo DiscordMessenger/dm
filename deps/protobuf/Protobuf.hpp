@@ -265,41 +265,24 @@ namespace Protobuf
 	/// <summary>
 	/// Combines a field number and wire tag into a single protobuf key.
 	/// </summary>
+	/// <param name="fieldNumber">The field number.</param>
+	/// <param name="tag">The wire tag.</param>
 	constexpr uint64_t CombineFieldNumberAndTag(FieldNumber fieldNumber, Tag tag) noexcept
 	{
 		return (fieldNumber << 3) | static_cast<uint64_t>(tag);
 	}
-
-	static constexpr uint8_t MSB = 0x80;
-	static constexpr uint8_t MSBALL = ~0x7F;
-
-	static constexpr uint64_t N1 = 1ULL << 7;
-	static constexpr uint64_t N2 = 1ULL << 14;
-	static constexpr uint64_t N3 = 1ULL << 21;
-	static constexpr uint64_t N4 = 1ULL << 28;
-	static constexpr uint64_t N5 = 1ULL << 35;
-	static constexpr uint64_t N6 = 1ULL << 42;
-	static constexpr uint64_t N7 = 1ULL << 49;
-	static constexpr uint64_t N8 = 1ULL << 56;
-	static constexpr uint64_t N9 = 1ULL << 63;
 
 	/// <summary>
 	/// Computes the number of bytes needed to encode a 64-bit unsigned integer as a protobuf varint.
 	/// </summary>
 	static size_t GetVarIntSize(uint64_t n) noexcept
 	{
-		return (
-			n < N1 ? 1
-			: n < N2 ? 2
-			: n < N3 ? 3
-			: n < N4 ? 4
-			: n < N5 ? 5
-			: n < N6 ? 6
-			: n < N7 ? 7
-			: n < N8 ? 8
-			: n < N9 ? 9
-			: 10
-			);
+		size_t bytes = 1;
+		while (n >= 0x80) {
+			n >>= 7;
+			++bytes;
+		}
+		return bytes;
 	}
 
 	/// <summary>
