@@ -267,12 +267,12 @@ std::vector<Snowflake> SettingsManager::GetGuildFolders()
 		return v;
 	}
 	auto items = pgfRoot->GetFieldObjects(1);
-	if (!items) {
+	if (items.empty()) {
 		DbgPrintF("Failed to fetch guild folder items.");
 		return v;
 	}
 
-	for (auto& item : *items)
+	for (auto& item : items)
 	{
 		auto pBytesBase = item->GetFieldObject(Settings::GuildFolders::Item::FIELD_GUILD_IDS);
 
@@ -314,12 +314,12 @@ void SettingsManager::GetGuildFoldersEx(std::map<Snowflake, std::string>& folder
 		return;
 	}
 	auto items = pgfRoot->GetFieldObjects(Settings::GuildFolders::FIELD_ITEMS);
-	if (!items) {
+	if (items.empty()) {
 		DbgPrintF("Failed to fetch guild folder items.");
 		return;
 	}
 
-	for (auto& item : *items)
+	for (auto& item : items)
 	{
 		// note: I don't understand why this isn't just the fixed64/varint
 		Snowflake folderId = 0;

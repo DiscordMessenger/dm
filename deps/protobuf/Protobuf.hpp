@@ -182,7 +182,7 @@ namespace Protobuf
 	using Result = ErrorOr<void, T>;
 
 
-	typedef uint64_t FieldNumber;
+	using FieldNumber = uint64_t;
 
 	enum Tag
 	{
@@ -423,14 +423,14 @@ namespace Protobuf
 		/// <param name="fieldNumber">Field number to look up.</param>
 		/// <param name="pObj">Default object to insert if none exists (ownership transferred on success or deleted on failure).</param>
 		/// <returns>Pointer to the found or inserted object, or nullptr if the operation is not supported.</returns>
-		virtual ObjectBase* GetFieldObjectWithDefault(FieldNumber fieldNumber, ObjectBase* pObj) { delete pObj; return nullptr; }
+		virtual ObjectBase* GetFieldObjectWithDefault(FieldNumber fieldNumber, std::unique_ptr<ObjectBase> pObj) { return nullptr; }
 
 		/// <summary>
 		/// Get a pointer to the internal vector of objects for the specified field number.
 		/// </summary>
 		/// <param name="fieldNumber">Field number to look up.</param>
 		/// <returns>Pointer to the internal vector or nullptr if not present/empty.</returns>
-		virtual std::vector<ObjectBase*>* GetFieldObjects(FieldNumber fieldNumber) { return nullptr; }
+		virtual std::vector<ObjectBase*> GetFieldObjects(FieldNumber fieldNumber) const { return {}; }
 
 		/// <summary>
 		/// Determines whether this object is considered empty (no meaningful content).
@@ -457,37 +457,28 @@ namespace Protobuf
 		/// </remarks>
 		template<typename T>
 		T* GetFieldObjectDefault(FieldNumber fieldNumber) {
-			T* pT = new T(fieldNumber);
+			auto pT = std::make_unique<T>(fieldNumber);
 
 			bool wantsMessageObject = pT->IsMessageObject();
 
-			ObjectBase* pObj = GetFieldObjectWithDefault(fieldNumber, pT);
+			ObjectBase* pObj = GetFieldObjectWithDefault(fieldNumber, std::move(pT));
 
-			// If the object didn't already exist, now it exists.
-			if (pObj == pT)
-				return pT;
-
-			// If the object returned nullptr, that means that it really can't do that.
-			// N.B. The default handler has deleted pT.
 			if (!pObj)
 				return nullptr;
+
 
 			// If expecting a message object, yet we have an empty byte storage that isn't a message object
 			// --- OR ---
 			// If expecting a non message object yet we have an empty message object
-			// --- THEN ---
-			// Delete the old object and replace it with our new one.
 			if ((wantsMessageObject && pObj->IsByteStorageObject() && !pObj->IsMessageObject() && pObj->IsEmpty()) ||
 				(!wantsMessageObject && pObj->IsMessageObject() && pObj->IsEmpty()))
 			{
-				// Erase the old object
 				if (!EraseField(fieldNumber))
 					assert(!"Failed to erase field");
 
-				// Add a new one in.
-				pT = new T(fieldNumber);
-				pObj = GetFieldObjectWithDefault(fieldNumber, pT);
-				assert(pObj == pT);
+				auto pT2 = std::make_unique<T>(fieldNumber);
+				pObj = GetFieldObjectWithDefault(fieldNumber, std::move(pT2));
+				assert(pObj);
 			}
 
 			if (wantsMessageObject)
@@ -592,12 +583,7 @@ namespace Protobuf
 		/// <summary>
 		/// Destructor: deletes all owned child objects.
 		/// </summary>
-		~ObjectBaseMessage()
-		{
-			for (auto& kv : m_objects)
-				for (auto& obj : kv.second)
-					delete obj;
-		}
+		~ObjectBaseMessage() override = default;
 
 		/// <summary>
 		/// Add a child object to this message.
@@ -611,27 +597,29 @@ namespace Protobuf
 		/// If the field is marked unique and a value already exists, the existing value(s) are deleted
 		/// and replaced by the provided object.
 		/// </remarks>
-		Result<ErrorCode> AddObject(ObjectBase* ob)
+		Result<ErrorCode> AddObject(std::unique_ptr<ObjectBase> ob)
 		{
+			if (!ob) return Result<ErrorCode>::failure(ErrorCode::NotSupported);
 			if (ob->IsMessageObject() && !ob->IsEmbeddedMessageObject())
 				return Result<ErrorCode>::failure(ErrorCode::CantAddRootMsg);
 
-			FieldNumber fieldNum = ob->GetFieldNumber();
 
+			FieldNumber fieldNum = ob->GetFieldNumber();
 			auto& vec = m_objects[fieldNum];
 			if (!m_fieldsUnique[fieldNum] || vec.empty()) {
-				vec.push_back(ob);
+				ob->SetParent(this);
+				vec.emplace_back(std::move(ob));
 				MarkDirty();
 			}
 			else {
-				for (auto& existing : vec)
-					delete existing;
+				// unique field: delete existing and replace with new one
 				vec.clear();
-				vec.push_back(ob);
+				ob->SetParent(this);
+				vec.emplace_back(std::move(ob));
 				MarkDirty();
 			}
 
-			ob->SetParent(this);
+
 			return Result<ErrorCode>::success();
 		}
 
@@ -641,9 +629,6 @@ namespace Protobuf
 		/// <returns>Returns this pointer for chaining.</returns>
 		ObjectBaseMessage* Clear()
 		{
-			for (auto& kv : m_objects) {
-				for (auto p : kv.second) delete p;
-			}
 			m_objects.clear();
 			return this;
 		}
@@ -667,7 +652,9 @@ namespace Protobuf
 		ObjectBase* GetFieldObject(FieldNumber fieldNum) override
 		{
 			auto iter = m_objects.find(fieldNum);
-			return (iter != m_objects.end() && !iter->second.empty()) ? iter->second.back() : nullptr;
+			if (iter != m_objects.end() && !iter->second.empty())
+				return iter->second.back().get();
+			return nullptr;
 		}
 
 		/// <summary>
@@ -676,19 +663,20 @@ namespace Protobuf
 		/// <param name="fieldNum">Field number to query.</param>
 		/// <param name="pDefaultObj">Default object to insert if none exists (ownership transferred on insert, deleted if not used).</param>
 		/// <returns>Pointer to the existing or newly inserted object.</returns>
-		ObjectBase* GetFieldObjectWithDefault(FieldNumber fieldNum, ObjectBase* pDefaultObj) override
+		ObjectBase* GetFieldObjectWithDefault(FieldNumber fieldNum, std::unique_ptr<ObjectBase> pDefaultObj) override
 		{
 			auto iter = m_objects.find(fieldNum);
 			if (iter == m_objects.end() || iter->second.empty())
 			{
-				m_objects[fieldNum].push_back(pDefaultObj);
 				pDefaultObj->SetParent(this);
+				m_objects[fieldNum].emplace_back(std::move(pDefaultObj));
 				MarkDirty();
-				return pDefaultObj;
+				return m_objects[fieldNum].back().get();
 			}
 
-			delete pDefaultObj;
-			return iter->second.back();
+
+			// default not used
+			return iter->second.back().get();
 		}
 
 		/// <summary>
@@ -699,13 +687,7 @@ namespace Protobuf
 		bool EraseField(FieldNumber fieldNumber) override
 		{
 			auto iter = m_objects.find(fieldNumber);
-			if (iter == m_objects.end())
-				return false;
-
-			for (auto obj : iter->second)
-				delete obj;
-
-			iter->second.clear();
+			if (iter == m_objects.end()) return false;
 			m_objects.erase(iter);
 			MarkDirty();
 			return true;
@@ -716,10 +698,14 @@ namespace Protobuf
 		/// </summary>
 		/// <param name="fieldNum">Field number to query.</param>
 		/// <returns>Pointer to the internal vector or nullptr if not present/empty.</returns>
-		std::vector<ObjectBase*>* GetFieldObjects(FieldNumber fieldNum) override
+		std::vector<ObjectBase*> GetFieldObjects(FieldNumber fieldNum) const override
 		{
 			auto iter = m_objects.find(fieldNum);
-			return (iter != m_objects.end() && !iter->second.empty()) ? &iter->second : nullptr;
+			if (iter == m_objects.end() || iter->second.empty()) return {};
+			std::vector<ObjectBase*> out;
+			out.reserve(iter->second.size());
+			for (const auto& up : iter->second) out.push_back(up.get());
+			return out;
 		}
 
 		/// <summary>
@@ -727,58 +713,14 @@ namespace Protobuf
 		/// </summary>
 		bool IsEmpty() override
 		{
-			if (m_objects.empty())
-				return true;
-
-			for (auto& obj : m_objects) {
-				if (!obj.second.empty())
-					return false;
-			}
-
+			for (const auto& kv : m_objects)
+				if (!kv.second.empty()) return false;
 			return true;
 		}
 
-		/// <summary>
-		/// Deleted copy constructor to avoid accidental shallow copies of owned pointers.
-		/// </summary>
 		ObjectBaseMessage(const ObjectBaseMessage&) = delete;
-
-		/// <summary>
-		/// Move constructor transfers ownership of child pointers and decode hint.
-		/// </summary>
-		/// <param name="other">Source object to move from.</param>
-		ObjectBaseMessage(ObjectBaseMessage&& other) noexcept
-			: ObjectBase(other.GetFieldNumber()),
-			m_objects(std::move(other.m_objects)),
-			m_fieldsUnique(std::move(other.m_fieldsUnique)),
-			m_pDecodeHint(std::move(other.m_pDecodeHint))
-		{
-			// clear other's hint pointer to avoid double-delete (unique_ptr moved)
-			other.m_pDecodeHint = nullptr;
-		}
-
-		/// <summary>
-		/// Move assignment transfers ownership and clears current owned children.
-		/// </summary>
-		/// <param name="other">Source object to move-assign from.</param>
-		/// <returns>Reference to this object.</returns>
-		ObjectBaseMessage& operator=(ObjectBaseMessage&& other) noexcept
-		{
-			if (this != &other)
-			{
-				// release current
-				for (auto& kv : m_objects)
-					for (auto p : kv.second) delete p;
-				m_objects.clear();
-
-				m_objects = std::move(other.m_objects);
-				m_fieldsUnique = std::move(other.m_fieldsUnique);
-				m_pDecodeHint = std::move(other.m_pDecodeHint);
-				SetFieldNumber(other.GetFieldNumber());
-				other.m_pDecodeHint = nullptr;
-			}
-			return *this;
-		}
+		ObjectBaseMessage(ObjectBaseMessage&&) noexcept = default;
+		ObjectBaseMessage& operator=(ObjectBaseMessage&&) noexcept = default;
 
 		/// <summary>
 		/// Mark this message and all child objects (recursively) as dirty.
@@ -786,15 +728,14 @@ namespace Protobuf
 		void MarkDirtyAndChildren()
 		{
 			MarkDirty();
-
 			for (auto& kv : m_objects)
 			{
-				for (auto& obj : kv.second)
+				for (auto& objPtr : kv.second)
 				{
-					if (obj->IsMessageObject())
-						reinterpret_cast<ObjectBaseMessage*>(obj)->MarkDirtyAndChildren();
+					if (objPtr->IsMessageObject())
+						reinterpret_cast<ObjectBaseMessage*>(objPtr.get())->MarkDirtyAndChildren();
 					else
-						obj->MarkDirty();
+						objPtr->MarkDirty();
 				}
 			}
 		}
@@ -811,20 +752,20 @@ namespace Protobuf
 		/// </remarks>
 		Result<ErrorCode> MergeWith(ObjectBaseMessage* pOtherMsg)
 		{
+			if (!pOtherMsg) return Result<ErrorCode>::failure(ErrorCode::NotSupported);
+
 			for (auto& obj : pOtherMsg->m_objects)
 			{
 				auto& srcVec = obj.second;
 				auto& dstVec = m_objects[obj.first];
 
-				// If the field is repeated, clear destination and copy src pointers.
+
 				if (!m_fieldsUnique[obj.first])
 				{
-					for (auto d : dstVec) delete d;
 					dstVec.clear();
-
-					for (auto s : srcVec) {
-						dstVec.push_back(s);
-						s->SetParent(this);
+					for (auto& s : srcVec) {
+						dstVec.emplace_back(std::move(s));
+						dstVec.back()->SetParent(this);
 					}
 					srcVec.clear();
 					continue;
@@ -833,32 +774,34 @@ namespace Protobuf
 				// Unique field
 				if (dstVec.empty())
 				{
-					for (auto s : srcVec) {
-						dstVec.push_back(s);
-						s->SetParent(this);
+					for (auto& s : srcVec) {
+						dstVec.emplace_back(std::move(s));
+						dstVec.back()->SetParent(this);
 					}
 					srcVec.clear();
 					continue;
 				}
 
+
 				if (dstVec.size() != 1 && srcVec.size() != 1)
 					return Result<ErrorCode>::failure(ErrorCode::SupposedToBeUnique);
 
-				// If this is a message object, recursively merge it.
+
 				if (dstVec[0]->IsMessageObject())
 				{
-					ObjectBaseMessage* pMsg = static_cast<ObjectBaseMessage*>(dstVec[0]);
-					ObjectBaseMessage* pMsg2 = static_cast<ObjectBaseMessage*>(srcVec[0]);
+					ObjectBaseMessage* pMsg = static_cast<ObjectBaseMessage*>(dstVec[0].get());
+					ObjectBaseMessage* pMsg2 = static_cast<ObjectBaseMessage*>(srcVec[0].get());
 
 					returnIfNonNull(pMsg->MergeWith(pMsg2));
-					// leave pointers in place (ownership unchanged)
 					continue;
 				}
 
 				// Overwrite the value.
-				delete dstVec[0];
-				dstVec[0] = srcVec[0];
-				dstVec[0]->SetParent(this);
+				dstVec.clear();
+				for (auto& s : srcVec) {
+					dstVec.emplace_back(std::move(s));
+					dstVec.back()->SetParent(this);
+				}
 				srcVec.clear();
 			}
 
@@ -884,8 +827,8 @@ namespace Protobuf
 		size_t GetPayloadSize() const override
 		{
 			size_t totalSize = 0;
-			for (auto& kv : m_objects)
-				for (auto& obj : kv.second)
+			for (const auto& kv : m_objects)
+				for (const auto& obj : kv.second)
 					if (obj->IsDirty())
 						totalSize += obj->GetPayloadSize();
 
@@ -899,8 +842,8 @@ namespace Protobuf
 		size_t GetDirtyPayloadSize() const override
 		{
 			size_t totalSize = 0;
-			for (auto& kv : m_objects)
-				for (auto& obj : kv.second)
+			for (const auto& kv : m_objects)
+				for (const auto& obj : kv.second)
 					if (obj->IsDirty())
 						totalSize += obj->GetDirtyPayloadSize();
 
@@ -960,9 +903,9 @@ namespace Protobuf
 
 	private:
 		/// <summary>
-		/// Map of field number to vector of child pointers (ownership held by this container).
+		/// Map of field number to vector of unique pointers (ownership held by this container).
 		/// </summary>
-		std::unordered_map<uint64_t, std::vector<ObjectBase*> > m_objects;
+		std::unordered_map<FieldNumber, std::vector<std::unique_ptr<ObjectBase>>> m_objects;
 
 		/// <summary>
 		/// Tracks whether a given field number is unique (non-repeated).
@@ -1367,7 +1310,8 @@ namespace Protobuf
 				if (!value.has_value())
 					return Result<ErrorCode>::failure(value.error());
 
-				auto addResult = block->AddObject(new ObjectVarInt(fieldNum, *value));
+				auto obj = std::make_unique<ObjectVarInt>(fieldNum, *value);
+				auto addResult = block->AddObject(std::move(obj));
 				if (!addResult.has_value())
 					return addResult;
 				break;
@@ -1405,80 +1349,75 @@ namespace Protobuf
 					{
 					case DecodeHint::O_STRING:
 					{
-						auto addResult = block->AddObject(new ObjectString(fieldNum, std::string(dataSubset, length)));
+						auto obj = std::make_unique<ObjectString>(fieldNum, std::string(dataSubset, length));
+						auto addResult = block->AddObject(std::move(obj)); 
 						if (!addResult.has_value()) return addResult;
 						break;
 					}
 					case DecodeHint::O_BYTES:
 					{
-						auto addResult = block->AddObject(new ObjectBytes(fieldNum, dataSubset, length));
+						auto obj = std::make_unique<ObjectBytes>(fieldNum, dataSubset, length);
+						auto addResult = block->AddObject(std::move(obj)); 
 						if (!addResult.has_value()) return addResult;
 						break;
 					}
 					case DecodeHint::O_MESSAGE:
 					{
-						// Try parse as nested message; on failure treat as bytes
-						ObjectMessage* pChld = new ObjectMessage(fieldNum);
-						auto decodeResult = DecodeBlock(dataSubset, length, pChld, pChildHint);
-						if (!decodeResult.has_value())
-						{
-							delete pChld;
-							auto addResult = block->AddObject(new ObjectBytes(fieldNum, dataSubset, length));
+						auto pChld = std::make_unique<ObjectMessage>(fieldNum);
+						auto decodeResult = DecodeBlock(dataSubset, length, pChld.get(), pChildHint);
+						if (!decodeResult.has_value()) {
+							// fallback to bytes
+							auto obj = std::make_unique<ObjectBytes>(fieldNum, dataSubset, length);
+							auto addResult = block->AddObject(std::move(obj)); 
 							if (!addResult.has_value()) return addResult;
 						}
-						else
-						{
-							auto addResult = block->AddObject(pChld);
+						else {
+							auto addResult = block->AddObject(std::move(pChld)); 
 							if (!addResult.has_value()) return addResult;
 						}
 						break;
 					}
 					default:
 					{
-						// unknown hint type -> fallback to heuristic:
 						if (isString) {
-							auto addResult = block->AddObject(new ObjectString(fieldNum, std::string(dataSubset, length)));
+							auto obj = std::make_unique<ObjectString>(fieldNum, std::string(dataSubset, length));
+							auto addResult = block->AddObject(std::move(obj)); 
 							if (!addResult.has_value()) return addResult;
 						}
 						else {
-							ObjectMessage* pChld = new ObjectMessage(fieldNum);
-							auto decodeResult = DecodeBlock(dataSubset, length, pChld, pChildHint);
+							auto pChld = std::make_unique<ObjectMessage>(fieldNum);
+							auto decodeResult = DecodeBlock(dataSubset, length, pChld.get(), pChildHint);
 							if (!decodeResult.has_value()) {
-								delete pChld;
-								auto addResult = block->AddObject(new ObjectBytes(fieldNum, dataSubset, length));
+								auto obj = std::make_unique<ObjectBytes>(fieldNum, dataSubset, length);
+								auto addResult = block->AddObject(std::move(obj)); 
 								if (!addResult.has_value()) return addResult;
 							}
 							else {
-								auto addResult = block->AddObject(pChld);
+								auto addResult = block->AddObject(std::move(pChld)); 
 								if (!addResult.has_value()) return addResult;
 							}
 						}
 						break;
 					}
-					} // switch pChildHint->GetType()
+					}
 				}
 				else
 				{
-					// No hint provided -> use heuristic
-					if (isString)
-					{
-						auto addResult = block->AddObject(new ObjectString(fieldNum, std::string(dataSubset, length)));
+					if (isString) {
+						auto obj = std::make_unique<ObjectString>(fieldNum, std::string(dataSubset, length));
+						auto addResult = block->AddObject(std::move(obj)); 
 						if (!addResult.has_value()) return addResult;
 					}
-					else
-					{
-						// Try parse as object; fall back to bytes
-						ObjectMessage* pChld = new ObjectMessage(fieldNum);
-						auto decodeResult = DecodeBlock(dataSubset, length, pChld, nullptr);
-						if (!decodeResult.has_value())
-						{
-							delete pChld;
-							auto addResult = block->AddObject(new ObjectBytes(fieldNum, dataSubset, length));
+					else {
+						auto pChld = std::make_unique<ObjectMessage>(fieldNum);
+						auto decodeResult = DecodeBlock(dataSubset, length, pChld.get(), nullptr);
+						if (!decodeResult.has_value()) {
+							auto obj = std::make_unique<ObjectBytes>(fieldNum, dataSubset, length);
+							auto addResult = block->AddObject(std::move(obj)); 
 							if (!addResult.has_value()) return addResult;
 						}
-						else
-						{
-							auto addResult = block->AddObject(pChld);
+						else {
+							auto addResult = block->AddObject(std::move(pChld)); 
 							if (!addResult.has_value()) return addResult;
 						}
 					}
@@ -1489,27 +1428,32 @@ namespace Protobuf
 
 			case TAG_I64:
 			{
-				if (offset + sizeof(uint64_t) > sz)
-					return Result<ErrorCode>::failure(ErrorCode::OutOfBounds);
+				if (offset + sizeof(uint64_t) > sz) return Result<ErrorCode>::failure(ErrorCode::OutOfBounds);
 
-				uint64_t val;
-				memcpy(&val, reinterpret_cast<const uint8_t*>(data) + offset, sizeof(uint64_t));
-				auto addResult = block->AddObject(new ObjectFixed64(fieldNum, val));
-				if (!addResult.has_value()) return addResult;
+
+				uint64_t val = 0;
+				for (size_t i = 0; i < 8; ++i) {
+					val |= static_cast<uint64_t>(static_cast<uint8_t>(data[offset + i])) << (8 * i);
+				}
 				offset += sizeof(uint64_t);
+				auto obj = std::make_unique<ObjectFixed64>(fieldNum, val);
+				auto addResult = block->AddObject(std::move(obj)); if (!addResult.has_value()) return addResult;
 				break;
 			}
 
+
 			case TAG_I32:
 			{
-				if (offset + sizeof(uint32_t) > sz)
-					return Result<ErrorCode>::failure(ErrorCode::OutOfBounds);
+				if (offset + sizeof(uint32_t) > sz) return Result<ErrorCode>::failure(ErrorCode::OutOfBounds);
 
-				uint32_t val;
-				memcpy(&val, reinterpret_cast<const uint8_t*>(data) + offset, sizeof(uint32_t));
-				auto addResult = block->AddObject(new ObjectFixed32(fieldNum, val));
-				if (!addResult.has_value()) return addResult;
+
+				uint32_t val = 0;
+				for (size_t i = 0; i < 4; ++i) {
+					val |= static_cast<uint32_t>(static_cast<uint8_t>(data[offset + i])) << (8 * i);
+				}
 				offset += sizeof(uint32_t);
+				auto obj = std::make_unique<ObjectFixed32>(fieldNum, val);
+				auto addResult = block->AddObject(std::move(obj)); if (!addResult.has_value()) return addResult;
 				break;
 			}
 
