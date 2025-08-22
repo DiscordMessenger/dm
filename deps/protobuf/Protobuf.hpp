@@ -326,63 +326,135 @@ namespace Protobuf
 		assert(n == needed);
 	}
 
-
-
+	/// <summary>
+	/// Base class for all protobuf field objects.
+	/// </summary>
+	/// <remarks>
+	/// Represents a single field object (primitive, bytes/string, or embedded message).
+	/// Provides a uniform interface for sizing, encoding and tree operations.
+	/// Implementations typically override payload size / encode semantics and type queries.
+	/// </remarks>
 	class ObjectBase
 	{
 	public:
+		/// <summary>
+		/// Construct an ObjectBase for the given field number.
+		/// </summary>
+		/// <param name="fieldNumber">The protobuf field number this object represents.</param>
 		ObjectBase(FieldNumber fieldNumber) : m_fieldNumber{ fieldNumber } {}
 
+		/// <summary>
+		/// Virtual destructor to allow safe deletion via base pointer.
+		/// </summary>
 		virtual ~ObjectBase() { }
 
-		// Gets the size of the payload.
+		/// <summary>
+		/// Get the size, in bytes, of this object's encoded payload.
+		/// </summary>
+		/// <returns>The payload size in bytes when encoded into the stream.</returns>
 		virtual size_t GetPayloadSize() const = 0;
 
-		// Gets the size of the dirty payload.
+		/// <summary>
+		/// Get the size, in bytes, of this object's encoded payload when only
+		/// considering dirty/changed data.
+		/// </summary>
+		/// <returns>
+		/// The number of bytes that would be produced by EncodeDirty().
+		/// Default implementation defers to GetPayloadSize().
+		/// </returns>
 		virtual size_t GetDirtyPayloadSize() const {
 			return GetPayloadSize();
 		}
 
-		// Encodes the entire payload.
+		/// <summary>
+		/// Encode the entire payload for this object into the provided output stream.
+		/// </summary>
+		/// <param name="outputStream">Vector to which encoded bytes are appended.</param>
 		virtual void Encode(std::vector<uint8_t>& outputStream) const = 0;
 
-		// Encodes the parts of the payload that have changed.
+		/// <summary>
+		/// Encode only the parts of the payload that are dirty/changed into the provided stream.
+		/// </summary>
+		/// <param name="outputStream">Vector to which encoded bytes are appended.</param>
+		/// <remarks>
+		/// Default implementation encodes the entire payload by calling Encode().
+		/// Subclasses that support fine-grained dirty encoding should override this.
+		/// </remarks>
 		virtual void EncodeDirty(std::vector<uint8_t>& outputStream) const {
 			Encode(outputStream);
 		}
 
-		// Checks if this object is a message object.
+		/// <summary>
+		/// Returns true if this object is a message container (i.e., contains fields).
+		/// </summary>
 		virtual bool IsMessageObject() const { return false; }
 
-		// Checks if this object is an embedded message object.
+		/// <summary>
+		/// Returns true if this message is an embedded message (i.e., not a root message).
+		/// </summary>
 		virtual bool IsEmbeddedMessageObject() const { return false; }
 
-		// Checks if this object is a byte storage object.  Namely, a message, string or byte array object.
+		/// <summary>
+		/// Returns true if this object stores bytes (message/string/byte array).
+		/// </summary>
 		virtual bool IsByteStorageObject() const { return false; }
 
-		// Checks if this object is a string object
+		/// <summary>
+		/// Returns true if this object is a string object.
+		/// </summary>
 		virtual bool IsStringObject() const { return false; }
 
-		// Checks if this object is a byte array object
+		/// <summary>
+		/// Returns true if this object is a byte-array object.
+		/// </summary>
 		virtual bool IsByteArrayObject() const { return false; }
 
-		// Gets the last child element with the specified field number.
+		/// <summary>
+		/// Returns the last child element with the specified field number, or nullptr.
+		/// </summary>
+		/// <param name="fieldNumber">Field number to look up.</param>
+		/// <returns>Pointer to the last matching ObjectBase or nullptr if not found.</returns>
 		virtual ObjectBase* GetFieldObject(FieldNumber fieldNumber) { return nullptr; }
 
-		// Gets the last child element with the specified field number. If not found, place an object there.
-		// If the object _is_ there, then the pointer given is deleted.
+		/// <summary>
+		/// Get the last child element with the specified field number, or place the given default object there.
+		/// If the default is not needed it will be deleted by this function.
+		/// </summary>
+		/// <param name="fieldNumber">Field number to look up.</param>
+		/// <param name="pObj">Default object to insert if none exists (ownership transferred on success or deleted on failure).</param>
+		/// <returns>Pointer to the found or inserted object, or nullptr if the operation is not supported.</returns>
 		virtual ObjectBase* GetFieldObjectWithDefault(FieldNumber fieldNumber, ObjectBase* pObj) { delete pObj; return nullptr; }
 
-		// Gets a pointer to the vector of field objects with the specified field number.
+		/// <summary>
+		/// Get a pointer to the internal vector of objects for the specified field number.
+		/// </summary>
+		/// <param name="fieldNumber">Field number to look up.</param>
+		/// <returns>Pointer to the internal vector or nullptr if not present/empty.</returns>
 		virtual std::vector<ObjectBase*>* GetFieldObjects(FieldNumber fieldNumber) { return nullptr; }
 
-		// Checks if the object is empty.
+		/// <summary>
+		/// Determines whether this object is considered empty (no meaningful content).
+		/// </summary>
+		/// <returns>True if empty, false otherwise.</returns>
 		virtual bool IsEmpty() { return true; }
 
-		// Erases a child field if possible.
+		/// <summary>
+		/// Erase the child field with the given field number if possible.
+		/// </summary>
+		/// <param name="fieldNumber">Field number to erase.</param>
+		/// <returns>True if erased, false if not found or not removable.</returns>
 		virtual bool EraseField(FieldNumber fieldNumber) { return false; }
 
-		// Gets a pointer to a field object, and creates a default if it wasn't found.
+		/// <summary>
+		/// Convenience: get a pointer to a field object of type T, creating a default T if necessary.
+		/// </summary>
+		/// <typeparam name="T">Type of object to get/create. Must derive from ObjectBase and be constructible from FieldNumber.</typeparam>
+		/// <param name="fieldNumber">Field number to look up.</param>
+		/// <returns>Pointer to the existing or newly created object, or nullptr on failure.</returns>
+		/// <remarks>
+		/// The default object is created with new and ownership is transferred into the container.
+		/// This helper also attempts to replace empty mismatched-type placeholders with the requested type.
+		/// </remarks>
 		template<typename T>
 		T* GetFieldObjectDefault(FieldNumber fieldNumber) {
 			T* pT = new T(fieldNumber);
@@ -404,13 +476,13 @@ namespace Protobuf
 			// --- OR ---
 			// If expecting a non message object yet we have an empty message object
 			// --- THEN ---
-			// Delete the old object and shove our new one in.
+			// Delete the old object and replace it with our new one.
 			if ((wantsMessageObject && pObj->IsByteStorageObject() && !pObj->IsMessageObject() && pObj->IsEmpty()) ||
 				(!wantsMessageObject && pObj->IsMessageObject() && pObj->IsEmpty()))
 			{
 				// Erase the old object
 				if (!EraseField(fieldNumber))
-					assert(!"Huh");
+					assert(!"Failed to erase field");
 
 				// Add a new one in.
 				pT = new T(fieldNumber);
@@ -426,46 +498,100 @@ namespace Protobuf
 			return reinterpret_cast<T*>(pObj);
 		}
 
-		// Marks the object as clean.
+		/// <summary>
+		/// Mark this object (and its dirty flag) as clean.
+		/// </summary>
 		virtual void MarkClean() {
 			m_bIsDirty = false;
 		}
 
+		/// <summary>
+		/// Get the protobuf field number associated with this object.
+		/// </summary>
+		/// <returns>The FieldNumber value.</returns>
 		FieldNumber GetFieldNumber() const {
 			return m_fieldNumber;
 		}
+
+		/// <summary>
+		/// Set the protobuf field number for this object.
+		/// </summary>
+		/// <param name="fn">New field number.</param>
+		/// <returns>Returns this pointer for chaining.</returns>
 		ObjectBase* SetFieldNumber(FieldNumber fn) {
 			m_fieldNumber = fn;
 			return this;
 		}
+
+		/// <summary>
+		/// Mark this object as dirty; also marks parent objects as dirty recursively.
+		/// </summary>
 		void MarkDirty() {
 			m_bIsDirty = true;
 			if (m_pParent)
 				m_pParent->MarkDirty();
 		}
+
+		/// <summary>
+		/// Returns true when the object is flagged as dirty/modified.
+		/// </summary>
 		bool IsDirty() const {
 			return m_bIsDirty;
 		}
+
+		/// <summary>
+		/// Returns the parent object in the message tree, or nullptr if none.
+		/// </summary>
 		ObjectBase* GetParent() {
 			return m_pParent;
 		}
 
 	protected:
 		friend class ObjectBaseMessage;
+
+		/// <summary>
+		/// Set the parent pointer for this object (used by container classes).
+		/// </summary>
+		/// <param name="pMsg">Parent object to set.</param>
 		void SetParent(ObjectBase* pMsg) {
 			m_pParent = pMsg;
 		}
 	private:
+		/// <summary>
+		/// The field number this object represents.
+		/// </summary>
 		FieldNumber m_fieldNumber = 0;
+
+		/// <summary>
+		/// Dirty/modified flag; when true the object is considered changed.
+		/// </summary>
 		bool m_bIsDirty = false;
+
+		/// <summary>
+		/// Pointer to the parent container object (if any).
+		/// </summary>
 		ObjectBase* m_pParent = nullptr;
 	};
 
+	/// <summary>
+	/// Container object that represents a protobuf message (collection of fields).
+	/// </summary>
+	/// <remarks>
+	/// Stores child field objects indexed by field number. Fields can be repeated or marked unique.
+	/// This class manages ownership of child pointers (deletes them in destructor/clear/erase).
+	/// </remarks>
 	class ObjectBaseMessage : public ObjectBase
 	{
 	public:
+		/// <summary>
+		/// Construct an ObjectBaseMessage for the given field number (0 for root messages).
+		/// </summary>
+		/// <param name="fieldNumber">Field number for this message object.</param>
 		ObjectBaseMessage(FieldNumber fieldNumber = 0) : ObjectBase(fieldNumber) { }
 
+		/// <summary>
+		/// Destructor: deletes all owned child objects.
+		/// </summary>
 		~ObjectBaseMessage()
 		{
 			for (auto& kv : m_objects)
@@ -473,6 +599,18 @@ namespace Protobuf
 					delete obj;
 		}
 
+		/// <summary>
+		/// Add a child object to this message.
+		/// </summary>
+		/// <param name="ob">Object pointer to add. Ownership is transferred on success.</param>
+		/// <returns>
+		/// Result::success() on success or Result::failure(ErrorCode::CantAddRootMsg) if attempting to
+		/// add a non-embedded root message. Other error codes may be returned for uniqueness violations.
+		/// </returns>
+		/// <remarks>
+		/// If the field is marked unique and a value already exists, the existing value(s) are deleted
+		/// and replaced by the provided object.
+		/// </remarks>
 		Result<ErrorCode> AddObject(ObjectBase* ob)
 		{
 			if (ob->IsMessageObject() && !ob->IsEmbeddedMessageObject())
@@ -497,6 +635,10 @@ namespace Protobuf
 			return Result<ErrorCode>::success();
 		}
 
+		/// <summary>
+		/// Clear all child fields, deleting owned objects.
+		/// </summary>
+		/// <returns>Returns this pointer for chaining.</returns>
 		ObjectBaseMessage* Clear()
 		{
 			for (auto& kv : m_objects) {
@@ -506,24 +648,34 @@ namespace Protobuf
 			return this;
 		}
 
-		// Sets a field as unique.  By default, a field is repeated.
+		/// <summary>
+		/// Mark a field as unique (non-repeated). By default fields are repeated.
+		/// </summary>
+		/// <param name="fieldNum">Field number to mark unique.</param>
+		/// <returns>Returns this pointer for chaining.</returns>
 		ObjectBaseMessage* SetFieldUnique(FieldNumber fieldNum) {
 			m_fieldsUnique[fieldNum] = true;
 			MarkDirty();
 			return this;
 		}
 
+		/// <summary>
+		/// Get the last object for the specified field number or nullptr if none exists.
+		/// </summary>
+		/// <param name="fieldNum">Field number to query.</param>
+		/// <returns>Pointer to the last object for that field or nullptr.</returns>
 		ObjectBase* GetFieldObject(FieldNumber fieldNum) override
 		{
 			auto iter = m_objects.find(fieldNum);
-			if (iter == m_objects.end())
-				return nullptr;
-			if (iter->second.empty())
-				return nullptr;
-
-			return iter->second.back();
+			return (iter != m_objects.end() && !iter->second.empty()) ? iter->second.back() : nullptr;
 		}
 
+		/// <summary>
+		/// Get the last object for the specified field number or insert the provided default object.
+		/// </summary>
+		/// <param name="fieldNum">Field number to query.</param>
+		/// <param name="pDefaultObj">Default object to insert if none exists (ownership transferred on insert, deleted if not used).</param>
+		/// <returns>Pointer to the existing or newly inserted object.</returns>
 		ObjectBase* GetFieldObjectWithDefault(FieldNumber fieldNum, ObjectBase* pDefaultObj) override
 		{
 			auto iter = m_objects.find(fieldNum);
@@ -539,6 +691,11 @@ namespace Protobuf
 			return iter->second.back();
 		}
 
+		/// <summary>
+		/// Erase and delete all objects associated with the given field number.
+		/// </summary>
+		/// <param name="fieldNumber">Field number to erase.</param>
+		/// <returns>True if erased, false if not present.</returns>
 		bool EraseField(FieldNumber fieldNumber) override
 		{
 			auto iter = m_objects.find(fieldNumber);
@@ -554,17 +711,20 @@ namespace Protobuf
 			return true;
 		}
 
+		/// <summary>
+		/// Get a pointer to the internal vector of objects for the specified field number.
+		/// </summary>
+		/// <param name="fieldNum">Field number to query.</param>
+		/// <returns>Pointer to the internal vector or nullptr if not present/empty.</returns>
 		std::vector<ObjectBase*>* GetFieldObjects(FieldNumber fieldNum) override
 		{
 			auto iter = m_objects.find(fieldNum);
-			if (iter == m_objects.end())
-				return nullptr;
-			if (iter->second.empty())
-				return nullptr;
-
-			return &iter->second;
+			return (iter != m_objects.end() && !iter->second.empty()) ? &iter->second : nullptr;
 		}
 
+		/// <summary>
+		/// Returns true when the message contains no child objects.
+		/// </summary>
 		bool IsEmpty() override
 		{
 			if (m_objects.empty())
@@ -578,9 +738,15 @@ namespace Protobuf
 			return true;
 		}
 
-		// disable copy
+		/// <summary>
+		/// Deleted copy constructor to avoid accidental shallow copies of owned pointers.
+		/// </summary>
 		ObjectBaseMessage(const ObjectBaseMessage&) = delete;
 
+		/// <summary>
+		/// Move constructor transfers ownership of child pointers and decode hint.
+		/// </summary>
+		/// <param name="other">Source object to move from.</param>
 		ObjectBaseMessage(ObjectBaseMessage&& other) noexcept
 			: ObjectBase(other.GetFieldNumber()),
 			m_objects(std::move(other.m_objects)),
@@ -591,6 +757,11 @@ namespace Protobuf
 			other.m_pDecodeHint = nullptr;
 		}
 
+		/// <summary>
+		/// Move assignment transfers ownership and clears current owned children.
+		/// </summary>
+		/// <param name="other">Source object to move-assign from.</param>
+		/// <returns>Reference to this object.</returns>
 		ObjectBaseMessage& operator=(ObjectBaseMessage&& other) noexcept
 		{
 			if (this != &other)
@@ -609,6 +780,9 @@ namespace Protobuf
 			return *this;
 		}
 
+		/// <summary>
+		/// Mark this message and all child objects (recursively) as dirty.
+		/// </summary>
 		void MarkDirtyAndChildren()
 		{
 			MarkDirty();
@@ -625,6 +799,16 @@ namespace Protobuf
 			}
 		}
 
+		/// <summary>
+		/// Merge another message into this one. Ownership of source child pointers is transferred when copied.
+		/// </summary>
+		/// <param name="pOtherMsg">Message to merge from (ownership of contained pointers may be moved).</param>
+		/// <returns>Result::success() on success, or a failure code on conflict (e.g. SupposedToBeUnique).</returns>
+		/// <remarks>
+		/// The merge semantics are:
+		/// - For repeated fields: destination is cleared and source elements are moved in.
+		/// - For unique fields: destination is replaced or merged (for embedded messages).
+		/// </remarks>
 		Result<ErrorCode> MergeWith(ObjectBaseMessage* pOtherMsg)
 		{
 			for (auto& obj : pOtherMsg->m_objects)
@@ -683,10 +867,20 @@ namespace Protobuf
 		}
 
 	public:
+		/// <summary>
+		/// Returns true for message objects.
+		/// </summary>
 		bool IsMessageObject() const override { return true; }
 
+		/// <summary>
+		/// Returns true for byte-storage message objects.
+		/// </summary>
 		bool IsByteStorageObject() const override { return true; }
 
+		/// <summary>
+		/// Compute the total payload size of this message by summing child payload sizes.
+		/// </summary>
+		/// <returns>Total encoded payload size in bytes.</returns>
 		size_t GetPayloadSize() const override
 		{
 			size_t totalSize = 0;
@@ -698,6 +892,10 @@ namespace Protobuf
 			return totalSize;
 		}
 
+		/// <summary>
+		/// Compute the total dirty payload size by summing child dirty sizes.
+		/// </summary>
+		/// <returns>Total dirty encoded payload size in bytes.</returns>
 		size_t GetDirtyPayloadSize() const override
 		{
 			size_t totalSize = 0;
@@ -709,6 +907,10 @@ namespace Protobuf
 			return totalSize;
 		}
 
+		/// <summary>
+		/// Encode all child objects into the provided output stream.
+		/// </summary>
+		/// <param name="outputStream">Vector to which encoded bytes are appended.</param>
 		void Encode(std::vector<uint8_t>& outputStream) const override
 		{
 			for (auto& kv : m_objects)
@@ -716,6 +918,10 @@ namespace Protobuf
 					obj->Encode(outputStream);
 		}
 
+		/// <summary>
+		/// Encode only dirty child objects into the provided output stream.
+		/// </summary>
+		/// <param name="outputStream">Vector to which encoded bytes are appended.</param>
 		void EncodeDirty(std::vector<uint8_t>& outputStream) const override
 		{
 			for (auto& kv : m_objects)
@@ -724,6 +930,9 @@ namespace Protobuf
 						obj->EncodeDirty(outputStream);
 		}
 
+		/// <summary>
+		/// Mark this message and all children as clean.
+		/// </summary>
 		void MarkClean() override
 		{
 			for (auto& kv : m_objects)
@@ -733,139 +942,133 @@ namespace Protobuf
 			ObjectBase::MarkClean();
 		}
 
+		/// <summary>
+		/// Set a decoding hint for this message. The message takes ownership of the pointer.
+		/// </summary>
+		/// <param name="pHint">Pointer to a DecodeHint; ownership is transferred.</param>
 		void SetDecodingHint(DecodeHint* pHint) {
 			m_pDecodeHint.reset(pHint);
 		}
 
+		/// <summary>
+		/// Get the decoding hint associated with this message, or nullptr.
+		/// </summary>
+		/// <returns>Pointer to the current DecodeHint (not owned by the caller) or nullptr.</returns>
 		DecodeHint* GetDecodeHint() {
 			return m_pDecodeHint.get();
 		}
 
 	private:
+		/// <summary>
+		/// Map of field number to vector of child pointers (ownership held by this container).
+		/// </summary>
 		std::unordered_map<uint64_t, std::vector<ObjectBase*> > m_objects;
+
+		/// <summary>
+		/// Tracks whether a given field number is unique (non-repeated).
+		/// </summary>
 		std::unordered_map<uint64_t, bool> m_fieldsUnique;
+
+		/// <summary>
+		/// Optional decode-time hint tree owned by this message.
+		/// </summary>
 		std::unique_ptr<DecodeHint> m_pDecodeHint;
 	};
 
+	/// <summary>
+	/// An embedded message object (a length-delimited field that itself contains fields).
+	/// </summary>
 	class ObjectMessage : public ObjectBaseMessage
 	{
 	public:
-		ObjectMessage(FieldNumber fieldNum) : ObjectBaseMessage(fieldNum) {}
+		/// <summary>Construct an embedded message object for the given field number.</summary>
+		explicit ObjectMessage(FieldNumber fieldNum) : ObjectBaseMessage(fieldNum) {}
 
 	public:
+		/// <summary>Returns true for embedded message objects.</summary>
 		bool IsEmbeddedMessageObject() const override { return true; }
 
+		/// <summary>Return encoded payload size including tag and length prefix.</summary>
 		size_t GetPayloadSize() const override
 		{
 			size_t embPayloadSize = ObjectBaseMessage::GetPayloadSize();
 			return GetVarIntSize(CombineFieldNumberAndTag(GetFieldNumber(), TAG_LEN)) + GetVarIntSize(embPayloadSize) + embPayloadSize;
 		}
 
+		/// <summary>Return encoded dirty payload size including tag and length prefix.</summary>
 		size_t GetDirtyPayloadSize() const override
 		{
 			size_t embPayloadSize = ObjectBaseMessage::GetDirtyPayloadSize();
 			return GetVarIntSize(CombineFieldNumberAndTag(GetFieldNumber(), TAG_LEN)) + GetVarIntSize(embPayloadSize) + embPayloadSize;
 		}
 
+		/// <summary>Encode the embedded message (tag, length, then child payloads).</summary>
+		/// <param name="outputStream">Stream to append encoded bytes to.</param>
 		void Encode(std::vector<uint8_t>& outputStream) const override
 		{
 			size_t embPayloadSize = ObjectBaseMessage::GetPayloadSize();
+
+			// Reserve capacity: tag + length + payload
+			auto tag = CombineFieldNumberAndTag(GetFieldNumber(), TAG_LEN);
+			outputStream.reserve(outputStream.size() + GetVarIntSize(tag) + GetVarIntSize(embPayloadSize) + embPayloadSize);
+
 			EncodeVarInt(outputStream, CombineFieldNumberAndTag(GetFieldNumber(), TAG_LEN));
 			EncodeVarInt(outputStream, embPayloadSize);
 			ObjectBaseMessage::Encode(outputStream);
 		}
 
+		/// <summary>Encode only dirty parts (tag, length, then dirty child payloads).</summary>
 		void EncodeDirty(std::vector<uint8_t>& outputStream) const override
 		{
 			size_t embPayloadSize = ObjectBaseMessage::GetDirtyPayloadSize();
+			auto tag = CombineFieldNumberAndTag(GetFieldNumber(), TAG_LEN);
+			outputStream.reserve(outputStream.size() + GetVarIntSize(tag) + GetVarIntSize(embPayloadSize) + embPayloadSize);
+
 			EncodeVarInt(outputStream, CombineFieldNumberAndTag(GetFieldNumber(), TAG_LEN));
 			EncodeVarInt(outputStream, embPayloadSize);
 			ObjectBaseMessage::EncodeDirty(outputStream);
 		}
 	};
 
+	/// <summary>
+	/// Represents a string (length-delimited) field.
+	/// </summary>
 	class ObjectString : public ObjectBase
 	{
 	public:
+		/// <summary>Construct a string object for a field (optional initial content).</summary>
 		ObjectString(FieldNumber fn, const std::string& str = "") : ObjectBase(fn), m_content(str) {}
 
-		ObjectString* SetContent(const std::string& str)
+		/// <summary>Set the string content and mark the object dirty.</summary>
+		/// <returns>this pointer for chaining.</returns>
+		ObjectString* SetContent(const std::string& str) noexcept
 		{
 			m_content = str;
 			MarkDirty();
 			return this;
 		}
 
-		std::string GetContent() const
+		/// <summary>Get a const-reference to the string content (avoids copying).</summary>
+		const std::string& GetContent() const noexcept
 		{
 			return m_content;
 		}
 
 	public:
+		/// <summary>Return encoded payload size (tag + length varint + string bytes).</summary>
 		size_t GetPayloadSize() const override
 		{
 			return GetVarIntSize(CombineFieldNumberAndTag(GetFieldNumber(), TAG_LEN)) + GetVarIntSize(m_content.size()) + m_content.size();
 		}
 
+		/// <summary>Encode this string field into the output stream.</summary>
 		void Encode(std::vector<uint8_t>& outputStream) const override
 		{
-			EncodeVarInt(outputStream, CombineFieldNumberAndTag(GetFieldNumber(), TAG_LEN));
-			EncodeVarInt(outputStream, m_content.size());
-			size_t oldLength = outputStream.size();
-			outputStream.resize(oldLength + m_content.size());
-			memcpy(outputStream.data() + oldLength, m_content.c_str(), m_content.size());
-		}
+			size_t tagSize = GetVarIntSize(CombineFieldNumberAndTag(GetFieldNumber(), TAG_LEN));
+			size_t lenSize = GetVarIntSize(m_content.size());
+			size_t need = tagSize + lenSize + m_content.size();
+			outputStream.reserve(outputStream.size() + need);
 
-		bool IsEmpty() override
-		{
-			return m_content.empty();
-		}
-
-		bool IsByteStorageObject() const override { return true; }
-
-		bool IsStringObject() const override { return true; }
-
-	private:
-		std::string m_content;
-	};
-
-	class ObjectBytes : public ObjectBase
-	{
-	public:
-		ObjectBytes(FieldNumber fn, const std::vector<uint8_t>& val = {}) : ObjectBase(fn), m_content(val) {}
-
-		ObjectBytes(FieldNumber fn, const char* data, size_t sz) : ObjectBase(fn)
-		{
-			m_content.resize(sz);
-			memcpy(m_content.data(), data, sz);
-		}
-
-		ObjectBytes(FieldNumber fn, const uint8_t* data, size_t sz) : ObjectBase(fn)
-		{
-			m_content.resize(sz);
-			memcpy(m_content.data(), data, sz);
-		}
-
-		ObjectBytes* SetContent(const std::vector<uint8_t>& val)
-		{
-			m_content = val;
-			MarkDirty();
-			return this;
-		}
-
-		const std::vector<uint8_t>& GetContent() const
-		{
-			return m_content;
-		}
-
-	public:
-		size_t GetPayloadSize() const override
-		{
-			return GetVarIntSize(CombineFieldNumberAndTag(GetFieldNumber(), TAG_LEN)) + GetVarIntSize(m_content.size()) + m_content.size();
-		}
-
-		void Encode(std::vector<uint8_t>& outputStream) const override
-		{
 			EncodeVarInt(outputStream, CombineFieldNumberAndTag(GetFieldNumber(), TAG_LEN));
 			EncodeVarInt(outputStream, m_content.size());
 			size_t oldLength = outputStream.size();
@@ -873,6 +1076,79 @@ namespace Protobuf
 			memcpy(outputStream.data() + oldLength, m_content.data(), m_content.size());
 		}
 
+		/// <summary>Returns true if the contained string is empty.</summary>
+		bool IsEmpty() override
+		{
+			return m_content.empty();
+		}
+
+		bool IsByteStorageObject() const override { return true; }
+		bool IsStringObject() const override { return true; }
+
+	private:
+		std::string m_content;
+	};
+
+	/// <summary>
+	/// Represents raw bytes (length-delimited) field.
+	/// </summary>
+	class ObjectBytes : public ObjectBase
+	{
+	public:
+		/// <summary>Construct from a vector of bytes.</summary>
+		explicit ObjectBytes(FieldNumber fn, const std::vector<uint8_t>& val = {}) : ObjectBase(fn), m_content(val) {}
+
+		/// <summary>Construct from raw char pointer and size.</summary>
+		ObjectBytes(FieldNumber fn, const char* data, size_t sz) : ObjectBase(fn)
+		{
+			m_content.resize(sz);
+			if (data && sz) memcpy(m_content.data(), data, sz);
+		}
+
+		/// <summary>Construct from raw uint8_t pointer and size.</summary>
+		ObjectBytes(FieldNumber fn, const uint8_t* data, size_t sz) : ObjectBase(fn)
+		{
+			m_content.resize(sz);
+			if (data && sz) memcpy(m_content.data(), data, sz);
+		}
+
+		/// <summary>Set the byte content (copy) and mark dirty.</summary>
+		ObjectBytes* SetContent(const std::vector<uint8_t>& val) noexcept
+		{
+			m_content = val;
+			MarkDirty();
+			return this;
+		}
+
+		/// <summary>Return a const-reference to the underlying byte vector.</summary>
+		const std::vector<uint8_t>& GetContent() const noexcept
+		{
+			return m_content;
+		}
+
+	public:
+		/// <summary>Return encoded payload size (tag + length + bytes).</summary>
+		size_t GetPayloadSize() const override
+		{
+			return GetVarIntSize(CombineFieldNumberAndTag(GetFieldNumber(), TAG_LEN)) + GetVarIntSize(m_content.size()) + m_content.size();
+		}
+
+		/// <summary>Encode this bytes field into the provided output stream.</summary>
+		void Encode(std::vector<uint8_t>& outputStream) const override
+		{
+			size_t tagSize = GetVarIntSize(CombineFieldNumberAndTag(GetFieldNumber(), TAG_LEN));
+			size_t lenSize = GetVarIntSize(m_content.size());
+			size_t need = tagSize + lenSize + m_content.size();
+			outputStream.reserve(outputStream.size() + need);
+
+			EncodeVarInt(outputStream, CombineFieldNumberAndTag(GetFieldNumber(), TAG_LEN));
+			EncodeVarInt(outputStream, m_content.size());
+			size_t oldLength = outputStream.size();
+			outputStream.resize(oldLength + m_content.size());
+			memcpy(outputStream.data() + oldLength, m_content.data(), m_content.size());
+		}
+
+		/// <summary>Return true if there are no bytes.</summary>
 		bool IsEmpty() override
 		{
 			return m_content.empty();
@@ -885,31 +1161,40 @@ namespace Protobuf
 		std::vector<uint8_t> m_content;
 	};
 
+	/// <summary>
+	/// Represents a varint (integer) field.
+	/// </summary>
 	class ObjectVarInt : public ObjectBase
 	{
 	public:
+		/// <summary>Construct a varint object for the given field and initial value.</summary>
 		ObjectVarInt(FieldNumber fn, uint64_t val = 0) : ObjectBase(fn), m_value(val) {}
 
-		ObjectVarInt* SetValue(uint64_t c)
+		/// <summary>Set the integer value and mark dirty.</summary>
+		ObjectVarInt* SetValue(uint64_t c) noexcept
 		{
 			m_value = c;
 			MarkDirty();
 			return this;
 		}
 
-		uint64_t GetValue() const
+		/// <summary>Get the stored integer value.</summary>
+		uint64_t GetValue() const noexcept
 		{
 			return m_value;
 		}
 
 	public:
+		/// <summary>Return payload size (tag varint + value varint).</summary>
 		size_t GetPayloadSize() const override
 		{
 			return GetVarIntSize(CombineFieldNumberAndTag(GetFieldNumber(), TAG_VARINT)) + GetVarIntSize(m_value);
 		}
 
+		/// <summary>Encode tag and varint value into the output stream.</summary>
 		void Encode(std::vector<uint8_t>& outputStream) const override
 		{
+			outputStream.reserve(outputStream.size() + GetPayloadSize());
 			EncodeVarInt(outputStream, CombineFieldNumberAndTag(GetFieldNumber(), TAG_VARINT));
 			EncodeVarInt(outputStream, m_value);
 		}
@@ -923,36 +1208,49 @@ namespace Protobuf
 		uint64_t m_value;
 	};
 
+	/// <summary>
+	/// 64-bit fixed-width integer field (wire type 1).
+	/// Encoded as little-endian 8 bytes per protobuf spec.
+	/// </summary>
 	class ObjectFixed64 : public ObjectBase
 	{
 	public:
+		/// <summary>Construct with optional initial value.</summary>
 		ObjectFixed64(FieldNumber fn, uint64_t val = 0) : ObjectBase(fn), m_value(val) {}
 
-		ObjectFixed64* SetValue(uint64_t c)
+		/// <summary>Set the value and mark dirty.</summary>
+		ObjectFixed64* SetValue(uint64_t c) noexcept
 		{
 			m_value = c;
 			MarkDirty();
 			return this;
 		}
 
-		uint64_t GetValue() const
+		/// <summary>Get the stored value.</summary>
+		uint64_t GetValue() const noexcept
 		{
 			return m_value;
 		}
 
 	public:
+		/// <summary>Return encoded payload size (tag + 8 bytes).</summary>
 		size_t GetPayloadSize() const override
 		{
 			return GetVarIntSize(CombineFieldNumberAndTag(GetFieldNumber(), TAG_I64)) + sizeof(uint64_t);
 		}
 
+		/// <summary>Encode the fixed64 value in little-endian order.</summary>
 		void Encode(std::vector<uint8_t>& outputStream) const override
 		{
+			outputStream.reserve(outputStream.size() + GetPayloadSize());
 			EncodeVarInt(outputStream, CombineFieldNumberAndTag(GetFieldNumber(), TAG_I64));
-			size_t old = outputStream.size();
-			outputStream.resize(old + sizeof(uint64_t));
-			// Use memcpy to avoid UB from type punning
-			memcpy(outputStream.data() + old, &m_value, sizeof(uint64_t));
+
+			// append little-endian bytes explicitly (portable)
+			uint64_t v = m_value;
+			for (int i = 0; i < 8; ++i) {
+				outputStream.push_back(static_cast<uint8_t>(v & 0xFF));
+				v >>= 8;
+			}
 		}
 
 		bool IsEmpty() override
@@ -964,41 +1262,55 @@ namespace Protobuf
 		uint64_t m_value;
 	};
 
+	/// <summary>
+	/// 32-bit fixed-width integer field (wire type 5).
+	/// Encoded as little-endian 4 bytes per protobuf spec.
+	/// </summary>
 	class ObjectFixed32 : public ObjectBase
 	{
 	public:
+		/// <summary>Construct with optional initial value.</summary>
 		ObjectFixed32(FieldNumber fn, uint32_t val = 0) : ObjectBase(fn), m_value(val) {}
 
-		ObjectFixed32* SetValue(uint32_t c)
+		/// <summary>Set the value and mark dirty.</summary>
+		ObjectFixed32* SetValue(uint32_t c) noexcept
 		{
 			m_value = c;
 			MarkDirty();
 			return this;
 		}
-		uint32_t GetValue() const
+
+		/// <summary>Get the stored value.</summary>
+		uint32_t GetValue() const noexcept
 		{
 			return m_value;
 		}
 
 	public:
+		/// <summary>Return encoded payload size (tag + 4 bytes).</summary>
 		size_t GetPayloadSize() const override
 		{
 			return GetVarIntSize(CombineFieldNumberAndTag(GetFieldNumber(), TAG_I32)) + sizeof(uint32_t);
 		}
 
+		/// <summary>Encode the fixed32 value in little-endian order.</summary>
 		void Encode(std::vector<uint8_t>& outputStream) const override
 		{
+			outputStream.reserve(outputStream.size() + GetPayloadSize());
 			EncodeVarInt(outputStream, CombineFieldNumberAndTag(GetFieldNumber(), TAG_I32));
-			size_t old = outputStream.size();
-			outputStream.resize(old + sizeof(uint32_t));
-			memcpy(outputStream.data() + old, &m_value, sizeof(uint32_t));
+
+			uint32_t v = m_value;
+			for (int i = 0; i < 4; ++i) {
+				outputStream.push_back(static_cast<uint8_t>(v & 0xFF));
+				v >>= 8;
+			}
 		}
 
 	private:
 		uint32_t m_value;
 	};
 
-	static ErrorOr<uint64_t> DecodeVarInt(const char* data, size_t& offset, size_t sz)
+	static ErrorOr<uint64_t> DecodeVarInt(const char* data, size_t& offset, size_t size)
 	{
 		const uint8_t* ptr = reinterpret_cast<const uint8_t*>(data);
 		uint64_t result = 0;
@@ -1007,7 +1319,7 @@ namespace Protobuf
 
 		while (true)
 		{
-			if (offset >= sz)
+			if (offset >= size)
 				return ErrorOr<uint64_t>::failure(ErrorCode::OutOfBounds);
 
 			uint8_t byte = ptr[offset++];
