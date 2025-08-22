@@ -1236,6 +1236,17 @@ namespace Protobuf
 		uint32_t m_value;
 	};
 
+
+	/// <summary>
+	/// Decodes a protobuf varint from the given buffer.
+	/// </summary>
+	/// <param name="data">Pointer to the raw buffer (char*).</param>
+	/// <param name="offset">Reference to current offset in buffer (advanced on success).</param>
+	/// <param name="size">Total size of buffer.</param>
+	/// <returns>
+	/// On success, returns the decoded 64-bit value.
+	/// On failure, returns an ErrorOr with error code (e.g., OutOfBounds, VarIntTooBig).
+	/// </returns>
 	static ErrorOr<uint64_t> DecodeVarInt(const char* data, size_t& offset, size_t size)
 	{
 		const uint8_t* ptr = reinterpret_cast<const uint8_t*>(data);
@@ -1265,7 +1276,17 @@ namespace Protobuf
 		return ErrorOr<uint64_t>::success(result);
 	}
 
-	/// Decode a buffer into an ObjectBaseMessage using optional hints.
+	/// <summary>
+	/// Decodes a protobuf-encoded block (message) into the given ObjectBaseMessage.
+	/// </summary>
+	/// <param name="data">Pointer to raw buffer (char*).</param>
+	/// <param name="sz">Size of buffer in bytes.</param>
+	/// <param name="block">Destination ObjectBaseMessage that will receive decoded objects.</param>
+	/// <param name="pHint">Optional DecodeHint to guide how fields are interpreted.</param>
+	/// <returns>
+	/// Result::success() if decoding was successful,
+	/// or Result::failure(ErrorCode) if an error occurred (e.g., OutOfBounds, UnknownTag).
+	/// </returns>
 	static Result<ErrorCode> DecodeBlock(const char* data, size_t sz, ObjectBaseMessage* block, DecodeHint* pHint = nullptr)
 	{
 #ifdef DISABLE_PROTOBUF
@@ -1451,6 +1472,16 @@ namespace Protobuf
 		return Result<ErrorCode>::success();
 	}
 
+	/// <summary>
+	/// Convenience overload of DecodeBlock taking a uint8_t* buffer.
+	/// </summary>
+	/// <param name="data">Pointer to raw buffer (uint8_t*).</param>
+	/// <param name="sz">Size of buffer in bytes.</param>
+	/// <param name="block">Destination ObjectBaseMessage that will receive decoded objects.</param>
+	/// <returns>
+	/// Result::success() if decoding was successful,
+	/// or Result::failure(ErrorCode) if an error occurred.
+	/// </returns>
 	static Result<ErrorCode> DecodeBlock(const uint8_t* data, size_t sz, ObjectBaseMessage* block)
 	{
 		return DecodeBlock(reinterpret_cast<const char*>(data), sz, block);
