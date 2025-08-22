@@ -141,7 +141,7 @@ public: // SETTINGS
 private:
 	Protobuf::DecodeHint* CreateHint();
 
-	Protobuf::ObjectBaseMessage* m_pSettingsMessage = nullptr;
+	std::unique_ptr<Protobuf::ObjectBaseMessage> m_pSettingsMessage = nullptr;
 };
 
 SettingsManager* GetSettingsManager();

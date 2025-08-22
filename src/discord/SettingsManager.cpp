@@ -2,41 +2,41 @@
 #include "Frontend.hpp"
 #include "DiscordInstance.hpp"
 
-static SettingsManager g_SMSingleton;
 SettingsManager* GetSettingsManager()
 {
-	return &g_SMSingleton;
+	static SettingsManager s_instance;
+	return &s_instance;
 }
 
 SettingsManager::SettingsManager()
+	: m_pSettingsMessage(std::make_unique<Protobuf::ObjectBaseMessage>())
 {
-	m_pSettingsMessage = new Protobuf::ObjectBaseMessage;
 }
 
-SettingsManager::~SettingsManager()
-{
-	delete m_pSettingsMessage;
-}
+SettingsManager::~SettingsManager() = default;
 
 void SettingsManager::LoadData(const uint8_t* data, size_t sz)
 {
 	using namespace Protobuf;
-	ObjectBaseMessage* pMsg = new ObjectBaseMessage;
+	if (!data || sz == 0) return;
+
+	auto pMsg = std::make_unique<ObjectBaseMessage>();
 	pMsg->SetDecodingHint(CreateHint()); // gonna get deleted below
 
-	try
-	{
-		DecodeBlock(data, sz, pMsg);
-		m_pSettingsMessage->MergeWith(pMsg);
-		m_pSettingsMessage->MarkClean();
+	auto decodeRes = DecodeBlock(reinterpret_cast<const char*>(data), sz, pMsg.get());
+	if (!decodeRes.has_value()) {
+		GetFrontend()->OnProtobufError(decodeRes.error());
+		return;
+	}
 
-		delete pMsg;
+	auto mergeRes = m_pSettingsMessage->MergeWith(pMsg.get());
+	if (!mergeRes.has_value()) {
+		GetFrontend()->OnProtobufError(mergeRes.error());
+		return;
 	}
-	catch (Protobuf::ErrorCode code)
-	{
-		delete pMsg;
-		GetFrontend()->OnProtobufError(code);
-	}
+
+
+	m_pSettingsMessage->MarkClean();
 }
 
 void SettingsManager::FlushSettings()
@@ -57,7 +57,7 @@ void SettingsManager::SetOnlineIndicator(eActiveStatus status)
 		->GetFieldObjectDefault<ObjectMessage>(Settings::Activity::FIELD_INDICATOR)
 		->GetFieldObjectDefault<ObjectString>(Settings::Activity::Indicator::FIELD_STATE);
 
-	const char* possibleUpdates[] = {
+	static constexpr const char* possibleUpdates[] = {
 		"invisible",
 		"online",
 		"idle",
@@ -72,7 +72,7 @@ void SettingsManager::SetOnlineIndicator(eActiveStatus status)
 	{
 		pState->SetContent(state);
 
-		// mark dirty so it's still sent,  so that it doesn't accidentally remove your status message
+		// mark dirty so it's still sent, so that it doesn't accidentally remove your status message
 		m_pSettingsMessage
 			->GetFieldObjectDefault<ObjectMessage>(Settings::FIELD_ACTIVITY)
 			->GetFieldObjectDefault<ObjectMessage>(Settings::Activity::FIELD_INDICATOR)
@@ -93,11 +93,11 @@ eActiveStatus SettingsManager::GetOnlineIndicator()
 
 void SettingsManager::SetCustomStatus(const std::string& text, const std::string& emoji, uint64_t timeExpiry)
 {
+	using namespace Protobuf;
+
 	if (text.empty() && emoji.empty())
 	{
-		using namespace Protobuf;
-
-		// delete that sucker
+		// remove the custom-status field if both empty
 		ObjectMessage* pActivity = m_pSettingsMessage
 			->GetFieldObjectDefault<ObjectMessage>(Settings::FIELD_ACTIVITY);
 
@@ -105,8 +105,6 @@ void SettingsManager::SetCustomStatus(const std::string& text, const std::string
 	}
 	else
 	{
-		using namespace Protobuf;
-
 		ObjectMessage *pCustomStatus = m_pSettingsMessage
 			->GetFieldObjectDefault<ObjectMessage>(Settings::FIELD_ACTIVITY)
 			->GetFieldObjectDefault<ObjectMessage>(Settings::Activity::FIELD_CUSTOM_STATUS);
@@ -123,7 +121,7 @@ void SettingsManager::SetCustomStatus(const std::string& text, const std::string
 			->GetFieldObjectDefault<ObjectFixed64>(Settings::Activity::CustomStatus::FIELD_EXPIRY)
 			->SetValue(timeExpiry);
 
-		// so it gets pushed too alongside the update
+		// ensure indicator string is marked dirty so server receives the update
 		m_pSettingsMessage
 			->GetFieldObjectDefault<ObjectMessage>(Settings::FIELD_ACTIVITY)
 			->GetFieldObjectDefault<ObjectString>(Settings::Activity::FIELD_INDICATOR)
@@ -133,18 +131,18 @@ void SettingsManager::SetCustomStatus(const std::string& text, const std::string
 
 std::string SettingsManager::GetCustomStatusText()
 {
-	Protobuf::ObjectBase* pObject = m_pSettingsMessage
-		->GetFieldObjectDefault<Protobuf::ObjectMessage>(Settings::FIELD_ACTIVITY)
-		->GetFieldObjectDefault<Protobuf::ObjectMessage>(Settings::Activity::FIELD_CUSTOM_STATUS)
+	using namespace Protobuf;
+
+	ObjectBase* pObject = m_pSettingsMessage
+		->GetFieldObjectDefault<ObjectMessage>(Settings::FIELD_ACTIVITY)
+		->GetFieldObjectDefault<ObjectMessage>(Settings::Activity::FIELD_CUSTOM_STATUS)
 		->GetFieldObject(Settings::Activity::CustomStatus::FIELD_TEXT);
 
-	if (!pObject)
-		return "";
 
-	if (!pObject->IsStringObject())
-		return ""; // failed
+	if (!pObject || !pObject->IsStringObject())
+		return {};
 
-	return dynamic_cast<Protobuf::ObjectString*>(pObject)->GetContent();
+	return static_cast<ObjectString*>(pObject)->GetContent();
 }
 
 std::string SettingsManager::GetCustomStatusEmoji()
@@ -159,11 +157,12 @@ std::string SettingsManager::GetCustomStatusEmoji()
 
 uint64_t SettingsManager::GetCustomStatusExpiry()
 {
-	return
-		m_pSettingsMessage
-		->GetFieldObjectDefault<Protobuf::ObjectMessage>(Settings::FIELD_ACTIVITY)
-		->GetFieldObjectDefault<Protobuf::ObjectMessage>(Settings::Activity::FIELD_CUSTOM_STATUS)
-		->GetFieldObjectDefault<Protobuf::ObjectFixed64>(Settings::Activity::CustomStatus::FIELD_EXPIRY)
+	using namespace Protobuf;
+
+	return m_pSettingsMessage
+		->GetFieldObjectDefault<ObjectMessage>(Settings::FIELD_ACTIVITY)
+		->GetFieldObjectDefault<ObjectMessage>(Settings::Activity::FIELD_CUSTOM_STATUS)
+		->GetFieldObjectDefault<ObjectFixed64>(Settings::Activity::CustomStatus::FIELD_EXPIRY)
 		->GetValue();
 }
 
@@ -191,15 +190,18 @@ eExplicitFilter SettingsManager::GetExplicitFilter()
 
 void SettingsManager::SetGuildDMBlocklist(const std::vector<Snowflake>& guilds)
 {
-	// XXX: big endian support?
+	// pack Snowflake vector into a byte vector safely
 	std::vector<uint8_t> data;
-	data.resize(guilds.size() * sizeof(Snowflake));
-	memcpy(data.data(), guilds.data(), data.size());
+	if (!guilds.empty()) {
+		data.resize(guilds.size() * sizeof(Snowflake));
+		std::memcpy(data.data(), guilds.data(), data.size());
+	}
 
 	m_pSettingsMessage
 		->GetFieldObjectDefault<Protobuf::ObjectMessage>(Settings::FIELD_PRIVACY)
 		->GetFieldObjectDefault<Protobuf::ObjectBytes>(Settings::Privacy::FIELD_DM_BLOCK_GUILDS)
 		->SetContent(data);
+
 	m_pSettingsMessage
 		->GetFieldObjectDefault<Protobuf::ObjectMessage>(Settings::FIELD_PRIVACY)
 		->GetFieldObjectDefault<Protobuf::ObjectVarInt>(Settings::Privacy::FIELD_DM_BLOCK_DEFAULT)
@@ -208,15 +210,23 @@ void SettingsManager::SetGuildDMBlocklist(const std::vector<Snowflake>& guilds)
 
 void SettingsManager::GetGuildDMBlocklist(std::vector<Snowflake>& guilds)
 {
-	// XXX: big endian support?
 	std::vector<uint8_t> data = m_pSettingsMessage
 		->GetFieldObjectDefault<Protobuf::ObjectMessage>(Settings::FIELD_PRIVACY)
 		->GetFieldObjectDefault<Protobuf::ObjectBytes>(Settings::Privacy::FIELD_DM_BLOCK_GUILDS)
 		->GetContent();
 
+	if (data.empty()) { guilds.clear(); return; }
+
 	assert(data.size() % sizeof(Snowflake) == 0);
-	guilds.resize(data.size() / sizeof(Snowflake));
-	memcpy(guilds.data(), data.data(), data.size());
+	size_t count = data.size() / sizeof(Snowflake);
+	guilds.resize(count);
+
+	// copy per-element to avoid unaligned reads on platforms that care
+	for (size_t i = 0; i < count; ++i) {
+		Snowflake sf = 0;
+		std::memcpy(&sf, data.data() + i * sizeof(Snowflake), sizeof(Snowflake));
+		guilds[i] = sf;
+	}
 }
 
 void SettingsManager::SetDMBlockDefault(bool b)
@@ -225,6 +235,7 @@ void SettingsManager::SetDMBlockDefault(bool b)
 		->GetFieldObjectDefault<Protobuf::ObjectMessage>(Settings::FIELD_PRIVACY)
 		->GetFieldObjectDefault<Protobuf::ObjectVarInt>(Settings::Privacy::FIELD_DM_BLOCK_DEFAULT)
 		->SetValue(b);
+
 	m_pSettingsMessage
 		->GetFieldObjectDefault<Protobuf::ObjectMessage>(Settings::FIELD_PRIVACY)
 		->GetFieldObjectDefault<Protobuf::ObjectBytes>(Settings::Privacy::FIELD_DM_BLOCK_GUILDS)
@@ -233,10 +244,10 @@ void SettingsManager::SetDMBlockDefault(bool b)
 
 bool SettingsManager::GetDMBlockDefault()
 {
-	return (bool)m_pSettingsMessage
+	return static_cast<bool>(m_pSettingsMessage
 		->GetFieldObjectDefault<Protobuf::ObjectMessage>(Settings::FIELD_PRIVACY)
 		->GetFieldObjectDefault<Protobuf::ObjectVarInt>(Settings::Privacy::FIELD_DM_BLOCK_DEFAULT)
-		->GetValue();
+		->GetValue());
 }
 
 void SettingsManager::SetMessageCompact(bool b)
@@ -250,11 +261,11 @@ void SettingsManager::SetMessageCompact(bool b)
 
 bool SettingsManager::GetMessageCompact()
 {
-	return (bool)m_pSettingsMessage
+	return static_cast<bool>(m_pSettingsMessage
 		->GetFieldObjectDefault<Protobuf::ObjectMessage>(Settings::FIELD_TEXT_AND_IMAGES)
 		->GetFieldObjectDefault<Protobuf::ObjectMessage>(Settings::TextAndImages::FIELD_DISPLAY_COMPACT)
 		->GetFieldObjectDefault<Protobuf::ObjectVarInt>(Settings::TextAndImages::DisplayCompact::FIELD_VALUE)
-		->GetValue();
+		->GetValue());
 }
 
 std::vector<Snowflake> SettingsManager::GetGuildFolders()
@@ -276,26 +287,26 @@ std::vector<Snowflake> SettingsManager::GetGuildFolders()
 	{
 		auto pBytesBase = item->GetFieldObject(Settings::GuildFolders::Item::FIELD_GUILD_IDS);
 
-		// TODO: Don't support guild folders OR reordering right now, so this will do.
 		if (!pBytesBase) {
 			DbgPrintF("Guild folders: No guilds!");
 			continue;
 		}
 		if (!pBytesBase->IsByteArrayObject()) {
-			DbgPrintF("Guild folders: This ain't a byte array!");
+			DbgPrintF("Guild folders: Not a byte array!");
 			continue;
 		}
 
-		auto pBytes = reinterpret_cast<Protobuf::ObjectBytes*>(pBytesBase);
+		auto pBytes = static_cast<Protobuf::ObjectBytes*>(pBytesBase);
 		std::vector<uint8_t> content = pBytes->GetContent();
-		if (content.size() % 8 != 0) {
-			DbgPrintF("Guild folders: This ain't a list of 64-bit integers!");
+		if (content.size() % sizeof(Snowflake) != 0) {
+			DbgPrintF("Guild folders: Not a list of 64-bit integers!");
 			continue;
 		}
 
-		for (size_t i = 0; i < content.size(); i += 8)
+		for (size_t i = 0; i < content.size(); i += sizeof(Snowflake))
 		{
-			Snowflake sf = *reinterpret_cast<Snowflake*>(content.data() + i);
+			Snowflake sf = 0;
+			std::memcpy(&sf, content.data() + i, sizeof(Snowflake));
 			v.push_back(sf);
 		}
 	}
@@ -364,18 +375,18 @@ void SettingsManager::GetGuildFoldersEx(std::map<Snowflake, std::string>& folder
 			continue;
 		}
 
-		auto pBytes = reinterpret_cast<Protobuf::ObjectBytes*>(pBytesBase);
+		auto pBytes = static_cast<Protobuf::ObjectBytes*>(pBytesBase);
 		std::vector<uint8_t> content = pBytes->GetContent();
-		if (content.size() % 8 != 0) {
-			DbgPrintF("Guild folders: This ain't a list of 64-bit integers!");
+		if (content.size() % sizeof(Snowflake) != 0) {
+			DbgPrintF("Guild folders: Not a list of 64-bit integers!");
 			continue;
 		}
 
-		for (size_t i = 0; i < content.size(); i += 8)
+		for (size_t i = 0; i < content.size(); i += sizeof(Snowflake))
 		{
-			Snowflake sf = *reinterpret_cast<Snowflake*>(content.data() + i);
-			
-			guilds.push_back(std::make_pair(folderId, sf));
+			Snowflake sf = 0;
+			std::memcpy(&sf, content.data() + i, sizeof(Snowflake));
+			guilds.emplace_back(folderId, sf);
 		}
 	}
 }
@@ -384,7 +395,7 @@ Protobuf::DecodeHint* SettingsManager::CreateHint()
 {
 	// Create a decode hint and use it
 	using Protobuf::DecodeHint;
-	DecodeHint* pHint = new DecodeHint(DecodeHint::O_MESSAGE); // root
+	auto pHint = new DecodeHint(DecodeHint::O_MESSAGE); // root
 
 	DecodeHint* pFolderHint = pHint
 		->AddChild(Settings::FIELD_GUILD_FOLDERS, DecodeHint::O_MESSAGE)
@@ -392,7 +403,6 @@ Protobuf::DecodeHint* SettingsManager::CreateHint()
 
 	pFolderHint->AddChild(Settings::GuildFolders::Item::FIELD_GUILD_IDS, DecodeHint::O_BYTES);
 	pFolderHint->AddChild(Settings::GuildFolders::Item::FIELD_NAME, DecodeHint::O_MESSAGE);
-	
 	return pHint;
 }
 
@@ -400,8 +410,8 @@ Protobuf::DecodeHint* SettingsManager::CreateHint()
 
 void SettingsManager::LoadDataBase64(const std::string& userSettings)
 {
-	uint8_t* pData = new uint8_t[base64::decoded_size(userSettings.size())];
-	auto szPair = base64::decode(pData, userSettings.c_str(), userSettings.size());
-	GetSettingsManager()->LoadData(pData, szPair.first);
-	delete[] pData;
+	std::vector<uint8_t> buffer(base64::decoded_size(userSettings.size()));
+	auto szPair = base64::decode(buffer.data(), userSettings.c_str(), userSettings.size());
+	if (szPair.first > 0)
+		GetSettingsManager()->LoadData(buffer.data(), szPair.first);
 }
