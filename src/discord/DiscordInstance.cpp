@@ -475,10 +475,6 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 	std::string str;
 	bool bExitAfterError = false, bShowMessageBox = false, bSendLoggedOutMessage = false, bJustExitMate = false;
 
-	// OpenSSL debug stuff
-	unsigned long err_code;
-	char errStringBuffer[260]; // OpenSSL says buffer must be >256 bytes
-
 	if (pRequest->IsMediaRequest() && !pRequest->IsOk()) {
 		DbgPrintF("WARNING: Request for media from url %s failed with error %d. Message: %s", pRequest->url.c_str(), pRequest->result, pRequest->ErrorMessage().c_str());
 		GetFrontend()->OnAttachmentFailed(pRequest->itype == IMAGE, pRequest->additional_data);

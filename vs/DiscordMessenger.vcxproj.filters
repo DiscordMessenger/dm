@@ -31,9 +31,6 @@
     <Filter Include="Source Files\Deps">
       <UniqueIdentifier>{b6c48d61-732c-4089-b993-c5458ed5bc3d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Deps\Asio">
-      <UniqueIdentifier>{8e44d3dc-2050-4d65-846a-3c9b3b0b880a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Deps\Mwas">
       <UniqueIdentifier>{09b7fb78-aa62-416c-ab35-65573760614c}</UniqueIdentifier>
     </Filter>
@@ -771,12 +768,6 @@
     </ClCompile>
     <ClCompile Include="..\src\discord\LocalSettings.cpp">
       <Filter>Source Files\Discord</Filter>
-    </ClCompile>
-    <ClCompile Include="..\deps\asio\src\asio.cpp">
-      <Filter>Source Files\Deps\Asio</Filter>
-    </ClCompile>
-    <ClCompile Include="..\deps\asio\src\asio_ssl.cpp">
-      <Filter>Source Files\Deps\Asio</Filter>
     </ClCompile>
     <ClCompile Include="..\deps\mwas\src\reimpl.cpp">
       <Filter>Source Files\Deps\Mwas</Filter>
