@@ -1966,19 +1966,21 @@ bool DiscordInstance::SortGuilds()
 			m_guildItemList.AddFolder(guild.first, folderNames[guild.first]);
 		}
 
+		// Set the guild added flag to true even if we aren't adding it, because
+		// I don't feel like adding a redundant check below
+		guildAdded[guild.second] = true;
+
 		// Fetch info about the actual guild.
 		Guild* gld = GetGuild(guild.second);
 		std::string name, avatar;
 		if (!gld) {
 			DbgPrintF("Guild %lld in guild folders doesn't actually exist", guild.second);
-			name = "Unknown guild";
-		}
-		else {
-			name = gld->m_name;
-			avatar = gld->m_avatarlnk;
+			continue;
 		}
 
-		guildAdded[guild.second] = true;
+		name = gld->m_name;
+		avatar = gld->m_avatarlnk;
+
 		m_guildItemList.AddGuild(guild.first, guild.second, name, avatar);
 	}
 
