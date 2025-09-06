@@ -1,10 +1,22 @@
 #pragma once
-#include <websocketpp/config/asio_client.hpp>
-#include <websocketpp/client.hpp>
+#include <string>
 
 namespace CloseCode
 {
 	enum {
+		// RFC 6455, S.7.4.1
+		NORMAL = 1000,
+		GOING_AWAY = 1001,
+		PROTOCOL_ERROR = 1002,
+		UNACCEPTABLE_DATA = 1003,
+		ABNORMAL_CLOSE = 1006, // illegal on the wire
+		INVALID_PAYLOAD = 1007,
+		POLICY_VIOLATION = 1008,
+		MESSAGE_TOO_BIG = 1009,
+		EXTENSION_MISSING = 1010,
+		INTERNAL_ERROR = 1011,
+		SERVICE_RESTART = 1012,
+
 		UNKNOWN_ERROR = 4000,
 		UNKNOWN_OPCODE,
 		DECODE_ERROR,
@@ -24,105 +36,26 @@ namespace CloseCode
 	};
 }
 
-typedef websocketpp::client<websocketpp::config::asio_tls_client> WSClient;
-typedef websocketpp::lib::shared_ptr<websocketpp::lib::thread> WSThreadSharedPtr;
-typedef websocketpp::lib::asio::ssl::context AsioSslContext;
-typedef websocketpp::lib::shared_ptr<AsioSslContext> AsioSslContextSharedPtr;
-typedef websocketpp::transport::asio::tls_socket::connection::socket_type AsioSocketType;
-
-class WSConnectionMetadata
-{
-public:
-	enum eStatus
-	{
-		CONNECTING,
-		OPEN,
-		FAILED,
-		CLOSED,
-	};
-
-	typedef websocketpp::lib::shared_ptr<WSConnectionMetadata> Pointer;
- 
-	WSConnectionMetadata(int id, websocketpp::connection_hdl hdl, std::string uri)
-	  : m_id(id)
-	  , m_hdl(hdl)
-	  , m_status(CONNECTING)
-	  , m_uri(uri)
-	  , m_server("N/A")
-	{}
-
-	void OnOpen(WSClient* c, websocketpp::connection_hdl hdl);
-	void OnFail(WSClient* c, websocketpp::connection_hdl hdl);
-	void OnClose(WSClient* c, websocketpp::connection_hdl hdl);
-	void OnMessage(websocketpp::connection_hdl hdl, WSClient::message_ptr msg);
-
-	websocketpp::connection_hdl GetHDL() const
-	{
-		return m_hdl;
-	}
-
-	int GetID() const
-	{
-		return m_id;
-	}
-
-	eStatus GetStatus() const
-	{
-		return m_status;
-	}
-
-private:
-	int m_id;
-	websocketpp::connection_hdl m_hdl;
-	eStatus m_status;
-	std::string m_uri;
-	std::string m_server;
-	std::string m_errorReason;
-};
-
-struct WebsocketMessageParm
-{
-	int m_gatewayId;
-	std::string m_payload;
-};
-
 class WebsocketClient
 {
 public:
-	WebsocketClient();
-	~WebsocketClient();
+	WebsocketClient() {};
+	virtual ~WebsocketClient() {};
 
-	void Init();
+	// Initializes the client.
+	virtual void Init() = 0;
 
-	void Kill();
+	// Kills the client.
+	virtual void Kill() = 0;
 
 	// Returns a connection ID.
-	int Connect(const std::string& uri);
-
-	// Gets metadata about a connection.
-	WSConnectionMetadata::Pointer GetMetadata(int ID);
+	virtual int Connect(const std::string& uri) = 0;
 
 	// Closes a connection by ID.
-	void Close(int ID, websocketpp::close::status::value code);
+	virtual void Close(int ID, int code) = 0;
 
 	// Send a message to a connection.
-	void SendMsg(int id, const std::string& msg);
-
-private:
-	typedef std::map<int, WSConnectionMetadata::Pointer> WSConnList;
-
-	WSClient m_endpoint;
-	WSThreadSharedPtr m_thread;
-	WSConnList m_connList;
-	int m_nextId = 0;
-	bool m_bKilled = true;
-
-	// Handle TLS initialization.
-	AsioSslContextSharedPtr HandleTLSInit(websocketpp::connection_hdl hdl);
-
-	// Handle socket initialization.
-	void HandleSocketInit(websocketpp::connection_hdl hdl, AsioSocketType& socketType);
+	virtual void SendMsg(int id, const std::string& msg) = 0;
 };
 
 WebsocketClient* GetWebsocketClient();
-

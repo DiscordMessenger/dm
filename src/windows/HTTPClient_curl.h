@@ -53,6 +53,8 @@ public:
 		uint8_t* stream_bytes,
 		size_t stream_size
 	) override;
+
+	static curl_blob* GetCABlob();
 	
 public:
 	static void InitializeCABlob();

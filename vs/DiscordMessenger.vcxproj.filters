@@ -431,9 +431,6 @@
     <ClInclude Include="..\src\resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\windows\QRCodeDialog.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\windows\RoleList.hpp">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
@@ -668,12 +665,12 @@
     <ClInclude Include="..\src\windows\HTTPClient_curl.h">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\windows\WebsocketClient_curl.h">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\windows\ProfileView.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\QRCodeDialog.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\RoleList.cpp">
@@ -755,9 +752,6 @@
       <Filter>Source Files\Discord</Filter>
     </ClCompile>
     <ClCompile Include="..\src\discord\Util.cpp">
-      <Filter>Source Files\Discord</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\discord\WebsocketClient.cpp">
       <Filter>Source Files\Discord</Filter>
     </ClCompile>
     <ClCompile Include="..\src\discord\Channel.cpp">
@@ -860,6 +854,9 @@
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\HTTPClient_curl.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\WebsocketClient_curl.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
   </ItemGroup>

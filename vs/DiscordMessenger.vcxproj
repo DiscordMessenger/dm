@@ -646,7 +646,6 @@
     <ClInclude Include="..\src\windows\PinList.hpp" />
     <ClInclude Include="..\src\windows\ProfilePopout.hpp" />
     <ClInclude Include="..\src\windows\ProfileView.hpp" />
-    <ClInclude Include="..\src\windows\QRCodeDialog.hpp" />
     <ClInclude Include="..\src\windows\QuickSwitcher.hpp" />
     <ClInclude Include="..\src\windows\RoleList.hpp" />
     <ClInclude Include="..\src\windows\StatusBar.hpp" />
@@ -656,6 +655,7 @@
     <ClInclude Include="..\src\windows\ShellNotification.hpp" />
     <ClInclude Include="..\src\windows\UploadDialog.hpp" />
     <ClInclude Include="..\src\windows\ProgressDialog.hpp" />
+    <ClInclude Include="..\src\windows\WebsocketClient_curl.h" />
     <ClInclude Include="..\src\windows\WindowMessages.hpp" />
     <ClInclude Include="..\src\windows\WinUtils.hpp" />
   </ItemGroup>
@@ -688,7 +688,6 @@
     <ClCompile Include="..\src\discord\UpdateChecker.cpp" />
     <ClCompile Include="..\src\discord\UserGuildSettings.cpp" />
     <ClCompile Include="..\src\discord\Util.cpp" />
-    <ClCompile Include="..\src\discord\WebsocketClient.cpp" />
     <ClCompile Include="..\src\windows\AboutDialog.cpp" />
     <ClCompile Include="..\src\windows\AutoComplete.cpp" />
     <ClCompile Include="..\src\windows\AvatarCache.cpp" />
@@ -716,7 +715,6 @@
     <ClCompile Include="..\src\windows\PinList.cpp" />
     <ClCompile Include="..\src\windows\ProfilePopout.cpp" />
     <ClCompile Include="..\src\windows\ProfileView.cpp" />
-    <ClCompile Include="..\src\windows\QRCodeDialog.cpp" />
     <ClCompile Include="..\src\windows\QuickSwitcher.cpp" />
     <ClCompile Include="..\src\windows\RoleList.cpp" />
     <ClCompile Include="..\src\windows\StatusBar.cpp" />
@@ -726,6 +724,7 @@
     <ClCompile Include="..\src\windows\ShellNotification.cpp" />
     <ClCompile Include="..\src\windows\UploadDialog.cpp" />
     <ClCompile Include="..\src\windows\ProgressDialog.cpp" />
+    <ClCompile Include="..\src\windows\WebsocketClient_curl.cpp" />
     <ClCompile Include="..\src\windows\WinUtils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -335,11 +335,15 @@ void HTTPClient_curl::WorkerThreadInit(HTTPClient_curl* instance)
 }
 
 #include "../discord/Frontend.hpp"
-#include "HTTPClient_curl.h"
 
 void HTTPClient_curl::DefaultHandler(NetRequest* pRequest)
 {
 	GetFrontend()->OnRequestDone(pRequest);
+}
+
+curl_blob* HTTPClient_curl::GetCABlob()
+{
+	return &s_pemDataBlob;
 }
 
 #include <windows.h>

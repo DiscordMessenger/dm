@@ -1,5 +1,6 @@
 ﻿#include <nlohmann/json.h>
 #include <boost/base64/base64.hpp>
+#include <sstream>
 #include "DiscordInstance.hpp"
 #include "WebsocketClient.hpp"
 #include "SettingsManager.hpp"
@@ -615,9 +616,9 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 			str = "Unknown HTTP code " + std::to_string(pRequest->result) + " (" + pRequest->ErrorMessage() + ")\n"
 				"URL requested: " + pRequest->url + "\n\nResponse:" + pRequest->response;
 
-			while ((err_code = ERR_get_error()) != 0) {
-				str += "\nAdditional OpenSSL Error: " + std::string(ERR_error_string(err_code, errStringBuffer));
-			}
+			//while ((err_code = ERR_get_error()) != 0) {
+			//	str += "\nAdditional OpenSSL Error: " + std::string(ERR_error_string(err_code, errStringBuffer));
+			//}
 
 			bExitAfterError = false;
 			bShowMessageBox = true;
@@ -797,11 +798,11 @@ void DiscordInstance::GatewayClosed(int errorCode)
 
 	switch (errorCode)
 	{
-		// Websocketpp codes
-		case websocketpp::close::status::abnormal_close:
-		case websocketpp::close::status::going_away:
-		case websocketpp::close::status::service_restart:
-		case websocketpp::close::status::normal:
+		case CloseCode::ABNORMAL_CLOSE:
+		case CloseCode::GOING_AWAY:
+		case CloseCode::SERVICE_RESTART:
+		case CloseCode::NORMAL:
+
 		case CloseCode::LOG_ON_AGAIN:
 		case CloseCode::INVALID_SEQ:
 		case CloseCode::SESSION_TIMED_OUT:
@@ -828,7 +829,7 @@ void DiscordInstance::StartGatewaySession()
 	GetFrontend()->OnConnecting();
 
 	if (m_gatewayConnId)
-		GetWebsocketClient()->Close(m_gatewayConnId, websocketpp::close::status::normal);
+		GetWebsocketClient()->Close(m_gatewayConnId, CloseCode::NORMAL);
 
 	int connID = GetWebsocketClient()->Connect(m_gatewayUrl + DISCORD_WSS_DETAILS);
 
@@ -1648,7 +1649,7 @@ void DiscordInstance::CloseGatewaySession()
 {
 	if (m_gatewayConnId < 0) return;
 
-	GetWebsocketClient()->Close(m_gatewayConnId, websocketpp::close::status::normal);
+	GetWebsocketClient()->Close(m_gatewayConnId, CloseCode::NORMAL);
 	m_gatewayConnId = -1;
 }
 

@@ -3,7 +3,6 @@
 #include "Main.hpp"
 #include "ImageLoader.hpp"
 #include "ProfilePopout.hpp"
-#include "QRCodeDialog.hpp"
 #include "PinList.hpp"
 #include "ProgressDialog.hpp"
 #include "ShellNotification.hpp"
@@ -329,8 +328,6 @@ void Frontend_Win32::OnWebsocketClose(int gatewayID, int errorCode, const std::s
 {
 	if (GetDiscordInstance()->GetGatewayID() == gatewayID)
 		GetDiscordInstance()->GatewayClosed(errorCode);
-	else if (GetQRCodeDialog()->GetGatewayID() == gatewayID)
-		GetQRCodeDialog()->HandleGatewayClose(errorCode);
 	else
 		DbgPrintW("Unknown gateway connection %d closed: %d", gatewayID, errorCode);
 }
