@@ -40,7 +40,6 @@
 #include "TextManager.hpp"
 #include "WinUtils.hpp"
 #include "AvatarCache.hpp"
-#include "NetworkerThread.hpp"
 #include "TextInterface_Win32.hpp"
 
 #include "../discord/DiscordAPI.hpp"
@@ -48,6 +47,7 @@
 #include "../discord/Util.hpp"
 #include "../discord/ProfileCache.hpp"
 #include "../discord/DiscordInstance.hpp"
+#include "../discord/HTTPClient.hpp"
 
 #define MAX_MESSAGE_SIZE 2000 // 4000 with nitro
 
