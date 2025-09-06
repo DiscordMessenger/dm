@@ -54,92 +54,85 @@ You can build this project in two ways.
 
 This method can only support down to Windows XP SP2, but it's easier to get started with.
 
-1. Compile OpenSSL for Win32, or find a distribution of OpenSSL 3.X.
+You must have CMake for Windows installed.
 
-You can acquire OpenSSL for Win32 from the following website if you don't want to bother with
-compiling it:
-https://slproweb.com/products/Win32OpenSSL.html
+1. Compile Mbed TLS for Win32.
 
-(Note: Do not download the "Light" versions, as they only contain the DLLs.)
+First, clone the repository.
+```
+wget https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-3.6.4/mbedtls-3.6.4.tar.bz2
+tar -xvjf mbedtls-3.6.4.tar.bz2
+cd mbedtls-3.6.4
+```
 
-(Note: Download Win64 if you want to compile for x64, Win32 if you want to compile for Win32).
+Then, apply the patches:
+```
+git apply [DM project root]/mbedtls-patches.diff
+```
 
-2. Add an entry to your user/system environment variables called `OPENSSL_INSTALL`. (replace with
-`OPENSSL_INSTALL64` everywhere if you are compiling for 64-bit)
+Finally, run the following commands in a VS Developer Command Prompt:
+```
+mkdir build && cd build
+cmake .. -G "Visual Studio 17 2022" -A Win32 -DENABLE_TESTING=OFF -DENABLE_PROGRAMS=OFF -DCMAKE_INSTALL_PREFIX="%CD%\..\install"
+cmake --build . --config Release --target INSTALL
+```
 
-Set its value to the place where your OpenSSL distribution is located.
+(Note: If you have other cmake.exe's defined, you must use the Visual Studio provided one.
 
-3. If you want to use a later version of libwebp, acquire libwebp from the following web site:
-https://developers.google.com/speed/webp/download.  Extract the archive and place "libwebp.lib" in
-`vs/libs`.
+Finally, define the environment variable `MBEDTLS_INSTALL_MSVC` to point to the `install` directory,
+located inside your mbedtls checkout directory.
 
-4. Open the Visual Studio solution `vs/DiscordMessenger.sln`.
+2. Compile libcurl for Win32.
 
-5. Click the big play button.  (Both x86 and x64 targets are supported.)
+First, download curl 8.11.1.
 
-6. Enjoy!
+Note: curl 8.12 introduced a breaking change which [causes libpsl to be required](https://github.com/curl/curl/issues/16486)
+
+```
+wget https://github.com/curl/curl/releases/download/curl-8_11_1/curl-8.11.1.tar.bz2
+tar -xvjf curl-8.11.1.tar.bz2
+```
+
+Finally, run the following commands in a VS Developer Command Prompt:
+```
+cmake .. -G "Visual Studio 17 2022" -A Win32 ^
+  -DCMAKE_BUILD_TYPE=Release ^
+  -DBUILD_SHARED_LIBS=ON ^
+  -DCURL_USE_MBEDTLS=ON ^
+  -DMBEDTLS_INCLUDE_DIR="%MBEDTLS_INSTALL_MSVC%/include" ^
+  -DMBEDTLS_LIBRARY="%MBEDTLS_INSTALL_MSVC%/lib/mbedtls.lib" ^
+  -DMBEDX509_LIBRARY="%MBEDTLS_INSTALL_MSVC%/lib/mbedx509.lib" ^
+  -DMBEDCRYPTO_LIBRARY="%MBEDTLS_INSTALL_MSVC%/lib/mbedcrypto.lib" ^
+  -DCURL_DISABLE_LIBPSL=ON ^
+  -DCURL_DISABLE_FTP=ON ^
+  -DCURL_DISABLE_FILE=ON ^
+  -DCURL_DISABLE_LDAP=ON ^
+  -DCURL_DISABLE_LDAPS=ON ^
+  -DCURL_DISABLE_RTSP=ON ^
+  -DCURL_DISABLE_DICT=ON ^
+  -DCURL_DISABLE_TELNET=ON ^
+  -DCURL_DISABLE_TFTP=ON ^
+  -DCURL_DISABLE_POP3=ON ^
+  -DCURL_DISABLE_IMAP=ON ^
+  -DCURL_DISABLE_SMTP=ON ^
+  -DCURL_DISABLE_GOPHER=ON ^
+  -DCURL_DISABLE_MQTT=ON ^
+  -DCURL_DISABLE_SMB=ON ^
+  -DCURL_DISABLE_IPFS=ON ^
+  -DCURL_DISABLE_IPNS=ON ^
+  -DCMAKE_INSTALL_PREFIX="%CD%\..\install"
+cmake --build . --config Release --target INSTALL
+```
+
+Finally, define the environment variable `CURL_INSTALL_MSVC` to point to the `install` directory,
+located inside your curl checkout directory.
+
+If you want to build the 64-bit build, change Win32 to x64 in the configuration commands on both, and define `MBEDTLS_INSTALL_MSVC64` and `CURL_INSTALL_MSVC64`.
 
 ### 2. MinGW (on Linux, targeting Windows)
 
-(Note: x64 compilation with MinGW is currently not supported)
+[TODO]
 
-1. Acquire mingw-w64:
-```
-sudo apt install mingw-w64 gcc-mingw-w64-x86-64-posix g++-mingw-w64-x86-64-posix
-```
-
-2. Set `OPENSSL_INC_DIR` and `OPENSSL_LIB_DIR` in your environment variables to your OpenSSL
-include and library directories.  If you want to remember the paths, edit the Makefile to use those
-as your defaults, or `export` them (but make sure to not check in your change when sending a PR!)
-
-3. Use the following command line:
-```
-CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ WR=x86_64-w64-mingw32-windres make DEBUG=no UNICODE=[no|yes] [-j (your core count)]
-```
-
-The finished binary will be placed in `./bin/DiscordMessenger.exe`. Enjoy!
-
-### 3. MinGW (old Windows method)
-
-(Note: x64 compilation with MinGW is currently not supported)
-
-1. Acquire MinGW-6.3.0.  This is the last version of the original Minimalist GNU for Windows.
-
-NOTE: You might be able to use Mingw-w64 with 32-bit mode, but you might run into trouble running the
-final product on anything newer than XP.
-
-2. Using the MinGW Installation Manager, install or ensure that the following packages are installed:
-	- mingw32-base
-	- mingw32-binutils
-	- mingw32-gcc
-	- mingw32-gcc-core-deps
-	- mingw32-gcc-g++
-	- mingw32-libatomic
-	- mingw32-libgcc
-	- mingw32-w32api
-	- msys-base
-	- msys-bash
-	- msys-core
-	- msys-make
-
-3. Ensure that both the MinGW `bin/` AND msys `bin/` directories are in your `PATH`.
-
-4. Set `OPENSSL_INC_DIR` and `OPENSSL_LIB_DIR` in your environment variables to your OpenSSL
-include and library directories.  If you want to remember the paths, edit the Makefile to use those
-as your defaults (but make sure to not check in your change when sending a PR!)
-
-If you wish to use Shining Light Productions' distribution of OpenSSL-Win32, use the
-`%OPENSSL_INSTALL%/include` and `%OPENSSL_INSTALL%/lib/MinGW` directories for the include and lib
-dirs respectively.
-
-If you want compatibility on Windows versions which don't support the Microsoft Visual Studio 2015
-runtimes (VCRUNTIME140.DLL), then you will need to compile OpenSSL yourself.  See the section on
-[Compiling OpenSSL for older Windows versions](#compiling-openssl-for-older-windows-versions)
-section.
-
-5. Run the `make` command.
-
-6. Enjoy!
 
 ## Features
 ### Implemented
