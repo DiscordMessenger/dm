@@ -512,25 +512,17 @@ BEGIN
     EDITTEXT        IDC_EDIT_ABOUTME,65,58,55,12,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER
 END
 
-IDD_DIALOG_LOGON DIALOGEX 0, 0, 274, 218
+IDD_DIALOG_LOGON DIALOGEX 0, 0, 275, 120
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Log On to Discord Messenger"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "Log In",IDOK,162,197,50,14
-    PUSHBUTTON      "Quit",IDCANCEL,217,197,50,14
-    CONTROL         IDB_LOGON_BANNER,IDC_LOGON_BANNER,"Static",SS_BITMAP,0,0,274,57
-    LTEXT           "E-mail address or phone number:",IDC_LBL_EMAIL,7,77,106,8
-    EDITTEXT        IDC_EDIT_EMAIL,7,86,259,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_PASSWORD,7,117,259,14,ES_PASSWORD | ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_TOKEN,7,172,259,14,ES_AUTOHSCROLL
-    LTEXT           "Password",IDC_LBL_PASSWORD,7,108,32,8
-    CONTROL         "Log in using the following details:",IDC_RADIO_EMAILPASS,
-                    "Button",BS_AUTORADIOBUTTON,7,62,121,10
-    CONTROL         "Or log in faster using a token:",IDC_RADIO_TOKEN,"Button",BS_AUTORADIOBUTTON,7,160,111,10
-    ICON            IDI_WARNING_IC,IDC_ICON_WARN_CAPTCHA,7,140,20,20,SS_REALSIZEIMAGE
-    LTEXT           "Warning, a CAPTCHA may be required if using an e-mail address and password to log in. If so, you will need to log in with a token.",IDC_WARN_CAPTCHA,27,138,236,17
-    PUSHBUTTON      "Log In Using QR Code",IDC_LOGIN_QR_CODE,60,197,94,14
+    DEFPUSHBUTTON   "Log In",IDOK,162,99,50,14
+    PUSHBUTTON      "Quit",IDCANCEL,217,99,50,14
+    CONTROL         IDB_LOGON_BANNER,IDC_LOGON_BANNER,"Static",SS_BITMAP,1,0,274,57
+    EDITTEXT        IDC_EDIT_TOKEN,7,77,259,14,ES_AUTOHSCROLL
+    LTEXT           "To use Discord Messenger, you will need to paste your token here:",IDC_STATIC,7,62,266,15
+    PUSHBUTTON      "How do I get my token?",IDC_HOW_GET_TOKEN,7,99,90,14
 END
 
 IDD_DIALOG_QRCODELOGIN DIALOGEX 0, 0, 203, 238
@@ -923,8 +915,9 @@ BEGIN
     IDD_DIALOG_LOGON, DIALOG
     BEGIN
         LEFTMARGIN, 7
+        RIGHTMARGIN, 274
         TOPMARGIN, 7
-        BOTTOMMARGIN, 211
+        BOTTOMMARGIN, 113
     END
 
     IDD_DIALOG_QRCODELOGIN, DIALOG
@@ -1656,6 +1649,7 @@ BEGIN
     IDS_CONNECT_ERROR_3     "Use one of the following buttons to determine how to proceed:\no   RETRY: Retries the request. Use this once you have ensured a connection to the internet.\no   CANCEL: Cancels the request with unloaded data."
     IDS_CONNECT_ERROR_TITLE "Discord Messenger - Connection Error"
     IDS_SAVED_STRING_EXE    "Your downloaded file was saved at the following path: %s\n\nWARNING: This file might be malicious.  Make sure you trust the sender/author of this file.\nWould you like to open it?"
+    IDS_GET_TOKEN_TUTORIAL  "Here are a few steps you can use to get your Discord token:\n\no  Open a web browser, then navigate to discord.com\n\no  Log in using your Discord account.\n\no  Navigate to any channel.\n\no  Press Ctrl+Shift+I while focused on that channel.\n\no  Navigate to the Network tab, and then send a message.\n\no  Check the ""messages"" request, and in the Request Headers, find the ""Authorization"" string.\n\no  That's your token! Make sure to copy it without any quote marks, then paste it here.\n\nEnjoy!"
 END
 
 #endif    // English (United States) resources
