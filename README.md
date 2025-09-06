@@ -74,7 +74,6 @@ Finally, run the following commands in a VS Developer Command Prompt:
 ```
 mkdir build && cd build
 cmake .. -G "Visual Studio 17 2022" -A Win32 -DENABLE_TESTING=OFF -DENABLE_PROGRAMS=OFF -DCMAKE_INSTALL_PREFIX="%CD%\..\install"
-cmake --build . --config Release --target INSTALL
 ```
 
 (Note: If you have other cmake.exe's defined, you must use the Visual Studio provided one.
