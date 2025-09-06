@@ -1063,6 +1063,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (GetQRCodeDialog()->GetGatewayID() == pParm->m_gatewayId)
 				GetQRCodeDialog()->HandleGatewayMessage(pParm->m_payload);
 
+			delete pParm;
 			break;
 		}
 		case WM_REFRESHMEMBERS:
