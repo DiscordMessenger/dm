@@ -10,7 +10,6 @@
 #include "GuildHeader.hpp"
 #include "GuildLister.hpp"
 #include "TextToSpeech.hpp"
-#include "NetworkerThread.hpp"
 #include "ImageLoader.hpp"
 #include "ProfilePopout.hpp"
 #include "ImageViewer.hpp"
@@ -27,6 +26,8 @@
 #include "ShellNotification.hpp"
 #include "InstanceMutex.hpp"
 #include "CrashDebugger.hpp"
+#include "HTTPClient_curl.h"
+#include "NetworkerThread.hpp"
 #include "../discord/LocalSettings.hpp"
 #include "../discord/WebsocketClient.hpp"
 #include "../discord/UpdateChecker.hpp"
@@ -1811,7 +1812,7 @@ void InitializeFonts()
 }
 
 Frontend_Win32* g_pFrontEnd;
-NetworkerThreadManager* g_pHTTPClient;
+HTTPClient_curl* g_pHTTPClient;
 
 Frontend* GetFrontend()
 {
@@ -1851,6 +1852,7 @@ static bool ForceSingleInstance(LPCTSTR pClassName)
 
 #include "MemberListOld.hpp"
 
+
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nShowCmd)
 {
 	g_hInstance = hInstance;
@@ -1869,6 +1871,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 	InitializeCOM(); // important because otherwise TTS/shell stuff might not work
 	InitCommonControls(); // actually a dummy but adds the needed reference to comctl32
+	HTTPClient_curl::InitializeCABlob();
 	// (see https://devblogs.microsoft.com/oldnewthing/20050718-16/?p=34913 )
 
 	if (!ForceSingleInstance(pClassName))
@@ -1877,7 +1880,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	CheckIfItsStartup(pCmdLine);
 
 	g_pFrontEnd = new Frontend_Win32;
-	g_pHTTPClient = new NetworkerThreadManager;
+	g_pHTTPClient = new HTTPClient_curl;
 
 	// Create a background brush.
 	g_backgroundBrush = ri::GetSysColorBrush(COLOR_3DFACE);

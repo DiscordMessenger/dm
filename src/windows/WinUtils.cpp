@@ -15,7 +15,6 @@
 #include "../resource.h"
 #include "WindowMessages.hpp"
 #include "Measurements.hpp"
-#include "NetworkerThread.hpp"
 #include "ImageViewer.hpp"
 #include "TextManager.hpp"
 #include "ProgressDialog.hpp"
@@ -24,6 +23,8 @@
 #include <shlwapi.h>
 #include "../discord/Util.hpp"
 #endif
+
+#include "../discord/HTTPClient.hpp"
 
 constexpr int DEFAULT_DPI  = 96;
 constexpr int NORMAL_SCALE = 1000;

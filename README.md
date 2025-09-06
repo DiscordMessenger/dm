@@ -97,13 +97,12 @@ Finally, run the following commands in a VS Developer Command Prompt:
 ```
 cmake .. -G "Visual Studio 17 2022" -A Win32 ^
   -DCMAKE_BUILD_TYPE=Release ^
-  -DBUILD_SHARED_LIBS=ON ^
+  -DBUILD_SHARED_LIBS=OFF ^
   -DCURL_USE_MBEDTLS=ON ^
   -DMBEDTLS_INCLUDE_DIR="%MBEDTLS_INSTALL_MSVC%/include" ^
   -DMBEDTLS_LIBRARY="%MBEDTLS_INSTALL_MSVC%/lib/mbedtls.lib" ^
   -DMBEDX509_LIBRARY="%MBEDTLS_INSTALL_MSVC%/lib/mbedx509.lib" ^
   -DMBEDCRYPTO_LIBRARY="%MBEDTLS_INSTALL_MSVC%/lib/mbedcrypto.lib" ^
-  -DCURL_DISABLE_LIBPSL=ON ^
   -DCURL_DISABLE_FTP=ON ^
   -DCURL_DISABLE_FILE=ON ^
   -DCURL_DISABLE_LDAP=ON ^
@@ -119,7 +118,6 @@ cmake .. -G "Visual Studio 17 2022" -A Win32 ^
   -DCURL_DISABLE_MQTT=ON ^
   -DCURL_DISABLE_SMB=ON ^
   -DCURL_DISABLE_IPFS=ON ^
-  -DCURL_DISABLE_IPNS=ON ^
   -DCMAKE_INSTALL_PREFIX="%CD%\..\install"
 cmake --build . --config Release --target INSTALL
 ```

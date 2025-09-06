@@ -40,9 +40,6 @@
     <Filter Include="Source Files\Deps\Md5">
       <UniqueIdentifier>{8baa4f98-a70c-4417-afbc-c45523d2fb51}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Deps\Httplib">
-      <UniqueIdentifier>{552415f8-f70b-4d64-9741-f2722deed194}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files\Resources\Bitmaps">
       <UniqueIdentifier>{cc19d2da-c293-4a24-80f2-11ff83b2afd7}</UniqueIdentifier>
     </Filter>
@@ -416,6 +413,9 @@
     <None Include="..\res\animations\upload_hc.avi">
       <Filter>Resource Files\Resources\Animations</Filter>
     </None>
+    <None Include="..\res\cacert.pem">
+      <Filter>Resource Files\Resources</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\res\app.manifest">
@@ -501,9 +501,6 @@
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
     <ClInclude Include="..\src\windows\MissingDefinitions.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\NetworkerThread.hpp">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
     <ClInclude Include="..\src\windows\OptionsDialog.hpp">
@@ -602,9 +599,6 @@
     <ClInclude Include="..\src\windows\QuickSwitcher.hpp">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="..\deps\httplib\httplib.h">
-      <Filter>Source Files\Deps\Httplib</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\discord\UpdateChecker.hpp">
       <Filter>Header Files\Discord</Filter>
     </ClInclude>
@@ -669,6 +663,9 @@
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
     <ClInclude Include="..\src\windows\CrashDebugger.hpp">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\HTTPClient_curl.h">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
   </ItemGroup>
@@ -737,9 +734,6 @@
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\MessageList.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\NetworkerThread.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\OptionsDialog.cpp">
@@ -863,6 +857,9 @@
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\CrashDebugger.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\HTTPClient_curl.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
   </ItemGroup>

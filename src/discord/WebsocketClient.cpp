@@ -116,6 +116,35 @@ WebsocketClient::~WebsocketClient()
 	Kill();
 }
 
+// TODO: Phase this out
+#include <ri/recrypt.hpp>
+void LoadSystemCertsOnWindows(SSL_CTX* ctx)
+{
+	X509_STORE* store = X509_STORE_new();
+	auto hStore = ri::CertOpenSystemStoreA((HCRYPTPROV_LEGACY)NULL, "ROOT");
+
+	if (hStore) {
+
+		PCCERT_CONTEXT pContext = NULL;
+		while ((pContext = ri::CertEnumCertificatesInStore(hStore, pContext)) !=
+			nullptr) {
+			auto encoded_cert =
+				static_cast<const unsigned char*>(pContext->pbCertEncoded);
+
+			auto x509 = d2i_X509(NULL, &encoded_cert, pContext->cbCertEncoded);
+			if (x509) {
+				X509_STORE_add_cert(store, x509);
+				X509_free(x509);
+			}
+		}
+
+		ri::CertFreeCertificateContext(pContext);
+		ri::CertCloseStore(hStore, 0);
+	}
+
+	SSL_CTX_set_cert_store(ctx, store);
+}
+
 AsioSslContextSharedPtr WebsocketClient::HandleTLSInit(websocketpp::connection_hdl hdl)
 {
 	// establishes a SSL connection
