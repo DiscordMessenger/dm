@@ -27,7 +27,6 @@
 #include "InstanceMutex.hpp"
 #include "CrashDebugger.hpp"
 #include "HTTPClient_curl.h"
-#include "NetworkerThread.hpp"
 #include "../discord/LocalSettings.hpp"
 #include "../discord/WebsocketClient.hpp"
 #include "../discord/UpdateChecker.hpp"
