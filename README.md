@@ -118,6 +118,7 @@ cmake .. -G "Visual Studio 17 2022" -A Win32 ^
   -DCURL_DISABLE_MQTT=ON ^
   -DCURL_DISABLE_SMB=ON ^
   -DCURL_DISABLE_IPFS=ON ^
+  -DCURL_TARGET_WINDOWS_VERSION=0x0501 ^
   -DCMAKE_INSTALL_PREFIX="%CD%\..\install"
 cmake --build . --config Release --target INSTALL
 ```

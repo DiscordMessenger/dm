@@ -246,7 +246,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);$(MBEDTLS_INSTALL_MSVC)\lib;$(CURL_INSTALL_MSVC)\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
   </ItemDefinitionGroup>
@@ -264,7 +264,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);$(MBEDTLS_INSTALL_MSVC)\lib;$(CURL_INSTALL_MSVC)\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
   </ItemDefinitionGroup>
@@ -282,7 +282,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);$(MBEDTLS_INSTALL_MSVC)\lib;$(CURL_INSTALL_MSVC)\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
   </ItemDefinitionGroup>
@@ -300,7 +300,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);$(MBEDTLS_INSTALL_MSVC)\lib;$(CURL_INSTALL_MSVC)\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
   </ItemDefinitionGroup>
@@ -322,7 +322,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);$(MBEDTLS_INSTALL_MSVC)\lib;$(CURL_INSTALL_MSVC)\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseAnsi|Win32'">
@@ -343,7 +343,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);$(MBEDTLS_INSTALL_MSVC)\lib;$(CURL_INSTALL_MSVC)\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
