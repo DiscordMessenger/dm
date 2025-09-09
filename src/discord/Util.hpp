@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <nlohmann/json.h>
+#include <iprogsjson.hpp>
 #include "Snowflake.hpp"
 
 #ifdef _DEBUG
@@ -28,15 +28,15 @@ bool IsPotentiallyDangerousDownload(const std::string& filename);
 int64_t ExtractTimestamp(Snowflake sf);
 const uint64_t GetTimeMs() noexcept;
 const uint64_t GetTimeUs() noexcept;
-Snowflake GetSnowflakeFromJsonObject(const nlohmann::json& j);
-Snowflake GetSnowflake(const nlohmann::json& j, const std::string& key);
+Snowflake GetSnowflakeFromJsonObject(const iprog::JsonObject& j);
+Snowflake GetSnowflake(const iprog::JsonObject& j, const std::string& key);
 int64_t GetIntFromString(const std::string& str);
 std::string FormatDiscrim(int discrim);
-std::string GetGlobalName(const nlohmann::json& j);
-std::string GetUsername(const nlohmann::json& j);
-int GetFieldSafeInt(const nlohmann::json& j, const std::string& key);
-bool GetFieldSafeBool(const nlohmann::json& j, const std::string& key, bool default1);
-std::string GetFieldSafe(const nlohmann::json& j, const std::string& key);
+std::string GetGlobalName(const iprog::JsonObject& j);
+std::string GetUsername(const iprog::JsonObject& j);
+int GetFieldSafeInt(const iprog::JsonObject& j, const std::string& key);
+bool GetFieldSafeBool(const iprog::JsonObject& j, const std::string& key, bool default1);
+std::string GetFieldSafe(const iprog::JsonObject& j, const std::string& key);
 std::string GetMonthName(int mon);
 const char* GetDaySuffix(int day);
 time_t ParseTime(const std::string& iso8601);

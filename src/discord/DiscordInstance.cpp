@@ -1,4 +1,4 @@
-﻿#include <nlohmann/json.h>
+﻿#include <iprogsjson.hpp>
 #include <boost/base64/base64.hpp>
 #include "DiscordInstance.hpp"
 #include "WebsocketClient.hpp"
@@ -12,13 +12,13 @@
 
 #ifndef _DEBUG
 #define TRY try
-#define CATCH catch (Json::exception& ex) { OnJsonException(ex); }
+#define CATCH catch (std::exception& ex) { OnJsonException(ex); }
 #else
 #define TRY do
 #define CATCH while (0)
 #endif
 
-using Json = nlohmann::json;
+using Json = iprog::JsonObject;
 
 // Creates a temporary snowflake based on time.
 Snowflake CreateTemporarySnowflake()
@@ -65,14 +65,14 @@ void DebugResponse(NetRequest* pReq)
 	//OutputDebugStringA(str.c_str());
 }
 
-void OnJsonException(Json::exception & ex)
+void OnJsonException(std::exception & ex)
 {
 	GetFrontend()->OnJsonException(ex.what());
 }
 
 void DiscordInstance::OnFetchedChannels(Guild* pGld, const std::string& content)
 {
-	Json j = Json::parse(content);
+	Json j = iprog::JsonParser::parse(content);
 
 	pGld->m_channels.clear();
 
@@ -649,7 +649,7 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 		
 		if (pRequest->itype != IMAGE && pRequest->itype != IMAGE_ATTACHMENT)
 		{
-			j = Json::parse(pRequest->response);
+			j = iprog::JsonParser::parse(pRequest->response);
 		}
 
 		switch (pRequest->itype)
@@ -779,7 +779,7 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 		}
 	}
 #ifndef _DEBUG
-	catch (Json::exception& ex)
+	catch (std::exception& ex)
 	{
 		OnJsonException(ex);
 	}
@@ -1159,7 +1159,7 @@ void DiscordInstance::HandleGatewayMessage(const std::string& payload)
 {
 	DbgPrintF("Got Payload: %s [PAYLOAD ENDS HERE]", payload.c_str());
 
-	Json j = Json::parse(payload);
+	Json j = iprog::JsonParser::parse(payload);
 
 	int op = j["op"];
 	using namespace GatewayOp;
@@ -1716,7 +1716,7 @@ void DiscordInstance::UpdateSettingsInfo()
 	SetActivityStatus(GetSettingsManager()->GetOnlineIndicator(), false);
 }
 
-void DiscordInstance::ParsePermissionOverwrites(Channel& channel, nlohmann::json& j)
+void DiscordInstance::ParsePermissionOverwrites(Channel& channel, iprog::JsonObject& j)
 {
 	if (!j.contains("permission_overwrites"))
 		return;
@@ -1737,7 +1737,7 @@ void DiscordInstance::ParsePermissionOverwrites(Channel& channel, nlohmann::json
 	}
 }
 
-void DiscordInstance::ParseReadStateObject(nlohmann::json& readState, bool bAlternate)
+void DiscordInstance::ParseReadStateObject(iprog::JsonObject& readState, bool bAlternate)
 {
 	Snowflake id = GetSnowflake(readState, bAlternate ? "channel_id" : "id");
 	Snowflake lastMessageId = GetSnowflake(readState, bAlternate ? "message_id" : "last_message_id");
@@ -1770,7 +1770,7 @@ void DiscordInstance::ParseReadStateObject(nlohmann::json& readState, bool bAlte
 	GetFrontend()->UpdateChannelAcknowledge(id, lastMessageId);
 }
 
-void DiscordInstance::ParseChannel(Channel& c, nlohmann::json& chan, int& num)
+void DiscordInstance::ParseChannel(Channel& c, iprog::JsonObject& chan, int& num)
 {
 	c.m_snowflake = GetSnowflake(chan, "id");
 	c.m_channelType = Channel::eChannelType(int(chan["type"]));
@@ -2001,7 +2001,7 @@ bool DiscordInstance::SortGuilds()
 #endif
 }
 
-void DiscordInstance::ParseAndAddGuild(nlohmann::json& elem)
+void DiscordInstance::ParseAndAddGuild(iprog::JsonObject& elem)
 {
 	std::string uu = elem.dump();
 
@@ -2458,7 +2458,7 @@ void DiscordInstance::HandleMESSAGE_DELETE(Json& j)
 	GetFrontend()->OnDeleteMessage(messageId);
 }
 
-void DiscordInstance::HandleMESSAGE_ACK(nlohmann::json& j)
+void DiscordInstance::HandleMESSAGE_ACK(iprog::JsonObject& j)
 {
 	Json& data = j["d"];
 
@@ -2467,7 +2467,7 @@ void DiscordInstance::HandleMESSAGE_ACK(nlohmann::json& j)
 	ParseReadStateObject(data, true);
 }
 
-void DiscordInstance::HandleUSER_GUILD_SETTINGS_UPDATE(nlohmann::json& j)
+void DiscordInstance::HandleUSER_GUILD_SETTINGS_UPDATE(iprog::JsonObject& j)
 {
 	Json& data = j["d"];
 	Snowflake guildID = GetSnowflake(data, "guild_id");
@@ -2476,7 +2476,7 @@ void DiscordInstance::HandleUSER_GUILD_SETTINGS_UPDATE(nlohmann::json& j)
 	pSettings->Load(data);
 }
 
-void DiscordInstance::HandleUSER_NOTE_UPDATE(nlohmann::json& j)
+void DiscordInstance::HandleUSER_NOTE_UPDATE(iprog::JsonObject& j)
 {
 	Json& data = j["d"];
 	Snowflake uid = GetSnowflake(data, "id");
@@ -2686,7 +2686,7 @@ void DiscordInstance::HandleGUILD_MEMBER_LIST_UPDATE(Json& j)
 	GetFrontend()->UpdateMemberList();
 }
 
-Snowflake DiscordInstance::ParseGuildMember(Snowflake guild, nlohmann::json& memb, Snowflake userID)
+Snowflake DiscordInstance::ParseGuildMember(Snowflake guild, iprog::JsonObject& memb, Snowflake userID)
 {
 	Json& pres = memb["presence"], &user = memb["user"], & roles = memb["roles"];
 	Profile* pf = nullptr;
@@ -2745,7 +2745,7 @@ Snowflake DiscordInstance::ParseGuildMember(Snowflake guild, nlohmann::json& mem
 	return userID;
 }
 
-void DiscordInstance::HandlePRESENCE_UPDATE(nlohmann::json& j)
+void DiscordInstance::HandlePRESENCE_UPDATE(iprog::JsonObject& j)
 {
 	Json& data = j["d"];
 
@@ -2775,7 +2775,7 @@ void DiscordInstance::HandlePRESENCE_UPDATE(nlohmann::json& j)
 		GetFrontend()->UpdateUserData(userID);
 }
 
-void DiscordInstance::HandlePASSIVE_UPDATE_V1(nlohmann::json& j)
+void DiscordInstance::HandlePASSIVE_UPDATE_V1(iprog::JsonObject& j)
 {
 	Json& data = j["d"];
 	Snowflake guildId = GetSnowflake(data, "guild_id");
@@ -2801,7 +2801,7 @@ void DiscordInstance::HandlePASSIVE_UPDATE_V1(nlohmann::json& j)
 	}
 }
 
-void DiscordInstance::HandleGUILD_MEMBERS_CHUNK(nlohmann::json& j)
+void DiscordInstance::HandleGUILD_MEMBERS_CHUNK(iprog::JsonObject& j)
 {
 	Json& data = j["d"];
 	Snowflake guildId = GetSnowflake(data, "guild_id");
@@ -2828,7 +2828,7 @@ void DiscordInstance::HandleGUILD_MEMBERS_CHUNK(nlohmann::json& j)
 		GetFrontend()->RefreshMembers(memsToRefresh);
 }
 
-void DiscordInstance::HandleTYPING_START(nlohmann::json& j)
+void DiscordInstance::HandleTYPING_START(iprog::JsonObject& j)
 {
 	Json& data = j["d"];
 	Snowflake guildID = 0;
@@ -2850,7 +2850,7 @@ void DiscordInstance::HandleTYPING_START(nlohmann::json& j)
 	GetFrontend()->OnStartTyping(userID, guildID, chanID, startTime);
 }
 
-Snowflake DiscordInstance::ParseGuildMemberOrGroup(Snowflake guild, nlohmann::json& item)
+Snowflake DiscordInstance::ParseGuildMemberOrGroup(Snowflake guild, iprog::JsonObject& item)
 {
 	if (item.contains("group")) {
 		Json& grp = item["group"];
@@ -2876,7 +2876,7 @@ Snowflake DiscordInstance::ParseGuildMemberOrGroup(Snowflake guild, nlohmann::js
 	}
 }
 
-void DiscordInstance::HandleGuildMemberListUpdate_Sync(Snowflake guild, nlohmann::json& jx)
+void DiscordInstance::HandleGuildMemberListUpdate_Sync(Snowflake guild, iprog::JsonObject& jx)
 {
 	Guild* pGld = GetGuild(guild);
 	assert(pGld);
@@ -2891,7 +2891,7 @@ void DiscordInstance::HandleGuildMemberListUpdate_Sync(Snowflake guild, nlohmann
 		pGld->m_members.push_back(ParseGuildMemberOrGroup(guild, item));
 }
 
-void DiscordInstance::HandleGuildMemberListUpdate_Insert(Snowflake guild, nlohmann::json& j)
+void DiscordInstance::HandleGuildMemberListUpdate_Insert(Snowflake guild, iprog::JsonObject& j)
 {
 	Guild* pGld = GetGuild(guild);
 	assert(pGld);
@@ -2909,7 +2909,7 @@ void DiscordInstance::HandleGuildMemberListUpdate_Insert(Snowflake guild, nlohma
 	pGld->m_members.insert(pGld->m_members.begin() + index, sf);
 }
 
-void DiscordInstance::HandleGuildMemberListUpdate_Delete(Snowflake guild, nlohmann::json& j)
+void DiscordInstance::HandleGuildMemberListUpdate_Delete(Snowflake guild, iprog::JsonObject& j)
 {
 	Guild* pGld = GetGuild(guild);
 	assert(pGld);
@@ -2933,7 +2933,7 @@ void DiscordInstance::HandleGuildMemberListUpdate_Delete(Snowflake guild, nlohma
 	pGld->m_members.erase(pGld->m_members.begin() + index);
 }
 
-void DiscordInstance::HandleGuildMemberListUpdate_Update(Snowflake guild, nlohmann::json& j)
+void DiscordInstance::HandleGuildMemberListUpdate_Update(Snowflake guild, iprog::JsonObject& j)
 {
 	Guild* pGld = GetGuild(guild);
 	assert(pGld);
@@ -2965,7 +2965,7 @@ void DiscordInstance::OnUploadAttachmentFirst(NetRequest* pReq)
 		return;
 	}
 
-	Json j = Json::parse(pReq->response);
+	Json j = iprog::JsonParser::parse(pReq->response);
 	assert(j["attachments"].size() == 1);
 
 	for (auto& att : j["attachments"])

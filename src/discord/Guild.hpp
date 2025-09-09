@@ -4,7 +4,7 @@
 #include <list>
 #include <map>
 #include <vector>
-#include <nlohmann/json.h>
+#include <iprogsjson.hpp>
 #include "Snowflake.hpp"
 #include "Channel.hpp"
 #include "Emoji.hpp"
@@ -40,7 +40,7 @@ struct GuildRole
 		return false;
 	}
 
-	void Load(nlohmann::json& j);
+	void Load(iprog::JsonObject& j);
 };
 
 struct GuildMemberGroup

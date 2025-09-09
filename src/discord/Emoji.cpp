@@ -2,7 +2,7 @@
 #include "Util.hpp"
 #include "ProfileCache.hpp"
 
-void Emoji::Load(const nlohmann::json& j)
+void Emoji::Load(const iprog::JsonObject& j)
 {
 	m_id = GetSnowflake(j, "id");
 	m_name = GetFieldSafe(j, "name");

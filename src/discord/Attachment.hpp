@@ -24,7 +24,7 @@ public:
 	ContentType::eType m_contentType = ContentType::BLOB;
 
 public:
-	void Load(nlohmann::json& j);
+	void Load(iprog::JsonObject& j);
 
 	void UpdatePreviewSize()
 	{

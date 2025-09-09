@@ -1,13 +1,13 @@
 #include "UserGuildSettings.hpp"
 #include "Util.hpp"
 
-void MuteConfig::Load(const nlohmann::json& j)
+void MuteConfig::Load(const iprog::JsonObject& j)
 {
 	m_endTime = ParseTime(GetFieldSafe(j, "end_time"));
 	m_selectedTimeWindow = GetFieldSafeInt(j, "selected_time_window");
 }
 
-void MuteConfig::Load(const nlohmann::json& parent, const std::string& key)
+void MuteConfig::Load(const iprog::JsonObject& parent, const std::string& key)
 {
 	auto it = parent.find(key);
 	if (it == parent.end() || !it->is_structured())
@@ -16,7 +16,7 @@ void MuteConfig::Load(const nlohmann::json& parent, const std::string& key)
 	Load(*it);
 }
 
-void ChannelOverride::Load(const nlohmann::json& j)
+void ChannelOverride::Load(const iprog::JsonObject& j)
 {
 	m_channelId = GetSnowflake(j, "channel_id");
 	m_bCollapsed = GetFieldSafeBool(j, "collapsed", false);
@@ -51,7 +51,7 @@ bool GuildSettings::IsMuted() const
 	);
 }
 
-void GuildSettings::Load(const nlohmann::json& j)
+void GuildSettings::Load(const iprog::JsonObject& j)
 {
 	m_guildID = GetSnowflake(j, "guild_id");
 	m_flags = GetFieldSafeInt(j, "flags");
@@ -78,7 +78,7 @@ void GuildSettings::Load(const nlohmann::json& j)
 	}
 }
 
-void UserGuildSettings::Load(const nlohmann::json& j)
+void UserGuildSettings::Load(const iprog::JsonObject& j)
 {
 	bool partial = GetFieldSafeBool(j, "partial", false);
 	if (!partial)

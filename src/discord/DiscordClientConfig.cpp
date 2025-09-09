@@ -48,7 +48,7 @@ DiscordClientConfig::DiscordClientConfig()
 	m_secChUa = "\"Not?A_Brand\";v=\"99\", \"Chromium\";v=\"130\"";
 
 	// Ok, now serialize it
-	nlohmann::json j = Serialize();
+	iprog::JsonObject j = Serialize();
 
 	std::string str = j.dump();
 	m_serializedJsonBlob = str;
@@ -61,9 +61,9 @@ DiscordClientConfig::DiscordClientConfig()
 	m_serializedBase64Blob = dataToSend;
 }
 
-nlohmann::json DiscordClientConfig::Serialize() const
+iprog::JsonObject DiscordClientConfig::Serialize() const
 {
-	nlohmann::json j;
+	iprog::JsonObject j;
 	j["app_arch"] = m_appArch;
 	j["browser"] = m_browser;
 	j["browser_user_agent"] = m_browserUserAgent;

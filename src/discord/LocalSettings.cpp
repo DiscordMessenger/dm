@@ -1,10 +1,10 @@
 #include <fstream>
-#include <nlohmann/json.h>
+#include <iprogsjson.hpp>
 #include "LocalSettings.hpp"
 #include "Util.hpp"
 #include "DiscordAPI.hpp"
 #include "Frontend.hpp"
-using nlohmann::json;
+using iprog::JsonObject;
 
 static LocalSettings* g_pInstance;
 
@@ -53,7 +53,7 @@ bool LocalSettings::Load()
 	else
 		m_messageStyle = MS_3DFACE;
 
-	json j = json::parse(data);
+	JsonObject j = iprog::JsonParser::parse(data);
 
 	// Load properties from the json object.
 	if (j.contains("Token"))
@@ -164,8 +164,8 @@ bool LocalSettings::Load()
 
 bool LocalSettings::Save()
 {
-	json j;
-	json trustedDomains;
+	JsonObject j;
+	JsonObject trustedDomains;
 
 	for (auto& dom : m_trustedDomains)
 		trustedDomains.push_back(dom);
