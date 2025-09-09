@@ -684,6 +684,9 @@ namespace iprog
 		// Empty
 		bool empty() const
 		{
+			if (is_null())
+				return true;
+
 			if (!is_structured())
 				throw_error("empty() json object must be structured");
 
