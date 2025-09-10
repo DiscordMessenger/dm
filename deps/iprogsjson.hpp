@@ -19,6 +19,7 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <type_traits>
+#include <memory>
 
 // This is iProgramInCpp's JSON parser, which hopes to be faster than nlohmann::json while being
 // semi-compatible with it.
@@ -220,7 +221,7 @@ namespace iprog
 		}
 
 		// Move constructor - can be kept trivial
-		JsonObject(JsonObject&& other)
+		JsonObject(JsonObject&& other) noexcept
 		{
 			type = other.type;
 			data = other.data;
@@ -281,9 +282,9 @@ namespace iprog
 					// fall through
 				case eType::Array:
 					// copy the objects
-					data.structured.array = (JsonObject*) ::operator new[](other.data.structured.itemCount * sizeof(JsonObject));
+					data.structured.array = new JsonObject*[other.data.structured.itemCount];
 					for (size_t i = 0; i < other.data.structured.itemCount; i++)
-						new (&data.structured.array[i]) JsonObject(other.data.structured.array[i]);
+						data.structured.array[i] = new JsonObject(*other.data.structured.array[i]);
 
 					data.structured.itemCount = other.data.structured.itemCount;
 					break;
@@ -373,7 +374,7 @@ namespace iprog
 		}
 
 		// Initialize Number
-		template<typename T, typename = std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<T, bool>>>
+		template<typename T, std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<T, bool>, int> = 0>
 		JsonObject(T number)
 		{
 			type = eType::Number;
@@ -384,20 +385,22 @@ namespace iprog
 		}
 
 		// Initialize Decimal
-		JsonObject(double decimal)
+		template<typename T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
+		JsonObject(T decimal)
 		{
 			type = eType::Decimal;
-			data.decimal = decimal;
+			data.decimal = static_cast<double>(decimal);
 #ifdef IPROG_JSON_ENABLE_ORIGINAL_STRING
 			fullParsedString = std::make_shared<std::string>("Decimal created from constructor");
 #endif
 		}
 
 		// Initialize Boolean
-		JsonObject(bool boolean)
+		template<typename T, std::enable_if_t<std::is_same_v<T, bool>, int> = 0>
+		JsonObject(T boolean)
 		{
 			type = eType::Boolean;
-			data.boolean = boolean;
+			data.boolean = static_cast<bool>(boolean);
 #ifdef IPROG_JSON_ENABLE_ORIGINAL_STRING
 			fullParsedString = std::make_shared<std::string>("Boolean created from constructor");
 #endif
@@ -618,7 +621,7 @@ namespace iprog
 			if (index >= data.structured.itemCount)
 				throw_error("index out of bounds");
 
-			return data.structured.array[index];
+			return *data.structured.array[index];
 		}
 		
 		// Struct Access
@@ -636,13 +639,13 @@ namespace iprog
 			for (size_t i = 0; i < data.structured.itemCount; i++)
 			{
 				if (data.structured.names[i].Equals(key, keyLen))
-					return data.structured.array[i];
+					return *data.structured.array[i];
 			}
 
 			internal_resize(data.structured.itemCount + 1);
 
 			data.structured.names[data.structured.itemCount - 1] = JsonName(key);
-			return data.structured.array[data.structured.itemCount - 1];
+			return *data.structured.array[data.structured.itemCount - 1];
 		}
 
 		const JsonObject& get_key_cst(const char* key, size_t keyLen = 0) const
@@ -656,7 +659,7 @@ namespace iprog
 			for (size_t i = 0; i < data.structured.itemCount; i++)
 			{
 				if (data.structured.names[i].Equals(key, keyLen))
-					return data.structured.array[i];
+					return *data.structured.array[i];
 			}
 
 			throw_error("key does not exist");
@@ -678,7 +681,7 @@ namespace iprog
 
 			size_t sz = data.structured.itemCount;
 			internal_resize(sz + 1);
-			data.structured.array[sz] = object;
+			internal_set_at(sz, object);
 		}
 
 		// Empty
@@ -760,10 +763,10 @@ namespace iprog
 			using difference_type = size_t;
 
 		public:
-			iterator(JsonName* namePtr, JsonObject* objectPtr) : name(namePtr), object(objectPtr) {}
+			iterator(JsonName* namePtr, JsonObject** objectPtr) : name(namePtr), object(objectPtr) {}
 
-			reference operator*() const { return *object; }
-			pointer operator->() const { return object; }
+			reference operator*() const { return **object; }
+			pointer operator->() const { return *object; }
 
 			// increments and decrements
 			iterator& operator++()
@@ -807,11 +810,11 @@ namespace iprog
 				return name->Data();
 			}
 
-			reference value() const { return *object; }
+			reference value() const { return **object; }
 
 		private:
 			JsonName* name;
-			JsonObject* object;
+			JsonObject** object;
 		};
 
 		class const_iterator
@@ -824,10 +827,10 @@ namespace iprog
 			using difference_type = size_t;
 
 		public:
-			const_iterator(JsonName* namePtr, JsonObject* objectPtr) : name(namePtr), object(objectPtr) {}
+			const_iterator(JsonName* namePtr, const JsonObject* const* objectPtr) : name(namePtr), object(objectPtr) {}
 
-			reference operator*() const { return *object; }
-			pointer operator->() const { return object; }
+			reference operator*() const { return **object; }
+			pointer operator->() const { return *object; }
 
 			// increments and decrements
 			const_iterator& operator++()
@@ -871,11 +874,11 @@ namespace iprog
 				return name->Data();
 			}
 
-			reference value() const { return *object; }
+			reference value() const { return **object; }
 
 		private:
 			const JsonName* name;
-			const JsonObject* object;
+			const JsonObject* const* object;
 		};
 
 		iterator begin()
@@ -989,7 +992,7 @@ namespace iprog
 
 			for (size_t i = 0; i < data.structured.itemCount; i++)
 			{
-				if (data.structured.array[i] == value)
+				if (*data.structured.array[i] == value)
 				{
 					return iterator(
 						is_object() ? &data.structured.names[i] : nullptr,
@@ -1008,7 +1011,7 @@ namespace iprog
 
 			for (size_t i = 0; i < data.structured.itemCount; i++)
 			{
-				if (data.structured.array[i] == value)
+				if (*data.structured.array[i] == value)
 				{
 					return const_iterator(
 						is_object() ? &data.structured.names[i] : nullptr,
@@ -1048,7 +1051,7 @@ namespace iprog
 						
 						first = false;
 
-						dump += data.structured.array[i].dump();
+						dump += data.structured.array[i]->dump();
 					}
 
 					dump += "]";
@@ -1074,7 +1077,7 @@ namespace iprog
 						first = false;
 
 						dump += "\"" + data.structured.names[i].Data() + "\":";
-						dump += data.structured.array[i].dump();
+						dump += data.structured.array[i]->dump();
 					}
 
 					dump += "}";
@@ -1201,9 +1204,9 @@ namespace iprog
 			if (data.structured.array)
 			{
 				for (size_t i = 0; i < data.structured.itemCount; i++)
-					data.structured.array[i].~JsonObject();
+					delete data.structured.array[i];
 
-				::operator delete[](data.structured.array);
+				delete[] data.structured.array;
 			}
 			
 			data.structured.array = nullptr;
@@ -1223,7 +1226,7 @@ namespace iprog
 				return;
 			}
 
-			JsonObject* newObjects = nullptr;
+			JsonObject** newObjects = nullptr;
 			JsonName* newNames = nullptr;
 			
 			if (newSize > 50000 || newSize == 0) {
@@ -1231,7 +1234,7 @@ namespace iprog
 				fflush(stderr);
 			}
 
-			newObjects = (JsonObject*) ::operator new[](newSize * sizeof(JsonObject));
+			newObjects = new JsonObject*[newSize];
 			if (is_object())
 				newNames = (JsonName*) ::operator new[](newSize * sizeof(JsonName));
 
@@ -1242,7 +1245,7 @@ namespace iprog
 			// copy the objects we have to copy
 			for (size_t i = 0; i < objectsToCopy; i++)
 			{
-				new (&newObjects[i]) JsonObject(std::move(data.structured.array[i]));
+				newObjects[i] = new JsonObject(std::move(*data.structured.array[i]));
 
 				if (newNames)
 					new (&newNames[i]) JsonName(std::move(data.structured.names[i]));
@@ -1251,7 +1254,7 @@ namespace iprog
 			// and default initialize the rest
 			for (size_t i = objectsToCopy; i < newSize; i++)
 			{
-				new (&newObjects[i]) JsonObject();
+				newObjects[i] = new JsonObject();
 
 				if (newNames)
 					new (&newNames[i]) JsonName();
@@ -1266,14 +1269,19 @@ namespace iprog
 			data.structured.itemCount = newSize;
 		}
 
+		void internal_set_at(size_t index, const JsonObject& object)
+		{
+			*data.structured.array[index] = std::move(object);
+		}
+
 		void internal_set_at(size_t index, JsonObject&& object)
 		{
-			data.structured.array[index] = std::move(object);
+			*data.structured.array[index] = std::move(object);
 		}
 
 		void internal_set_at(size_t index, const std::string& name, JsonObject&& object)
 		{
-			data.structured.array[index] = std::move(object);
+			*data.structured.array[index] = std::move(object);
 			data.structured.names[index] = JsonName(name);
 		}
 
@@ -1309,7 +1317,7 @@ namespace iprog
 			// structured.array and structured.itemCount are valid for eType::Array too
 			struct {
 				size_t itemCount;
-				JsonObject* array;
+				JsonObject** array;
 				JsonName* names;
 			}
 			structured;
@@ -1931,7 +1939,9 @@ namespace iprog
 		}
 		
 	private:
+#ifdef IPROG_JSON_ENABLE_ORIGINAL_STRING
 		std::shared_ptr<std::string> fullString;
+#endif
 		const char* data = nullptr;
 		size_t cursor = 0;
 		size_t size = 0;
