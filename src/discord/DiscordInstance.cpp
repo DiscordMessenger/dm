@@ -2165,9 +2165,9 @@ void DiscordInstance::HandleREADY_SUPPLEMENTAL(Json& j)
 			}
 
 			// Look for any activities -- TODO: Server specific activities
-			if (guildPres.contains("game") && !guildPres["game"].is_null())
-				pf->m_status = GetStatusStringFromGameJsonObject(guildPres["game"]);
-			else if (guildPres.contains("activities") && !memPres["activities"].is_null())
+			if (memPres.contains("game") && !memPres["game"].is_null())
+				pf->m_status = GetStatusStringFromGameJsonObject(memPres["game"]);
+			else if (memPres.contains("activities") && !memPres["activities"].is_null())
 				pf->m_status = GetStatusFromActivities(memPres["activities"]);
 			else
 				pf->m_status = "";
