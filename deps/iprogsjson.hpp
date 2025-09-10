@@ -1248,7 +1248,9 @@ namespace iprog
 			// copy the objects we have to copy
 			for (size_t i = 0; i < objectsToCopy; i++)
 			{
-				newObjects[i] = new JsonObject(std::move(*data.structured.array[i]));
+				newObjects[i] = data.structured.array[i];
+
+				data.structured.array[i] = nullptr;
 
 				if (newNames)
 					new (&newNames[i]) JsonName(std::move(data.structured.names[i]));
