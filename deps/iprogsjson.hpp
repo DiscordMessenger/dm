@@ -38,6 +38,9 @@
 
 namespace iprog
 {
+	template<bool B, class T = void>
+	using TEnableIf = typename std::enable_if<B, T>::type;
+
 	enum class eType {
 		Null,
 		Number,
@@ -332,9 +335,9 @@ namespace iprog
 
 			return *this;
 		}
-		
+
 		// Template assignment equals
-		template<typename T, typename = std::enable_if_t<(std::is_integral_v<T> && !std::is_same_v<T, bool>) || std::is_enum_v<T>>>
+		template<typename T, typename = TEnableIf<(std::is_integral<T>::value && !std::is_same<T, bool>::value) || std::is_enum<T>::value>>
 		JsonObject& operator=(T a)
 		{
 			*this = JsonObject(static_cast<int64_t>(a));
@@ -344,7 +347,7 @@ namespace iprog
 			return *this;
 		}
 		
-		template<typename T, size_t N, typename = std::enable_if_t<std::is_arithmetic_v<T> || std::is_same_v<T, JsonObject>>>
+		template<typename T, size_t N, typename = TEnableIf<std::is_arithmetic<T>::value || std::is_same<T, JsonObject>::value>>
 		JsonObject& operator=(T (&arr)[N])
 		{
 			*this = JsonObject::array();
@@ -374,7 +377,7 @@ namespace iprog
 		}
 
 		// Initialize Number
-		template<typename T, std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<T, bool>, int> = 0>
+		template<typename T, TEnableIf<std::is_integral<T>::value && !std::is_same<T, bool>::value, int> = 0>
 		JsonObject(T number)
 		{
 			type = eType::Number;
@@ -385,7 +388,7 @@ namespace iprog
 		}
 
 		// Initialize Decimal
-		template<typename T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
+		template<typename T, TEnableIf<std::is_floating_point<T>::value, int> = 0>
 		JsonObject(T decimal)
 		{
 			type = eType::Decimal;
@@ -396,7 +399,7 @@ namespace iprog
 		}
 
 		// Initialize Boolean
-		template<typename T, std::enable_if_t<std::is_same_v<T, bool>, int> = 0>
+		template<typename T, TEnableIf<std::is_same<T, bool>::value, int> = 0>
 		JsonObject(T boolean)
 		{
 			type = eType::Boolean;
@@ -610,7 +613,7 @@ namespace iprog
 		bool contains(const std::string& str) const { return contains(str.c_str(), str.size()); }
 
 		// Array Access
-		template<typename SizeType, typename = std::enable_if_t<std::is_integral_v<SizeType> && !std::is_same_v<SizeType, bool> && !std::is_pointer_v<SizeType>>>
+		template<typename SizeType, typename = TEnableIf<std::is_integral<SizeType>::value && !std::is_same<SizeType, bool> ::value && !std::is_pointer<SizeType>::value>>
 		JsonObject& operator[](SizeType index)
 		{
 			// note: can't be adapted into an array here since any access
@@ -697,10 +700,10 @@ namespace iprog
 		}
 
 		// Getters
-		template <typename T, std::enable_if_t<
-			(std::is_integral_v<T> || std::is_enum_v<T>)
-			&& !std::is_same_v<T, bool>
-			&& !std::is_same_v<T, char>, int> = 0>
+		template <typename T, TEnableIf<
+			(std::is_integral<T>::value || std::is_enum<T>::value)
+			&& !std::is_same<T, bool>::value
+			&& !std::is_same<T, char>::value, int> = 0>
 		operator T() const
 		{
 			if (!is_number_integer())
@@ -709,7 +712,7 @@ namespace iprog
 			return static_cast<T>(data.number);
 		}
 		
-		template <typename T, std::enable_if_t<std::is_same_v<T, bool>, int> = 0>
+		template <typename T, TEnableIf<std::is_same<T, bool>::value, int> = 0>
 		operator T() const
 		{
 			if (!is_boolean())
