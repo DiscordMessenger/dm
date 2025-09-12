@@ -188,7 +188,7 @@ HImage* AvatarCache::GetImageSpecial(const std::string& resource, bool& hasAlpha
 			iterIP->second.IsAttachment() ? DiscordRequest::IMAGE_ATTACHMENT : DiscordRequest::IMAGE,
 			uint64_t(iterIP->second.sf),
 			"",
-			GetDiscordToken(),
+			"",
 			id
 		);
 #endif
