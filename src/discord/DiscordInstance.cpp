@@ -657,6 +657,8 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 			case IMAGE:
 			case IMAGE_ATTACHMENT:
 			{
+				DbgPrintF("Attachment at url %s downloaded.", pRequest->url.c_str());
+
 				// Since the request is passed in as a string, this could do for getting the binary shit out of it
 				const uint8_t* pData = (const uint8_t*)pRequest->response.data();
 				const size_t nSize = pRequest->response.size();

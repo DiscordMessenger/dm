@@ -215,6 +215,10 @@ void Frontend_Win32::OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_
 			delete himg;
 		}
 	}
+	else
+	{
+		DbgPrintW("Failed to load convert image to bitmap! Unrecognized format?");
+	}
 
 	// store the cached data..
 	std::string final_path = GetCachePath() + "\\" + additData;
