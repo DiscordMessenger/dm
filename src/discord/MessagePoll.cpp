@@ -1,7 +1,7 @@
 #include "MessagePoll.hpp"
 #include "Util.hpp"
 
-MessagePoll::MessagePoll(const nlohmann::json& j)
+MessagePoll::MessagePoll(const iprog::JsonObject& j)
 {
 	// Encapsulating JSON decomposition in a try-catch block because
 	// I fear exceptions inside of constructors.

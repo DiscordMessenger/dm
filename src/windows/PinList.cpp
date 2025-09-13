@@ -1,4 +1,4 @@
-#include <nlohmann/json.h>
+#include <iprogsjson.hpp>
 #include "PinList.hpp"
 #include "MessageList.hpp"
 
@@ -82,7 +82,7 @@ void PinList::Initialize(HWND hWnd)
 
 void PinList::OnLoadedPins(Snowflake channelID, const std::string& data)
 {
-	nlohmann::json j = nlohmann::json::parse(data);
+	iprog::JsonObject j = iprog::JsonParser::parse(data);
 	
 	if (!j.is_array()) {
 		assert(!"uh oh");

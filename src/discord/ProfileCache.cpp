@@ -41,7 +41,7 @@ Profile* ProfileCache::LookupProfile(Snowflake user, const std::string& username
 	return pProf;
 }
 
-Profile* ProfileCache::LoadProfile(Snowflake user, const nlohmann::json& jx)
+Profile* ProfileCache::LoadProfile(Snowflake user, const iprog::JsonObject& jx)
 {
 	if (!user) {
 		user = GetSnowflake(jx, "id");
@@ -170,7 +170,7 @@ void ProfileCache::PutNote(Snowflake user, const std::string& note) const
 {
 	// NOTE: Strange how the official discord client just sends a PUT request for blank notes
 	// instead of having a DELETE request to do that.
-	nlohmann::json j;
+	iprog::JsonObject j;
 	j["note"] = note;
 
 	GetHTTPClient()->PerformRequest(
