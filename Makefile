@@ -1,17 +1,50 @@
 # User settings
+
+# Print debugging information and keep debugging symbols
 DEBUG ?= yes
+
+# Compile the Unicode version or the ANSI version
 UNICODE ?= yes
-MSYS_PATH ?= C:/MinGW/msys/1.0
-OPENSSL_INC_DIR ?= C:/DiscordMessenger/openssl/include
-OPENSSL_LIB_DIR ?= C:/DiscordMessenger/openssl
+
+# Define IS_MINGW_ON_WINDOWS=yes if you're compiling on Windows
+IS_MINGW_ON_WINDOWS ?= no
+
+# NOTE: These defaults only apply on iProgramInCpp's system!
+# You must specify something else on your end by either `export`-ing these
+# environment variables, or by specifying them in the `make` command line.
+ifeq ($(IS_MINGW_ON_WINDOWS),yes)
+	# OpenSSL install directory
+	OPENSSL_DIR ?= C:/DiscordMessenger/openssl
+	MSYS_PATH   ?= C:/MinGW/msys/1.0
+	
+	# Toolchain
+	DMCC  ?= gcc
+	DMCXX ?= g++
+	DMWR  ?= windres
+	MKDIR ?= $(MSYS_PATH)/bin/mkdir.exe
+	FIND  ?= $(MSYS_PATH)/bin/find.exe
+else
+	# OpenSSL install directory
+	OPENSSL_DIR ?= /mnt/c/DiscordMessenger/openssl
+	
+	# Toolchain
+	DMCC  ?= i686-w64-mingw32-gcc
+	DMCXX ?= i686-w64-mingw32-g++
+	DMWR  ?= i686-w64-mingw32-windres
+	MKDIR ?= mkdir
+	FIND  ?= find
+	
+	# Extra flags if you need them
+	EXTRA_FLAGS=-static-libgcc -static-libstdc++ -Wl,--no-whole-archive
+endif
 
 # Print info
 $(info Discord Messenger makefile)
 $(info Debug: $(DEBUG))
 $(info Unicode: $(UNICODE))
 
-USER_INC_DIRS =
-USER_DEFINES  =
+USER_INC_DIRS ?=
+USER_DEFINES  ?=
 
 # WINVER definitions
 WINVER  ?= 0x0501
@@ -22,19 +55,23 @@ BUILD_DIR = build
 BIN_DIR = bin
 SRC_DIR = src
 
+OPENSSL_INC_DIR = $(OPENSSL_DIR)/include
+OPENSSL_LIB_DIR = $(OPENSSL_DIR)
+
 # Target executable
 TARGET = $(BIN_DIR)/DiscordMessenger.exe
 
 # Location of certain utilities.  Because Win32 takes over if you don't
 ifeq ($(USE_MINGW_FIND),yes)
-	MKDIR = $(MSYS_PATH)/bin/mkdir.exe
-	FIND  = $(MSYS_PATH)/bin/find.exe
 else
 	MKDIR ?= mkdir
 	FIND  ?= find
 endif
 
-WR    ?= windres
+SYSROOTD=
+ifdef SYSROOT
+	SYSROOTD=--sysroot=$(SYSROOT)
+endif
 
 INC_DIRS = \
 	$(USER_INC_DIRS) \
@@ -96,6 +133,7 @@ MNOSV = $(XL) --minor-os-version $(XL)
 SSYSVER = $(MJSSV) 4 $(MNSSV) 0 $(MJOSV) 1 $(MNOSV) 0
 
 CXXFLAGS = \
+	$(SYSROOTD)    \
 	$(INC_DIRS)    \
 	$(DEFINES)     \
 	-MMD           \
@@ -107,6 +145,7 @@ CXXFLAGS = \
 	$(DEBUG_DEF)
 
 LDFLAGS = \
+	$(SYSROOTD) \
 	$(LIB_DIRS) \
 	$(SSYSVER)  \
 	-mwindows   \
@@ -148,15 +187,15 @@ clean:
 $(TARGET): $(OBJ)
 	@echo \>\> LINKING $@
 	@$(MKDIR) -p $(dir $@)
-	@$(CXX) $(OBJ) $(LDFLAGS) -o $@
+	@$(DMCXX) $(OBJ) $(LDFLAGS) -o $@
 
 # NOTE: Using --use-temp-file seems to get rid of some weirdness with MinGW 6.3.0's windres?
 $(BUILD_DIR)/%.o: %.rc
 	@echo \>\> Compiling resource $<
 	@$(MKDIR) -p $(dir $@)
-	@$(WR) $(WRFLAGS) -i $< -o $@ --use-temp-file
+	@$(DMWR) $(WRFLAGS) -i $< -o $@ --use-temp-file
 
 $(BUILD_DIR)/%.o: %.cpp
 	@echo \>\> Compiling $<
 	@$(MKDIR) -p $(dir $@)
-	@$(CXX) $(CXXFLAGS) -c $< -o $@
+	@$(DMCXX) $(CXXFLAGS) -c $< -o $@

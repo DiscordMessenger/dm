@@ -7,8 +7,7 @@ on:
     branches: [ master ]
 
 env:
-  OPENSSL_INC_DIR: '/tmp/dm-openssl/include'
-  OPENSSL_LIB_DIR: '/tmp/dm-openssl'
+  OPENSSL_DIR: '/tmp/dm-openssl'
 
 jobs:
   build-linux-mingw:
@@ -26,8 +25,8 @@ jobs:
       - name: Download OpenSSL
         run: |
           curl -Lo "openssl-stuff.zip" https://github.com/DiscordMessenger/openssl/releases/download/release-1/openssl-stuff.zip
-          mkdir -p $OPENSSL_LIB_DIR
-          unzip openssl-stuff.zip -d $OPENSSL_LIB_DIR
+          mkdir -p $OPENSSL_DIR
+          unzip openssl-stuff.zip -d $OPENSSL_DIR
       
       - name: Get Latest Tag
         id: get-latest-tag
@@ -36,7 +35,7 @@ jobs:
             echo "COMMIT=$(git rev-parse --short=8 HEAD)" >> "$GITHUB_OUTPUT"
       
       - name: Make Unicode Build
-        run: CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ WR=i686-w64-mingw32-windres EXTRA_FLAGS="-static-libstdc++ -static-libgcc -Wl,--no-whole-archive" DEBUG=no UNICODE=yes COMMIT_HASH=${{ steps.get-latest-tag.outputs.COMMIT }} make -j$(nproc)
+        run: make DEBUG=no UNICODE=yes COMMIT_HASH=${{ steps.get-latest-tag.outputs.COMMIT }} -j$(nproc)
       
       - name: Upload Unicode Artifact
         uses: actions/upload-artifact@v4
