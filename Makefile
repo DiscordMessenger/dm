@@ -28,9 +28,10 @@ else
 	OPENSSL_DIR ?= /mnt/c/DiscordMessenger/openssl
 	
 	# Toolchain
-	DMCC  ?= i686-w64-mingw32-gcc
-	DMCXX ?= i686-w64-mingw32-g++
-	DMWR  ?= i686-w64-mingw32-windres
+	DMPREFIX ?= i686-w64-mingw32
+	DMCC  ?= $(DMPREFIX)-gcc
+	DMCXX ?= $(DMPREFIX)-g++
+	DMWR  ?= $(DMPREFIX)-windres
 	MKDIR ?= mkdir
 	FIND  ?= find
 	
@@ -70,7 +71,7 @@ endif
 
 SYSROOTD=
 ifdef SYSROOT
-	SYSROOTD=--sysroot=$(SYSROOT)
+	SYSROOTD = --sysroot=$(SYSROOT)
 endif
 
 INC_DIRS = \
@@ -133,7 +134,6 @@ MNOSV = $(XL) --minor-os-version $(XL)
 SSYSVER = $(MJSSV) 4 $(MNSSV) 0 $(MJOSV) 1 $(MNOSV) 0
 
 CXXFLAGS = \
-	$(SYSROOTD)    \
 	$(INC_DIRS)    \
 	$(DEFINES)     \
 	-MMD           \
@@ -141,11 +141,11 @@ CXXFLAGS = \
 	-mno-mmx       \
 	-mno-sse       \
 	-mno-sse2      \
+	-march=i586    \
 	$(UNICODE_DEF) \
 	$(DEBUG_DEF)
 
 LDFLAGS = \
-	$(SYSROOTD) \
 	$(LIB_DIRS) \
 	$(SSYSVER)  \
 	-mwindows   \
@@ -187,7 +187,7 @@ clean:
 $(TARGET): $(OBJ)
 	@echo \>\> LINKING $@
 	@$(MKDIR) -p $(dir $@)
-	@$(DMCXX) $(OBJ) $(LDFLAGS) -o $@
+	$(DMCXX) $(SYSROOTD) $(OBJ) $(LDFLAGS) -o $@
 
 # NOTE: Using --use-temp-file seems to get rid of some weirdness with MinGW 6.3.0's windres?
 $(BUILD_DIR)/%.o: %.rc
@@ -198,4 +198,4 @@ $(BUILD_DIR)/%.o: %.rc
 $(BUILD_DIR)/%.o: %.cpp
 	@echo \>\> Compiling $<
 	@$(MKDIR) -p $(dir $@)
-	@$(DMCXX) $(CXXFLAGS) -c $< -o $@
+	$(DMCXX) $(SYSROOTD) $(CXXFLAGS) -c $< -o $@
