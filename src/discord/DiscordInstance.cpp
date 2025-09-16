@@ -2508,7 +2508,14 @@ void DiscordInstance::HandleUSER_SETTINGS_PROTO_UPDATE(Json& j)
 void DiscordInstance::HandleGUILD_CREATE(Json& j)
 {
 	Json& data = j["d"];
+	Snowflake guildID = GetSnowflake(data, "id");
 	ParseAndAddGuild(data);
+
+	Guild* guild = GetGuild(guildID);
+	if (guild)
+	{
+		m_guildItemList.AddGuild(0, guildID, guild->m_name, guild->m_avatarlnk);
+	}
 
 	GetFrontend()->RepaintGuildList();
 }
@@ -2525,6 +2532,7 @@ void DiscordInstance::HandleGUILD_DELETE(Json& j)
 		if (iter->m_snowflake == sf)
 		{
 			m_guilds.erase(iter);
+			m_guildItemList.EraseGuild(sf);
 			GetFrontend()->RepaintGuildList();
 
 			if (m_CurrentGuild == sf)

@@ -28,6 +28,9 @@ public:
 	// For guild folders, this is the ID of the folder. For guilds, this is the ID of the guild.
 	virtual Snowflake GetID() { return m_id; }
 
+	// Erase a guild if this is a folder.
+	virtual void EraseGuild(Snowflake sf) { }
+
 protected:
 	friend class FolderGuildItem;
 	friend class GuildGuildItem;
@@ -54,6 +57,23 @@ public:
 	std::list<AbstractGuildItem*>* GetItems() override { return &m_items; }
 
 	std::string GetAvatar() { return ""; }
+
+	void EraseGuild(Snowflake guildId) override
+	{
+		for (auto iter = m_items.begin(); iter != m_items.end(); ++iter)
+		{
+			auto item = *iter;
+			if (item->GetID() == guildId)
+			{
+				m_items.erase(iter);
+				return;
+			}
+			else if (item->IsFolder())
+			{
+				item->EraseGuild(guildId);
+			}
+		}
+	}
 
 private:
 	std::list<AbstractGuildItem*> m_items;
@@ -147,6 +167,23 @@ public:
 
 		// Add it to the root.
 		m_items.push_back(new GuildGuildItem(guildId, name, avatar));
+	}
+
+	void EraseGuild(Snowflake guildId)
+	{
+		for (auto iter = m_items.begin(); iter != m_items.end(); ++iter)
+		{
+			auto item = *iter;
+			if (item->GetID() == guildId)
+			{
+				m_items.erase(iter);
+				return;
+			}
+			else if (item->IsFolder())
+			{
+				item->EraseGuild(guildId);
+			}
+		}
 	}
 
 	std::list<AbstractGuildItem*>* GetItems()
