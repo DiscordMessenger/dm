@@ -1002,7 +1002,8 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 					InvalidateRect(hWnd, &selectedRect, FALSE);
 				}
-				else {
+				else if (GetDiscordInstance()->GetGuild(selected))
+				{
 					Snowflake sf1 = 0;
 					if (GetDiscordInstance()->GetCurrentGuild())
 						sf1 = GetDiscordInstance()->GetCurrentGuild()->m_snowflake;
