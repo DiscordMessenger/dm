@@ -26,8 +26,10 @@ A Discord server about this client can be joined here: https://discord.gg/cEDjgD
 
 ## Screenshots
 
-![Windows 2000 screenshot](doc/ss_2000.png)
+![Windows 11 screenshot](doc/ss_11.png)
 ![Windows XP screenshot](doc/ss_xp.png)
+![Windows 95 screenshot](doc/ss_95.png)
+![Windows NT 3.1 screenshot](doc/ss_nt31.png)
 
 ## Minimum System Requirements
 
