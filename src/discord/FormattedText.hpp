@@ -28,6 +28,8 @@ struct Token
 		UNDERL_END,
 		ITALIE_BEGIN,
 		ITALIE_END,
+		CODE_BEGIN,
+		CODE_END,
 		LIST_ITEM,
 		EVERYONE,
 		HERE,
@@ -186,7 +188,7 @@ public:
 
 private:
 	std::string m_rawMessage;
-	std::vector<std::vector<std::pair<std::string, std::string>>> m_blocks; // see note 1. and 2.
+	std::vector<std::pair<std::string, std::string>> m_blocks; // see note 1. and 2.
 	std::vector<Token> m_tokens;
 	std::vector<Word> m_words;
 	bool m_bFormatted = false;

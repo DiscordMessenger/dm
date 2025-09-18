@@ -56,8 +56,8 @@ int g_tokenTypeTable[] = {
 	Token::ITALIE_END,
 	0, // tab
 	0, // line feed
-	0, // mlcode-chars don't use this system
-	0, // mlcode-chars don't use this system
+	Token::CODE_BEGIN,
+	Token::CODE_END,
 	0, // carriage return
 	Token::MLCODE_BEGIN,
 	Token::MLCODE_END,
@@ -74,6 +74,8 @@ static REN::regex g_StrongMatch("(\\*){2}[^\\*\\r\\n].*?(\\*){2}");
 static REN::regex g_ItalicMatch("\\*[^\\*\\r\\n].*?\\*");
 static REN::regex g_UnderlMatch("(_){2}[^_\\r\\n].*?(_){2}");
 static REN::regex g_ItalieMatch("(?=[ \\_\\r\\n])_.*?_(?<=[ \\_\\r\\n])");
+static REN::regex g_DbtickMatch("(`){2}[^\\*\\r\\n].*?(`){2}");
+static REN::regex g_SbtickMatch("`[^\\*\\r\\n].*?`");
 
 // Basic Markdown syntax:
 //
@@ -472,6 +474,8 @@ void FormattedText::ParseText()
 			case Token::FORWARDE:     style &=~WORD_FORWARD;  break;
 			case Token::HEADER:       style |= WORD_HEADER1;  break;
 			case Token::HEADER2:      style |= WORD_HEADER2;  break;
+			case Token::CODE_BEGIN:   style |= WORD_CODE;     break;
+			case Token::CODE_END:     style &=~WORD_CODE;     break;
 			case Token::CODE: {
 				if (tk.m_text.empty()) {
 					AddWord(Word(style, "``````"));
@@ -740,22 +744,6 @@ void FormattedText::RunForEachCustomEmote(FunctionEachEmote func, void* context)
 	}
 }
 
-std::vector<std::pair<std::string, std::string> >
-FormattedText::SplitBackticks(const std::string& str)
-{
-	std::string emptystr = "";
-	std::vector<std::pair<std::string, std::string> > out;
-	size_t loc = 0, oldloc = 0;
-	while ((loc = str.find('`', oldloc)) < str.size())
-	{
-		out.push_back(std::make_pair(str.substr(oldloc, loc - oldloc), emptystr));
-		oldloc = loc + 1;
-	}
-
-	out.push_back(std::make_pair(str.substr(oldloc), emptystr));
-	return out;
-}
-
 void FormattedText::SplitBlocks()
 {
 	size_t num = 0;
@@ -764,13 +752,7 @@ void FormattedText::SplitBlocks()
 	while ((loc = m_rawMessage.find("```", oldloc)) < m_rawMessage.size())
 	{
 		std::string str = m_rawMessage.substr(oldloc, loc - oldloc);
-
-		if (num & 1)
-			// just the string please
-			m_blocks.push_back({ std::make_pair(str, emptystr) });
-		else
-			// additional processing
-			m_blocks.push_back(SplitBackticks(str));
+		m_blocks.push_back({ std::make_pair(str, emptystr) });
 
 		num++;
 		oldloc = loc + 3;
@@ -778,13 +760,7 @@ void FormattedText::SplitBlocks()
 
 	// the last one
 	std::string str = m_rawMessage.substr(oldloc);
-
-	if (num & 1)
-		// just the string please
-		m_blocks.push_back({ std::make_pair(str, emptystr) });
-	else
-		// additional processing
-		m_blocks.push_back(SplitBackticks(str));
+	m_blocks.push_back({ std::make_pair(str, emptystr) });
 }
 
 void FormattedText::UseRegex(std::string& str)
@@ -799,6 +775,7 @@ void FormattedText::UseRegex(std::string& str)
 	const int HAS_BSLASH = (1 << 4);
 	const int HAS_HEADER = (1 << 5);
 	const int HAS_SLASH  = (1 << 6);
+	const int HAS_BTICK  = (1 << 7);
 	int flags = 0;
 
 	for (size_t i = 0; i < str.size(); i++) {
@@ -808,10 +785,18 @@ void FormattedText::UseRegex(std::string& str)
 		if (str[i] == '@') flags |= HAS_AT;
 		if (str[i] == '#') flags |= HAS_HEADER;
 		if (str[i] == '/') flags |= HAS_SLASH;
+		if (str[i] == '`') flags |= HAS_BTICK;
 		if (str[i] == '\\') flags |= HAS_BSLASH;
 
-		if (flags == (HAS_STRONG | HAS_EMPHAS | HAS_QUOTE | HAS_AT | HAS_BSLASH | HAS_HEADER | HAS_SLASH))
+		if (flags == (HAS_STRONG | HAS_EMPHAS | HAS_QUOTE | HAS_AT | HAS_BSLASH | HAS_HEADER | HAS_SLASH | HAS_BTICK))
 			break;
+	}
+
+	if (flags & HAS_BTICK)
+	{
+		// "`" and "``" are both valid separators
+		RegexReplace(str, g_DbtickMatch, 2, 2, CHAR_BEG_CODE, CHAR_END_CODE);
+		RegexReplace(str, g_SbtickMatch, 1, 1, CHAR_BEG_CODE, CHAR_END_CODE);
 	}
 
 	if (flags & HAS_SLASH)
@@ -927,12 +912,11 @@ void FormattedText::RegexNecessary()
 	// regex only the even ones, because the odd ones are code blocks
 	for (size_t i = 0; i < m_blocks.size(); i += 2)
 	{
-		auto& vec = m_blocks[i];
-		for (size_t j = 0; j < vec.size(); j += 2) {
-			// same here actually (they are single code blocks)
-			vec[j].second = vec[j].first;
-			UseRegex(vec[j].first);
-		}
+		auto& block = m_blocks[i];
+
+		// same here actually (they are single code blocks)
+		block.second = block.first;
+		UseRegex(block.first);
 	}
 }
 
@@ -959,47 +943,11 @@ void FormattedText::TokenizeAll()
 	{
 		if (i & 1)
 		{
-			assert(m_blocks[i].size() == 1);
-			m_tokens.push_back(Token(Token::CODE, EscapeChars(m_blocks[i][0].first, m_blocks[i][0].second)));
+			m_tokens.push_back(Token(Token::CODE, EscapeChars(m_blocks[i].first, m_blocks[i].second)));
 		}
 		else
 		{
-			// even, so tokenize it all the way.
-			auto& vec = m_blocks[i];
-			for (size_t j = 0; j < vec.size(); j++)
-			{
-				if (j & 1)
-				{
-					// for each word
-					auto& str = m_blocks[i][j].first;
-					auto& oldstr = m_blocks[i][j].second;
-
-					size_t last = 0, j;
-					for (j = 0; j <= str.size(); j++)
-					{
-						if (j == str.size() || str[j] == ' ')
-						{
-							// push it *including* the space
-							std::string toInsert, toInsertOld;
-							if (j == str.size()) {
-								toInsert = str.substr(last);
-								toInsertOld = oldstr.size() ? oldstr.substr(last) : "";
-							}
-							else {
-								toInsert = str.substr(last, j - last + 1);
-								toInsertOld = oldstr.size() ? oldstr.substr(last, j - last + 1) : "";
-							}
-
-							m_tokens.push_back(Token(Token::SMALLCODE, EscapeChars(toInsert, toInsertOld)));
-							last = j + 1;
-						}
-					}
-				}
-				else
-				{
-					Tokenize(m_blocks[i][j].first, m_blocks[i][j].second);
-				}
-			}
+			Tokenize(m_blocks[i].first, m_blocks[i].second);
 		}
 	}
 }
