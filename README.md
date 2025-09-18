@@ -83,6 +83,9 @@ https://developers.google.com/speed/webp/download.  Extract the archive and plac
 
 (Note: x64 compilation with MinGW is currently not supported)
 
+**(NOTE: The versions of MinGW your package manager(s) provide(s) may not target your desired platform!
+If you want Pentium 1 support and/or native Windows 95/NT 3.x support, see: [Pentium Toolchain Build Guide](doc/pentium-toolchain/README.md)**
+
 1. Acquire mingw-w64:
 ```
 sudo apt install mingw-w64 gcc-mingw-w64-x86-64-posix g++-mingw-w64-x86-64-posix
