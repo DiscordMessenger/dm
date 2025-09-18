@@ -4,7 +4,7 @@
 
 IChannelView* IChannelView::CreateChannelView(HWND hwnd, LPRECT rect)
 {
-	IChannelView* pChView = ChannelView::Create(hwnd, rect);
+	IChannelView* pChView = nullptr;// ChannelView::Create(hwnd, rect);
 
 	if (!pChView)
 		pChView = ChannelViewOld::Create(hwnd, rect);

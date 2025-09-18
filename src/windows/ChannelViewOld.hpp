@@ -39,7 +39,7 @@ private:
 			if (IsDM()) {
 				// the other is probably a DM too
 				if (m_lastMessageID != other.m_lastMessageID)
-					m_lastMessageID > other.m_lastMessageID;
+					return m_lastMessageID > other.m_lastMessageID;
 			}
 
 			// sort by which category we're in
