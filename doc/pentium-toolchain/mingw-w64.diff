@@ -1,0 +1,254 @@
+diff -ruN mingw-w64-clean/mingw-w64-crt/Makefile.am mingw-w64-workdir/mingw-w64-crt/Makefile.am
+--- mingw-w64-clean/mingw-w64-crt/Makefile.am	2025-06-04 08:00:28.000000000 +0300
++++ mingw-w64-workdir/mingw-w64-crt/Makefile.am	2025-09-17 23:01:36.053518800 +0300
+@@ -20,7 +20,7 @@
+ endif
+ 
+ AM_CPPFLAGS=$(sysincludes)
+-AM_CFLAGS=-pipe -std=gnu99 -fno-builtin -D_CRTBLD -D_WIN32_WINNT=0x0f00 -D__MSVCRT_VERSION__=0x600 -D__USE_MINGW_ANSI_STDIO=0 @IMAGEBASE_CFLAGS@ @CFGUARD_CFLAGS@ @ADD_C_CXX_WARNING_FLAGS@ @ADD_C_ONLY_WARNING_FLAGS@
++AM_CFLAGS=-pipe -std=gnu99 -fno-builtin -D_CRTBLD -D_WIN32_WINNT=0x0500 -D__MSVCRT_VERSION__=0x000 -D__USE_MINGW_ANSI_STDIO=0 @IMAGEBASE_CFLAGS@ @CFGUARD_CFLAGS@ @ADD_C_CXX_WARNING_FLAGS@ @ADD_C_ONLY_WARNING_FLAGS@
+ AM_CXXFLAGS=@ADD_C_CXX_WARNING_FLAGS@ @ADD_CXX_ONLY_WARNING_FLAGS@
+ AM_CCASFLAGS=@CFGUARD_CFLAGS@
+ CPPFLAGSARM32=-mfpu=vfpv3
+diff -ruN mingw-w64-clean/mingw-w64-crt/Makefile.in mingw-w64-workdir/mingw-w64-crt/Makefile.in
+--- mingw-w64-clean/mingw-w64-crt/Makefile.in	2025-06-04 08:00:28.000000000 +0300
++++ mingw-w64-workdir/mingw-w64-crt/Makefile.in	2025-09-17 23:01:41.540260800 +0300
+@@ -13382,7 +13382,7 @@
+ @WITHSYSROOT_FALSE@withsys = 
+ @WITHSYSROOT_TRUE@withsys = "--with-sysroot=@TARGET_SYSTEM_ROOT@"
+ AM_CPPFLAGS = $(sysincludes)
+-AM_CFLAGS = -pipe -std=gnu99 -fno-builtin -D_CRTBLD -D_WIN32_WINNT=0x0f00 -D__MSVCRT_VERSION__=0x600 -D__USE_MINGW_ANSI_STDIO=0 @IMAGEBASE_CFLAGS@ @CFGUARD_CFLAGS@ @ADD_C_CXX_WARNING_FLAGS@ @ADD_C_ONLY_WARNING_FLAGS@
++AM_CFLAGS = -pipe -std=gnu99 -fno-builtin -D_CRTBLD -D_WIN32_WINNT=0x0500 -D__MSVCRT_VERSION__=0x000 -D__USE_MINGW_ANSI_STDIO=0 @IMAGEBASE_CFLAGS@ @CFGUARD_CFLAGS@ @ADD_C_CXX_WARNING_FLAGS@ @ADD_C_ONLY_WARNING_FLAGS@
+ AM_CXXFLAGS = @ADD_C_CXX_WARNING_FLAGS@ @ADD_CXX_ONLY_WARNING_FLAGS@
+ AM_CCASFLAGS = @CFGUARD_CFLAGS@
+ CPPFLAGSARM32 = -mfpu=vfpv3
+diff -ruN mingw-w64-clean/mingw-w64-crt/crt/crtdll.c mingw-w64-workdir/mingw-w64-crt/crt/crtdll.c
+--- mingw-w64-clean/mingw-w64-crt/crt/crtdll.c	2025-06-04 08:00:28.000000000 +0300
++++ mingw-w64-workdir/mingw-w64-crt/crt/crtdll.c	2025-09-18 18:23:21.024219900 +0300
+@@ -28,7 +28,6 @@
+ extern _PVFV __xc_a[];
+ extern _PVFV __xc_z[];
+ 
+-
+ /* TLS initialization hook.  */
+ extern const PIMAGE_TLS_CALLBACK __dyn_tls_init_callback;
+ 
+diff -ruN mingw-w64-clean/mingw-w64-crt/libsrc/dloadhelper.c mingw-w64-workdir/mingw-w64-crt/libsrc/dloadhelper.c
+--- mingw-w64-clean/mingw-w64-crt/libsrc/dloadhelper.c	2025-06-04 08:00:28.000000000 +0300
++++ mingw-w64-workdir/mingw-w64-crt/libsrc/dloadhelper.c	2025-09-18 00:34:03.735281200 +0300
+@@ -7,6 +7,9 @@
+ #define WIN32_LEAN_AND_MEAN
+ #endif
+ #include <windows.h>
++
++#if _WIN32_WINNT >= 0x0602
++
+ #include <delayloadhandler.h>
+ 
+ /* XXX NTSTATUS is supposed to be a LONG, but there are a bunch of STATUS_
+@@ -60,3 +63,5 @@
+ 	else
+ 		return S_OK;
+ }
++
++#endif
+diff -ruN mingw-w64-clean/mingw-w64-crt/misc/dirent.c mingw-w64-workdir/mingw-w64-crt/misc/dirent.c
+--- mingw-w64-clean/mingw-w64-crt/misc/dirent.c	2025-06-04 08:00:28.000000000 +0300
++++ mingw-w64-workdir/mingw-w64-crt/misc/dirent.c	2025-09-18 12:50:51.557032000 +0300
+@@ -31,6 +31,62 @@
+ #define SUFFIX	_T("*")
+ #define	SLASH	_T("\\")
+ 
++#if __MSVCRT_VERSION__ < 0x100 && UNICODE
++
++// CRTDLL compatibility mode
++wchar_t* _wfullpath(wchar_t* dst, const wchar_t* src, size_t maxlen)
++{
++	wchar_t* result = NULL;
++	if (!src) {
++		errno = EINVAL;
++		return NULL;
++	}
++
++	size_t srclen = wcslen(src);
++	char* src2 = malloc(srclen * MB_CUR_MAX + 1);
++	if (!src2)
++		return NULL;
++
++	size_t n = wcstombs(src2, src, srclen * MB_CUR_MAX + 1);
++	if (n == (size_t) -1) {
++		free(src2);
++		return NULL;
++	}
++
++	char* full = _fullpath(NULL, src2, 0);
++	free(src2);
++
++	size_t fullLen = strlen(full);
++	if (!dst) {
++		result = (wchar_t*) malloc((fullLen + 1) * sizeof(wchar_t));
++		if (!result) {
++			free(full);
++			return NULL;
++		}
++		maxlen = fullLen;
++	}
++	else {
++		result = dst;
++	}
++
++	if (fullLen >= maxlen) {
++		free(full);
++		// freeing result redundant because this can only happen if dst != NULL
++		errno = ERANGE;
++		return NULL;
++	}
++
++	size_t converted = mbstowcs(result, full, fullLen + 1);
++	if (converted == (size_t)-1) {
++		if (!dst) free(result);
++		free(full);
++		return NULL;
++	}
++
++	return result;
++}
++
++#endif
+ 
+ /*
+  * opendir
+diff -ruN mingw-w64-clean/mingw-w64-crt/misc/gettimeofday.c mingw-w64-workdir/mingw-w64-crt/misc/gettimeofday.c
+--- mingw-w64-clean/mingw-w64-crt/misc/gettimeofday.c	2025-06-04 08:00:28.000000000 +0300
++++ mingw-w64-workdir/mingw-w64-crt/misc/gettimeofday.c	2025-09-18 14:57:48.533062600 +0300
+@@ -14,6 +14,15 @@
+ 
+ int getntptimeofday (struct timespec *, struct timezone *);
+ 
++WINAPI void emulation_GetSystemTimeAsFileTime(LPFILETIME lpFileTime); /* get around warning */
++
++WINAPI void emulation_GetSystemTimeAsFileTime(LPFILETIME lpFileTime)
++{
++	SYSTEMTIME st;
++	GetSystemTime(&st);
++	SystemTimeToFileTime(&st, lpFileTime);
++}
++
+ int getntptimeofday (struct timespec *tp, struct timezone *z)
+ {
+   int res = 0;
+@@ -52,8 +61,14 @@
+       get_time = (GetSystemTimeAsFileTime_t)(intptr_t) GetProcAddress (
+         GetModuleHandle ("kernel32.dll"),
+         "GetSystemTimePreciseAsFileTime"); /* <1us precision on Windows 10 */
+-      if (get_time == NULL)
+-        get_time = GetSystemTimeAsFileTime; /* >15ms precision on Windows 10 */
++      if (get_time == NULL) {
++        /* Use GetSystemTimeAsFileTime() if available (Windows XP or later) */
++        get_time = (GetSystemTimeAsFileTime_t)(intptr_t) GetProcAddress (
++          GetModuleHandle ("kernel32.dll"),
++          "GetSystemTimeAsFileTime"); /* >15ms precision on Windows 10 */
++        if (get_time == NULL)
++          get_time = &emulation_GetSystemTimeAsFileTime;
++      }
+       __atomic_store_n (&GetSystemTimeAsFileTime_p, get_time, __ATOMIC_RELAXED);
+     }
+ 
+diff -ruN mingw-w64-clean/mingw-w64-crt/misc/mbrtowc.c mingw-w64-workdir/mingw-w64-crt/misc/mbrtowc.c
+--- mingw-w64-clean/mingw-w64-crt/misc/mbrtowc.c	2025-06-04 08:00:28.000000000 +0300
++++ mingw-w64-workdir/mingw-w64-crt/misc/mbrtowc.c	2025-09-18 15:32:22.426453700 +0300
+@@ -57,7 +57,7 @@
+ 	    }
+ 	  return 2;
+ 	}
+-      else if (IsDBCSLeadByteEx (cp, *s))
++      else if (IsDBCSLeadByte(*s))
+ 	{
+ 	  /* If told to translate one byte, just save the leadbyte
+ 	     in *ps.  */
+diff -ruN mingw-w64-clean/mingw-w64-crt/misc/wdirent.c mingw-w64-workdir/mingw-w64-crt/misc/wdirent.c
+--- mingw-w64-clean/mingw-w64-crt/misc/wdirent.c	2025-06-04 08:00:28.000000000 +0300
++++ mingw-w64-workdir/mingw-w64-crt/misc/wdirent.c	2025-09-18 12:51:02.217375600 +0300
+@@ -2,4 +2,4 @@
+ #define UNICODE 1
+ 
+ #include <wchar.h>
+-#include "dirent.c"
++//#include "dirent.c"
+diff -ruN mingw-w64-clean/mingw-w64-crt/stdio/_wstat64.c mingw-w64-workdir/mingw-w64-crt/stdio/_wstat64.c
+--- mingw-w64-clean/mingw-w64-crt/stdio/_wstat64.c	2025-06-04 08:00:28.000000000 +0300
++++ mingw-w64-workdir/mingw-w64-crt/stdio/_wstat64.c	2025-09-18 13:02:42.705899800 +0300
+@@ -9,6 +9,36 @@
+ 
+ #include "filetime_to_time64.h"
+ 
++#if __MSVCRT_VERSION__ < 0x100
++/* CRTDLL compatibility */
++int _wstat(const wchar_t* path, struct _stat32* buf) {
++	if (!path || !buf) {
++		errno = EINVAL;
++		return -1;
++	}
++
++	size_t len = wcslen(path);
++	char* mbpath = (char*)malloc(len * MB_CUR_MAX + 1);
++	if (!mbpath) return -1;
++
++	size_t n = wcstombs(mbpath, path, len * MB_CUR_MAX + 1);
++	if (n == (size_t)-1) {
++		free(mbpath);
++		errno = EINVAL;
++		return -1;
++	}
++
++	int ret = _stat(mbpath, buf);
++
++	free(mbpath);
++	return ret;
++}
++#endif
++
++#if __MSVCRT_VERSION__ < 0x200 /* total guess */
++#define _wstat32 _wstat
++#endif
++
+ static int __cdecl emu__wstat64(const wchar_t *path, struct _stat64 *stat)
+ {
+     HANDLE handle;
+diff -ruN mingw-w64-clean/mingw-w64-crt/stdio/ftruncate64.c mingw-w64-workdir/mingw-w64-crt/stdio/ftruncate64.c
+--- mingw-w64-clean/mingw-w64-crt/stdio/ftruncate64.c	2025-06-04 08:00:28.000000000 +0300
++++ mingw-w64-workdir/mingw-w64-crt/stdio/ftruncate64.c	2025-09-18 13:03:49.223820800 +0300
+@@ -239,6 +239,33 @@
+   return 0;
+ }
+ 
++#if __MSVCRT_VERSION__ < 0x100
++
++/* CRTDLL compatibility */
++_off64_t _lseeki64(int __fd, _off64_t off, int whence) {
++	HANDLE f;
++	f = (HANDLE)_get_osfhandle(__fd);
++	if (f == INVALID_HANDLE_VALUE || (GetFileType(f) != FILE_TYPE_DISK)) {
++		errno = EBADF;
++		return -1;
++	}
++
++	LONG high = (LONG)(off >> 32), low = (LONG)(off);
++	LONG lowoff = SetFilePointer(f, low, &high, whence);
++	if (lowoff == (LONG) INVALID_SET_FILE_POINTER) {
++		errno = EINVAL; /* Shouldn't happen */
++		return -1;
++	}
++
++	return ((_off64_t)high << 32) | lowoff;
++}
++
++_off64_t _telli64(int __fd) {
++	return _lseeki64(__fd, 0, SEEK_CUR);
++}
++
++#endif
++
+ int ftruncate64(int __fd, _off64_t __length) {
+   HANDLE f;
+   LARGE_INTEGER quad;
