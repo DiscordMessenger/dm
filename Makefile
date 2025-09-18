@@ -18,22 +18,24 @@ ifeq ($(IS_MINGW_ON_WINDOWS),yes)
 	MSYS_PATH   ?= C:/MinGW/msys/1.0
 	
 	# Toolchain
-	DMCC  ?= gcc
-	DMCXX ?= g++
-	DMWR  ?= windres
-	MKDIR ?= $(MSYS_PATH)/bin/mkdir.exe
-	FIND  ?= $(MSYS_PATH)/bin/find.exe
+	DMCC    ?= gcc
+	DMCXX   ?= g++
+	DMWR    ?= windres
+	DMSTRIP ?= strip
+	MKDIR   ?= $(MSYS_PATH)/bin/mkdir.exe
+	FIND    ?= $(MSYS_PATH)/bin/find.exe
 else
 	# OpenSSL install directory
 	OPENSSL_DIR ?= /mnt/c/DiscordMessenger/openssl
 	
 	# Toolchain
 	DMPREFIX ?= i686-w64-mingw32
-	DMCC  ?= $(DMPREFIX)-gcc
-	DMCXX ?= $(DMPREFIX)-g++
-	DMWR  ?= $(DMPREFIX)-windres
-	MKDIR ?= mkdir
-	FIND  ?= find
+	DMCC    ?= $(DMPREFIX)-gcc
+	DMCXX   ?= $(DMPREFIX)-g++
+	DMWR    ?= $(DMPREFIX)-windres
+	DMSTRIP ?= $(DMPREFIX)-strip
+	MKDIR   ?= mkdir
+	FIND    ?= find
 	
 	# Extra flags if you need them
 	EXTRA_FLAGS=-static-libgcc -static-libstdc++ -Wl,--no-whole-archive
@@ -184,10 +186,24 @@ clean:
 
 -include $(DEP)
 
+ifeq ($(DEBUG),no)
+
 $(TARGET): $(OBJ)
 	@echo \>\> LINKING $@
 	@$(MKDIR) -p $(dir $@)
-	$(DMCXX) $(SYSROOTD) $(OBJ) $(LDFLAGS) -o $@
+	@$(DMCXX) $(SYSROOTD) $(OBJ) $(LDFLAGS) -o $@
+	@echo \>\> Duplicating binary and stripping it
+	@cp $@ $(basename $@)-Symbols.exe
+	@$(DMSTRIP) $@
+
+else
+
+$(TARGET): $(OBJ)
+	@echo \>\> LINKING $@
+	@$(MKDIR) -p $(dir $@)
+	@$(DMCXX) $(SYSROOTD) $(OBJ) $(LDFLAGS) -o $@
+
+endif
 
 # NOTE: Using --use-temp-file seems to get rid of some weirdness with MinGW 6.3.0's windres?
 $(BUILD_DIR)/%.o: %.rc
@@ -198,4 +214,4 @@ $(BUILD_DIR)/%.o: %.rc
 $(BUILD_DIR)/%.o: %.cpp
 	@echo \>\> Compiling $<
 	@$(MKDIR) -p $(dir $@)
-	$(DMCXX) $(SYSROOTD) $(CXXFLAGS) -c $< -o $@
+	@$(DMCXX) $(SYSROOTD) $(CXXFLAGS) -c $< -o $@
