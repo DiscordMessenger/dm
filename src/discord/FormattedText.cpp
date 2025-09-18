@@ -40,13 +40,7 @@
 #define CHAR_HERE       (char(0x14))
 #define CHAR_BEG_HEADER (char(0x15))
 #define CHAR_BEG_HDR2   (char(0x16))
-#define CHAR_ESCAPE_UNDERSCORE (char(0x17)) // _
-#define CHAR_ESCAPE_ASTERISK   (char(0x18)) // *
-#define CHAR_ESCAPE_BACKSLASH  (char(0x19)) // \.
-#define CHAR_ESCAPE_BACKTICK   (char(0x1A)) // `
-#define CHAR_ESCAPE_POUND      (char(0x1B)) // #
-#define CHAR_ESCAPE_MINUS      (char(0x1C)) // -
-#define CHAR_ESCAPE_PLUS       (char(0x1D)) // +
+#define CHAR_ESCAPE     (char(0x17)) // passes through the original string
 #define CHAR_END_FORWARD (char(0x1E))
 #define CHAR_BEG_FORWARD (char(0x1F))
 
@@ -138,21 +132,9 @@ static void AddAndClearToken(std::vector<Token>& tokens, std::string& tok, int t
 		}
 	}
 
-	// HACK: If the token is LINK then replace beginning characters with their normal counterparts
+	// HACK: If the token is LINK then remove <>
 	if (type == Token::LINK)
 	{
-		for (size_t i = 0; i < tok.size(); i++) {
-			char ca = tok[i];
-			char cb = i + 1 < tok.size() ? tok[i + 1] : 0;
-
-			/**/ if (ca == CHAR_BEG_STRONG && cb == CHAR_NOOP) tok[i] = tok[i + 1] = '*';
-			else if (ca == CHAR_BEG_UNDERL && cb == CHAR_NOOP) tok[i] = tok[i + 1] = '_';
-			else if (cb == CHAR_END_STRONG && ca == CHAR_NOOP) tok[i] = tok[i + 1] = '*';
-			else if (cb == CHAR_END_UNDERL && ca == CHAR_NOOP) tok[i] = tok[i + 1] = '_';
-			else if (ca == CHAR_BEG_ITALIC || ca == CHAR_END_ITALIC) tok[i] = '*';
-			else if (ca == CHAR_BEG_ITALIE || ca == CHAR_END_ITALIE) tok[i] = '_';
-		}
-
 		if (!tok.empty() && *tok.rbegin() == '>')
 			tok.erase(tok.begin() + (tok.size() - 1));
 
@@ -184,16 +166,22 @@ static void RegexReplace(std::string& msg, const REN::regex& regex, int length1,
 	}
 }
 
-void FormattedText::Tokenize(const std::string& msg, const std::string& oldmsg)
+void FormattedText::Tokenize(const std::string& newmsg, const std::string& oldmsg)
 {
-	assert(msg.size() == oldmsg.size());
+	assert(newmsg.size() == oldmsg.size());
 	auto& tokens = m_tokens;
-	std::string current = "";
+
+	std::string msg(newmsg);
 	size_t msgSize = msg.size();
+	for (size_t i = 0; i < msgSize; i++) {
+		if (msg[i] == CHAR_ESCAPE)
+			msg[i] = oldmsg[i];
+	}
+
+	std::string current = "";
 	for (size_t i = 0; i < msgSize; )
 	{
 		char chr = msg[i];
-
 		switch (chr)
 		{
 			case CHAR_BEG_FORWARD:
@@ -205,13 +193,6 @@ void FormattedText::Tokenize(const std::string& msg, const std::string& oldmsg)
 				AddAndClearToken(tokens, current, chr == CHAR_END_FORWARD ? Token::FORWARDE : Token::FORWARD);
 				break;
 			}
-			case CHAR_ESCAPE_UNDERSCORE: chr = '_'; goto _def;
-			case CHAR_ESCAPE_ASTERISK:   chr = '*'; goto _def;
-			case CHAR_ESCAPE_BACKSLASH:  chr ='\\'; goto _def;
-			case CHAR_ESCAPE_BACKTICK:   chr = '`'; goto _def;
-			case CHAR_ESCAPE_POUND:      chr = '#'; goto _def;
-			case CHAR_ESCAPE_MINUS:      chr = '-'; goto _def;
-			case CHAR_ESCAPE_PLUS:       chr = '+'; goto _def;
 			case CHAR_NOOP: i++; break;
 			case CHAR_BEG_STRONG:
 			case CHAR_END_STRONG:
@@ -817,6 +798,7 @@ void FormattedText::UseRegex(std::string& str)
 	const int HAS_AT     = (1 << 3);
 	const int HAS_BSLASH = (1 << 4);
 	const int HAS_HEADER = (1 << 5);
+	const int HAS_SLASH  = (1 << 6);
 	int flags = 0;
 
 	for (size_t i = 0; i < str.size(); i++) {
@@ -825,13 +807,50 @@ void FormattedText::UseRegex(std::string& str)
 		if (str[i] == '>') flags |= HAS_QUOTE;
 		if (str[i] == '@') flags |= HAS_AT;
 		if (str[i] == '#') flags |= HAS_HEADER;
+		if (str[i] == '/') flags |= HAS_SLASH;
 		if (str[i] == '\\') flags |= HAS_BSLASH;
 
-		if (flags == (HAS_STRONG | HAS_EMPHAS | HAS_QUOTE | HAS_AT | HAS_BSLASH | HAS_HEADER))
+		if (flags == (HAS_STRONG | HAS_EMPHAS | HAS_QUOTE | HAS_AT | HAS_BSLASH | HAS_HEADER | HAS_SLASH))
 			break;
 	}
 
-	// Not too expensive I hope!
+	if (flags & HAS_SLASH)
+	{
+		// find all http:// and https:// and escape the entire link
+		for (size_t i = 0; i < str.size(); )
+		{
+			size_t beginningLink = i;
+			if (strncmp(str.c_str() + i, "http://", 7) != 0 &&
+				strncmp(str.c_str() + i, "https://", 8) != 0)
+			{
+				i++;
+				continue;
+			}
+
+			i += 7;
+
+			int parenDepth = 0;
+			int brackDepth = 0;
+			int curlyDepth = 0;
+
+			for (; i < str.size(); i++)
+			{
+				/**/ if (str[i] == '(') parenDepth++;
+				else if (str[i] == '[') brackDepth++;
+				else if (str[i] == '{') curlyDepth++;
+				else if (str[i] == ')') parenDepth--;
+				else if (str[i] == ']') brackDepth--;
+				else if (str[i] == '}') curlyDepth--;
+
+				if (parenDepth < 0 || brackDepth < 0 || curlyDepth < 0 ||
+					str[i] == ' ' || str[i] == '\n' || str[i] == '\r' || str[i] == '>')
+					break;
+			}
+
+			for (size_t j = beginningLink; j < i; j++)
+				str[j] = CHAR_ESCAPE;
+		}
+	}
 	if (flags & HAS_BSLASH)
 	{
 		for (size_t i = 0; !str.empty() && i < str.size() - 1; i++) {
@@ -843,13 +862,13 @@ void FormattedText::UseRegex(std::string& str)
 
 			thisChar = CHAR_NOOP;
 			switch (nextChar) {
-				case '_': nextChar = CHAR_ESCAPE_UNDERSCORE; break;
-				case '*': nextChar = CHAR_ESCAPE_ASTERISK;   break;
-				case'\\': nextChar = CHAR_ESCAPE_BACKSLASH;  break;
-				case '#': nextChar = CHAR_ESCAPE_POUND;      break;
-				case '-': nextChar = CHAR_ESCAPE_MINUS;      break;
-				case '+': nextChar = CHAR_ESCAPE_PLUS;       break;
-				case '`': nextChar = CHAR_ESCAPE_BACKTICK;   break;  // NOTE: Processing backtick escapes earlier to disable escapes within code blocks
+				case '_':
+				case '*':
+				case'\\':
+				case '#':
+				case '-':
+				case '+':
+				case '`': nextChar = CHAR_ESCAPE; break;
 				case '!': case '|': case '.': break;
 				default: thisChar = '\\'; break; // just replace it back with backslash
 			}
@@ -917,7 +936,7 @@ void FormattedText::RegexNecessary()
 	}
 }
 
-std::string FormattedText::EscapeChars(const std::string& str)
+std::string FormattedText::EscapeChars(const std::string& str, const std::string& oldstr)
 {
 	std::string outstr;
 	outstr.reserve(str.size());
@@ -926,13 +945,7 @@ std::string FormattedText::EscapeChars(const std::string& str)
 	{
 		switch (str[i]) {
 			case CHAR_NOOP: break;
-			case CHAR_ESCAPE_UNDERSCORE: outstr += '_'; break;
-			case CHAR_ESCAPE_ASTERISK:   outstr += '*'; break;
-			case CHAR_ESCAPE_BACKSLASH:  outstr +='\\'; break;
-			case CHAR_ESCAPE_BACKTICK:   outstr += '`'; break;
-			case CHAR_ESCAPE_POUND:      outstr += '#'; break;
-			case CHAR_ESCAPE_MINUS:      outstr += '-'; break;
-			case CHAR_ESCAPE_PLUS:       outstr += '+'; break;
+			case CHAR_ESCAPE: outstr += oldstr[i]; break;
 			default: outstr += str[i]; break;
 		}
 	}
@@ -947,7 +960,7 @@ void FormattedText::TokenizeAll()
 		if (i & 1)
 		{
 			assert(m_blocks[i].size() == 1);
-			m_tokens.push_back(Token(Token::CODE, EscapeChars(m_blocks[i][0].first)));
+			m_tokens.push_back(Token(Token::CODE, EscapeChars(m_blocks[i][0].first, m_blocks[i][0].second)));
 		}
 		else
 		{
@@ -959,6 +972,7 @@ void FormattedText::TokenizeAll()
 				{
 					// for each word
 					auto& str = m_blocks[i][j].first;
+					auto& oldstr = m_blocks[i][j].second;
 
 					size_t last = 0, j;
 					for (j = 0; j <= str.size(); j++)
@@ -966,13 +980,17 @@ void FormattedText::TokenizeAll()
 						if (j == str.size() || str[j] == ' ')
 						{
 							// push it *including* the space
-							std::string toInsert;
-							if (j == str.size())
+							std::string toInsert, toInsertOld;
+							if (j == str.size()) {
 								toInsert = str.substr(last);
-							else
+								toInsertOld = oldstr.size() ? oldstr.substr(last) : "";
+							}
+							else {
 								toInsert = str.substr(last, j - last + 1);
+								toInsertOld = oldstr.size() ? oldstr.substr(last, j - last + 1) : "";
+							}
 
-							m_tokens.push_back(Token(Token::SMALLCODE, EscapeChars(toInsert)));
+							m_tokens.push_back(Token(Token::SMALLCODE, EscapeChars(toInsert, toInsertOld)));
 							last = j + 1;
 						}
 					}

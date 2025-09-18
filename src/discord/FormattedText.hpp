@@ -216,7 +216,7 @@ private:
 	std::vector<std::pair<std::string, std::string> > SplitBackticks(const std::string& str); // see note 2. and 4.
 	void UseRegex(std::string& str);
 	void Tokenize(const std::string& str, const std::string& oldmsg);
-	std::string EscapeChars(const std::string& str);
+	std::string EscapeChars(const std::string& str, const std::string& oldstr);
 
 	void SplitBlocks();
 	void RegexNecessary();
