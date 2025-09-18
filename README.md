@@ -84,7 +84,7 @@ https://developers.google.com/speed/webp/download.  Extract the archive and plac
 (Note: x64 compilation with MinGW is currently not supported)
 
 **(NOTE: The versions of MinGW your package manager(s) provide(s) may not target your desired platform!
-If you want Pentium 1 support and/or native Windows 95/NT 3.x support, see: [Pentium Toolchain Build Guide](doc/pentium-toolchain/README.md)**
+If you want Pentium 1 support and/or native Windows 95/NT 3.x support, see: [Pentium Toolchain Build Guide](doc/pentium-toolchain/README.md))**
 
 1. Acquire mingw-w64:
 ```
@@ -97,7 +97,7 @@ as your defaults, or `export` them (but make sure to not check in your change wh
 
 3. Use the following command line:
 ```
-CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ WR=x86_64-w64-mingw32-windres make DEBUG=no UNICODE=[no|yes] [-j (your core count)]
+make DEBUG=no UNICODE=[no|yes] [-j (your core count)]
 ```
 
 The finished binary will be placed in `./bin/DiscordMessenger.exe`. Enjoy!
@@ -127,20 +127,19 @@ final product on anything newer than XP.
 
 3. Ensure that both the MinGW `bin/` AND msys `bin/` directories are in your `PATH`.
 
-4. Set `OPENSSL_INC_DIR` and `OPENSSL_LIB_DIR` in your environment variables to your OpenSSL
-include and library directories.  If you want to remember the paths, edit the Makefile to use those
-as your defaults (but make sure to not check in your change when sending a PR!)
+4. Set `OPENSSL_DIR` in your environment variables to your OpenSSL library directory.
 
-If you wish to use Shining Light Productions' distribution of OpenSSL-Win32, use the
-`%OPENSSL_INSTALL%/include` and `%OPENSSL_INSTALL%/lib/MinGW` directories for the include and lib
-dirs respectively.
+If you wish to use Shining Light Productions' distribution of OpenSSL-Win32, copy the
+`%OPENSSL_INSTALL%/include` and `%OPENSSL_INSTALL%/lib/MinGW` directories to a new folder
+that you assign as `OPENSSL_DIR`, then make sure that your MinGW libraries are actually
+in the root of that new folder!
 
 If you want compatibility on Windows versions which don't support the Microsoft Visual Studio 2015
 runtimes (VCRUNTIME140.DLL), then you will need to compile OpenSSL yourself.  See the section on
 [Compiling OpenSSL for older Windows versions](#compiling-openssl-for-older-windows-versions)
 section.
 
-5. Run the `make` command.
+5. Run the `make IS_MINGW_ON_WINDOWS=yes` command.
 
 6. Enjoy!
 
