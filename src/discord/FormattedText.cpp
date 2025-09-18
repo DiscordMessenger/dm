@@ -137,6 +137,28 @@ static void AddAndClearToken(std::vector<Token>& tokens, std::string& tok, int t
 			return;
 		}
 	}
+
+	// HACK: If the token is LINK then replace beginning characters with their normal counterparts
+	if (type == Token::LINK)
+	{
+		for (size_t i = 0; i < tok.size(); i++) {
+			char ca = tok[i];
+			char cb = i + 1 < tok.size() ? tok[i + 1] : 0;
+
+			/**/ if (ca == CHAR_BEG_STRONG && cb == CHAR_NOOP) tok[i] = tok[i + 1] = '*';
+			else if (ca == CHAR_BEG_UNDERL && cb == CHAR_NOOP) tok[i] = tok[i + 1] = '_';
+			else if (cb == CHAR_END_STRONG && ca == CHAR_NOOP) tok[i] = tok[i + 1] = '*';
+			else if (cb == CHAR_END_UNDERL && ca == CHAR_NOOP) tok[i] = tok[i + 1] = '_';
+			else if (ca == CHAR_BEG_ITALIC || ca == CHAR_END_ITALIC) tok[i] = '*';
+			else if (ca == CHAR_BEG_ITALIE || ca == CHAR_END_ITALIE) tok[i] = '_';
+		}
+
+		if (!tok.empty() && *tok.rbegin() == '>')
+			tok.erase(tok.begin() + (tok.size() - 1));
+
+		if (tok[0] == '<') // Discord feature to prevent embedding of the token
+			tok.erase(tok.begin());
+	}
 	
 	tokens.push_back(Token(type, tok, alttext));
 	tok.clear();
