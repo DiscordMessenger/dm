@@ -16,13 +16,50 @@ private:
 		Channel::eChannelType m_type;
 		std::string m_name;
 		int m_categIndex;
+		int m_pos;
+		Snowflake m_lastMessageID;
 
-		bool operator<(const ChannelMember& other) const {
+		bool IsDM() const
+		{
+			return m_type == Channel::DM || m_type == Channel::GROUPDM;
+		}
+
+		bool IsCategory() const
+		{
+			return m_type == Channel::CATEGORY;
+		}
+
+		bool IsVoice() const
+		{
+			return m_type == Channel::VOICE || m_type == Channel::STAGEVOICE;
+		}
+
+		bool operator<(const ChannelMember& other) const
+		{
+			if (IsDM()) {
+				// the other is probably a DM too
+				if (m_lastMessageID != other.m_lastMessageID)
+					m_lastMessageID > other.m_lastMessageID;
+			}
+
+			// sort by which category we're in
 			if (m_categIndex != other.m_categIndex)
 				return m_categIndex < other.m_categIndex;
 			
 			if (m_category != other.m_category)
 				return m_category < other.m_category;
+
+			// within this category group, put the category first
+			if (IsCategory() && !other.IsCategory()) return true;
+			if (!IsCategory() && other.IsCategory()) return false;
+
+			// voice channels are always below text channels
+			if (IsVoice() && !other.IsVoice()) return false;
+			if (!IsVoice() && other.IsVoice()) return true;
+
+			// within each category, sort by position
+			if (!IsCategory() && !other.IsCategory() && m_pos != other.m_pos)
+				return m_pos < other.m_pos;
 
 			return m_id < other.m_id;
 		}
