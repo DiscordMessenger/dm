@@ -227,7 +227,11 @@ void CopyStringToClipboard(const std::string& str)
 		GlobalUnlock(clipbuffer);
 
 		// set the clipboard data
+#if UNICODE
 		SetClipboardData(CF_UNICODETEXT, clipbuffer);
+#else
+		SetClipboardData(CF_TEXT, clipbuffer);
+#endif
 
 		// release everything we have
 		CloseClipboard();
