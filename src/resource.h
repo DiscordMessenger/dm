@@ -328,6 +328,7 @@
 #define IDS_STRING773                   773
 #define IDS_SAVED_STRING_EXE            773
 #define IDS_GET_TOKEN_TUTORIAL          774
+#define IDS_CANT_LAUNCH_URL_UNS         775
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803

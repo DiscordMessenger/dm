@@ -508,10 +508,11 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				nameRect = pThis->m_rectMid;
 				nameRect.left += ScaleByDPI(30) + nameWidth;
 				nameRect.top += (rectHeight - nameHeight) / 2;
+				nameRect.bottom = nameRect.top + nameHeight;
 
 				DrawingContext dc(hdc);
 				pThis->m_channelDescription.Layout(&dc, Rect(W32RECT(nameRect)));
-				pThis->m_channelDescription.Draw(&dc);
+				pThis->m_channelDescription.DrawConfined(&dc, Rect(W32RECT(nameRect)));
 			}
 
 			SelectObject(hdc, objOld);

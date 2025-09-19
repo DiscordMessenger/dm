@@ -731,6 +731,13 @@ void FormattedText::Draw(DrawingContext* context, int offsetY)
 	}
 }
 
+void FormattedText::DrawConfined(DrawingContext* context, const Rect& rect, int offsetY)
+{
+	MdSetClippingRect(context, rect);
+	Draw(context, offsetY);
+	MdClearClippingRect(context);
+}
+
 void FormattedText::RunForEachCustomEmote(FunctionEachEmote func, void* context)
 {
 	if (!m_bFormatted)

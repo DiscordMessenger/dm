@@ -2181,7 +2181,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 
 		DrawingContext dc(hdc);
 		item.m_pRepliedMessage->Layout(&dc, Rect(W32RECT(rcReply)));
-		item.m_pRepliedMessage->Draw(&dc);
+		item.m_pRepliedMessage->DrawConfined(&dc, Rect(W32RECT(rcReply)));
 	}
 						
 	SetTextColor(hdc, old);

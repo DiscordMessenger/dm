@@ -78,6 +78,15 @@ Point MdMeasureString(DrawingContext* context, const String& word, int styleFlag
 		}
 	}
 
+	if ((styleFlags & (WORD_ITALIC | WORD_SMALLER)) && word.GetSize() != 0)
+	{
+		// subtract the C spacing of the last character.
+		TCHAR chr = word.GetWrapped()[word.GetSize() - 1];
+		ABC abc{};
+		GetCharABCWidths(hdc, chr, chr, &abc);
+		rect.right += abc.abcC;
+	}
+
 	SelectObject(hdc, old);
 
 	return { rect.right - rect.left, rect.bottom - rect.top };
@@ -109,10 +118,18 @@ int MdSpaceWidth(DrawingContext* context, int styleFlags)
 	HDC hdc = context->m_hdc;
 	HFONT font = MdGetFontByID(fontId);
 	HGDIOBJ old = SelectObject(hdc, font);
-	SIZE sz{};
-	GetTextExtentPoint32(hdc, TEXT(" "), 1, &sz);
+	ABC abc{};
+	GetCharABCWidths(hdc, ' ', ' ', &abc);
 	SelectObject(hdc, old);
-	int wd = sz.cx;
+	int wd = abc.abcA + abc.abcB + abc.abcC;
+
+	if (wd <= 0) {
+		// maybe it failed because the font is a bitmap font
+		SIZE sz { 4, 0 };
+		GetTextExtentPoint32(hdc, TEXT(" "), 1, &sz);
+		wd = sz.cx;
+	}
+
 	context->m_cachedSpaceWidths[fontId] = wd;
 	return wd;
 }
@@ -213,8 +230,13 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 	}
 
 	// prevent italics that overflow the rect from being clipped
-	rc.right += ScaleByDPI(8);
-	rc.bottom += ScaleByDPI(2);
+	if (styleFlags & (WORD_ITALIC | WORD_SMALLER)) {
+		TCHAR chr = str.GetWrapped()[str.GetSize() - 1];
+		ABC abc{};
+		GetCharABCWidths(hdc, chr, chr, &abc);
+		rc.right -= abc.abcC;
+	}
+
 	DrawText(context->m_hdc, str.GetWrapped(), -1, &rc, flags);
 
 	SelectObject(hdc, old);
@@ -260,4 +282,27 @@ void MdDrawForwardBackground(DrawingContext* context, const Rect& rect)
 int MdGetQuoteIndentSize()
 {
 	return ScaleByDPI(SIZE_QUOTE_INDENT);
+}
+
+HRGN _clippingRectRgn = NULL;
+
+void MdSetClippingRect(DrawingContext* context, const Rect& rect)
+{
+	if (_clippingRectRgn) {
+		SelectClipRgn(context->m_hdc, NULL);
+		DeleteRgn(_clippingRectRgn);
+	}
+
+	_clippingRectRgn = CreateRectRgn(W32RECT(rect));
+	SelectClipRgn(context->m_hdc, _clippingRectRgn);
+}
+
+void MdClearClippingRect(DrawingContext* context)
+{
+	if (!_clippingRectRgn)
+		return;
+
+	SelectClipRgn(context->m_hdc, NULL);
+	DeleteRgn(_clippingRectRgn);
+	_clippingRectRgn = NULL;
 }
