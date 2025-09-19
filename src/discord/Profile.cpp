@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "Profile.hpp"
 #include "ProfileCache.hpp"
 #include "Util.hpp"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nlohmann/json.h>
+#include <iprogsjson.hpp>
 #include <string>
 #include <vector>
 #include <map>
@@ -27,7 +27,7 @@ public:
 	bool m_bIsFinalized = false;
 
 public:
-	MessagePoll(const nlohmann::json&);
+	MessagePoll(const iprog::JsonObject&);
 	MessagePoll(const MessagePoll& oth);
 
 };

@@ -1,4 +1,4 @@
-#include <nlohmann/json.h>
+#include <iprogsjson.hpp>
 #include "Channel.hpp"
 #include "ProfileCache.hpp"
 #include "DiscordInstance.hpp"
