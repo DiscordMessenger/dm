@@ -655,6 +655,24 @@ void MessageItem::Update(Snowflake guildID)
 		m_pMessagePollData = new MessagePollData(m_msg->m_pMessagePoll);
 		m_pMessagePollData->Update();
 	}
+
+	if (m_msg->IsReply() && !MessageList::IsActionMessage(m_msg->m_type))
+	{
+		if (!m_pRepliedMessage)
+			m_pRepliedMessage = new	FormattedText();
+
+		m_pRepliedMessage->Clear();
+		m_pRepliedMessage->SetDefaultStyle(WORD_ITALIC | WORD_SMALLER);
+		m_pRepliedMessage->SetMessage(m_msg->m_pReferencedMessage->m_message);
+
+		std::vector<InteractableItem> interactables;
+		GetDiscordInstance()->ResolveLinks(m_pRepliedMessage, interactables);
+	}
+	else if (m_pRepliedMessage)
+	{
+		delete m_pRepliedMessage;
+		m_pRepliedMessage = nullptr;
+	}
 }
 
 static void ShiftUpRect(RECT& rc, int amount) {
@@ -2061,7 +2079,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 		nameClr = InvertIfNeeded(GetSysColor(COLOR_WINDOWTEXT));
 
 	LPCTSTR strPart1 = TEXT("");
-	LPCTSTR strPart2 = item.m_replyMsg;
+	LPCTSTR strPart2 = NULL;
 	LPCTSTR strPart3 = NULL;
 	LPCTSTR strClick = NULL;
 	LPTSTR  strFreed = NULL;
@@ -2148,6 +2166,22 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 		DrawText(hdc, strPart3, -1, &rcMeasure, DT_NOPREFIX | DT_SINGLELINE | ri::GetWordEllipsisFlag() | DT_CALCRECT);
 		DrawText(hdc, strPart3, -1, &rcReply,   DT_NOPREFIX | DT_SINGLELINE | ri::GetWordEllipsisFlag());
 		rcReply.left += rcMeasure.right - rcMeasure.left;
+	}
+
+	if (!isActionMessage && item.m_pRepliedMessage)
+	{
+		if (item.m_pRepliedMessage->GetRawMessage() != item.m_msg->m_pReferencedMessage->m_message) {
+			item.m_pRepliedMessage->Clear();
+			item.m_pRepliedMessage->SetDefaultStyle(WORD_ITALIC | WORD_SMALLER);
+			item.m_pRepliedMessage->SetMessage(item.m_msg->m_pReferencedMessage->m_message);
+
+			std::vector<InteractableItem> interactables;
+			GetDiscordInstance()->ResolveLinks(item.m_pRepliedMessage, interactables);
+		}
+
+		DrawingContext dc(hdc);
+		item.m_pRepliedMessage->Layout(&dc, Rect(W32RECT(rcReply)));
+		item.m_pRepliedMessage->Draw(&dc);
 	}
 						
 	SetTextColor(hdc, old);

@@ -14,6 +14,8 @@ extern HFONT* g_FntMdStyleArray[FONT_TYPE_COUNT];
 static int MdDetermineFontID(int styleFlags) {
 	if (styleFlags & (WORD_CODE | WORD_MLCODE))
 		return 8;
+	if (styleFlags & WORD_SMALLER)
+		return 13; // I don't feel like writing even more code
 	if (styleFlags & WORD_HEADER1)
 		return (styleFlags & WORD_ITALIC) ? 10 : 9;
 	if (styleFlags & WORD_HEADER2)

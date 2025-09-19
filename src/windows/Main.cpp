@@ -1674,6 +1674,7 @@ HFONT* g_FntMdStyleArray[FONT_TYPE_COUNT] = {
 	&g_FntMdHdrI, // 10
 	&g_FntMdHdr2, // 11
 	&g_FntMdHdrI2,// 12
+	&g_ReplyTextFont, // 13
 };
 
 void InitializeFonts()

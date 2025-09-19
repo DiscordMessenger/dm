@@ -1635,6 +1635,9 @@ void DiscordInstance::ClearData()
 
 void DiscordInstance::ResolveLinks(FormattedText* message, std::vector<InteractableItem>& interactables, Snowflake guildID)
 {
+	if (guildID == 0)
+		guildID = GetCurrentGuildID();
+
 	auto& words = message->GetWords();
 	for (size_t i = 0; i < words.size(); i++)
 	{

@@ -589,7 +589,7 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 		if (wflags & WORD_NEWLINE) {
 			wordPos.x = rect.left;
 			wordPos.y += maxLineY;
-			maxLineY = MdLineHeight(context, wflags);
+			maxLineY = MdLineHeight(context, wflags | m_defaultStyle);
 			wflags |= WORD_DONTDRAW;
 			bHadNewlineBefore = true;
 			nSpacesBefore = 0;
@@ -613,14 +613,14 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 			maxWidth = rect.Width();
 		}
 
-		int spaceWidth = MdSpaceWidth(context, wflags) * nSpacesBefore;
+		int spaceWidth = MdSpaceWidth(context, wflags | m_defaultStyle) * nSpacesBefore;
 		nSpacesBefore = 0;
 		Point size = word.m_size;
 		
 		if (word.ShouldRelayout(rect))
 		{
 			bool wrapped = false;
-			size = word.m_size = MdMeasureString(context, word.m_ifContent, wflags, wrapped, maxWidth);
+			size = word.m_size = MdMeasureString(context, word.m_ifContent, wflags | m_defaultStyle, wrapped, maxWidth);
 			if (wrapped)
 				word.m_flags |= WORD_WRAPPED;
 			else
@@ -633,7 +633,7 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 		if (wordPos.x + size.x + spaceWidth >= rect.right && !bHadNewlineBefore) {
 			wordPos.x = rect.left;
 			wordPos.y += maxLineY;
-			maxLineY = MdLineHeight(context, wflags);
+			maxLineY = MdLineHeight(context, wflags | m_defaultStyle);
 			wflags |= WORD_AFNEWLINE;
 			nSpacesBefore = 0;
 		}

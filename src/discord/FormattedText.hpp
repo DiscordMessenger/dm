@@ -80,6 +80,7 @@ struct Token
 #define WORD_FORWARD   (1 << 21) // start of forwarded message
 #define WORD_FORWARDE  (1 << 22) // end of forwarded message
 #define WORD_HEADER2   (1 << 23) // Header 2 style.
+#define WORD_SMALLER   (1 << 24) // Smaller text. (-#)
 
 struct Word
 {
@@ -186,6 +187,10 @@ public:
 	
 	bool IsFormatted() const {
 		return m_bFormatted;
+	}
+
+	const std::string& GetRawMessage() const {
+		return m_rawMessage;
 	}
 
 private:

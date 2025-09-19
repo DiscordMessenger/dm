@@ -473,7 +473,7 @@ public:
 	void ClearData();
 
 	// Resolves links automatically in a formatted message.
-	void ResolveLinks(FormattedText* message, std::vector<InteractableItem>& interactables, Snowflake guildID);
+	void ResolveLinks(FormattedText* message, std::vector<InteractableItem>& interactables, Snowflake guildID = 0);
 
 public:
 	DiscordInstance(std::string token) : m_token(token), m_notificationManager(this) {
