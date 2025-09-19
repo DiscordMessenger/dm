@@ -38,6 +38,30 @@ static HFONT MdDetermineFont(int styleFlags)
 	return MdGetFontByID(MdDetermineFontID(styleFlags));
 }
 
+int MdGetOverhang(HDC hdc, TCHAR chr)
+{
+	ABC abc{};
+	if (GetCharABCWidths(hdc, chr, chr, &abc)) {
+		return -abc.abcC;
+	}
+
+	// slow!
+	LOGFONT lf;
+	HFONT hf = (HFONT) GetCurrentObject(hdc, OBJ_FONT);
+	if (!hf)
+		return 0;
+
+	if (!GetObject(hf, sizeof lf, &lf))
+		return 0;
+
+	if (!lf.lfItalic)
+		return 0;
+
+	SIZE sz{};
+	GetTextExtentPoint32(hdc, &chr, 1, &sz);
+	return MulDiv(sz.cy, 1, 2) - 2;
+}
+
 Point MdMeasureString(DrawingContext* context, const String& word, int styleFlags, bool& outWasWordWrapped, int maxWidth)
 {
 	outWasWordWrapped = false;
@@ -80,11 +104,9 @@ Point MdMeasureString(DrawingContext* context, const String& word, int styleFlag
 
 	if ((styleFlags & (WORD_ITALIC | WORD_SMALLER)) && word.GetSize() != 0)
 	{
-		// subtract the C spacing of the last character.
+		// subtract the overhang (C spacing) of the last character.
 		TCHAR chr = word.GetWrapped()[word.GetSize() - 1];
-		ABC abc{};
-		GetCharABCWidths(hdc, chr, chr, &abc);
-		rect.right += abc.abcC;
+		rect.right -= MdGetOverhang(hdc, chr);
 	}
 
 	SelectObject(hdc, old);
@@ -119,15 +141,14 @@ int MdSpaceWidth(DrawingContext* context, int styleFlags)
 	HFONT font = MdGetFontByID(fontId);
 	HGDIOBJ old = SelectObject(hdc, font);
 	ABC abc{};
-	GetCharABCWidths(hdc, ' ', ' ', &abc);
+	BOOL res = false;// GetCharABCWidths(hdc, ' ', ' ', &abc);
 	SelectObject(hdc, old);
 	int wd = abc.abcA + abc.abcB + abc.abcC;
 
-	if (wd <= 0) {
-		// maybe it failed because the font is a bitmap font
-		SIZE sz { 4, 0 };
-		GetTextExtentPoint32(hdc, TEXT(" "), 1, &sz);
-		wd = sz.cx;
+	if (!res) {
+		INT sz = 0;
+		GetCharWidth32(hdc, ' ', ' ', &sz);
+		wd = sz;
 	}
 
 	context->m_cachedSpaceWidths[fontId] = wd;
@@ -233,8 +254,14 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 	if (styleFlags & (WORD_ITALIC | WORD_SMALLER)) {
 		TCHAR chr = str.GetWrapped()[str.GetSize() - 1];
 		ABC abc{};
-		GetCharABCWidths(hdc, chr, chr, &abc);
-		rc.right -= abc.abcC;
+		if (GetCharABCWidths(hdc, chr, chr, &abc)) {
+			rc.right -= abc.abcC;
+		}
+		else {
+			// Windows NT 3.1 mode
+			rc.left -= 4;
+			rc.right += 8;
+		}
 	}
 
 	DrawText(context->m_hdc, str.GetWrapped(), -1, &rc, flags);

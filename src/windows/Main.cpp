@@ -1689,6 +1689,7 @@ void InitializeFonts()
 	lf.lfUnderline = false;
 	auto oldWeight = lf.lfWeight;
 
+	_tcscpy(lf.lfFaceName, TEXT("MS Sans Serif"));
 	lf.lfHeight = ScaleByUser(lf.lfHeight);
 
 	HFONT hf, hfb, hfi, hfbi, hfu, hfbu, hfiu, hfbiu, hfbh, hfbh2, hfbih, hfbih2;
