@@ -725,9 +725,9 @@ void FormattedText::Draw(DrawingContext* context, int offsetY)
 			continue;
 
 		Rect rc = w.m_rect;
-		rc.top    += offsetY;
+		rc.top += offsetY;
 		rc.bottom += offsetY;
-		MdDrawString(context, rc, w.m_ifContent, w.m_flags);
+		MdDrawString(context, rc, w.m_ifContent, w.m_flags | m_defaultStyle);
 	}
 }
 
@@ -950,6 +950,11 @@ void FormattedText::TokenizeAll()
 			Tokenize(m_blocks[i].first, m_blocks[i].second);
 		}
 	}
+}
+
+void FormattedText::SetDefaultStyle(int style)
+{
+	m_defaultStyle = style;
 }
 
 void FormattedText::SetMessage(const std::string& msg)

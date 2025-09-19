@@ -576,68 +576,7 @@ void MessageItem::Update(Snowflake guildID)
 			}
 		}
 
-		auto& words = m_message.GetWords();
-		for (size_t i = 0; i < words.size(); i++) {
-			Word& word = words[i];
-			bool isLink = word.m_flags & WORD_LINK;
-			bool isMent = word.m_flags & WORD_MENTION;
-			bool isTime = word.m_flags & WORD_TIMESTAMP;
-
-			InteractableItem item;
-			/**/ if (isLink) item.m_type = InteractableItem::LINK;
-			else if (isMent) item.m_type = InteractableItem::MENTION;
-			else if (isTime) item.m_type = InteractableItem::TIMESTAMP;
-
-			if (item.m_type == InteractableItem::NONE)
-				continue;
-
-			item.m_wordIndex = i;
-			item.m_text = word.GetContentOverride();
-			item.m_destination = word.m_content;
-
-			bool changed = false;
-			if (isMent && !word.m_content.empty())
-			{
-				char mentType = word.m_content[0];
-
-				if (mentType == '#')
-				{
-					std::string mentDest = word.m_content.substr(1);
-					Snowflake sf = (Snowflake)GetIntFromString(mentDest);
-					item.m_text = "#" + GetDiscordInstance()->LookupChannelNameGlobally(sf);
-					item.m_affected = sf;
-					changed = true;
-				}
-				else
-				{
-					bool isRole = false;
-					bool hasExclam = false;
-					if (word.m_content.size() > 2) {
-						if (word.m_content[1] == '&')
-							isRole = true;
-
-						// not totally sure what this does. I only know that certain things use it
-						if (word.m_content[1] == '!')
-							hasExclam = true;
-					}
-
-					std::string mentDest = word.m_content.substr((isRole || hasExclam) ? 2 : 1);
-					Snowflake sf = (Snowflake)GetIntFromString(mentDest);
-					item.m_affected = sf;
-
-					if (isRole)
-						item.m_text = "@" + GetDiscordInstance()->LookupRoleName(sf, guildID);
-					else
-						item.m_text = "@" + GetDiscordInstance()->LookupUserNameGlobally(sf, guildID);
-					changed = true;
-				}
-			}
-
-			if (changed)
-				word.SetContentOverride(item.m_text);
-
-			m_interactableData.push_back(item);
-		}
+		GetDiscordInstance()->ResolveLinks(&m_message, m_interactableData, guildID);
 	}
 	else
 	{
@@ -753,7 +692,7 @@ void MessageItem::ShiftUp(int amount)
 	}
 
 	for (auto& itd : m_interactableData) {
-		ShiftUpRect(itd.m_rect, amount);
+		ShiftUpDRect(itd.m_rect, amount);
 	}
 
 	for (auto& emb : m_embedData) {
@@ -1339,8 +1278,10 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 				for (auto& x : msg2->m_interactableData) {
 					if (x.m_bHighlighted) {
 						x.m_bHighlighted = false;
-						if (x.ShouldInvalidateOnHover())
-							InvalidateRect(m_hwnd, &x.m_rect, FALSE);
+						if (x.ShouldInvalidateOnHover()) {
+							RECT rc = RectToNative(x.m_rect);
+							InvalidateRect(m_hwnd, &rc, FALSE);
+						}
 					}
 				}
 			}
@@ -1356,7 +1297,8 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 	{
 		InteractableItem* pData = &msg->m_interactableData[i];
 
-		if (PtInRect(&pData->m_rect, pt)) {
+		RECT rect = RectToNative(pData->m_rect);
+		if (PtInRect(&rect, pt)) {
 			pItem = pData;
 			break;
 		}
@@ -1376,8 +1318,10 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 		InteractableItem* pData = &msg->m_interactableData[i];
 		if (pData->m_wordIndex == m_highlightedInteractable) {
 			pData->m_bHighlighted = false;
-			if (pData->ShouldInvalidateOnHover())
-				InvalidateRect(m_hwnd, &pData->m_rect, FALSE);
+			if (pData->ShouldInvalidateOnHover()) {
+				RECT rect = RectToNative(pData->m_rect);
+				InvalidateRect(m_hwnd, &rect, FALSE);
+			}
 			break;
 		}
 	}
@@ -1385,8 +1329,10 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 	m_highlightedInteractable = pItem->m_wordIndex;
 	m_highlightedInteractableMessage = msg->m_msg->m_snowflake;
 	pItem->m_bHighlighted = true;
-	if (pItem->ShouldInvalidateOnHover())
-		InvalidateRect(m_hwnd, &pItem->m_rect, FALSE);
+	if (pItem->ShouldInvalidateOnHover()) {
+		RECT rect = RectToNative(pItem->m_rect);
+		InvalidateRect(m_hwnd, &rect, FALSE);
+	}
 
 	DbgPrintW("Hand!  Interactable IDX: %zu   Message ID: %lld", pItem->m_wordIndex, msg->m_msg->m_snowflake);
 }
@@ -2680,13 +2626,13 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			}
 			else {
 				iitem.m_type = InteractableItem::NONE;
-				SetRectEmpty(&iitem.m_rect);
+				iitem.m_rect.SetEmpty();
 			}
 
 			RECT rcClickable = rca;
 			rcClickable.right = rcClickable.left + sizeClick;
 			rca.left += sizeClick;
-			iitem.m_rect = rcClickable;
+			iitem.m_rect = Rect(W32RECT(rcClickable));
 
 			if (inView) {
 				HGDIOBJ objold = SelectObject(hdc, g_AuthorTextFont);
@@ -2745,7 +2691,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			if (!iitem.TypeUpdatedFromWords())
 				continue;
 			const Word& word = words[iitem.m_wordIndex];
-			iitem.m_rect = RectToNative(word.m_rect);
+			iitem.m_rect = word.m_rect;
 			iitem.m_rect.top += offsetY;
 			iitem.m_rect.bottom += offsetY;
 		}
@@ -2878,16 +2824,16 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 				continue;
 			if (ii.m_type == InteractableItem::EMBED_LINK) {
 				switch (ii.m_placeInEmbed) {
-					case EMBED_IN_TITLE:    ii.m_rect = eitem.m_titleRect;    break;
-					case EMBED_IN_AUTHOR:   ii.m_rect = eitem.m_authorRect;   break;
-					case EMBED_IN_PROVIDER: ii.m_rect = eitem.m_providerRect; break;
+					case EMBED_IN_TITLE:    ii.m_rect = Rect(W32RECT(eitem.m_titleRect));    break;
+					case EMBED_IN_AUTHOR:   ii.m_rect = Rect(W32RECT(eitem.m_authorRect));   break;
+					case EMBED_IN_PROVIDER: ii.m_rect = Rect(W32RECT(eitem.m_providerRect)); break;
 				}
 			}
 			if ((eitem.m_pEmbed->m_bHasImage || eitem.m_pEmbed->m_bHasThumbnail) && ii.m_type == InteractableItem::EMBED_IMAGE) {
 				if (eitem.m_pEmbed->m_bHasImage)
-					ii.m_rect = eitem.m_imageRect;
+					ii.m_rect = Rect(W32RECT(eitem.m_imageRect));
 				else
-					ii.m_rect = eitem.m_thumbnailRect;
+					ii.m_rect = Rect(W32RECT(eitem.m_thumbnailRect));
 			}
 		}
 
@@ -3198,7 +3144,7 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 			}
 
 			for (auto& inter : iter->m_interactableData)
-				SetRectEmpty(&inter.m_rect);
+				inter.m_rect.SetEmpty();
 		}
 
 		msgRect.top = msgRect.bottom;
@@ -3736,7 +3682,8 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 				for (auto& intd : msg->m_interactableData)
 				{
-					if (PtInRect(&intd.m_rect, pt)) {
+					RECT rc = RectToNative(intd.m_rect);
+					if (PtInRect(&rc, pt)) {
 						pThis->OpenInteractable(&intd, &*msg);
 						break;
 					}

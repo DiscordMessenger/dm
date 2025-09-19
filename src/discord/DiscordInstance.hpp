@@ -19,6 +19,7 @@
 #include "NotificationManager.hpp"
 #include "UserGuildSettings.hpp"
 #include "GuildListItem.hpp"
+#include "FormattedText.hpp"
 
 struct NetRequest;
 
@@ -470,6 +471,9 @@ public:
 
 	// Clears data about the current user when logged out.
 	void ClearData();
+
+	// Resolves links automatically in a formatted message.
+	void ResolveLinks(FormattedText* message, std::vector<InteractableItem>& interactables, Snowflake guildID);
 
 public:
 	DiscordInstance(std::string token) : m_token(token), m_notificationManager(this) {

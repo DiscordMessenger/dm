@@ -420,10 +420,21 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			std::string cname = pThis->GetChannelName();
 			std::string cinfo = pThis->GetChannelInfo();
 
+			if (cinfo != pThis->m_currentChannelDescription)
+			{
+				pThis->m_currentChannelDescription = cinfo;
+				pThis->m_channelDescription.Clear();
+				pThis->m_channelDescription.SetDefaultStyle(WORD_ITALIC);
+				pThis->m_channelDescription.SetMessage(cinfo);
+
+				// N.B. Interactables currently unused for now.
+				std::vector<InteractableItem> interactables;
+				GetDiscordInstance()->ResolveLinks(&pThis->m_channelDescription, interactables, GetDiscordInstance()->GetCurrentGuildID());
+			}
+
 			LPCTSTR ctstrName = ConvertCppStringToTString(gname);
 			LPCTSTR ctstrSubt = ConvertCppStringToTString(ginfo);
 			LPCTSTR ctstrChNm = ConvertCppStringToTString(cname);
-			LPCTSTR ctstrChIn = ConvertCppStringToTString(cinfo);
 
 			HGDIOBJ objOld = SelectObject(hdc, g_GuildCaptionFont);
 			RECT nameRect;
@@ -492,10 +503,16 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			SelectObject(hdc, g_GuildInfoFont);
 
-			nameRect = pThis->m_rectMid;
-			nameRect.left  += ScaleByDPI(20) + nameWidth;
-			nameRect.top   += (rectHeight - nameHeight) / 2;
-			DrawText(hdc, ctstrChIn, -1, &nameRect, DT_SINGLELINE | DT_NOPREFIX | ri::GetWordEllipsisFlag());
+			if (!cinfo.empty())
+			{
+				nameRect = pThis->m_rectMid;
+				nameRect.left += ScaleByDPI(30) + nameWidth;
+				nameRect.top += (rectHeight - nameHeight) / 2;
+
+				DrawingContext dc(hdc);
+				pThis->m_channelDescription.Layout(&dc, Rect(W32RECT(nameRect)));
+				pThis->m_channelDescription.Draw(&dc);
+			}
 
 			SelectObject(hdc, objOld);
 
@@ -512,7 +529,6 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			free((void*)ctstrName);
 			free((void*)ctstrSubt);
 			free((void*)ctstrChNm);
-			free((void*)ctstrChIn);
 			break;
 		}
 		case WM_USERCOMMAND:

@@ -1633,6 +1633,73 @@ void DiscordInstance::ClearData()
 	m_nextAttachmentID = 1;
 }
 
+void DiscordInstance::ResolveLinks(FormattedText* message, std::vector<InteractableItem>& interactables, Snowflake guildID)
+{
+	auto& words = message->GetWords();
+	for (size_t i = 0; i < words.size(); i++)
+	{
+		Word& word = words[i];
+		bool isLink = word.m_flags & WORD_LINK;
+		bool isMent = word.m_flags & WORD_MENTION;
+		bool isTime = word.m_flags & WORD_TIMESTAMP;
+
+		InteractableItem item;
+		/**/ if (isLink) item.m_type = InteractableItem::LINK;
+		else if (isMent) item.m_type = InteractableItem::MENTION;
+		else if (isTime) item.m_type = InteractableItem::TIMESTAMP;
+
+		if (item.m_type == InteractableItem::NONE)
+			continue;
+
+		item.m_wordIndex = i;
+		item.m_text = word.GetContentOverride();
+		item.m_destination = word.m_content;
+
+		bool changed = false;
+		if (isMent && !word.m_content.empty())
+		{
+			char mentType = word.m_content[0];
+
+			if (mentType == '#')
+			{
+				std::string mentDest = word.m_content.substr(1);
+				Snowflake sf = (Snowflake)GetIntFromString(mentDest);
+				item.m_text = "#" + GetDiscordInstance()->LookupChannelNameGlobally(sf);
+				item.m_affected = sf;
+				changed = true;
+			}
+			else
+			{
+				bool isRole = false;
+				bool hasExclam = false;
+				if (word.m_content.size() > 2) {
+					if (word.m_content[1] == '&')
+						isRole = true;
+
+					// not totally sure what this does. I only know that certain things use it
+					if (word.m_content[1] == '!')
+						hasExclam = true;
+				}
+
+				std::string mentDest = word.m_content.substr((isRole || hasExclam) ? 2 : 1);
+				Snowflake sf = (Snowflake)GetIntFromString(mentDest);
+				item.m_affected = sf;
+
+				if (isRole)
+					item.m_text = "@" + GetDiscordInstance()->LookupRoleName(sf, guildID);
+				else
+					item.m_text = "@" + GetDiscordInstance()->LookupUserNameGlobally(sf, guildID);
+				changed = true;
+			}
+		}
+
+		if (changed)
+			word.SetContentOverride(item.m_text);
+
+		interactables.push_back(item);
+	}
+}
+
 void DiscordInstance::SetActivityStatus(eActiveStatus status, bool bRequestServer)
 {
 	DbgPrintF("Setting activity status to %d", status);

@@ -13,6 +13,8 @@ struct Rect {
 
 	Rect() {}
 	Rect(int l, int t, int r, int b) : left(l), top(t), right(r), bottom(b) {}
+
+	void SetEmpty() { left = top = right = bottom = 0; }
 };
 
 struct Point {

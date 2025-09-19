@@ -3,6 +3,7 @@
 #include <map>
 #include "Main.hpp"
 #include "../discord/Channel.hpp"
+#include "../discord/FormattedText.hpp"
 
 #define T_GUILD_HEADER_CLASS TEXT("GuildHeader")
 
@@ -80,6 +81,9 @@ private:
 	LONG m_minRightToolbarX = 0;
 
 	std::map<int, HICON> m_hIcons;
+	
+	std::string m_currentChannelDescription;
+	FormattedText m_channelDescription;
 
 	void Layout();
 

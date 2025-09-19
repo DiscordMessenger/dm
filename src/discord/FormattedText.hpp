@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include "Snowflake.hpp"
 #include "TextInterface.hpp"
 
 struct Token
@@ -148,6 +149,7 @@ class FormattedText
 public:
 	typedef void(*FunctionEachEmote) (void* context, const Rect& rect);
 
+	void SetDefaultStyle(int style);
 	void SetMessage(const std::string& msg);
 	void Layout(DrawingContext* context, const Rect& rect, int offsetX = 0);
 	void Draw(DrawingContext* context, int offsetY = 0);
@@ -193,6 +195,7 @@ private:
 	std::vector<Word> m_words;
 	bool m_bFormatted = false;
 	Rect m_layoutRect;
+	int m_defaultStyle = 0;
 
 	// Notes!
 	// 1. This is bullshit, to be honest. But it should work.
@@ -226,3 +229,46 @@ private:
 	void ParseText();
 };
 
+enum {
+	EMBED_IN_TITLE,
+	EMBED_IN_AUTHOR,
+	EMBED_IN_PROVIDER,
+};
+
+class InteractableItem
+{
+public:
+	enum {
+		NONE,
+		LINK,
+		MENTION,
+		TIMESTAMP,
+		EMBED_IMAGE,
+		EMBED_LINK,
+	};
+	enum {
+		EMBED_OFFSET = 1000000000,
+	};
+public:
+	bool TypeUpdatedFromWords() const {
+		return m_type != EMBED_IMAGE && m_type != EMBED_LINK;
+	}
+	bool ShouldInvalidateOnHover() const {
+		return m_type != EMBED_IMAGE;
+	}
+	bool UseLinkColor() const {
+		if (m_type == EMBED_LINK)
+			return m_placeInEmbed == EMBED_IN_TITLE;
+		return true;
+	}
+	int m_type = NONE;
+	Rect m_rect{};
+	std::string m_text;
+	std::string m_destination;
+	std::string m_proxyDest;
+	bool m_bHighlighted = false;
+	size_t m_wordIndex = 0;
+	Snowflake m_affected = 0;
+	int m_imageWidth = 0, m_imageHeight = 0;
+	int m_placeInEmbed = 0;
+};

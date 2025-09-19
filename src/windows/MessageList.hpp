@@ -86,50 +86,6 @@ public:
 	bool m_bHighlighted = false;
 };
 
-enum {
-	EMBED_IN_TITLE,
-	EMBED_IN_AUTHOR,
-	EMBED_IN_PROVIDER,
-};
-
-class InteractableItem
-{
-public:
-	enum {
-		NONE,
-		LINK,
-		MENTION,
-		TIMESTAMP,
-		EMBED_IMAGE,
-		EMBED_LINK,
-	};
-	enum {
-		EMBED_OFFSET = 1000000000,
-	};
-public:
-	bool TypeUpdatedFromWords() const {
-		return m_type != EMBED_IMAGE && m_type != EMBED_LINK;
-	}
-	bool ShouldInvalidateOnHover() const {
-		return m_type != EMBED_IMAGE;
-	}
-	bool UseLinkColor() const {
-		if (m_type == EMBED_LINK)
-			return m_placeInEmbed == EMBED_IN_TITLE;
-		return true;
-	}
-	int m_type = NONE;
-	RECT m_rect{};
-	std::string m_text;
-	std::string m_destination;
-	std::string m_proxyDest;
-	bool m_bHighlighted = false;
-	size_t m_wordIndex = 0;
-	Snowflake m_affected = 0;
-	int m_imageWidth = 0, m_imageHeight = 0;
-	int m_placeInEmbed = 0;
-};
-
 struct RichEmbedFieldItem
 {
 	RichEmbedField* m_pField = nullptr;
@@ -364,7 +320,7 @@ public:
 	}
 	void ClearInteractableDataRects() {
 		for (auto& inte : m_interactableData) {
-			SetRectEmpty(&inte.m_rect);
+			inte.m_rect.SetEmpty();
 		}
 	}
 	void Clear() {
