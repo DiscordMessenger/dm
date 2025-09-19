@@ -1258,7 +1258,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_CLOSE:
 			CloseCleanup(hWnd);
 
-			if (GetLocalSettings()->GetMinimizeToNotif())
+			if (GetLocalSettings()->GetMinimizeToNotif() && LOBYTE(GetVersion()) >= 4)
 			{
 				GetFrontend()->HideWindow();
 				return 1;
@@ -1299,6 +1299,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_COMMAND:
 			return HandleCommand(hWnd, uMsg, wParam, lParam);
+
+		case WM_KILLFOCUS:
+			GetLocalSettings()->Save();
+			break;
 
 		case WM_DESTROY:
 		{
@@ -1835,7 +1839,6 @@ InstanceMutex g_instanceMutex;
 
 static bool ForceSingleInstance(LPCTSTR pClassName)
 {
-	return true;
 	HRESULT hResult = g_instanceMutex.Init();
 
 	if (hResult != ERROR_ALREADY_EXISTS)
