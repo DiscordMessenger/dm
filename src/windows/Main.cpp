@@ -1700,6 +1700,12 @@ void InitializeFonts()
 		int h1 = -MulDiv(lf.lfHeight, 8, 3);
 		int h2 = MulDiv(h1, 4, 5);
 
+		if (LOBYTE(GetVersion()) <= 0x4)
+		{
+			h1 = MulDiv(lf.lfHeight, 6, 4);
+			h2 = MulDiv(lf.lfHeight, 5, 4);
+		}
+
 		// BOLD
 		lf.lfWeight = 700;
 		hfb = CreateFontIndirect(&lf);
