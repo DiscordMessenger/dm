@@ -209,7 +209,12 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 		rc2.right = rc2.left + ScaleByDPI(3);
 		FillRect(hdc, &rc2, ri::GetSysColorBrush(COLOR_SCROLLBAR));
 	}
+
+	// prevent italics that overflow the rect from being clipped
+	rc.right += ScaleByDPI(8);
+	rc.bottom += ScaleByDPI(2);
 	DrawText(context->m_hdc, str.GetWrapped(), -1, &rc, flags);
+
 	SelectObject(hdc, old);
 	if (setColor)
 		SetTextColor(hdc, oldColor);
