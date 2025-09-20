@@ -141,13 +141,16 @@ int MdSpaceWidth(DrawingContext* context, int styleFlags)
 	HFONT font = MdGetFontByID(fontId);
 	HGDIOBJ old = SelectObject(hdc, font);
 	ABC abc{};
-	BOOL res = false;// GetCharABCWidths(hdc, ' ', ' ', &abc);
+	BOOL res = GetCharABCWidths(hdc, ' ', ' ', &abc);
 	SelectObject(hdc, old);
 	int wd = abc.abcA + abc.abcB + abc.abcC;
 
 	if (!res) {
 		INT sz = 0;
 		GetCharWidth32(hdc, ' ', ' ', &sz);
+		if (sz == 0) {
+			sz = 3;
+		}
 		wd = sz;
 	}
 
