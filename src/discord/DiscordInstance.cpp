@@ -1633,6 +1633,41 @@ void DiscordInstance::ClearData()
 	m_nextAttachmentID = 1;
 }
 
+std::string DiscordInstance::ResolveTimestamp(const std::string& timestampCode)
+{
+	if (strncmp(timestampCode.c_str(), "t:", 2) != 0)
+		// doesn't start with t:
+		return "";
+
+	std::string timeStr = timestampCode.substr(2);
+	auto pos = timeStr.find(':');
+	if (pos == std::string::npos || pos == timeStr.size() - 1)
+		// cannot find the second colon, or it's at the end of the string
+		return "";
+
+	char type = timeStr[pos + 1];
+	timeStr = timeStr.substr(0, pos);
+
+	std::stringstream ss(timeStr);
+	time_t timeInt = -1;
+	ss >> timeInt;
+
+	if (timeInt == -1)
+		return "";
+
+	switch (type) {
+		case 't': return FormatTimestampTimeShort(timeInt);
+		case 'T': return FormatTimestampTimeLong(timeInt);
+		case 'd': return FormatTimestampDateShort(timeInt);
+		case 'D': return FormatTimestampDateLong(timeInt);
+		case 'f': return FormatTimestampDateLongTimeShort(timeInt);
+		case 'F': return FormatTimestampDateLongTimeLong(timeInt);
+		case 'R': return FormatTimestampRelative(timeInt);
+	}
+
+	return "";
+}
+
 void DiscordInstance::ResolveLinks(FormattedText* message, std::vector<InteractableItem>& interactables, Snowflake guildID)
 {
 	if (guildID == 0)
@@ -1692,6 +1727,14 @@ void DiscordInstance::ResolveLinks(FormattedText* message, std::vector<Interacta
 					item.m_text = "@" + GetDiscordInstance()->LookupRoleName(sf, guildID);
 				else
 					item.m_text = "@" + GetDiscordInstance()->LookupUserNameGlobally(sf, guildID);
+				changed = true;
+			}
+		}
+		if (isTime && !word.m_content.empty())
+		{
+			std::string resolveTime = ResolveTimestamp(word.m_content);
+			if (!resolveTime.empty()) {
+				item.m_text = resolveTime;
 				changed = true;
 			}
 		}

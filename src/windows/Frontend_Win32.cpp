@@ -490,12 +490,12 @@ std::string Frontend_Win32::GetMonthName(int mon)
 
 std::string Frontend_Win32::GetTodayAtText()
 {
-	return TmGetString(IDS_TODAY_AT);
+	return TmGetString(IDS_TODAY_AT) + GetFormatTimestampTimeShort();
 }
 
 std::string Frontend_Win32::GetYesterdayAtText()
 {
-	return TmGetString(IDS_YESTERDAY_AT);
+	return TmGetString(IDS_YESTERDAY_AT) + GetFormatTimestampTimeShort();
 }
 
 std::string Frontend_Win32::GetFormatDateOnlyText()
@@ -505,17 +505,47 @@ std::string Frontend_Win32::GetFormatDateOnlyText()
 
 std::string Frontend_Win32::GetFormatTimeLongText()
 {
-	return TmGetString(IDS_LONG_DATE_FMT);
+	return TmGetString(IDS_LONG_DATE_FMT) + GetFormatTimestampTimeShort();
 }
 
 std::string Frontend_Win32::GetFormatTimeShortText()
 {
-	return TmGetString(IDS_SHORT_DATE_FMT);
+	return TmGetString(IDS_SHORT_DATE_FMT) + GetFormatTimestampTimeShort();
 }
 
 std::string Frontend_Win32::GetFormatTimeShorterText()
 {
-	return TmGetString(IDS_SHORT_TIME_FMT);
+	return GetFormatTimestampTimeShort();
+}
+
+std::string Frontend_Win32::GetFormatTimestampTimeShort()
+{
+	return "%H:%M";
+}
+
+std::string Frontend_Win32::GetFormatTimestampTimeLong()
+{
+	return "%H:%M:%S";
+}
+
+std::string Frontend_Win32::GetFormatTimestampDateShort()
+{
+	return "%d/%m/%Y";
+}
+
+std::string Frontend_Win32::GetFormatTimestampDateLong()
+{
+	return "%e %B %Y";
+}
+
+std::string Frontend_Win32::GetFormatTimestampDateLongTimeShort()
+{
+	return GetFormatTimestampDateLong() + " " + GetFormatTimestampTimeShort();
+}
+
+std::string Frontend_Win32::GetFormatTimestampDateLongTimeLong()
+{
+	return "%A, " + GetFormatTimestampDateLong() + " " + GetFormatTimestampTimeShort();
 }
 
 int Frontend_Win32::GetMinimumWidth()

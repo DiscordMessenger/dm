@@ -508,6 +508,7 @@ private:
 	void OnUploadAttachmentFirst(NetRequest* pReq);
 	void OnUploadAttachmentSecond(NetRequest* pReq);
 	void SearchSubGuild(std::vector<QuickMatch>& matches, Guild* pGuild, int matchFlags, const char* query);
+	std::string ResolveTimestamp(const std::string& timestampCode);
 	std::string TransformMention(const std::string& source, Snowflake guild, Snowflake channel);
 
 	// handle functions

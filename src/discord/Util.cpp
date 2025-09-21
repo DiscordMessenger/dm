@@ -455,6 +455,104 @@ std::string FormatTimeShorter(time_t time)
 	return std::string(buff);
 }
 
+std::string FormatTimestampTimeShort(time_t time)
+{
+	struct tm ptime { 0 };
+	ptime = *localtime(&time);
+	char buffer[256];
+	strftime(buffer, sizeof buffer, GetFrontend()->GetFormatTimestampTimeShort().c_str(), &ptime);
+	return std::string(buffer);
+}
+
+std::string FormatTimestampTimeLong(time_t time)
+{
+	struct tm ptime { 0 };
+	ptime = *localtime(&time);
+	char buffer[256];
+	strftime(buffer, sizeof buffer, GetFrontend()->GetFormatTimestampTimeLong().c_str(), &ptime);
+	return std::string(buffer);
+}
+
+std::string FormatTimestampDateShort(time_t time)
+{
+	struct tm ptime { 0 };
+	ptime = *localtime(&time);
+	char buffer[256];
+	strftime(buffer, sizeof buffer, GetFrontend()->GetFormatTimestampDateShort().c_str(), &ptime);
+	return std::string(buffer);
+}
+
+std::string FormatTimestampDateLong(time_t time)
+{
+	struct tm ptime { 0 };
+	ptime = *localtime(&time);
+	char buffer[256];
+	strftime(buffer, sizeof buffer, GetFrontend()->GetFormatTimestampDateLong().c_str(), &ptime);
+	return std::string(buffer);
+}
+
+std::string FormatTimestampDateLongTimeShort(time_t time)
+{
+	struct tm ptime { 0 };
+	ptime = *localtime(&time);
+	char buffer[256];
+	strftime(buffer, sizeof buffer, GetFrontend()->GetFormatTimestampDateLongTimeShort().c_str(), &ptime);
+	return std::string(buffer);
+}
+
+std::string FormatTimestampDateLongTimeLong(time_t time)
+{
+	struct tm ptime { 0 };
+	ptime = *localtime(&time);
+	char buffer[256];
+	strftime(buffer, sizeof buffer, GetFrontend()->GetFormatTimestampDateLongTimeLong().c_str(), &ptime);
+	return std::string(buffer);
+}
+
+std::string FormatTimestampRelative(time_t t)
+{
+	time_t ct = time(NULL);
+
+	auto diff = ct - t;
+	bool future = diff < 0;
+	diff = abs(diff);
+	
+	auto pfx = future ? "in " : "";
+	auto sfx = future ? "" : " ago";
+
+	if (diff >= 365 * 24 * 60 * 60) {
+		// years
+		diff = round(diff / double(365 * 24 * 60 * 60));
+		return pfx + std::to_string(diff) + (diff == 1 ? " year" : " years") + sfx;
+	}
+
+	if (diff >= 30 * 24 * 60 * 60) {
+		// months - TODO, just an approximation
+		diff = round(diff / double(30 * 24 * 60 * 60));
+		return pfx + std::to_string(diff) + (diff == 1 ? " month" : " months") + sfx;
+	}
+
+	if (diff >= 24 * 60 * 60) {
+		// days
+		diff = round(diff / double(24 * 60 * 60));
+		return pfx + std::to_string(diff) + (diff == 1 ? " day" : " days") + sfx;
+	}
+
+	if (diff >= 60 * 60) {
+		// hours
+		diff = round(diff / double(60 * 60));
+		return pfx + std::to_string(diff) + (diff == 1 ? " hour" : " hours") + sfx;
+	}
+
+	if (diff >= 60) {
+		// minutes
+		diff = round(diff / double(60));
+		return pfx + std::to_string(diff) + (diff == 1 ? " minute" : " minutes") + sfx;
+	}
+
+	return pfx + std::to_string(diff) + (diff == 1 ? " second" : " seconds") + sfx;
+}
+
 void SplitURL(const std::string& url, std::string& domainOut, std::string& resourceOut)
 {
 	const char* urlc = url.c_str();

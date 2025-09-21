@@ -44,6 +44,13 @@ std::string FormatDate(time_t time); // January 1, 1970
 std::string FormatTimeLong(time_t time, bool relativity = false); // relativity=true means "Today at" and "Yesterday at" show
 std::string FormatTimeShort(time_t time);
 std::string FormatTimeShorter(time_t time);
+std::string FormatTimestampTimeShort(time_t time);
+std::string FormatTimestampTimeLong(time_t time);
+std::string FormatTimestampDateShort(time_t time);
+std::string FormatTimestampDateLong(time_t time);
+std::string FormatTimestampDateLongTimeShort(time_t time);
+std::string FormatTimestampDateLongTimeLong(time_t time);
+std::string FormatTimestampRelative(time_t time);
 void SplitURL(const std::string& url, std::string& domainOut, std::string& resourceOut);
 std::string CreateChannelLink(Snowflake guild, Snowflake channel);
 std::string CreateMessageLink(Snowflake guild, Snowflake channel, Snowflake message);

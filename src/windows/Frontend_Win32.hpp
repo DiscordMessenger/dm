@@ -72,6 +72,12 @@ public:
 	std::string GetFormatTimeLongText() override;
 	std::string GetFormatTimeShortText() override;
 	std::string GetFormatTimeShorterText() override;
+	std::string GetFormatTimestampTimeShort() override;
+	std::string GetFormatTimestampTimeLong() override;
+	std::string GetFormatTimestampDateShort() override;
+	std::string GetFormatTimestampDateLong() override;
+	std::string GetFormatTimestampDateLongTimeShort() override;
+	std::string GetFormatTimestampDateLongTimeLong() override;
 	int GetMinimumWidth() override;
 	int GetMinimumHeight() override;
 	int GetDefaultWidth() override;
