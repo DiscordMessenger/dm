@@ -424,6 +424,7 @@
 #define IDC_IMAGES_WHEN_UPLOADED        894
 #define IDC_IMAGES_WHEN_EMBEDDED        895
 #define IDC_SHOW_EMBEDS                 896
+#define IDC_USE_12HR_TIME               897
 #define IDC_ENABLE_BALLOON_NOTIFS       898
 #define IDC_FLASH_TASKBAR               899
 #define IDC_USE_DISCORD_SOUND           900

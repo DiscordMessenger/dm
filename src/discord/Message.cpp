@@ -41,6 +41,25 @@ void Message::SetTimeEdited(time_t t)
 	m_editedTextCompact = "(edited)";
 }
 
+void Message::UpdateTimestamp()
+{
+	if (m_type == MessageType::SENDING_MESSAGE) {
+		m_dateCompact = "Sending...";
+		m_dateFull = "Sending...";
+		return;
+	}
+
+	if (m_dateTime)
+		SetTime(m_dateTime);
+	else
+		m_dateCompact = m_dateFull = "";
+
+	if (m_timeEdited)
+		SetTimeEdited(m_timeEdited);
+	else
+		m_editedText = m_editedTextCompact = "";
+}
+
 bool Message::CheckWasMentioned(Snowflake user, Snowflake guild, bool bSuppressEveryone, bool bSuppressRoles) const
 {
 	if (!bSuppressEveryone && m_bMentionedEveryone)

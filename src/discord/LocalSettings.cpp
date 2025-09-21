@@ -127,6 +127,9 @@ bool LocalSettings::Load()
 	if (j.contains("FlashOnNotification"))
 		m_bFlashOnNotification = j["FlashOnNotification"];
 
+	if (j.contains("Use12HourTime"))
+		m_bUse12HourTime = j["Use12HourTime"];
+
 	if (m_bSaveWindowSize)
 	{
 		if (j.contains("WindowWidth"))
@@ -196,6 +199,7 @@ bool LocalSettings::Save()
 	j["ShowEmbedContent"] = m_bShowEmbedContent;
 	j["EnableNotifications"] = m_bEnableNotifications;
 	j["FlashOnNotification"] = m_bFlashOnNotification;
+	j["Use12HourTime"] = m_bUse12HourTime;
 	
 	if (m_bSaveWindowSize) {
 		j["WindowWidth"] = m_width;

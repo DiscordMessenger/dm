@@ -675,17 +675,18 @@ IDD_DIALOG_CHATSETTINGS DIALOGEX 0, 0, 260, 242
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    GROUPBOX        "Message Options",IDC_STATIC,6,7,248,33
+    GROUPBOX        "Message Options",IDC_STATIC,6,7,248,45
     CONTROL         "Disable markdown formatting (suggested for RTL scripts such as Arabic or in case of performance issues)",IDC_DISABLE_FORMATTING,
                     "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,12,18,236,18
-    GROUPBOX        "Display Images",IDC_STATIC,6,43,248,41
+    GROUPBOX        "Display Images",IDC_STATIC,6,56,248,41
     CONTROL         "When uploaded directly to Discord",IDC_IMAGES_WHEN_UPLOADED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,55,236,10
-    CONTROL         "When posted as links in chat",IDC_IMAGES_WHEN_EMBEDDED,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,68,236,10
-    GROUPBOX        "Embed Settings",IDC_STATIC,6,90,248,27
+    CONTROL         "When posted as links in chat",IDC_IMAGES_WHEN_EMBEDDED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,81,236,10
+    GROUPBOX        "Embed Settings",IDC_STATIC,6,103,248,27
     CONTROL         "Show embeds and preview links in chat",IDC_SHOW_EMBEDS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,101,236,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,114,236,10
+    CONTROL         "Use 12-hour time",IDC_USE_12HR_TIME,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,12,38,236,10
 END
 
 IDD_DIALOG_WINDOWSETTINGS DIALOGEX 0, 0, 260, 242
@@ -821,12 +822,12 @@ BEGIN
     LISTBOX         IDC_GUILD_LIST,7,19,271,158,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_DIALOG_PREFERENCES_ND DIALOG 0, 0, 231, 295
+IDD_DIALOG_PREFERENCES_ND DIALOG 0, 0, 231, 308
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Preferences"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    PUSHBUTTON      "Done",IDOK,174,274,50,14
+    PUSHBUTTON      "Done",IDOK,174,287,50,14
     GROUPBOX        "My Account",IDC_STATIC,7,7,218,36
     GROUPBOX        "Appearance",IDC_STATIC,7,45,218,77
     LTEXT           "Static",IDC_MY_ACCOUNT_NAME,52,17,135,8
@@ -844,7 +845,7 @@ BEGIN
     PUSHBUTTON      "Change...",IDC_ACTIVE_IMAGE_BROWSE,169,86,50,14
     LTEXT           "Aligned to:",IDC_STATIC,12,105,65,8
     COMBOBOX        IDC_COMBO_ALIGNMENT,80,104,137,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Chat",IDC_STATIC,7,123,218,63
+    GROUPBOX        "Chat",IDC_STATIC,7,123,218,76
     CONTROL         "Disable markdown formatting",IDC_DISABLE_FORMATTING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,134,205,10
     CONTROL         "Display images when uploaded directly to Discord",IDC_IMAGES_WHEN_UPLOADED,
@@ -853,14 +854,15 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,160,205,10
     CONTROL         "Show embeds and preview links in chat",IDC_SHOW_EMBEDS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,173,205,10
-    GROUPBOX        "Window",IDC_STATIC,7,187,218,38
-    CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,198,203,10
-    CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,211,203,10
-    GROUPBOX        "Check for updates",IDC_STATIC,7,227,218,44
+    GROUPBOX        "Window",IDC_STATIC,7,200,218,38
+    CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,211,203,10
+    CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,224,203,10
+    GROUPBOX        "Check for updates",IDC_STATIC,7,240,218,44
     CONTROL         "Check for updates using the GitHub API",IDC_CHECK_UPDATES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,238,203,10
-    LTEXT           "iProgramInCpp cannot see your IP address through the update service.",IDC_STATIC,12,250,204,17
-    LTEXT           "Changes apply automatically.",IDC_STATIC,7,276,163,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,251,203,10
+    LTEXT           "iProgramInCpp cannot see your IP address through the update service.",IDC_STATIC,12,263,204,17
+    LTEXT           "Changes apply automatically.",IDC_STATIC,7,289,163,8
+    CONTROL         "Use 12-hour time",IDC_USE_12HR_TIME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,186,205,10
 END
 
 
@@ -1101,7 +1103,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 224
         TOPMARGIN, 7
-        BOTTOMMARGIN, 288
+        BOTTOMMARGIN, 301
     END
 END
 #endif    // APSTUDIO_INVOKED

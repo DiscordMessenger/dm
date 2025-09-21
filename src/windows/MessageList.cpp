@@ -499,6 +499,8 @@ void MessageItem::Update(Snowflake guildID)
 	bool isAction = MessageList::IsActionMessage(m_msg->m_type);
 
 	Clear();
+	m_msg->UpdateTimestamp();
+
 	m_bNeedUpdate = false;
 	m_author = ConvertCppStringToTString(m_msg->m_author);
 	m_date = ConvertCppStringToTString(isCompact ? m_msg->m_dateCompact : m_msg->m_dateFull);

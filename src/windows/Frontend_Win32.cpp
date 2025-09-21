@@ -520,7 +520,10 @@ std::string Frontend_Win32::GetFormatTimeShorterText()
 
 std::string Frontend_Win32::GetFormatTimestampTimeShort()
 {
-	return "%H:%M";
+	if (GetLocalSettings()->Use12HourTime())
+		return "%I:%M %p";
+	else
+		return "%H:%M";
 }
 
 std::string Frontend_Win32::GetFormatTimestampTimeLong()

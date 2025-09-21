@@ -159,7 +159,6 @@ void OptionsInitPage(HWND hwndDlg, int pageNum)
 				GetSettingsManager()->GetMessageCompact() ? IDC_APPEARANCE_COMPACT : IDC_APPEARANCE_COZY
 			);
 
-			CheckDlgButton(hwndDlg, IDC_DISABLE_FORMATTING, GetLocalSettings()->DisableFormatting() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_COMPACT_MEMBER_LIST, GetLocalSettings()->GetCompactMemberList() ? BST_CHECKED : BST_UNCHECKED);
 
 			LPTSTR tstr = ConvertCppStringToTString(GetLocalSettings()->GetImageBackgroundFileName());
@@ -236,6 +235,8 @@ void OptionsInitPage(HWND hwndDlg, int pageNum)
 		}
 		case PG_CHAT:
 		{
+			CheckDlgButton(hwndDlg, IDC_DISABLE_FORMATTING,   GetLocalSettings()->DisableFormatting()    ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_USE_12HR_TIME,        GetLocalSettings()->Use12HourTime()        ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_IMAGES_WHEN_UPLOADED, GetLocalSettings()->ShowAttachmentImages() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_IMAGES_WHEN_EMBEDDED, GetLocalSettings()->ShowEmbedImages()      ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_SHOW_EMBEDS,          GetLocalSettings()->ShowEmbedContent()     ? BST_CHECKED : BST_UNCHECKED);
@@ -503,6 +504,10 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 			{
 				case IDC_DISABLE_FORMATTING:
 					GetLocalSettings()->SetDisableFormatting(IsDlgButtonChecked(hWnd, IDC_DISABLE_FORMATTING));
+					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+					break;
+				case IDC_USE_12HR_TIME:
+					GetLocalSettings()->SetUse12HourTime(IsDlgButtonChecked(hWnd, IDC_USE_12HR_TIME));
 					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
 					break;
 				case IDC_IMAGES_WHEN_UPLOADED:
