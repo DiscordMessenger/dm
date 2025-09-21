@@ -1661,3 +1661,21 @@ time_t MakeGMTime(const tm* ptime)
 
 	return FileTimeToTimeT(&ft);
 }
+
+// N.B. WINVER<=0x0500 doesn't define it. We'll force it
+#ifndef IDC_HAND
+#define IDC_HAND            MAKEINTRESOURCE(32649)
+#endif//IDC_HAND
+
+HCURSOR GetHandCursor()
+{
+	static HCURSOR loaded = NULL;
+	if (loaded)
+		return loaded;
+
+	loaded = LoadCursor(NULL, IDC_HAND);
+	if (!loaded)
+		loaded = LoadCursor(g_hInstance, MAKEINTRESOURCE(IDC_CLICKER));
+
+	return loaded;
+}

@@ -572,6 +572,8 @@
     <None Include="..\res\animations\upload_lc.avi" />
     <None Include="..\res\cursors\cur_zoomin.cur" />
     <None Include="..\res\cursors\cur_zoomout.cur" />
+    <None Include="..\src\arrow.cur" />
+    <None Include="arrow.cur" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\res\app.manifest" />

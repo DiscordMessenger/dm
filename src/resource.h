@@ -99,6 +99,7 @@
 #define IDI_NOTIFICATION                99
 #define IDI_NOTIFICATION_2K             100
 #define IDI_FOLDER                      101
+#define IDC_CLICKER                     102
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -512,7 +513,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        104
+#define _APS_NEXT_RESOURCE_VALUE        103
 #define _APS_NEXT_COMMAND_VALUE         1080
 #define _APS_NEXT_CONTROL_VALUE         917
 #define _APS_NEXT_SYMED_VALUE           40000

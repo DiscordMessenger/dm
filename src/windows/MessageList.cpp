@@ -11,11 +11,6 @@
 
 #define STRAVAILABLE(str) ((str) && (str)[0] != 0)
 
-// N.B. WINVER<=0x0500 doesn't define it. We'll force it
-#ifndef IDC_HAND
-#define IDC_HAND            MAKEINTRESOURCE(32649)
-#endif//IDC_HAND
-
 #define NEW_MARKER_COLOR RGB(255,0,0)
 
 #define ATTACHMENT_HEIGHT (ScaleByDPI(40))
@@ -3800,7 +3795,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			tme.dwHoverTime = 0;
 			ri::TrackMouseEvent(&tme);
 			if (hit) {
-				SetCursor(LoadCursor(NULL, IDC_HAND));
+				SetCursor(GetHandCursor());
 				return TRUE;
 			}
 			else {

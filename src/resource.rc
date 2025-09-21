@@ -1387,6 +1387,8 @@ IDC_ZOOMIN              CURSOR                  "../res/cursors/cur_zoomin.cur"
 
 IDC_ZOOMOUT             CURSOR                  "../res/cursors/cur_zoomout.cur"
 
+IDC_CLICKER             CURSOR                  "../res/cursors/cur_clicker.cur"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -763,7 +763,7 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			if (selected != 2) {
-				SetCursor(LoadCursor(NULL, IDC_HAND));
+				SetCursor(GetHandCursor());
 				return TRUE;
 			}
 
