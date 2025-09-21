@@ -663,6 +663,7 @@ void MessageItem::Update(Snowflake guildID)
 
 		m_pRepliedMessage->Clear();
 		m_pRepliedMessage->SetDefaultStyle(WORD_ITALIC | WORD_SMALLER);
+		m_pRepliedMessage->SetAllowBiggerText(false);
 		m_pRepliedMessage->SetMessage(m_msg->m_pReferencedMessage->m_message);
 
 		std::vector<InteractableItem> interactables;
@@ -2173,6 +2174,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 		if (item.m_pRepliedMessage->GetRawMessage() != item.m_msg->m_pReferencedMessage->m_message) {
 			item.m_pRepliedMessage->Clear();
 			item.m_pRepliedMessage->SetDefaultStyle(WORD_ITALIC | WORD_SMALLER);
+			item.m_pRepliedMessage->SetAllowBiggerText(false);
 			item.m_pRepliedMessage->SetMessage(item.m_msg->m_pReferencedMessage->m_message);
 
 			std::vector<InteractableItem> interactables;
@@ -4635,6 +4637,9 @@ void MessageList::OnUpdateEmoji(Snowflake sf)
 	{
 		if (msg.m_message.IsFormatted())
 			msg.m_message.RunForEachCustomEmote(&InvalidateEmote, (void*) rgn);
+
+		if (msg.m_pRepliedMessage && msg.m_pRepliedMessage->IsFormatted())
+			msg.m_pRepliedMessage->RunForEachCustomEmote(&InvalidateEmote, (void*) rgn);
 	}
 
 	InvalidateRgn(m_hwnd, rgn, FALSE);

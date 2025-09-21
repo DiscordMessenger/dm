@@ -265,6 +265,25 @@ void GuildHeader::CheckReleaseButton(HDC hdc, HWND hWnd, Button& button, int but
 	}
 }
 
+void GuildHeader::InvalidateEmote(void* context, const Rect& rc)
+{
+	HRGN invRgn = CreateRectRgn(W32RECT(rc));
+	UnionRgn((HRGN)context, (HRGN)context, invRgn);
+	DeleteRgn(invRgn);
+}
+
+void GuildHeader::OnUpdateEmoji(Snowflake sf)
+{
+	HRGN rgn = CreateRectRgn(0, 0, 0, 0);
+
+	// TODO: Only invalidate the emoji that were updated
+	if (m_channelDescription.IsFormatted())
+		m_channelDescription.RunForEachCustomEmote(&InvalidateEmote, (void*)rgn);
+
+	InvalidateRgn(m_hwnd, rgn, FALSE);
+	DeleteRgn(rgn);
+}
+
 LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	GuildHeader* pThis = (GuildHeader*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
@@ -425,6 +444,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				pThis->m_currentChannelDescription = cinfo;
 				pThis->m_channelDescription.Clear();
 				pThis->m_channelDescription.SetDefaultStyle(WORD_ITALIC);
+				pThis->m_channelDescription.SetAllowBiggerText(false);
 				pThis->m_channelDescription.SetMessage(cinfo);
 
 				// N.B. Interactables currently unused for now.

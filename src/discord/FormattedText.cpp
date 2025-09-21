@@ -559,12 +559,10 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 
 	bool containsJustEmoji = true;
 
-	if (m_defaultStyle & WORD_SMALLER)
-	{
+	if (!m_bAllowBiggerText) {
 		containsJustEmoji = false;
 	}
-	else
-	{
+	else {
 		for (auto& word : m_words) {
 			// If a word isn't any one of these:
 			if ((word.m_flags & ~(WORD_SPACE | WORD_NEWLINE | WORD_CEMOJI | WORD_EMOJI | WORD_HEADER1)) || word.m_flags == 0) {
@@ -592,6 +590,13 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 	for (auto& word : m_words) {
 		int& wflags = word.m_flags;
 		wflags &= ~WORD_AFNEWLINE;
+
+		if (!m_bAllowBiggerText) {
+			if (wflags & (WORD_HEADER1 | WORD_HEADER2)) {
+				wflags &= ~(WORD_HEADER1 | WORD_HEADER2);
+				wflags |= WORD_STRONG;
+			}
+		}
 
 		// If this is a new line:
 		if (wflags & WORD_NEWLINE) {
@@ -965,6 +970,11 @@ void FormattedText::TokenizeAll()
 			Tokenize(m_blocks[i].first, m_blocks[i].second);
 		}
 	}
+}
+
+void FormattedText::SetAllowBiggerText(bool b)
+{
+	m_bAllowBiggerText = b;
 }
 
 void FormattedText::SetDefaultStyle(int style)

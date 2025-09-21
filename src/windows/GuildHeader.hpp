@@ -22,6 +22,7 @@ public:
 	~GuildHeader();
 
 	void Update();
+	void OnUpdateEmoji(Snowflake sf);
 
 public:
 	static WNDCLASS g_GuildHeaderClass;
@@ -94,5 +95,7 @@ private:
 	void HitTestButton(HDC hdc, Button& button, POINT& pt);
 	void CheckClickButton(HDC hdc, Button& button, POINT& pt);
 	void CheckReleaseButton(HDC hdc, HWND hWnd, Button& button, int buttonIndex, POINT& pt);
+
+	static void InvalidateEmote(void* context, const Rect& rc);
 };
 

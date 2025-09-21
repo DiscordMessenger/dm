@@ -738,6 +738,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			Snowflake sf = *(Snowflake*) lParam;
 			g_pMessageList->OnUpdateEmoji(sf);
+			g_pGuildHeader->OnUpdateEmoji(sf);
 			PinList::OnUpdateEmoji(sf);
 			break;
 		}

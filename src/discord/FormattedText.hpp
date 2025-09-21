@@ -150,6 +150,7 @@ class FormattedText
 public:
 	typedef void(*FunctionEachEmote) (void* context, const Rect& rect);
 
+	void SetAllowBiggerText(bool b);
 	void SetDefaultStyle(int style);
 	void SetMessage(const std::string& msg);
 	void Layout(DrawingContext* context, const Rect& rect, int offsetX = 0);
@@ -200,6 +201,7 @@ private:
 	std::vector<Token> m_tokens;
 	std::vector<Word> m_words;
 	bool m_bFormatted = false;
+	bool m_bAllowBiggerText = true;
 	Rect m_layoutRect;
 	int m_defaultStyle = 0;
 
