@@ -538,7 +538,11 @@ std::string Frontend_Win32::GetFormatTimestampDateShort()
 
 std::string Frontend_Win32::GetFormatTimestampDateLong()
 {
+#ifdef MINGW_SPECIFIC_HACKS
+	return "%d %B %Y";
+#else
 	return "%e %B %Y";
+#endif
 }
 
 std::string Frontend_Win32::GetFormatTimestampDateLongTimeShort()
