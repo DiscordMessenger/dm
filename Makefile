@@ -13,9 +13,12 @@ IS_MINGW_ON_WINDOWS ?= no
 # You must specify something else on your end by either `export`-ing these
 # environment variables, or by specifying them in the `make` command line.
 ifeq ($(IS_MINGW_ON_WINDOWS),yes)
+	MSYS_PATH    ?= C:/MinGW/msys/1.0
+
 	# OpenSSL install directory
 	OPENSSL_DIR ?= C:/DiscordMessenger/openssl
-	MSYS_PATH   ?= C:/MinGW/msys/1.0
+	# Libwebp install directory
+	LIBWEBP_DIR ?= C:/DiscordMessenger/libwebp/build
 	
 	# Toolchain
 	DMCC    ?= gcc
@@ -27,6 +30,8 @@ ifeq ($(IS_MINGW_ON_WINDOWS),yes)
 else
 	# OpenSSL install directory
 	OPENSSL_DIR ?= /mnt/c/DiscordMessenger/openssl
+	# Libwebp install directory
+	LIBWEBP_DIR ?= /mnt/c/DiscordMessenger/libwebp/build
 	
 	# Toolchain
 	DMPREFIX ?= i686-w64-mingw32
@@ -161,6 +166,12 @@ LDFLAGS = \
 	-lcrypto    \
 	-lssl       \
 	$(EXTRA_FLAGS)
+
+ifeq ($(DISABLE_WEBP),1)
+else
+	LIB_DIRS += -L$(LIBWEBP_DIR)
+	LDFLAGS  += -lwebp
+endif
 
 WRFLAGS = \
 	-Ihacks

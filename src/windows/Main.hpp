@@ -26,7 +26,7 @@
 #define USE_SPEECH
 #endif
 
-#if !defined MINGW_SPECIFIC_HACKS
+#ifndef WEBP_DISABLED
 #define WEBP_SUP
 #endif
 

@@ -50,7 +50,7 @@ the correct locations), check out the submodules with the command:
 
 Then you can start the build process.
 
-You can build this project in two ways.
+You can build this project in three ways.
 
 ### 1. Visual Studio
 
@@ -93,14 +93,40 @@ If you want Pentium 1 support and/or native Windows 95/NT 3.x support, see: [Pen
 sudo apt install mingw-w64 gcc-mingw-w64-x86-64-posix g++-mingw-w64-x86-64-posix
 ```
 
-2. Set `OPENSSL_INC_DIR` and `OPENSSL_LIB_DIR` in your environment variables to your OpenSSL
-include and library directories.  If you want to remember the paths, edit the Makefile to use those
-as your defaults, or `export` them (but make sure to not check in your change when sending a PR!)
+2. Check out Discord Messenger's fork of [https://github.com/DiscordMessenger/openssl](OpenSSL).
 
-3. Use the following command line:
+3. Build it: `./buildit` or `TOOLCHAIN_PATH=[custom toolchain path] ./buildit`
+(if you're using the Pentium toolchain you should specify the TOOLCHAIN_PATH)
+
+4. Set `OPENSSL_DIR` in your environment variables to your OpenSSL checkout directory.  If you want
+to remember the path, edit the Makefile to use it as your default(but make sure to not check in your
+change when sending a PR!), or `export` it.
+
+5. Check out Discord Messenger's fork of [https://github.com/DiscordMessenger/libwebp](LibWebP).
+
+You can skip this step and steps #6 and #7.
+
+6. Run the following commands:
+```
+mkdir build && cd build
+
+cmake .. -DCMAKE_TOOLCHAIN_FILE=../win32.cmake
+-or-
+TOOLCHAIN_PATH=[custom toolchain path] cmake .. -DCMAKE_TOOLCHAIN_FILE=../win32.cmake
+
+make -j12
+```
+
+7. Set `LIBWEBP_DIR` to `[libwebp checkout dir]/build`.
+
+8. Finally, you are ready to compile Discord Messenger.
+
+Use the following command line:
 ```
 make DEBUG=no UNICODE=[no|yes] [-j (your core count)]
 ```
+
+If you didn't compile LibWebP you must additionally set `DISABLE_WEBP=yes`.
 
 The finished binary will be placed in `./bin/DiscordMessenger.exe`. Enjoy!
 
@@ -141,7 +167,7 @@ runtimes (VCRUNTIME140.DLL), then you will need to compile OpenSSL yourself.  Se
 [Compiling OpenSSL for older Windows versions](#compiling-openssl-for-older-windows-versions)
 section.
 
-5. Run the `make IS_MINGW_ON_WINDOWS=yes` command.
+5. Run the `make IS_MINGW_ON_WINDOWS=yes DISABLE_WEBP=yes` command.
 
 6. Enjoy!
 
