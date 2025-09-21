@@ -558,11 +558,19 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 	Point wordPos = { int(rect.left) + offsetX, int(rect.top) };
 
 	bool containsJustEmoji = true;
-	for (auto& word : m_words) {
-		// If a word isn't any one of these:
-		if ((word.m_flags & ~(WORD_SPACE | WORD_NEWLINE | WORD_CEMOJI | WORD_EMOJI | WORD_HEADER1)) || word.m_flags == 0) {
-			containsJustEmoji = false;
-			break;
+
+	if (m_defaultStyle & WORD_SMALLER)
+	{
+		containsJustEmoji = false;
+	}
+	else
+	{
+		for (auto& word : m_words) {
+			// If a word isn't any one of these:
+			if ((word.m_flags & ~(WORD_SPACE | WORD_NEWLINE | WORD_CEMOJI | WORD_EMOJI | WORD_HEADER1)) || word.m_flags == 0) {
+				containsJustEmoji = false;
+				break;
+			}
 		}
 	}
 
@@ -580,7 +588,7 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 
 	int nSpacesBefore = 0;
 	bool bHadNewlineBefore = true;
-	int maxLineY = MdLineHeight(context, 0);
+	int maxLineY = MdLineHeight(context, m_defaultStyle);
 	for (auto& word : m_words) {
 		int& wflags = word.m_flags;
 		wflags &= ~WORD_AFNEWLINE;

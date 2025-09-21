@@ -116,6 +116,9 @@ Point MdMeasureString(DrawingContext* context, const String& word, int styleFlag
 int GetProfilePictureSize();
 int MdLineHeight(DrawingContext* context, int styleFlags)
 {
+	if (styleFlags & WORD_HEADER1)
+		return GetProfilePictureSize();
+
 	int fontId = MdDetermineFontID(styleFlags);
 	if (context->m_cachedHeights[fontId])
 		return context->m_cachedHeights[fontId];
