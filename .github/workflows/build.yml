@@ -37,7 +37,7 @@ jobs:
       
       - name: Compile Libwebp
         run: |
-            git clone git@github.com:DiscordMessenger/libwebp.git /tmp/dm-libwebp
+            git clone https://github.com/DiscordMessenger/libwebp.git /tmp/dm-libwebp
             cd /tmp/dm-libwebp
             mkdir build && cd build
             cmake .. -DCMAKE_TOOLCHAIN_FILE=../win32.cmake
