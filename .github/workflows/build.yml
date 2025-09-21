@@ -8,6 +8,7 @@ on:
 
 env:
   OPENSSL_DIR: '/tmp/dm-openssl'
+  LIBWEBP_DIR: '/tmp/dm-libwebp/build'
 
 jobs:
   build-linux-mingw:
@@ -33,6 +34,14 @@ jobs:
         run: |
             echo "TAG=$(git describe --abbrev=0 --tags)" >> "$GITHUB_OUTPUT"
             echo "COMMIT=$(git rev-parse --short=8 HEAD)" >> "$GITHUB_OUTPUT"
+      
+      - name: Compile Libwebp
+        run: |
+            git clone git@github.com:DiscordMessenger/libwebp.git /tmp/dm-libwebp
+            cd /tmp/dm-libwebp
+            mkdir build && cd build
+            cmake .. -DCMAKE_TOOLCHAIN_FILE=../win32.cmake
+            make -j12
       
       - name: Make Unicode Build
         run: make DEBUG=no UNICODE=yes COMMIT_HASH=${{ steps.get-latest-tag.outputs.COMMIT }} -j$(nproc)
