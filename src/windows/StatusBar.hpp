@@ -47,6 +47,9 @@ public:
 	void ClearTypers();
 	void UpdateCharacterCounter(int nChars, int nCharsMax);
 
+	Snowflake GetCurrentChannelID() { return m_channelID; }
+	void SetChannelID(Snowflake sf) { m_channelID = sf; }
+
 public:
 	HWND m_hwnd = NULL;
 
@@ -57,4 +60,5 @@ private:
 	int m_anim_frame_number = 0;
 	RECT m_typing_status_rect;
 	RECT m_typing_animation_rect;
+	Snowflake m_channelID;
 };

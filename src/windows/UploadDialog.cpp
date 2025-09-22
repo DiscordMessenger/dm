@@ -26,6 +26,11 @@ struct UploadDialogData
 		if (m_pFileData)
 			delete[] m_pFileData;
 	}
+
+	Channel* GetChannel()
+	{
+		return GetDiscordInstance()->GetChannelGlobally(m_channelID);
+	}
 };
 
 static int g_UploadId = 1;
@@ -140,7 +145,7 @@ INT_PTR CALLBACK UploadDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	{
 		case WM_INITDIALOG:
 		{
-			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			Channel* pChan = pData->GetChannel();
 			if (!pChan) {
 				EndDialog(hWnd, IDCANCEL);
 				return TRUE;

@@ -386,7 +386,7 @@ void OnTyping(Snowflake guildID, Snowflake channelID, Snowflake userID, time_t t
 	ti.m_typingUsers[userID] = tu;
 
 	// Send an update to the message editor
-	if (channelID == GetDiscordInstance()->GetCurrentChannelID())
+	if (channelID == g_pStatusBar->GetCurrentChannelID())
 	{
 		if (userID == GetDiscordInstance()->GetUserID()) {
 			// Ignore typing start from ourselves for the lower bar
@@ -401,7 +401,7 @@ void OnStopTyping(Snowflake channelID, Snowflake userID)
 {
 	g_typingInfo[channelID].m_typingUsers[userID].m_startTimeMS = 0;
 
-	if (channelID == GetDiscordInstance()->GetCurrentChannelID())
+	if (channelID == g_pStatusBar->GetCurrentChannelID())
 		g_pStatusBar->RemoveTypingName(userID);
 }
 
@@ -409,7 +409,7 @@ void UpdateMainWindowTitle(HWND hWnd)
 {
 	std::string windowTitle;
 
-	Channel* pChannel = GetDiscordInstance()->GetCurrentChannel();
+	Channel* pChannel = g_pMessageList->GetCurrentChannel();
 	if (pChannel)
 		windowTitle += pChannel->GetTypeSymbol() + pChannel->m_name + " - ";
 
@@ -621,7 +621,7 @@ LRESULT HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				stride = ((((width * bpp) + 31) & ~31) >> 3);
 			}
 
-			pChan = GetDiscordInstance()->GetCurrentChannel();
+			pChan = g_pMessageList->GetCurrentChannel();
 			if (!pChan) {
 				DbgPrintW("No channel!");
 				goto _fail;
@@ -849,12 +849,15 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pMessageEditor->SetGuildID(guildID);
 			g_pMessageEditor->SetChannelID(channID);
 
+			g_pGuildHeader->SetGuildID(guildID);
+			g_pGuildHeader->SetChannelID(channID);
+
 			UpdateMainWindowTitle(hWnd);
 
 			if (IsWindowActive(g_Hwnd))
 				SetFocus(g_pMessageEditor->m_edit_hwnd);
 
-			if (!GetDiscordInstance()->GetCurrentChannel())
+			if (!g_pMessageList->GetCurrentChannel())
 			{
 				InvalidateRect(g_pMessageList->m_hwnd, NULL, TRUE);
 				InvalidateRect(g_pGuildHeader->m_hwnd, NULL, FALSE);

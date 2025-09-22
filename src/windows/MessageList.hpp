@@ -503,6 +503,9 @@ public:
 		return m_messageSentTo;
 	}
 
+	Guild* GetCurrentGuild();
+	Channel* GetCurrentChannel();
+
 	void ProperlyResizeSubWindows();
 	int RecalcMessageSizes(bool update, int& repaintSize, Snowflake addedMessagesBeforeThisID, Snowflake addedMessagesAfterThisID);
 	void FullRecalcAndRepaint();
@@ -557,9 +560,6 @@ private:
 
 	void RequestMarkRead();
 	void HandleRightClickMenuCommand(int command);
-
-	Guild* GetCurrentGuild();
-	Channel* GetCurrentChannel();
 
 	// [Left] [Author] [pinned] [a message](uid) [ to this channel.
 

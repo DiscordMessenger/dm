@@ -326,11 +326,6 @@ public:
 		}
 	}
 
-	Guild* GetCurrentGuild()
-	{
-		return GetGuild(m_CurrentGuild);
-	}
-
 	Snowflake GetCurrentGuildID() const {
 		return m_CurrentGuild;
 	}
@@ -353,8 +348,11 @@ public:
 		return m_dmGuild.GetChannel(sf);
 	}
 
-	Channel* GetCurrentChannel()
-	{
+	Guild* GetCurrentGuild() {
+		return GetGuild(m_CurrentGuild);
+	}
+
+	Channel* GetCurrentChannel() {
 		return GetChannel(m_CurrentChannel);
 	}
 
@@ -436,7 +434,7 @@ public:
 	void CloseGatewaySession();
 
 	// Inform the Discord backend that we are typing.
-	void Typing();
+	void Typing(Snowflake channelID);
 
 	// Inform the Discord backend that we have acknowledged messages up to but not including "message".
 	// Used by the "mark unread" feature.

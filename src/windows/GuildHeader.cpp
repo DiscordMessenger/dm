@@ -44,7 +44,7 @@ GuildHeader::GuildHeader()
 
 std::string GuildHeader::GetGuildName()
 {
-	Guild* pGuild = GetDiscordInstance()->GetCurrentGuild();
+	Guild* pGuild = GetCurrentGuild();
 	if (!pGuild)
 		return "";
 	return pGuild->m_name;
@@ -57,7 +57,7 @@ std::string GuildHeader::GetSubtitleText()
 
 std::string GuildHeader::GetChannelName()
 {
-	Channel *pChannel = GetDiscordInstance()->GetCurrentChannel();
+	Channel *pChannel = GetCurrentChannel();
 	if (!pChannel)
 		return "";
 	return pChannel->m_name;
@@ -65,10 +65,24 @@ std::string GuildHeader::GetChannelName()
 
 std::string GuildHeader::GetChannelInfo()
 {
-	Channel* pChannel = GetDiscordInstance()->GetCurrentChannel();
+	Channel* pChannel = GetCurrentChannel();
 	if (!pChannel)
 		return "";
 	return pChannel->m_topic;
+}
+
+Guild* GuildHeader::GetCurrentGuild()
+{
+	return GetDiscordInstance()->GetGuild(m_guildID);
+}
+
+Channel* GuildHeader::GetCurrentChannel()
+{
+	auto guild = GetCurrentGuild();
+	if (!guild)
+		return nullptr;
+
+	return guild->GetChannel(m_channelID);
 }
 
 void GuildHeader::Update()
@@ -498,7 +512,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			nameRect = pThis->m_rectMid;
 
 			// Draw the channel icon.
-			Channel* pChannel = GetDiscordInstance()->GetCurrentChannel();
+			Channel* pChannel = pThis->GetCurrentChannel();
 			if (pChannel)
 			{
 				HICON icon = pThis->GetIconFromType(pChannel->m_channelType);
@@ -558,8 +572,8 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			switch (wParam)
 			{
 				case IDTB_PINS: {
-					Guild* pGuild = GetDiscordInstance()->GetCurrentGuild();
-					Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+					Guild* pGuild = pThis->GetCurrentGuild();
+					Channel* pChan = pThis->GetCurrentChannel();
 					if (!pGuild || !pChan) break;
 
 					POINT pt = {

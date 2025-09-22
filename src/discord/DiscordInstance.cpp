@@ -1363,13 +1363,8 @@ bool DiscordInstance::SendAMessage(Snowflake channelID, const std::string& msg_,
 	return true;
 }
 
-void DiscordInstance::Typing()
+void DiscordInstance::Typing(Snowflake channelID)
 {
-	if (!GetCurrentChannel() || !GetCurrentGuild())
-		return;
-
-	Channel* pChan = GetCurrentChannel();
-
 	if (m_lastTypingSent + TYPING_INTERVAL >= GetTimeMs())
 		return;
 
@@ -1378,7 +1373,7 @@ void DiscordInstance::Typing()
 	GetHTTPClient()->PerformRequest(
 		true,
 		NetRequest::POST,
-		GetDiscordAPI() + "channels/" + std::to_string(pChan->m_snowflake) + "/typing",
+		GetDiscordAPI() + "channels/" + std::to_string(channelID) + "/typing",
 		0,
 		DiscordRequest::TYPING,
 		"",

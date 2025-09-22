@@ -644,7 +644,7 @@ LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			// Let the edit control modify the text first.
 			LRESULT lres = CallWindowProc(m_editWndProc, hWnd, uMsg, wParam, lParam);
 			pThis->OnUpdateText();
-			GetDiscordInstance()->Typing();
+			GetDiscordInstance()->Typing(pThis->m_channelID);
 			return lres;
 		}
 	}
