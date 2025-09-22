@@ -261,9 +261,9 @@ static void UploadDialogShowData(UploadDialogData* data)
 	delete data;
 }
 
-bool UploadDialogCheckHasUploadRights()
+bool UploadDialogCheckHasUploadRights(Snowflake channelID)
 {
-	Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+	Channel* pChan = GetDiscordInstance()->GetChannelGlobally(channelID);
 	if (!pChan)
 		return false;
 	
@@ -274,26 +274,26 @@ bool UploadDialogCheckHasUploadRights()
 	return true;
 }
 
-void UploadDialogShowWithFileName(LPCTSTR lpstrFileName, LPCTSTR lpstrFileTitle)
+void UploadDialogShowWithFileName(Snowflake channelID, LPCTSTR lpstrFileName, LPCTSTR lpstrFileTitle)
 {
-	if (!UploadDialogCheckHasUploadRights())
+	if (!UploadDialogCheckHasUploadRights(channelID))
 		return;
 
 	UploadDialogData* data = new UploadDialogData;
-	data->m_channelID = GetDiscordInstance()->GetCurrentChannelID();
+	data->m_channelID = channelID;
 	data->m_lpstrFile = lpstrFileName;
 	data->m_lpstrFileTitle = lpstrFileTitle;
 
 	UploadDialogShowData(data);
 }
 
-void UploadDialogShowWithFileData(uint8_t* fileData, size_t fileSize, LPCTSTR lpstrFileTitle)
+void UploadDialogShowWithFileData(Snowflake channelID, uint8_t* fileData, size_t fileSize, LPCTSTR lpstrFileTitle)
 {
-	if (!UploadDialogCheckHasUploadRights())
+	if (!UploadDialogCheckHasUploadRights(channelID))
 		return;
 
 	UploadDialogData* data = new UploadDialogData;
-	data->m_channelID = GetDiscordInstance()->GetCurrentChannelID();
+	data->m_channelID = channelID;
 	data->m_lpstrFileTitle = lpstrFileTitle;
 	data->m_fileSize = (DWORD) fileSize;
 	data->m_pFileData = new uint8_t[fileSize];
@@ -302,9 +302,9 @@ void UploadDialogShowWithFileData(uint8_t* fileData, size_t fileSize, LPCTSTR lp
 	UploadDialogShowData(data);
 }
 
-void UploadDialogShow2()
+void UploadDialogShow2(Snowflake channelID)
 {
-	if (!UploadDialogCheckHasUploadRights())
+	if (!UploadDialogCheckHasUploadRights(channelID))
 		return;
 
 	const int MAX_FILE = 4096;
@@ -330,15 +330,18 @@ void UploadDialogShow2()
 	}
 
 	UploadDialogShowWithFileName(
+		channelID,
 		ofn.lpstrFile,
 		ofn.lpstrFileTitle
 	);
 }
 
-void UploadDialogShow()
+void UploadDialogShow(Snowflake channelID)
 {
-	if (!UploadDialogCheckHasUploadRights())
+	if (!UploadDialogCheckHasUploadRights(channelID))
 		return;
 
-	PostMessage(g_Hwnd, WM_SHOWUPLOADDIALOG, 0, 0);
+	Snowflake* sf = new Snowflake;
+	*sf = channelID;
+	PostMessage(g_Hwnd, WM_SHOWUPLOADDIALOG, 0, (LPARAM) sf);
 }

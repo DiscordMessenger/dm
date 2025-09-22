@@ -646,7 +646,7 @@ LRESULT HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			CloseClipboard(); isClipboardClosed = true;
 
 			fileName = TmGetTString(IDS_UNKNOWN_FILE_NAME);
-			UploadDialogShowWithFileData(data.data(), data.size(), fileName);
+			UploadDialogShowWithFileData(g_pMessageList->GetCurrentChannelID(), data.data(), data.size(), fileName);
 
 		_fail:
 			data.clear();
@@ -824,7 +824,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_SHOWUPLOADDIALOG:
 		{
-			UploadDialogShow2();
+			Snowflake* sf = (Snowflake*) lParam;
+			UploadDialogShow2(*sf);
+			delete sf;
 			break;
 		}
 		case WM_UPDATESELECTEDCHANNEL:
