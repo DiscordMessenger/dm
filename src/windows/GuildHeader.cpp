@@ -10,6 +10,7 @@
 #define IDTB_PINS     (1001) // Show pinned messages
 #define IDTB_CHANNELS (1002) // Hide channel list
 #define IDTB_NOTIFS   (1003) // Show notifications
+#define IDTB_FLOAT    (1004) // Float channel out
 
 WNDCLASS GuildHeader::g_GuildHeaderClass;
 

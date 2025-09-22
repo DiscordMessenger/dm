@@ -99,7 +99,7 @@
 #define IDI_NOTIFICATION                99
 #define IDI_NOTIFICATION_2K             100
 #define IDI_FOLDER                      101
-#define IDC_CLICKER                     102
+#define IDI_FLOAT                       102
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -120,6 +120,7 @@
 #define IDB_EMPTY_4BPP                  217
 #define IDC_ZOOMIN                      350
 #define IDC_ZOOMOUT                     351
+#define IDC_CLICKER                     352
 #define IDD_DIALOG_ABOUT                401
 #define IDD_DIALOG_OPTIONS              402
 #define IDD_DIALOG_MY_ACCOUNT           403
