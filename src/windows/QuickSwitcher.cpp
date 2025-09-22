@@ -48,7 +48,7 @@ static std::vector<QuickSwitchItem> g_qsItems;
 void QuickSwitcher::ShowDialog()
 {
 	g_qsItems.clear();
-	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_QUICK_SWITCHER)), g_Hwnd, &QuickSwitcher::DialogProc);
+	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_QUICK_SWITCHER)), GetMainHWND(), &QuickSwitcher::DialogProc);
 	g_qsItems.clear();
 }
 
@@ -206,9 +206,9 @@ void QuickSwitcher::SwitchToChannelAtIndex(int idx)
 	QuickSwitchItem& qsi = g_qsItems[idx];
 
 	if (qsi.m_match.IsChannel())
-		GetDiscordInstance()->OnSelectGuild(qsi.m_guildID, qsi.m_match.Id());
+		GetMainWindow()->GetChatView()->OnSelectGuild(qsi.m_guildID, qsi.m_match.Id());
 	else
-		GetDiscordInstance()->OnSelectGuild(qsi.m_guildID);
+		GetMainWindow()->GetChatView()->OnSelectGuild(qsi.m_guildID);
 }
 
 void QuickSwitcher::SwitchToSelectedChannel(HWND hWnd)

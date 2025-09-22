@@ -34,5 +34,5 @@ static LRESULT CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 void About()
 {
-	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_ABOUT)), g_Hwnd, (DLGPROC)DialogProc);
+	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_ABOUT)), GetMainHWND(), (DLGPROC)DialogProc);
 }

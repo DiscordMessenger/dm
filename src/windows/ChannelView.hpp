@@ -22,6 +22,7 @@ private:
 		int m_childCount;
 	};
 
+	ChatWindow* m_pParent;
 	HWND m_hwndParent;
 	std::vector<ChannelMember> m_channels;
 	Snowflake m_currentChannel = 0;
@@ -80,7 +81,7 @@ private:
 public:
 	static WNDCLASS g_ChannelViewClass;
 
-	static ChannelView* Create(HWND hwnd, LPRECT rect);
+	static ChannelView* Create(ChatWindow* parent, LPRECT rect);
 	static void InitializeClass();
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK ListWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

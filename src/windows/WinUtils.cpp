@@ -19,6 +19,7 @@
 #include "ImageViewer.hpp"
 #include "TextManager.hpp"
 #include "ProgressDialog.hpp"
+#include "MainWindow.hpp"
 
 #ifndef OLD_WINDOWS
 #include <shlwapi.h>
@@ -28,7 +29,6 @@
 constexpr int DEFAULT_DPI  = 96;
 constexpr int NORMAL_SCALE = 1000;
 
-extern HWND g_Hwnd; // main.hpp
 extern HINSTANCE g_hInstance; // main.hpp
 
 void InitializeCOM()
@@ -38,7 +38,7 @@ void InitializeCOM()
 
 int GetSystemDpiU()
 {
-	HWND hwnd = g_Hwnd;
+	HWND hwnd = GetMainHWND();
 	if (!hwnd) hwnd = GetDesktopWindow();
 	HDC hdc = GetDC(hwnd);
 	int dpi = GetDeviceCaps(hdc, LOGPIXELSX);
@@ -198,7 +198,7 @@ std::string GetStringFromHResult(HRESULT hr)
 
 void CopyStringToClipboard(const std::string& str)
 {
-	if (OpenClipboard(g_Hwnd))
+	if (OpenClipboard(GetMainHWND()))
 	{
 		EmptyClipboard();
 
@@ -782,7 +782,7 @@ COLORREF GetNameColor(Profile* pf, Snowflake guild)
 void LaunchURL(const std::string& link)
 {
 	LPTSTR tstr = ConvertCppStringToTString(link);
-	INT_PTR res = (INT_PTR) ShellExecute(g_Hwnd, TEXT("open"), tstr, NULL, NULL, SW_SHOWNORMAL);
+	INT_PTR res = (INT_PTR) ShellExecute(GetMainHWND(), TEXT("open"), tstr, NULL, NULL, SW_SHOWNORMAL);
 
 	if (res > 32) {
 		free(tstr);
@@ -817,7 +817,7 @@ void LaunchURL(const std::string& link)
 		WAsnprintf(buff, _countof(buff), TmGetTString(IDS_CANT_LAUNCH_URL_ERR), tstr, res, res);
 
 	free(tstr);
-	MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
+	MessageBox(GetMainHWND(), buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
 }
 
 bool IsChildOf(HWND child, HWND of)
@@ -1523,7 +1523,7 @@ bool IsIconMostlyBlack(HICON hic)
 
 		uint32_t* bits = new uint32_t[bm.bmWidth * bm.bmHeight];
 
-		HDC hdc = GetDC(g_Hwnd);
+		HDC hdc = GetDC(GetMainHWND());
 		if (GetDIBits(hdc, ii.hbmColor, 0, bm.bmHeight, bits, &bmi, DIB_RGB_COLORS))
 		{
 			// check!
@@ -1542,7 +1542,7 @@ bool IsIconMostlyBlack(HICON hic)
 			}
 		}
 
-		ReleaseDC(g_Hwnd, hdc);
+		ReleaseDC(GetMainHWND(), hdc);
 		if (ii.hbmColor) DeleteBitmap(ii.hbmColor);
 		if (ii.hbmMask)  DeleteBitmap(ii.hbmMask);
 		delete[] bits;

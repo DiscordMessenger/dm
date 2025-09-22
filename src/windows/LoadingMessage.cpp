@@ -34,7 +34,7 @@ void LoadingMessage::CreateWnd()
 		rcLoading.left,
 		rcLoading.top,
 		width, height,
-		g_Hwnd,
+		GetMainHWND(),
 		NULL,
 		g_hInstance,
 		this

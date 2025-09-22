@@ -1,6 +1,7 @@
 #include "NetworkerThread.hpp"
 #include "WinUtils.hpp"
 #include "WindowMessages.hpp"
+#include "MainWindow.hpp"
 #include "../discord/DiscordRequest.hpp"
 #include "../discord/LocalSettings.hpp"
 #include "../discord/Frontend.hpp"
@@ -23,8 +24,6 @@ void LoadSystemCertsOnWindows(SSL_CTX* ctx)
 	httplib::detail::load_system_certs_on_windows(store);
 	SSL_CTX_set_cert_store(ctx, store);
 }
-
-extern HWND g_Hwnd;
 
 static NetworkerThread::nmutex g_sslErrorMutex;
 static bool g_bQuittingFromSSLError;
@@ -98,7 +97,7 @@ bool NetworkerThread::ProcessResult(NetRequest& req, const httplib::Result& res)
 		const char* strarr[2];
 		strarr[0] = req.url.c_str();
 		strarr[1] = errorstr.c_str();
-		int result = (int) SendMessage(g_Hwnd, WM_HTTPERROR, (WPARAM) isSSLError, (LPARAM) strarr);
+		int result = (int) SendMessage(GetMainHWND(), WM_HTTPERROR, (WPARAM) isSSLError, (LPARAM) strarr);
 
 		if (result == IDCANCEL || result == IDABORT)
 		{
@@ -114,7 +113,7 @@ bool NetworkerThread::ProcessResult(NetRequest& req, const httplib::Result& res)
 			PrepareQuit();
 
 			g_bQuittingFromSSLError = true;
-			SendMessage(g_Hwnd, WM_FORCERESTART, 0, 0);
+			SendMessage(GetMainHWND(), WM_FORCERESTART, 0, 0);
 			g_sslErrorMutex.unlock();
 			return false;
 		}
@@ -417,7 +416,7 @@ NetworkerThread::NetworkerThread()
 		HRESULT hr = GetLastError();
 		std::string str = "Could not start NetworkerThread. Discord Messenger will now close.\n\n(" + std::to_string(hr) + ") " + GetStringFromHResult(hr);
 		LPCTSTR ctstr = ConvertCppStringToTString(str);
-		MessageBox(g_Hwnd, ctstr, TEXT("Discord Messenger - Fatal Error"), MB_ICONERROR | MB_OK);
+		MessageBox(GetMainHWND(), ctstr, TEXT("Discord Messenger - Fatal Error"), MB_ICONERROR | MB_OK);
 		free((void*)ctstr);
 		exit(1);
 	}

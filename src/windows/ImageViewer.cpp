@@ -524,7 +524,7 @@ void CreateImageViewer(const std::string& proxyURL, const std::string& url, cons
 	int winHeight = rc.bottom - rc.top + EDGE_SIZE;
 
 	RECT parentRect = { 0, 0, 0, 0 };
-	GetWindowRect(g_Hwnd, &parentRect);
+	GetWindowRect(GetMainHWND(), &parentRect);
 
 	int scaled5 = ScaleByDPI(5);
 	int scaled10 = ScaleByDPI(10);

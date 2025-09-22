@@ -20,6 +20,7 @@
 #include "UserGuildSettings.hpp"
 #include "GuildListItem.hpp"
 #include "FormattedText.hpp"
+#include "ChatView.hpp"
 
 struct NetRequest;
 
@@ -162,8 +163,6 @@ private:
 
 public:
 	Snowflake m_mySnowflake = 0;
-	Snowflake m_CurrentGuild   = 0;
-	Snowflake m_CurrentChannel = 0;
 
 	// Guild DB
 	std::list<Guild> m_guilds;
@@ -213,6 +212,9 @@ public:
 
 	// List of guilds and guild folders.
 	GuildItemList m_guildItemList;
+
+	// List of registered views.
+	std::vector<ChatViewPtr> m_chatViews;
 
 public:
 	Profile* GetProfile() {
@@ -326,23 +328,9 @@ public:
 		}
 	}
 
-	Guild* GetCurrentGuild()
-	{
-		return GetGuild(m_CurrentGuild);
-	}
-
-	Snowflake GetCurrentGuildID() const {
-		return m_CurrentGuild;
-	}
-
 	Channel* GetChannel(Snowflake sf)
 	{
 		Channel* pChan;
-		Guild* pGuild = GetCurrentGuild();
-		if (pGuild) {
-			pChan = pGuild->GetChannel(sf);
-			if (pChan) return pChan;
-		}
 
 		for (auto& gld : m_guilds) {
 			pChan = gld.GetChannel(sf);
@@ -351,15 +339,6 @@ public:
 		}
 
 		return m_dmGuild.GetChannel(sf);
-	}
-
-	Channel* GetCurrentChannel()
-	{
-		return GetChannel(m_CurrentChannel);
-	}
-
-	Snowflake GetCurrentChannelID() const {
-		return m_CurrentChannel;
 	}
 
 	Channel* GetChannelGlobally(Snowflake sf) {
@@ -383,12 +362,6 @@ public:
 	// Search for channels using the quick switcher query format.
 	std::vector<QuickMatch> Search(const std::string& query);
 
-	// Select a guild.
-	void OnSelectGuild(Snowflake sf, Snowflake chan = 0);
-
-	// Select a channel in the current guild.
-	void OnSelectChannel(Snowflake sf, bool bSendSubscriptionUpdate = true);
-
 	// Fetch messages in specified channel.
 	void RequestMessages(Snowflake sf, ScrollDir::eScrollDir dir = ScrollDir::BEFORE, Snowflake source = 0, Snowflake gapper = 0);
 
@@ -402,7 +375,7 @@ public:
 	void RequestPinnedMessages(Snowflake channel);
 
 	// Send a refresh to the message list.
-	void OnFetchedMessages(Snowflake gap = 0, ScrollDir::eScrollDir dir = ScrollDir::BEFORE);
+	void OnFetchedMessages(Snowflake channelId, Snowflake gap = 0, ScrollDir::eScrollDir dir = ScrollDir::BEFORE);
 
 	// Handle the case where a channel list was fetched from a guild.
 	void OnFetchedChannels(Guild* pGld, const std::string& content);
@@ -419,14 +392,15 @@ public:
 	// Transform snowflake mentions into user, channel, or emoji mentions.
 	std::string ReverseMentions(const std::string& message, Snowflake guild, bool ttsMode = false);
 
-	// Send a message to the current channel.
-	bool SendMessageToCurrentChannel(const std::string& msg, Snowflake& tempSf, Snowflake reply = 0, bool mentionReplied = true);
+	// Send a message to a specified channel.
+	// N.B. would call it SendMessage but it conflicts with Windows' SendMessage.
+	bool SendAMessage(Snowflake channelID, const std::string& msg, Snowflake& tempSf, Snowflake reply = 0, bool mentionReplied = true);
 
-	// Send a message with an attachment to the current channel.
-	bool SendMessageAndAttachmentToCurrentChannel(const std::string& msg, Snowflake& tempSf, uint8_t* pAttData, size_t szAtt, const std::string& attName, bool isSpoiler = false);
+	// Send a message with an attachment to a specified channel.
+	bool SendMessageAndAttachment(Snowflake channelID, const std::string& msg, Snowflake& tempSf, uint8_t* pAttData, size_t szAtt, const std::string& attName, bool isSpoiler = false);
 
-	// Edit a message in the current channel.
-	bool EditMessageInCurrentChannel(const std::string& msg, Snowflake msgId);
+	// Edit a message in a specified channel.
+	bool EditMessage(Snowflake channelID, const std::string& msg, Snowflake msgId);
 
 	// Set current activity status.
 	void SetActivityStatus(eActiveStatus status, bool bRequestServer = true);
@@ -435,7 +409,7 @@ public:
 	void CloseGatewaySession();
 
 	// Inform the Discord backend that we are typing.
-	void Typing();
+	void Typing(Snowflake channelID);
 
 	// Inform the Discord backend that we have acknowledged messages up to but not including "message".
 	// Used by the "mark unread" feature.
@@ -454,7 +428,7 @@ public:
 	void RequestLeaveGuild(Snowflake guild);
 
 	// Update channels that we are subscribed to.
-	void UpdateSubscriptions(Snowflake guild, Snowflake channel, bool typing, bool activities, bool threads, int rangeMembers = 99);
+	void UpdateSubscriptions(bool typing = true, bool activities = true, bool threads = true, int rangeMembers = 99);
 
 	// Request a jump to a message.
 	void JumpToMessage(Snowflake guild, Snowflake channel, Snowflake message);
@@ -473,7 +447,24 @@ public:
 	void ClearData();
 
 	// Resolves links automatically in a formatted message.
-	void ResolveLinks(FormattedText* message, std::vector<InteractableItem>& interactables, Snowflake guildID = 0);
+	void ResolveLinks(FormattedText* message, std::vector<InteractableItem>& interactables, Snowflake guildID);
+
+	// Register a chat view.
+	void RegisterView(ChatViewPtr view);
+
+	// Unregister a chat view.
+	void UnregisterView(ChatViewPtr view);
+
+	// Gets a pointer to the main (first) view.
+	ChatViewPtr GetMainView() const {
+		return m_chatViews[0];
+	}
+
+	// Checks if a guild is opened in a view.
+	bool IsGuildOpened(Snowflake sf) const;
+
+	// Checks if a channel is opened in a view.
+	bool IsChannelOpened(Snowflake sf) const;
 
 public:
 	DiscordInstance(std::string token) : m_token(token), m_notificationManager(this) {

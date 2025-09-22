@@ -17,7 +17,7 @@ void NotificationViewer::Show(int x, int y, bool rightJustify)
 	m_appearXY = { x, y };
 	m_bRightJustify = rightJustify;
 
-	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_NOTIFICATIONS)), g_Hwnd, DlgProc);
+	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_NOTIFICATIONS)), GetMainHWND(), DlgProc);
 }
 
 void NotificationViewer::Initialize(HWND hWnd)
@@ -48,7 +48,7 @@ void NotificationViewer::Initialize(HWND hWnd)
 
 	SAFE_DELETE(m_pMessageList);
 
-	m_pMessageList = MessageList::Create(hWnd, &rect);
+	m_pMessageList = MessageList::Create(nullptr, hWnd, &rect);
 	m_pMessageList->SetManagedByOwner(true);
 	m_pMessageList->SetTopDown(true);
 	m_pMessageList->SetGuild(0);

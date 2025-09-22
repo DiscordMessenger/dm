@@ -68,7 +68,7 @@ void PinList::Initialize(HWND hWnd)
 		GetDiscordInstance()->RequestPinnedMessages(m_channel);
 	}
 
-	m_pMessageList = MessageList::Create(hWnd, &rect);
+	m_pMessageList = MessageList::Create(nullptr, hWnd, &rect);
 	m_pMessageList->SetManagedByOwner(true);
 	m_pMessageList->SetTopDown(true);
 	m_pMessageList->SetGuild(m_guild);
@@ -176,5 +176,5 @@ void PinList::Show(Snowflake channelID, Snowflake guildID, int x, int y, bool ri
 	m_appearXY = { x, y };
 	m_bRightJustify = rightJustify;
 
-	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_PINNEDMESSAGES)), g_Hwnd, &DlgProc);
+	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_PINNEDMESSAGES)), GetMainHWND(), &DlgProc);
 }

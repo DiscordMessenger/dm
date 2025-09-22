@@ -6,6 +6,7 @@
 #include <commctrl.h>
 
 #include "../discord/Snowflake.hpp"
+#include "ChatWindow.hpp"
 
 #define IDT_EXPIRY    (1)
 #define IDT_ANIMATION (2)
@@ -23,7 +24,7 @@ struct TypingUser
 class StatusBar
 {
 public:
-	static StatusBar* Create(HWND hParent);
+	static StatusBar* Create(ChatWindow* pParent);
 	static void CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR uTimerId, DWORD dwTime);
 
 	~StatusBar();
@@ -47,6 +48,9 @@ public:
 	void ClearTypers();
 	void UpdateCharacterCounter(int nChars, int nCharsMax);
 
+	Snowflake GetCurrentChannelID() { return m_channelID; }
+	void SetChannelID(Snowflake sf) { m_channelID = sf; }
+
 public:
 	HWND m_hwnd = NULL;
 
@@ -57,4 +61,6 @@ private:
 	int m_anim_frame_number = 0;
 	RECT m_typing_status_rect;
 	RECT m_typing_animation_rect;
+	Snowflake m_channelID;
+	ChatWindow* m_pParent;
 };

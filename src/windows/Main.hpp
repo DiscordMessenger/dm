@@ -42,6 +42,7 @@
 #include "AvatarCache.hpp"
 #include "NetworkerThread.hpp"
 #include "TextInterface_Win32.hpp"
+#include "MainWindow.hpp"
 
 #include "../discord/DiscordAPI.hpp"
 #include "../discord/SettingsManager.hpp"
@@ -52,9 +53,7 @@
 #define MAX_MESSAGE_SIZE 2000 // 4000 with nitro
 
 extern HINSTANCE g_hInstance;
-extern WNDCLASS g_MainWindowClass;
 extern HBRUSH   g_backgroundBrush;
-extern HWND     g_Hwnd;
 extern HICON    g_Icon;
 extern HICON    g_BotIcon;
 extern HICON    g_SendIcon;
@@ -62,6 +61,8 @@ extern HICON    g_JumpIcon;
 extern HICON    g_CancelIcon;
 extern HICON    g_UploadIcon;
 extern HICON    g_DownloadIcon;
+
+extern int g_ProfilePictureSize;
 
 extern HFONT
 	g_MessageTextFont,
@@ -123,19 +124,20 @@ struct WebsocketMessageParams
 
 struct TypingParams
 {
-	Snowflake m_user;
-	Snowflake m_guild;
-	Snowflake m_channel;
-	time_t m_timestamp;
+	Snowflake m_user = 0;
+	Snowflake m_guild = 0;
+	Snowflake m_channel = 0;
+	time_t m_timestamp = 0;
 };
 
 struct SendMessageParams
 {
-	LPTSTR m_rawMessage;
-	Snowflake m_replyTo;
-	bool m_bEdit;
-	bool m_bReply;
-	bool m_bMention;
+	LPTSTR m_rawMessage = NULL;
+	Snowflake m_channel = 0;
+	Snowflake m_replyTo = 0;
+	bool m_bEdit = false;
+	bool m_bReply = false;
+	bool m_bMention = false;
 };
 
 struct SendMessageAuxParams
@@ -144,12 +146,16 @@ struct SendMessageAuxParams
 	Snowflake m_snowflake;
 };
 
+struct RefreshMessagesParams
+{
+	Snowflake m_channelId;
+	ScrollDir::eScrollDir m_scrollDir;
+	Snowflake m_gapCulprit;
+};
+
 std::string FormatDiscrim(int discrim);
 std::string GetStringFromHResult(HRESULT hr);
-std::string GetDiscordToken();
-void OnUpdateAvatar(const std::string& resid);
-DiscordInstance* GetDiscordInstance();
 void WantQuit();
-void SetHeartbeatInterval(int timeMs);
 int GetProfilePictureSize();
 HBITMAP GetDefaultBitmap();
+bool IsFromStartup();

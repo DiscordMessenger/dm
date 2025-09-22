@@ -66,7 +66,7 @@ private:
 	};
 
 public:
-	static ChannelViewOld* Create(HWND hwnd, LPRECT rect);
+	static ChannelViewOld* Create(ChatWindow* parent, LPRECT rect);
 	static void InitializeClass();
 
 public:
@@ -82,6 +82,7 @@ public:
 	HWND GetTreeHWND() override { return m_listHwnd; }
 
 private:
+	ChatWindow* m_pParent = nullptr;
 	HWND m_hwndParent = NULL;
 	HWND m_listHwnd = NULL;
 	Snowflake m_currentChannel = 0;

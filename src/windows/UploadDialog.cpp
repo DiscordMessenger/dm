@@ -9,6 +9,7 @@ using Json = nlohmann::json;
 
 struct UploadDialogData
 {
+	Snowflake m_channelID = 0;
 	LPCTSTR m_lpstrFile = nullptr;
 	LPCTSTR m_lpstrFileTitle = nullptr;
 	SHFILEINFO m_sfi{};
@@ -24,6 +25,11 @@ struct UploadDialogData
 
 		if (m_pFileData)
 			delete[] m_pFileData;
+	}
+
+	Channel* GetChannel()
+	{
+		return GetDiscordInstance()->GetChannelGlobally(m_channelID);
 	}
 };
 
@@ -139,7 +145,10 @@ INT_PTR CALLBACK UploadDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	{
 		case WM_INITDIALOG:
 		{
-			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)lParam);
+			pData = (UploadDialogData*)lParam;
+
+			Channel* pChan = pData->GetChannel();
 			if (!pChan) {
 				EndDialog(hWnd, IDCANCEL);
 				return TRUE;
@@ -150,8 +159,6 @@ INT_PTR CALLBACK UploadDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 				return TRUE;
 			}
 
-			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)lParam);
-			pData = (UploadDialogData*)lParam;
 			pData->m_comment[0] = 0;
 
 			if (pData->m_lpstrFile)
@@ -194,7 +201,7 @@ INT_PTR CALLBACK UploadDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 
 			Static_SetIcon(GetDlgItem(hWnd, IDC_FILE_ICON), pData->m_sfi.hIcon);
 
-			CenterWindow(hWnd, g_Hwnd);
+			CenterWindow(hWnd, GetParent(hWnd));
 
 			SetFocus(GetDlgItem(hWnd, IDC_ATTACH_COMMENT));
 			break;
@@ -216,12 +223,12 @@ INT_PTR CALLBACK UploadDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	return FALSE;
 }
 
-static void UploadDialogShowData(UploadDialogData* data)
+static void UploadDialogShowData(HWND hWnd, UploadDialogData* data)
 {
 	if (DialogBoxParam(
 			g_hInstance,
 			MAKEINTRESOURCE(DMDI(IDD_DIALOG_UPLOADFILES)),
-			g_Hwnd,
+			hWnd,
 			UploadDialogProc,
 			(LPARAM) data
 		) == IDCANCEL)
@@ -233,7 +240,8 @@ static void UploadDialogShowData(UploadDialogData* data)
 
 	Snowflake sf;
 	std::string content = MakeStringFromTString(data->m_comment);
-	if (GetDiscordInstance()->SendMessageAndAttachmentToCurrentChannel(
+	if (GetDiscordInstance()->SendMessageAndAttachment(
+			data->m_channelID,
 			content,
 			sf,
 			data->m_pFileData,
@@ -248,20 +256,20 @@ static void UploadDialogShowData(UploadDialogData* data)
 		SendMessageAuxParams smap;
 		smap.m_message = content;
 		smap.m_snowflake = sf;
-		SendMessage(g_Hwnd, WM_SENDMESSAGEAUX, 0, (LPARAM)&smap);
+		SendMessage(hWnd, WM_SENDMESSAGEAUX, 0, (LPARAM)&smap);
 	}
 	else
 	{
 		// TODO: Placeholder, replace
-		MessageBox(g_Hwnd, TmGetTString(IDS_CANNOT_UPLOAD_ATTACHMENT), TmGetTString(IDS_PROGRAM_NAME), MB_OK);
+		MessageBox(hWnd, TmGetTString(IDS_CANNOT_UPLOAD_ATTACHMENT), TmGetTString(IDS_PROGRAM_NAME), MB_OK);
 	}
 
 	delete data;
 }
 
-bool UploadDialogCheckHasUploadRights()
+bool UploadDialogCheckHasUploadRights(Snowflake channelID)
 {
-	Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+	Channel* pChan = GetDiscordInstance()->GetChannelGlobally(channelID);
 	if (!pChan)
 		return false;
 	
@@ -272,35 +280,37 @@ bool UploadDialogCheckHasUploadRights()
 	return true;
 }
 
-void UploadDialogShowWithFileName(LPCTSTR lpstrFileName, LPCTSTR lpstrFileTitle)
+void UploadDialogShowWithFileName(HWND hWnd, Snowflake channelID, LPCTSTR lpstrFileName, LPCTSTR lpstrFileTitle)
 {
-	if (!UploadDialogCheckHasUploadRights())
+	if (!UploadDialogCheckHasUploadRights(channelID))
 		return;
 
 	UploadDialogData* data = new UploadDialogData;
+	data->m_channelID = channelID;
 	data->m_lpstrFile = lpstrFileName;
 	data->m_lpstrFileTitle = lpstrFileTitle;
 
-	UploadDialogShowData(data);
+	UploadDialogShowData(hWnd, data);
 }
 
-void UploadDialogShowWithFileData(uint8_t* fileData, size_t fileSize, LPCTSTR lpstrFileTitle)
+void UploadDialogShowWithFileData(HWND hWnd, Snowflake channelID, uint8_t* fileData, size_t fileSize, LPCTSTR lpstrFileTitle)
 {
-	if (!UploadDialogCheckHasUploadRights())
+	if (!UploadDialogCheckHasUploadRights(channelID))
 		return;
 
 	UploadDialogData* data = new UploadDialogData;
+	data->m_channelID = channelID;
 	data->m_lpstrFileTitle = lpstrFileTitle;
 	data->m_fileSize = (DWORD) fileSize;
 	data->m_pFileData = new uint8_t[fileSize];
 	memcpy(data->m_pFileData, fileData, fileSize);
 
-	UploadDialogShowData(data);
+	UploadDialogShowData(hWnd, data);
 }
 
-void UploadDialogShow2()
+void UploadDialogShow2(HWND hWnd, Snowflake channelID)
 {
-	if (!UploadDialogCheckHasUploadRights())
+	if (!UploadDialogCheckHasUploadRights(channelID))
 		return;
 
 	const int MAX_FILE = 4096;
@@ -310,7 +320,7 @@ void UploadDialogShow2()
 
 	OPENFILENAME ofn{};
 	ofn.lStructSize    = SIZEOF_OPENFILENAME_NT4;
-	ofn.hwndOwner      = g_Hwnd;
+	ofn.hwndOwner      = GetMainHWND();
 	ofn.hInstance      = g_hInstance;
 	ofn.nMaxFile       = MAX_FILE;
 	ofn.lpstrFile      = buffer;
@@ -326,15 +336,19 @@ void UploadDialogShow2()
 	}
 
 	UploadDialogShowWithFileName(
+		hWnd,
+		channelID,
 		ofn.lpstrFile,
 		ofn.lpstrFileTitle
 	);
 }
 
-void UploadDialogShow()
+void UploadDialogShow(HWND hWnd, Snowflake channelID)
 {
-	if (!UploadDialogCheckHasUploadRights())
+	if (!UploadDialogCheckHasUploadRights(channelID))
 		return;
 
-	PostMessage(g_Hwnd, WM_SHOWUPLOADDIALOG, 0, 0);
+	Snowflake* sf = new Snowflake;
+	*sf = channelID;
+	PostMessage(hWnd, WM_SHOWUPLOADDIALOG, 0, (LPARAM) sf);
 }

@@ -8,7 +8,7 @@ public:
 	HWND m_hwnd = NULL;
 
 public:
-	static IChannelView* CreateChannelView(HWND hwnd, LPRECT rect);
+	static IChannelView* CreateChannelView(ChatWindow* parent, LPRECT rect);
 	static void InitializeClasses();
 
 public:

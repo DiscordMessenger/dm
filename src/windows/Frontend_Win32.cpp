@@ -12,27 +12,27 @@
 
 void Frontend_Win32::OnLoginAgain()
 {
-	SendMessage(g_Hwnd, WM_LOGINAGAIN, 0, 0);
+	SendMessage(GetMainHWND(), WM_LOGINAGAIN, 0, 0);
 }
 
 void Frontend_Win32::OnLoggedOut()
 {
-	SendMessage(g_Hwnd, WM_LOGGEDOUT, 0, 0);
+	SendMessage(GetMainHWND(), WM_LOGGEDOUT, 0, 0);
 }
 
 void Frontend_Win32::OnSessionClosed(int errorCode)
 {
-	SendMessage(g_Hwnd, WM_SESSIONCLOSED, (WPARAM) errorCode, 0);
+	SendMessage(GetMainHWND(), WM_SESSIONCLOSED, (WPARAM) errorCode, 0);
 }
 
 void Frontend_Win32::OnConnecting()
 {
-	SendMessage(g_Hwnd, WM_CONNECTING, 0, 0);
+	SendMessage(GetMainHWND(), WM_CONNECTING, 0, 0);
 }
 
 void Frontend_Win32::OnConnected()
 {
-	SendMessage(g_Hwnd, WM_CONNECTED, 0, 0);
+	SendMessage(GetMainHWND(), WM_CONNECTED, 0, 0);
 }
 
 void Frontend_Win32::OnAddMessage(Snowflake channelID, const Message& msg)
@@ -40,7 +40,7 @@ void Frontend_Win32::OnAddMessage(Snowflake channelID, const Message& msg)
 	AddMessageParams parms;
 	parms.channel = channelID;
 	parms.msg = msg;
-	SendMessage(g_Hwnd, WM_ADDMESSAGE, 0, (LPARAM)&parms);
+	SendMessage(GetMainHWND(), WM_ADDMESSAGE, 0, (LPARAM)&parms);
 }
 
 void Frontend_Win32::OnUpdateMessage(Snowflake channelID, const Message& msg)
@@ -48,12 +48,12 @@ void Frontend_Win32::OnUpdateMessage(Snowflake channelID, const Message& msg)
 	AddMessageParams parms;
 	parms.channel = channelID;
 	parms.msg = msg;
-	SendMessage(g_Hwnd, WM_UPDATEMESSAGE, 0, (LPARAM)&parms);
+	SendMessage(GetMainHWND(), WM_UPDATEMESSAGE, 0, (LPARAM)&parms);
 }
 
-void Frontend_Win32::OnDeleteMessage(Snowflake messageInCurrentChannel)
+void Frontend_Win32::OnDeleteMessage(int viewID, Snowflake messageInCurrentChannel)
 {
-	SendMessage(g_Hwnd, WM_DELETEMESSAGE, 0, (LPARAM)&messageInCurrentChannel);
+	SendMessage(GetMainHWND(), WM_DELETEMESSAGE, viewID, (LPARAM)&messageInCurrentChannel);
 }
 
 void Frontend_Win32::OnStartTyping(Snowflake userID, Snowflake guildID, Snowflake channelID, time_t startTime)
@@ -63,7 +63,7 @@ void Frontend_Win32::OnStartTyping(Snowflake userID, Snowflake guildID, Snowflak
 	parms.m_guild = guildID;
 	parms.m_channel = channelID;
 	parms.m_timestamp = startTime;
-	SendMessage(g_Hwnd, WM_STARTTYPING, 0, (LPARAM)&parms);
+	SendMessage(GetMainHWND(), WM_STARTTYPING, 0, (LPARAM)&parms);
 }
 
 extern int g_latestSSLError; // HACK -- defined by the NetworkerThread.  Used to debug an issue.
@@ -81,7 +81,7 @@ void Frontend_Win32::OnGenericError(const std::string& message)
 	}
 
 	LPCTSTR pMsgBoxText = ConvertCppStringToTString(newMsg);
-	MessageBox(g_Hwnd, pMsgBoxText, TmGetTString(IDS_ERROR), MB_OK | MB_ICONERROR);
+	MessageBox(GetMainHWND(), pMsgBoxText, TmGetTString(IDS_ERROR), MB_OK | MB_ICONERROR);
 	free((void*)pMsgBoxText);
 	pMsgBoxText = NULL;
 }
@@ -91,7 +91,7 @@ void Frontend_Win32::OnJsonException(const std::string& message)
 	std::string err(TmGetString(IDS_JSON_EXCEPTION));
 	err += message;
 	LPCTSTR pMsgBoxText = ConvertCppStringToTString(err);
-	MessageBox(g_Hwnd, pMsgBoxText, TmGetTString(IDS_ERROR), MB_OK | MB_ICONERROR);
+	MessageBox(GetMainHWND(), pMsgBoxText, TmGetTString(IDS_ERROR), MB_OK | MB_ICONERROR);
 	free((void*)pMsgBoxText);
 	pMsgBoxText = NULL;
 }
@@ -104,7 +104,7 @@ void Frontend_Win32::OnCantViewChannel(const std::string& channelName)
 	free(chanName);
 
 	MessageBox(
-		g_Hwnd,
+		GetMainHWND(),
 		buff,
 		TmGetTString(IDS_PROGRAM_NAME),
 		MB_OK | MB_ICONERROR
@@ -113,7 +113,7 @@ void Frontend_Win32::OnCantViewChannel(const std::string& channelName)
 
 void Frontend_Win32::OnGatewayConnectFailure()
 {
-	MessageBox(g_Hwnd, TmGetTString(IDS_CONNECT_FAILURE), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
+	MessageBox(GetMainHWND(), TmGetTString(IDS_CONNECT_FAILURE), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
 	RequestQuit();
 }
 
@@ -122,12 +122,12 @@ void Frontend_Win32::OnProtobufError(Protobuf::ErrorCode code)
 	char buff[512];
 	buff[511] = 0;
 	snprintf(buff, sizeof buff - 1, TmGetString(IDS_PROTOBUF_ERROR).c_str(), code);
-	MessageBoxA(g_Hwnd, buff, TmGetString(IDS_ERROR).c_str(), MB_ICONERROR);
+	MessageBoxA(GetMainHWND(), buff, TmGetString(IDS_ERROR).c_str(), MB_ICONERROR);
 }
 
 void Frontend_Win32::OnRequestDone(NetRequest* pRequest)
 {
-	SendMessage(g_Hwnd, WM_REQUESTDONE, 0, (LPARAM) pRequest);
+	SendMessage(GetMainHWND(), WM_REQUESTDONE, 0, (LPARAM) pRequest);
 }
 
 void Frontend_Win32::OnLoadedPins(Snowflake channel, const std::string& data)
@@ -141,7 +141,7 @@ void Frontend_Win32::OnUpdateAvailable(const std::string& url, const std::string
 	std::string* msg = new std::string[2];
 	msg[0] = url;
 	msg[1] = version;
-	PostMessage(g_Hwnd, WM_UPDATEAVAILABLE, 0, (LPARAM) msg);
+	PostMessage(GetMainHWND(), WM_UPDATEAVAILABLE, 0, (LPARAM) msg);
 }
 
 void Frontend_Win32::OnFailedToSendMessage(Snowflake channel, Snowflake message)
@@ -149,7 +149,7 @@ void Frontend_Win32::OnFailedToSendMessage(Snowflake channel, Snowflake message)
 	FailedMessageParams parms;
 	parms.channel = channel;
 	parms.message = message;
-	SendMessage(g_Hwnd, WM_FAILMESSAGE, 0, (LPARAM)&parms);
+	SendMessage(GetMainHWND(), WM_FAILMESSAGE, 0, (LPARAM)&parms);
 }
 
 void Frontend_Win32::OnFailedToUploadFile(const std::string& file, int error)
@@ -162,7 +162,7 @@ void Frontend_Win32::OnFailedToUploadFile(const std::string& file, int error)
 	LPTSTR tstr = ConvertCppStringToTString(file);
 	WAsnprintf(buff, _countof(buff), TmGetTString(IDS_FAILED_TO_UPLOAD), tstr, error);
 	free(tstr);
-	MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
+	MessageBox(GetMainHWND(), buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
 }
 
 void Frontend_Win32::OnFailedToCheckForUpdates(int result, const std::string& response)
@@ -172,12 +172,23 @@ void Frontend_Win32::OnFailedToCheckForUpdates(int result, const std::string& re
 	WAsnprintf(buff, _countof(buff), TmGetTString(IDS_FAILED_UPDATE_CHECK), result, tstr);
 	free(tstr);
 
-	MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
+	MessageBox(GetMainHWND(), buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
 }
 
-void Frontend_Win32::OnStartProgress(Snowflake key, const std::string& fileName, bool isUploading)
+void Frontend_Win32::OnStartProgress(int viewID, Snowflake key, const std::string& fileName, bool isUploading)
 {
-	ProgressDialog::Show(fileName, key, isUploading, g_Hwnd);
+	HWND hWnd = GetMainHWND();
+
+	auto& windows = GetMainWindow()->GetSubWindows();
+	for (auto& window : windows)
+	{
+		if (window->GetChatView()->GetID() == viewID) {
+			hWnd = window->GetHWND();
+			break;
+		}
+	}
+
+	ProgressDialog::Show(fileName, key, isUploading, hWnd);
 }
 
 bool Frontend_Win32::OnUpdateProgress(Snowflake key, size_t offset, size_t length)
@@ -207,7 +218,7 @@ void Frontend_Win32::OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_
 		{
 			GetAvatarCache()->LoadedResource(additData);
 			GetAvatarCache()->SetImage(additData, himg, bHasAlpha);
-			OnUpdateAvatar(additData);
+			GetMainWindow()->OnUpdateAvatar(additData);
 			// note: stole the resource so that the HImage destructor doesn't delete it.
 		}
 		else
@@ -243,27 +254,27 @@ void Frontend_Win32::OnAttachmentFailed(bool bIsProfilePicture, const std::strin
 
 	GetAvatarCache()->LoadedResource(additData);
 	GetAvatarCache()->SetImage(additData, HIMAGE_ERROR, false);
-	OnUpdateAvatar(additData);
+	GetMainWindow()->OnUpdateAvatar(additData);
 }
 
-void Frontend_Win32::UpdateSelectedGuild()
+void Frontend_Win32::UpdateSelectedGuild(int viewID)
 {
-	SendMessage(g_Hwnd, WM_UPDATESELECTEDGUILD, 0, 0);
+	SendMessage(GetMainHWND(), WM_UPDATESELECTEDGUILD, viewID, 0);
 }
 
-void Frontend_Win32::UpdateSelectedChannel()
+void Frontend_Win32::UpdateSelectedChannel(int viewID)
 {
-	SendMessage(g_Hwnd, WM_UPDATESELECTEDCHANNEL, 0, 0);
+	SendMessage(GetMainHWND(), WM_UPDATESELECTEDCHANNEL, viewID, 0);
 }
 
-void Frontend_Win32::UpdateChannelList()
+void Frontend_Win32::UpdateChannelList(int viewID)
 {
-	SendMessage(g_Hwnd, WM_UPDATECHANLIST, 0, 0);
+	SendMessage(GetMainHWND(), WM_UPDATECHANLIST, viewID, 0);
 }
 
-void Frontend_Win32::UpdateMemberList()
+void Frontend_Win32::UpdateMemberList(int viewID)
 {
-	SendMessage(g_Hwnd, WM_UPDATEMEMBERLIST, 0, 0);
+	SendMessage(GetMainHWND(), WM_UPDATEMEMBERLIST, viewID, 0);
 }
 
 void Frontend_Win32::UpdateChannelAcknowledge(Snowflake channelID, Snowflake messageID)
@@ -271,7 +282,7 @@ void Frontend_Win32::UpdateChannelAcknowledge(Snowflake channelID, Snowflake mes
 	Snowflake sfs[2];
 	sfs[0] = channelID;
 	sfs[1] = messageID;
-	SendMessage(g_Hwnd, WM_UPDATECHANACKS, 0, (LPARAM) sfs);
+	SendMessage(GetMainHWND(), WM_UPDATECHANACKS, 0, (LPARAM) sfs);
 }
 
 void Frontend_Win32::UpdateProfileAvatar(Snowflake userID, const std::string& resid)
@@ -279,7 +290,7 @@ void Frontend_Win32::UpdateProfileAvatar(Snowflake userID, const std::string& re
 	UpdateProfileParams parms;
 	parms.m_user = userID;
 	parms.m_resId = resid;
-	SendMessage(g_Hwnd, WM_UPDATEPROFILEAVATAR, 0, (LPARAM) &parms);
+	SendMessage(GetMainHWND(), WM_UPDATEPROFILEAVATAR, 0, (LPARAM) &parms);
 }
 
 void Frontend_Win32::UpdateProfilePopout(Snowflake userID)
@@ -290,43 +301,48 @@ void Frontend_Win32::UpdateProfilePopout(Snowflake userID)
 
 void Frontend_Win32::UpdateUserData(Snowflake userID)
 {
-	SendMessage(g_Hwnd, WM_UPDATEUSER, 0, (LPARAM) &userID);
+	SendMessage(GetMainHWND(), WM_UPDATEUSER, 0, (LPARAM) &userID);
 }
 
 void Frontend_Win32::UpdateAttachment(Snowflake attID)
 {
-	SendMessage(g_Hwnd, WM_UPDATEATTACHMENT, 0, (LPARAM) &attID);
+	SendMessage(GetMainHWND(), WM_UPDATEATTACHMENT, 0, (LPARAM) &attID);
 }
 
 void Frontend_Win32::RepaintGuildList()
 {
-	SendMessage(g_Hwnd, WM_REPAINTGUILDLIST, 0, 0);
+	SendMessage(GetMainHWND(), WM_REPAINTGUILDLIST, 0, 0);
 }
 
 void Frontend_Win32::RepaintProfile()
 {
-	SendMessage(g_Hwnd, WM_REPAINTPROFILE, 0, 0);
+	SendMessage(GetMainHWND(), WM_REPAINTPROFILE, 0, 0);
 }
 
 void Frontend_Win32::RepaintProfileWithUserID(Snowflake id)
 {
 	if (GetDiscordInstance()->GetUserID() == id)
-		SendMessage(g_Hwnd, WM_REPAINTPROFILE, 0, 0);
+		SendMessage(GetMainHWND(), WM_REPAINTPROFILE, 0, 0);
 }
 
-void Frontend_Win32::RefreshMessages(ScrollDir::eScrollDir sd, Snowflake gapCulprit)
+void Frontend_Win32::RefreshMessages(Snowflake channelId, ScrollDir::eScrollDir sd, Snowflake gapCulprit)
 {
-	SendMessage(g_Hwnd, WM_REFRESHMESSAGES, (WPARAM) sd, (LPARAM) &gapCulprit);
+	RefreshMessagesParams params;
+	params.m_channelId = channelId;
+	params.m_scrollDir = sd;
+	params.m_gapCulprit = gapCulprit;
+
+	SendMessage(GetMainHWND(), WM_REFRESHMESSAGES, 0, (LPARAM) &params);
 }
 
-void Frontend_Win32::RefreshMembers(const std::set<Snowflake>& members)
+void Frontend_Win32::RefreshMembers(int viewID, const std::set<Snowflake>& members)
 {
-	SendMessage(g_Hwnd, WM_REFRESHMEMBERS, 0, (LPARAM) &members);
+	SendMessage(GetMainHWND(), WM_REFRESHMEMBERS, viewID, (LPARAM) &members);
 }
 
-void Frontend_Win32::JumpToMessage(Snowflake messageInCurrentChannel)
+void Frontend_Win32::JumpToMessage(int viewID, Snowflake messageInCurrentChannel)
 {
-	SendMessage(g_Hwnd, WM_SENDTOMESSAGE, 0, (LPARAM) &messageInCurrentChannel);
+	SendMessage(GetMainHWND(), WM_SENDTOMESSAGE, viewID, (LPARAM) &messageInCurrentChannel);
 }
 
 void Frontend_Win32::OnWebsocketMessage(int gatewayID, const std::string& payload)
@@ -336,7 +352,7 @@ void Frontend_Win32::OnWebsocketMessage(int gatewayID, const std::string& payloa
 	pParm->m_payload = payload;
 
 	// N.B. The main window shall respond the message immediately with ReplyMessage
-	SendMessage(g_Hwnd, WM_WEBSOCKETMESSAGE, 0, (LPARAM) pParm);
+	SendMessage(GetMainHWND(), WM_WEBSOCKETMESSAGE, 0, (LPARAM) pParm);
 }
 
 void Frontend_Win32::OnWebsocketClose(int gatewayID, int errorCode, const std::string& message)
@@ -375,19 +391,19 @@ void Frontend_Win32::OnWebsocketFail(int gatewayID, int errorCode, const std::st
 	}
 
 	int flags = (mayRetry ? MB_RETRYCANCEL : MB_OK) | (isTLSError ? MB_ICONWARNING : MB_ICONERROR);
-	int result = MessageBox(g_Hwnd, buffer, TmGetTString(IDS_PROGRAM_NAME), flags);
+	int result = MessageBox(GetMainHWND(), buffer, TmGetTString(IDS_PROGRAM_NAME), flags);
 	
 	if (mayRetry) {
 		if (result == IDRETRY) {
-			SendMessage(g_Hwnd, WM_CONNECTERROR, 0, 0);
+			SendMessage(GetMainHWND(), WM_CONNECTERROR, 0, 0);
 		}
 		else {
-			SendMessage(g_Hwnd, WM_DESTROY, 0, 0);
+			SendMessage(GetMainHWND(), WM_DESTROY, 0, 0);
 			RequestQuit();
 		}
 	}
 	else {
-		SendMessage(g_Hwnd, WM_CONNECTERROR2, 0, 0);
+		SendMessage(GetMainHWND(), WM_CONNECTERROR2, 0, 0);
 	}
 }
 
@@ -399,22 +415,22 @@ void Frontend_Win32::RequestQuit()
 
 void Frontend_Win32::HideWindow()
 {
-	ShowWindow(g_Hwnd, SW_HIDE);
+	ShowWindow(GetMainHWND(), SW_HIDE);
 }
 
 void Frontend_Win32::RestoreWindow()
 {
-	ShowWindow(g_Hwnd, SW_RESTORE);
+	ShowWindow(GetMainHWND(), SW_RESTORE);
 }
 
 void Frontend_Win32::MaximizeWindow()
 {
-	ShowWindow(g_Hwnd, SW_MAXIMIZE);
+	ShowWindow(GetMainHWND(), SW_MAXIMIZE);
 }
 
 bool Frontend_Win32::IsWindowMinimized()
 {
-	return IsIconic(g_Hwnd);
+	return IsIconic(GetMainHWND());
 }
 
 #ifdef USE_DEBUG_PRINTS
@@ -445,7 +461,7 @@ void Frontend_Win32::DebugPrint(const char* fmt, va_list vl)
 
 void Frontend_Win32::SetHeartbeatInterval(int timeMs)
 {
-	::SetHeartbeatInterval(timeMs);
+	GetMainWindow()->SetHeartbeatInterval(timeMs);
 }
 
 void Frontend_Win32::LaunchURL(const std::string& url)
@@ -471,6 +487,11 @@ void Frontend_Win32::RegisterAttachment(Snowflake sf, const std::string& avatarl
 void Frontend_Win32::RegisterChannelIcon(Snowflake sf, const std::string& avatarlnk)
 {
 	GetAvatarCache()->AddImagePlace(avatarlnk, eImagePlace::CHANNEL_ICONS, avatarlnk, sf);
+}
+
+void Frontend_Win32::CloseView(int viewID)
+{
+	SendMessage(GetMainHWND(), WM_CLOSEVIEW, viewID, 0);
 }
 
 std::string Frontend_Win32::GetDirectMessagesText()

@@ -664,7 +664,7 @@ void MessageItem::Update(Snowflake guildID)
 		m_pRepliedMessage->SetMessage(m_msg->m_pReferencedMessage->m_message);
 
 		std::vector<InteractableItem> interactables;
-		GetDiscordInstance()->ResolveLinks(m_pRepliedMessage, interactables);
+		GetDiscordInstance()->ResolveLinks(m_pRepliedMessage, interactables, guildID);
 	}
 	else if (m_pRepliedMessage)
 	{
@@ -736,10 +736,7 @@ void MessageList::DeleteMessage(Snowflake sf)
 	}
 
 	if (iter == m_messages.rend())
-	{
-		DbgPrintW("Message with id %lld not found to be deleted", sf);
 		return;
-	}
 
 	// delete it
 	RECT messageRect = iter->m_rect;
@@ -1174,6 +1171,20 @@ bool MessageList::MayErase()
 	return GetLocalSettings()->GetMessageStyle() != MS_IMAGE;
 }
 
+Guild* MessageList::GetCurrentGuild()
+{
+	return GetDiscordInstance()->GetGuild(m_guildID);
+}
+
+Channel* MessageList::GetCurrentChannel()
+{
+	auto guild = GetCurrentGuild();
+	if (!guild)
+		return nullptr;
+
+	return guild->GetChannel(m_channelID);
+}
+
 void MessageList::HitTestReply(POINT pt, BOOL& hit)
 {
 	auto msg = FindMessageByPointReplyRect(pt);
@@ -1369,7 +1380,7 @@ void MessageList::OpenAttachment(AttachmentItem* pItem)
 		buffer[_countof(buffer) - 1] = 0;
 		free((void*)urlTStr);
 		int result = MessageBox(
-			g_Hwnd,
+			GetParent(m_hwnd),
 			buffer,
 			GetTextManager()->GetTString(IDS_DANGEROUS_DOWNLOAD_TITLE),
 			MB_ICONWARNING | MB_YESNO
@@ -1419,7 +1430,7 @@ void MessageList::OpenInteractable(InteractableItem* pItem, MessageItem* pMsg)
 		}
 		case InteractableItem::LINK:
 		case InteractableItem::EMBED_LINK:
-			ConfirmOpenLink(pItem->m_destination);
+			ConfirmOpenLink(GetParent(m_hwnd), pItem->m_destination);
 			break;
 		case InteractableItem::MENTION: {
 			if (pItem->m_destination.size() < 2)
@@ -1450,10 +1461,16 @@ void MessageList::OpenInteractable(InteractableItem* pItem, MessageItem* pMsg)
 					Snowflake oldGuildID = m_guildID, oldChannelID = m_channelID;
 
 					if (oldGuildID != pNewChan->m_parentGuild)
-						GetDiscordInstance()->OnSelectGuild(pNewChan->m_parentGuild);
+					{
+						if (m_pParent)
+							m_pParent->GetChatView()->OnSelectGuild(pNewChan->m_parentGuild);
+					}
 
 					if (oldChannelID != pNewChan->m_snowflake)
-						GetDiscordInstance()->OnSelectChannel(pNewChan->m_snowflake);
+					{
+						if (m_pParent)
+							m_pParent->GetChatView()->OnSelectChannel(pNewChan->m_snowflake);
+					}
 				}
 			}
 
@@ -1907,7 +1924,7 @@ void MessageList::DetermineMessageData(
 	}
 }
 
-void MessageList::ConfirmOpenLink(const std::string& link)
+void MessageList::ConfirmOpenLink(HWND hWnd, const std::string& link)
 {
 	bool trust = GetLocalSettings()->CheckTrustedDomain(link);
 
@@ -1922,12 +1939,12 @@ void MessageList::ConfirmOpenLink(const std::string& link)
 		if (LOBYTE(GetVersion()) >= 4)
 		{
 			// TODO: This actually works on NT 3.51 at first.  But the second time this causes an abort
-			if (MessageBoxHooked(g_Hwnd, buffer, TmGetTString(IDS_HOLD_UP_CONFIRM), MB_ICONWARNING | MB_OKCANCEL, IDOK, TmGetTString(IDS_EXCITED_YES)) != IDOK)
+			if (MessageBoxHooked(hWnd, buffer, TmGetTString(IDS_HOLD_UP_CONFIRM), MB_ICONWARNING | MB_OKCANCEL, IDOK, TmGetTString(IDS_EXCITED_YES)) != IDOK)
 				return;
 		}
 		else
 		{
-			if (MessageBox(g_Hwnd, buffer, TmGetTString(IDS_HOLD_UP_CONFIRM), MB_ICONWARNING | MB_YESNO) != IDYES)
+			if (MessageBox(hWnd, buffer, TmGetTString(IDS_HOLD_UP_CONFIRM), MB_ICONWARNING | MB_YESNO) != IDYES)
 				return;
 		}
 	}
@@ -2175,7 +2192,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 			item.m_pRepliedMessage->SetMessage(item.m_msg->m_pReferencedMessage->m_message);
 
 			std::vector<InteractableItem> interactables;
-			GetDiscordInstance()->ResolveLinks(item.m_pRepliedMessage, interactables);
+			GetDiscordInstance()->ResolveLinks(item.m_pRepliedMessage, interactables, m_guildID);
 		}
 
 		DrawingContext dc(hdc);
@@ -3155,11 +3172,11 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 
 			if (!m_bManagedByOwner) {
 				if (index >= 100 || hasUnloadedMessagesBelow) {
-					PostMessage(g_Hwnd, WM_SETBROWSINGPAST, 1, 0);
+					PostMessage(GetParent(m_hwnd), WM_SETBROWSINGPAST, 1, 0);
 					sent = true;
 				}
 				else if (!sent && index <= 70) {
-					PostMessage(g_Hwnd, WM_SETBROWSINGPAST, 0, 0);
+					PostMessage(GetParent(m_hwnd), WM_SETBROWSINGPAST, 0, 0);
 				}
 			}
 		}
@@ -3255,7 +3272,7 @@ void MessageList::HandleRightClickMenuCommand(int command)
 		}
 		case ID_DUMMYPOPUP_EDITMESSAGE:
 		{
-			SendMessage(g_Hwnd, WM_STARTEDITING, 0, (LPARAM) &rightClickedMessage);
+			SendMessage(GetParent(m_hwnd), WM_STARTEDITING, 0, (LPARAM) &rightClickedMessage);
 			break;
 		}
 		case ID_DUMMYPOPUP_COPYTEXT:
@@ -3274,10 +3291,9 @@ void MessageList::HandleRightClickMenuCommand(int command)
 			static char buffer[8192];
 			snprintf(buffer, sizeof buffer, TmGetString(IDS_CONFIRM_DELETE).c_str(), pMsg->m_msg->m_author.c_str(), pMsg->m_msg->m_dateFull.c_str(), pMsg->m_msg->m_message.c_str());
 			LPCTSTR xstr = ConvertCppStringToTString(buffer);
-			if (MessageBox(g_Hwnd, xstr, TmGetTString(IDS_CONFIRM_DELETE_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES)
-			{
+
+			if (MessageBox(GetParent(m_hwnd), xstr, TmGetTString(IDS_CONFIRM_DELETE_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES)
 				GetDiscordInstance()->RequestDeleteMessage(m_channelID, rightClickedMessage);
-			}
 
 			free((void*)xstr);
 			break;
@@ -3287,12 +3303,12 @@ void MessageList::HandleRightClickMenuCommand(int command)
 			Snowflake sf[2];
 			sf[0] = pMsg->m_msg->m_snowflake;
 			sf[1] = pMsg->m_msg->m_author_snowflake;
-			SendMessage(g_Hwnd, WM_STARTREPLY, 0, (LPARAM)sf);
+			SendMessage(GetParent(m_hwnd), WM_STARTREPLY, 0, (LPARAM)sf);
 			break;
 		}
 		case ID_DUMMYPOPUP_PINMESSAGE:
 		{
-			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			Channel* pChan = GetCurrentChannel();
 			if (!pChan)
 				break;
 
@@ -3301,7 +3317,7 @@ void MessageList::HandleRightClickMenuCommand(int command)
 
 			LPCTSTR xstr = ConvertCppStringToTString(buffer);
 
-			if (MessageBox(g_Hwnd, xstr, TmGetTString(IDS_CONFIRM_PIN_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES)
+			if (MessageBox(GetParent(m_hwnd), xstr, TmGetTString(IDS_CONFIRM_PIN_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES)
 			{
 				// TODO
 			}
@@ -3377,7 +3393,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (amount != 1)
 			{
-				MessageBox(g_Hwnd, TmGetTString(IDS_CANT_UPLOAD_SEVERAL), TmGetTString(IDS_PROGRAM_NAME), MB_ICONWARNING | MB_OK);
+				MessageBox(GetParent(pThis->m_hwnd), TmGetTString(IDS_CANT_UPLOAD_SEVERAL), TmGetTString(IDS_PROGRAM_NAME), MB_ICONWARNING | MB_OK);
 				DragFinish(hDrop);
 				return 0;
 			}
@@ -3408,7 +3424,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				return 0;
 			}
 			
-			UploadDialogShowWithFileName(fileName, fileTitle);
+			UploadDialogShowWithFileName(pThis->m_pParent->GetHWND(), pThis->m_channelID, fileName, fileTitle);
 			DragFinish(hDrop);
 			return 0;
 		}
@@ -3594,7 +3610,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			RECT rectParent = {};
 			GetClientRect(pThis->m_hwnd, &rectParent);
 			RECT rectParent2 = {};
-			GetClientRect(g_Hwnd, &rectParent2);
+			GetClientRect(GetParent(pThis->m_hwnd), &rectParent2);
 
 			POINT pt;
 			pt.x = xPos;
@@ -3628,7 +3644,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			// disable the Delete button if we're not the user
 			Profile* ourPf = GetDiscordInstance()->GetProfile();
-			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			Channel* pChan = pThis->GetCurrentChannel();
 
 			if (!pChan) break;
 
@@ -5008,15 +5024,25 @@ void MessageList::UpdateAllowDrop()
 	DragAcceptFiles(m_hwnd, Accept);
 }
 
-MessageList* MessageList::Create(HWND hwnd, LPRECT pRect)
+MessageList* MessageList::Create(ChatWindow* parent, HWND hwnd, LPRECT pRect)
 {
+	if (!hwnd)
+		hwnd = parent->GetHWND();
+
 	MessageList* newThis = new MessageList;
+	newThis->m_pParent = parent;
+
 	int width = pRect->right - pRect->left, height = pRect->bottom - pRect->top;
 
 	newThis->m_hwnd = CreateWindowEx(
 		WS_EX_CLIENTEDGE, T_MESSAGE_LIST_CLASS, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL,
 		pRect->left, pRect->top, width, height, hwnd, (HMENU)CID_MESSAGELIST, g_hInstance, newThis
 	);
+
+	if (!newThis->m_hwnd) {
+		delete newThis;
+		return nullptr;
+	}
 
 	newThis->UpdateBackgroundBrush();
 

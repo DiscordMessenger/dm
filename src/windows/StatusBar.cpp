@@ -1,5 +1,6 @@
 #include "StatusBar.hpp"
 #include "Main.hpp"
+#include "GuildSubWindow.hpp"
 
 enum {
 	IDP_NOTIFS,
@@ -8,16 +9,18 @@ enum {
 	IDP_CNTRLS
 };
 
-StatusBar* StatusBar::Create(HWND hParent)
+StatusBar* StatusBar::Create(ChatWindow* parent)
 {
 	StatusBar* pBar = new StatusBar;
+	pBar->m_pParent = parent;
+
 	pBar->m_hwnd = CreateWindowEx(
 		0,
 		STATUSCLASSNAME,
 		NULL,
 		WS_CHILD | WS_VISIBLE,
 		0, 0, 0, 0,
-		hParent,
+		parent->GetHWND(),
 		(HMENU)CID_STATUSBAR,
 		g_hInstance,
 		NULL
@@ -29,7 +32,7 @@ StatusBar* StatusBar::Create(HWND hParent)
 		pBar->m_hwnd = ri::CreateStatusWindowANSI(
 			WS_CHILD | WS_VISIBLE,
 			"",
-			hParent,
+			parent->GetHWND(),
 			CID_STATUSBAR
 		);
 	}
@@ -37,6 +40,7 @@ StatusBar* StatusBar::Create(HWND hParent)
 	if (!pBar->m_hwnd) {
 		delete pBar;
 		pBar = nullptr;
+		return nullptr;
 	}
 
 	SetWindowFont(pBar->m_hwnd, g_MessageTextFont, TRUE);
@@ -271,11 +275,6 @@ void StatusBar::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 	SetBkMode(lpDIS->hDC, mode);
 }
 
-extern int g_GuildListerWidth; // all in main.cpp
-extern int g_ChannelViewListWidth;
-extern int g_MemberListWidth;
-extern int g_SendButtonWidth;
-
 StatusBar::~StatusBar()
 {
 	if (m_hwnd) {
@@ -293,13 +292,34 @@ void StatusBar::UpdateParts(int width)
 	// Part 2 - Under the send button, character count
 	// Part 3 - Under the member list, some controls, I don't know
 	
-	int scaled10 = ScaleByDPI(10);
-	Widths[IDP_CNTRLS] = width;
-	Widths[IDP_CHRCNT] = width - g_MemberListWidth - scaled10 * 3 / 2;
-	Widths[IDP_TYPING] = Widths[IDP_CHRCNT] - g_SendButtonWidth - scaled10;
-	Widths[IDP_NOTIFS] = g_GuildListerWidth + g_ChannelViewListWidth + scaled10 * 3;
+	// TODO: Get rid of GetMainWindow()? Or maybe just don't create this for sub-windows?
+
+	if (m_pParent == GetMainWindow())
+	{
+		MainWindow* mainWindow = (MainWindow*) m_pParent;
+
+		int scaled10 = ScaleByDPI(10);
+		Widths[IDP_CNTRLS] = width;
+		Widths[IDP_CHRCNT] = width - mainWindow->m_MemberListWidth - scaled10 * 3 / 2;
+		Widths[IDP_TYPING] = Widths[IDP_CHRCNT] - mainWindow->m_SendButtonWidth - scaled10;
+		Widths[IDP_NOTIFS] = mainWindow->m_GuildListerWidth + mainWindow->m_ChannelViewListWidth + scaled10 * 3;
+	}
+	else
+	{
+		GuildSubWindow* subWindow = dynamic_cast<GuildSubWindow*>(m_pParent);
+		if (subWindow)
+		{
+			int scaled10 = ScaleByDPI(10);
+			int meliWidth = subWindow->m_bMemberListVisible ? subWindow->m_MemberListWidth : 0;
+			int chaviWidth = subWindow->m_bChannelListVisible ? subWindow->m_ChannelViewListWidth + scaled10 : 0;
+
+			Widths[IDP_CNTRLS] = width;
+			Widths[IDP_CHRCNT] = width - meliWidth - scaled10;
+			Widths[IDP_TYPING] = Widths[IDP_CHRCNT] - subWindow->m_SendButtonWidth - scaled10;
+			Widths[IDP_NOTIFS] = chaviWidth + scaled10;
+		}
+	}
 
 	SendMessage(m_hwnd, SB_SETPARTS, _countof(Widths), (LPARAM) Widths);
-
 	SendMessage(m_hwnd, SB_SETTEXT, 1 | SBT_OWNERDRAW, 0);
 }

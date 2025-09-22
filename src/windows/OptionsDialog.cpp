@@ -400,7 +400,7 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 					EnableWindow(GetDlgItem(hWnd, IDC_ACTIVE_IMAGE_BROWSE), enable);
 					EnableWindow(GetDlgItem(hWnd, IDC_COMBO_ALIGNMENT),     enable);
 					
-					SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
+					SendMessage(GetMainHWND(), WM_MSGLISTUPDATEMODE, 0, 0);
 					break;
 				}
 				case IDC_COMBO_ALIGNMENT:
@@ -416,7 +416,7 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 					GetLocalSettings()->SetImageAlignment(align);
 
 					if (GetLocalSettings()->GetMessageStyle() == MS_IMAGE)
-						SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
+						SendMessage(GetMainHWND(), WM_MSGLISTUPDATEMODE, 0, 0);
 
 					break;
 				}
@@ -447,7 +447,7 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 
 					OPENFILENAME ofn{};
 					ofn.lStructSize    = SIZEOF_OPENFILENAME_NT4;
-					ofn.hwndOwner      = g_Hwnd;
+					ofn.hwndOwner      = GetMainHWND();
 					ofn.hInstance      = g_hInstance;
 					ofn.nMaxFile       = MAX_FILE;
 					ofn.lpstrFile      = buffer;
@@ -463,7 +463,7 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 
 					std::string fileName = MakeStringFromTString(ofn.lpstrFile);
 					GetLocalSettings()->SetImageBackgroundFileName(fileName);
-					SendMessage(g_Hwnd, WM_MSGLISTUPDATEMODE, 0, 0);
+					SendMessage(GetMainHWND(), WM_MSGLISTUPDATEMODE, 0, 0);
 					SetDlgItemText(hWnd, IDC_ACTIVE_IMAGE_EDIT, ofn.lpstrFile);
 					break;
 				}
@@ -471,16 +471,16 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 				case IDC_APPEARANCE_COZY:
 					GetSettingsManager()->SetMessageCompact(false);
 					GetSettingsManager()->FlushSettings();
-					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+					SendMessage(GetMainHWND(), WM_RECALCMSGLIST, 0, 0);
 					break;
 				case IDC_APPEARANCE_COMPACT:
 					GetSettingsManager()->SetMessageCompact(true);
 					GetSettingsManager()->FlushSettings();
-					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+					SendMessage(GetMainHWND(), WM_RECALCMSGLIST, 0, 0);
 					break;
 				case IDC_COMPACT_MEMBER_LIST:
 					GetLocalSettings()->SetCompactMemberList(IsDlgButtonChecked(hWnd, IDC_COMPACT_MEMBER_LIST));
-					SendMessage(g_Hwnd, WM_RECREATEMEMBERLIST, 0, 0);
+					SendMessage(GetMainHWND(), WM_RECREATEMEMBERLIST, 0, 0);
 					break;
 			}
 			break;
@@ -504,23 +504,23 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 			{
 				case IDC_DISABLE_FORMATTING:
 					GetLocalSettings()->SetDisableFormatting(IsDlgButtonChecked(hWnd, IDC_DISABLE_FORMATTING));
-					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+					SendMessage(GetMainHWND(), WM_RECALCMSGLIST, 0, 0);
 					break;
 				case IDC_USE_12HR_TIME:
 					GetLocalSettings()->SetUse12HourTime(IsDlgButtonChecked(hWnd, IDC_USE_12HR_TIME));
-					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+					SendMessage(GetMainHWND(), WM_RECALCMSGLIST, 0, 0);
 					break;
 				case IDC_IMAGES_WHEN_UPLOADED:
 					GetLocalSettings()->SetShowAttachmentImages(IsDlgButtonChecked(hWnd, IDC_IMAGES_WHEN_UPLOADED));
-					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+					SendMessage(GetMainHWND(), WM_RECALCMSGLIST, 0, 0);
 					break;
 				case IDC_IMAGES_WHEN_EMBEDDED:
 					GetLocalSettings()->SetShowEmbedImages(IsDlgButtonChecked(hWnd, IDC_IMAGES_WHEN_EMBEDDED));
-					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+					SendMessage(GetMainHWND(), WM_RECALCMSGLIST, 0, 0);
 					break;
 				case IDC_SHOW_EMBEDS:
 					GetLocalSettings()->SetShowEmbedContent(IsDlgButtonChecked(hWnd, IDC_SHOW_EMBEDS));
-					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+					SendMessage(GetMainHWND(), WM_RECALCMSGLIST, 0, 0);
 					break;
 			}
 			break;
@@ -836,5 +836,5 @@ static INT_PTR CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 int ShowOptionsDialog()
 {
-	return (int) DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_OPTIONS)), g_Hwnd, DialogProc);
+	return (int) DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_OPTIONS)), GetMainHWND(), DialogProc);
 }

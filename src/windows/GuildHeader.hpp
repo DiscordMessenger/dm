@@ -11,11 +11,22 @@ class GuildHeader
 {
 public:
 	HWND m_hwnd = NULL;
+	ChatWindow* m_pParent = nullptr;
+	Snowflake m_guildID = 0;
+	Snowflake m_channelID = 0;
 
 	std::string GetGuildName();// = "Operating System Development";
 	std::string GetSubtitleText();// = "Boost Level 3 - 15 Boosts";
 	std::string GetChannelName();// = "#fictional-channel";
 	std::string GetChannelInfo();// = "This is an entirely fictional channel that I made up!";
+
+	Guild* GetCurrentGuild();
+	Channel* GetCurrentChannel();
+
+	Snowflake GetCurrentGuildID() { return m_guildID; }
+	Snowflake GetCurrentChannelID() { return m_channelID; }
+	void SetGuildID(Snowflake sf) { m_guildID = sf; }
+	void SetChannelID(Snowflake sf) { m_channelID = sf; }
 
 public:
 	GuildHeader();
@@ -30,7 +41,7 @@ public:
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void InitializeClass();
 
-	static GuildHeader* Create(HWND hwnd, LPRECT pRect);
+	static GuildHeader* Create(ChatWindow* parent, LPRECT pRect);
 
 private:
 	enum eButtonPlacement {

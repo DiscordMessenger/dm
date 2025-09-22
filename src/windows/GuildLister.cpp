@@ -16,8 +16,6 @@ WNDCLASS GuildLister::g_GuildListerClass;
 WNDCLASS GuildLister::g_GuildListerParentClass;
 GuildLister::GuildLister() {}
 
-extern int g_GuildListerWidth;
-
 enum {
 	GCMD_MORE,
 	GCMD_BAR,
@@ -51,7 +49,7 @@ void GuildLister::ProperlyResizeSubWindows()
 	int buttonHeight = ScaleByDPI(24);
 
 	bool wasScrollBarVisible = m_bIsScrollBarVisible;
-	m_bIsScrollBarVisible = rect.right - rect.left > g_GuildListerWidth;
+	m_bIsScrollBarVisible = rect.right - rect.left > m_pParent->GetGuildListerWidth();
 
 	if (wasScrollBarVisible != m_bIsScrollBarVisible) {
 		if (wasScrollBarVisible) {
@@ -192,7 +190,7 @@ void GuildLister::UpdateSelected()
 		InvalidateRect(m_hwnd, &it->second, FALSE);
 	}
 
-	m_selectedGuild = GetDiscordInstance()->GetCurrentGuildID();
+	m_selectedGuild = m_pParent->GetCurrentGuildID();
 	it = m_iconRects.find(m_selectedGuild);
 	if (it != m_iconRects.end()) {
 		InvalidateRect(m_hwnd, &it->second, FALSE);
@@ -299,7 +297,7 @@ void GuildLister::RestoreScrollInfo()
 
 void GuildLister::ShowGuildChooserMenu()
 {
-	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_GUILD_CHOOSER)), g_Hwnd, &ChooserDlgProc);
+	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_GUILD_CHOOSER)), GetParent(m_hwnd), &ChooserDlgProc);
 }
 
 void GuildLister::OnScroll()
@@ -425,7 +423,7 @@ void GuildLister::AskLeave(Snowflake guild)
 	TCHAR buff[4096];
 	WAsnprintf(buff, _countof(buff), TmGetTString(IDS_CONFIRM_LEAVE_GUILD), pGuild->m_name.c_str());
 
-	if (MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_YESNO | MB_ICONQUESTION) == IDYES)
+	if (MessageBox(GetParent(m_hwnd), buff, TmGetTString(IDS_PROGRAM_NAME), MB_YESNO | MB_ICONQUESTION) == IDYES)
 	{
 		// Leave Server
 		GetDiscordInstance()->RequestLeaveGuild(guild);
@@ -467,7 +465,7 @@ LRESULT CALLBACK GuildLister::ParentWndProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 					GetLocalSettings()->SetShowScrollBarOnGuildList(
 						!GetLocalSettings()->ShowScrollBarOnGuildList()
 					);
-					SendMessage(g_Hwnd, WM_REPOSITIONEVERYTHING, 0, 0);
+					SendMessage(GetParent(pThis->m_hwnd), WM_REPOSITIONEVERYTHING, 0, 0);
 					break;
 			}
 		}
@@ -481,13 +479,13 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 	int height = 0;
 	int pfpSize = GetProfilePictureSize();
 	int pfpBorderSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
-	bool isCurrent = GetDiscordInstance()->GetCurrentGuildID() == id;
+	bool isCurrent = m_pParent->GetCurrentGuildID() == id;
 
 	SetRectEmpty(&m_iconRects[id]);
 
 	bool isFolderIcon = currentFolder && (id & ~BIT_FOLDER) == currentFolder;
 
-	m_selectedGuild = GetDiscordInstance()->GetCurrentGuildID();
+	m_selectedGuild = m_pParent->GetCurrentGuildID();
 	if (hdc && hicon)
 	{
 		HICON hborder = NULL;
@@ -1005,11 +1003,11 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				else if (GetDiscordInstance()->GetGuild(selected))
 				{
 					Snowflake sf1 = 0;
-					if (GetDiscordInstance()->GetCurrentGuild())
-						sf1 = GetDiscordInstance()->GetCurrentGuild()->m_snowflake;
+					if (GetMainWindow()->GetCurrentGuild())
+						sf1 = GetMainWindow()->GetCurrentGuild()->m_snowflake;
 
 					if (sf1 != selected)
-						GetDiscordInstance()->OnSelectGuild(selected);
+						GetMainWindow()->GetChatView()->OnSelectGuild(selected);
 				}
 			}
 
@@ -1217,7 +1215,7 @@ INT_PTR GuildLister::ChooserDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 						break;
 
 					Snowflake guild = pData->m_guildIDs[index];
-					GetDiscordInstance()->OnSelectGuild(guild);
+					GetMainWindow()->GetChatView()->OnSelectGuild(guild);
 					EndDialog(hWnd, TRUE);
 					break;
 				}
@@ -1248,7 +1246,7 @@ INT_PTR GuildLister::ChooserDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 						break;
 
 					Snowflake guild = pData->m_guildIDs[index];
-					GetDiscordInstance()->OnSelectGuild(guild);
+					GetMainWindow()->GetChatView()->OnSelectGuild(guild);
 					EndDialog(hWnd, TRUE);
 					break;
 				}
@@ -1355,9 +1353,10 @@ void GuildLister::InitializeClass()
 	RegisterClass(&wc);
 }
 
-GuildLister* GuildLister::Create(HWND hwnd, LPRECT pRect)
+GuildLister* GuildLister::Create(ChatWindow* parent, LPRECT pRect)
 {
 	GuildLister* newThis = new GuildLister;
+	newThis->m_pParent = parent;
 
 	int width = pRect->right - pRect->left, height = pRect->bottom - pRect->top;
 
@@ -1370,7 +1369,7 @@ GuildLister* GuildLister::Create(HWND hwnd, LPRECT pRect)
 
 	newThis->m_hwnd = CreateWindowEx(
 		flagsex, T_GUILD_LISTER_PARENT_CLASS, NULL, WS_CHILD | WS_VISIBLE,
-		pRect->left, pRect->top, width, height, hwnd, (HMENU)CID_GUILDLISTER, g_hInstance, newThis
+		pRect->left, pRect->top, width, height, parent->GetHWND(), (HMENU)CID_GUILDLISTER, g_hInstance, newThis
 	);
 
 	newThis->m_scrollable_hwnd = CreateWindowEx(
