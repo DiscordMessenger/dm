@@ -1285,14 +1285,11 @@ void MainWindow::OnStopTyping(Snowflake channelID, Snowflake userID)
 
 void MainWindow::CreateGuildSubWindow(Snowflake guildId, Snowflake channelId)
 {
-	auto window = std::make_shared<GuildSubWindow>();
+	auto window = std::make_shared<GuildSubWindow>(guildId, channelId);
 	if (window->InitFailed()) {
 		DbgPrintW("Failed to create guild sub window!");
 		return;
 	}
-
-	window->SetCurrentGuildID(guildId);
-	window->SetCurrentChannelID(channelId);
 
 	m_subWindows.push_back(window);
 }

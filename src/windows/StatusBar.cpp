@@ -310,14 +310,16 @@ void StatusBar::UpdateParts(int width)
 		if (subWindow)
 		{
 			int scaled10 = ScaleByDPI(10);
+			int meliWidth = subWindow->m_bMemberListVisible ? subWindow->m_MemberListWidth : 0;
+			int chaviWidth = subWindow->m_bChannelListVisible ? subWindow->m_ChannelViewListWidth + scaled10 : 0;
+
 			Widths[IDP_CNTRLS] = width;
-			Widths[IDP_CHRCNT] = width - (subWindow->m_bMemberListVisible ? subWindow->m_MemberListWidth : 0) - scaled10;
+			Widths[IDP_CHRCNT] = width - meliWidth - scaled10;
 			Widths[IDP_TYPING] = Widths[IDP_CHRCNT] - subWindow->m_SendButtonWidth - scaled10;
-			Widths[IDP_NOTIFS] = subWindow->m_ChannelViewListWidth + scaled10 * 2;
+			Widths[IDP_NOTIFS] = chaviWidth + scaled10;
 		}
 	}
 
 	SendMessage(m_hwnd, SB_SETPARTS, _countof(Widths), (LPARAM) Widths);
-
 	SendMessage(m_hwnd, SB_SETTEXT, 1 | SBT_OWNERDRAW, 0);
 }

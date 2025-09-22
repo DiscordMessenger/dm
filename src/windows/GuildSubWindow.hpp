@@ -19,7 +19,7 @@ public:
 	static bool InitializeClass();
 
 public:
-	GuildSubWindow();
+	GuildSubWindow(Snowflake guildID, Snowflake channelID);
 	~GuildSubWindow();
 	bool InitFailed() const { return m_bInitFailed; }
 
@@ -48,7 +48,6 @@ private:
 
 	MessageList*   m_pMessageList = nullptr;
 	MessageEditor* m_pMessageEditor = nullptr;
-	//IMemberList*   m_pMemberList = nullptr;
 	IChannelView*  m_pChannelView = nullptr;
 	StatusBar*     m_pStatusBar = nullptr;
 
@@ -57,6 +56,8 @@ private:
 
 	Snowflake m_lastGuildID = 0;
 	Snowflake m_lastChannelID = 0;
+	Snowflake m_requestedGuildID = 0;
+	Snowflake m_requestedChannelID = 0;
 
 protected:
 	friend class StatusBar;

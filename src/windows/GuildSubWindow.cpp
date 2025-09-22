@@ -29,15 +29,24 @@ bool GuildSubWindow::InitializeClass()
 	return RegisterClass(&wc) != 0;
 }
 
-GuildSubWindow::GuildSubWindow()
+GuildSubWindow::GuildSubWindow(Snowflake guildID, Snowflake channelID)
 {
+	m_requestedGuildID = guildID;
+	m_requestedChannelID = channelID;
+
+	int width = 800;
+	if (guildID == 0) {
+		width -= CHANNEL_VIEW_LIST_WIDTH + 10;
+		m_bChannelListVisible = false;
+	}
+
 	m_hwnd = CreateWindow(
 		GUILD_SUB_WINDOW_CLASS,
 		TEXT("Discord Messenger (sub-window)"),
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
-		ScaleByDPI(800), // TODO: Specify non-hardcoded size
+		ScaleByDPI(width), // TODO: Specify non-hardcoded size
 		ScaleByDPI(550),
 		NULL,
 		NULL,
@@ -78,10 +87,9 @@ void GuildSubWindow::ProperlySizeControls()
 	rect.bottom -= scaled10;
 
 	HWND hWndMsg = m_pMessageList->m_hwnd;
-	HWND hWndChv = m_pChannelView->m_hwnd;
-	//HWND hWndMel = m_pMemberList->m_mainHwnd;
 	HWND hWndTin = m_pMessageEditor->m_hwnd;
 	HWND hWndStb = m_pStatusBar->m_hwnd;
+	HWND hWndChv = m_pChannelView ? m_pChannelView->m_hwnd : NULL;
 
 	int statusBarHeight = 0;
 	GetChildRect(m_hwnd, hWndStb, &rcSBar);
@@ -138,11 +146,14 @@ void GuildSubWindow::ProperlySizeControls()
 	//MoveWindow(hWndMel, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
 	rect = rect2;
 
-	rect.left = scaled10;
-	rect.right = rect.left + channelViewListWidth;
-	rect.top += m_GuildHeaderHeight;
-	MoveWindow(hWndChv, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
-	rect = rect2;
+	if (hWndChv)
+	{
+		rect.left = scaled10;
+		rect.right = rect.left + channelViewListWidth;
+		rect.top += m_GuildHeaderHeight;
+		MoveWindow(hWndChv, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
+		rect = rect2;
+	}
 
 	rect.left   = scaled10;
 	rect.top    = rect.bottom - m_MessageEditorHeight - m_pMessageEditor->ExpandedBy();
@@ -189,19 +200,22 @@ LRESULT GuildSubWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		case WM_CREATE:
 		{
 			m_hwnd = hWnd;
+
 			m_bMemberListVisible = false;
-			m_bChannelListVisible = true;
+			m_bChannelListVisible = m_requestedGuildID != 0;
 
 			RECT rect { 0, 0, 10, 10 };
 			m_pMessageList = MessageList::Create(this, NULL, &rect);
 			m_pMessageEditor = MessageEditor::Create(this, &rect);
-			//m_pMemberList = IMemberList::CreateMemberList(this, &rect);
-			m_pChannelView = IChannelView::CreateChannelView(this, &rect);
+			
+			if (m_bChannelListVisible)
+				m_pChannelView = IChannelView::CreateChannelView(this, &rect);
+			else
+				m_pChannelView = nullptr;
+
 			m_pStatusBar = StatusBar::Create(this);
 
-			if (//!m_pMemberList ||
-				!m_pMessageList ||
-				!m_pChannelView ||
+			if (!m_pMessageList ||
 				!m_pMessageEditor)
 			{
 				DbgPrintW("ERROR: A control failed to be created!");
@@ -211,6 +225,9 @@ LRESULT GuildSubWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 			if (m_pMessageEditor)
 				m_pMessageEditor->SetMessageList(m_pMessageList);
+
+			SetCurrentGuildID(m_requestedGuildID);
+			SetCurrentChannelID(m_requestedChannelID);
 
 			break;
 		}
@@ -226,7 +243,6 @@ LRESULT GuildSubWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		{
 			SAFE_DELETE(m_pChannelView);
 			SAFE_DELETE(m_pMessageList);
-			//SAFE_DELETE(m_pMemberList);
 			SAFE_DELETE(m_pMessageEditor);
 			SAFE_DELETE(m_pStatusBar);
 			break;
@@ -241,8 +257,9 @@ LRESULT GuildSubWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		{
 			Snowflake sf = *(Snowflake*)lParam;
 			m_pMessageList->OnUpdateAvatar(sf);
-			//m_pMemberList->OnUpdateAvatar(sf);
-			m_pChannelView->OnUpdateAvatar(sf);
+			
+			if (m_pChannelView)
+				m_pChannelView->OnUpdateAvatar(sf);
 			break;
 		}
 		case WM_UPDATEMESSAGELENGTH:
@@ -293,7 +310,9 @@ LRESULT GuildSubWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			if (!pChan)
 				break;
 
-			m_pChannelView->UpdateAcknowledgement(channelID);
+			if (m_pChannelView)
+				m_pChannelView->UpdateAcknowledgement(channelID);
+
 			if (m_pMessageList->GetCurrentChannelID() == channelID)
 				m_pMessageList->SetLastViewedMessage(messageID, true);
 			break;
@@ -330,27 +349,31 @@ LRESULT GuildSubWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		case WM_UPDATECHANLIST:
 		{
 			// repaint the channel view
-			m_pChannelView->ClearChannels();
+			if (m_pChannelView)
+				m_pChannelView->ClearChannels();
 
 			// get the current guild
 			Guild* pGuild = GetDiscordInstance()->GetGuild(GetCurrentGuildID());
 			if (!pGuild) break;
 
-			m_pChannelView->SetMode(pGuild->m_snowflake == 0);
-
-			// if the channels haven't been fetched yet
-			if (!pGuild->m_bChannelsLoaded)
+			if (m_pChannelView)
 			{
-				pGuild->RequestFetchChannels();
-			}
-			else
-			{
-				for (auto& ch : pGuild->m_channels)
-					m_pChannelView->AddChannel(ch);
-				for (auto& ch : pGuild->m_channels)
-					m_pChannelView->RemoveCategoryIfNeeded(ch);
+				m_pChannelView->SetMode(false);
 
-				m_pChannelView->CommitChannels();
+				// if the channels haven't been fetched yet
+				if (!pGuild->m_bChannelsLoaded)
+				{
+					pGuild->RequestFetchChannels();
+				}
+				else
+				{
+					for (auto& ch : pGuild->m_channels)
+						m_pChannelView->AddChannel(ch);
+					for (auto& ch : pGuild->m_channels)
+						m_pChannelView->RemoveCategoryIfNeeded(ch);
+
+					m_pChannelView->CommitChannels();
+				}
 			}
 
 			break;
@@ -443,6 +466,21 @@ LRESULT GuildSubWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			m->m_dateCompact = "Sending...";
 			m_pMessageList->AddMessage(m, true);
 			return 0;
+		}
+		case WM_STARTREPLY:
+		{
+			Snowflake* sf = (Snowflake*)lParam;
+			// sf[0] - Message ID
+			// sf[1] - Author ID
+			m_pMessageEditor->StartReply(sf[0], sf[1]);
+
+			break;
+		}
+		case WM_STARTEDITING:
+		{
+			Snowflake* sf = (Snowflake*)lParam;
+			m_pMessageEditor->StartEdit(*sf);
+			break;
 		}
 	}
 
@@ -558,7 +596,8 @@ void GuildSubWindow::SetCurrentChannelID(Snowflake channID)
 	m_pMessageEditor->StopReply();
 	m_pMessageEditor->Layout();
 
-	m_pChannelView->OnUpdateSelectedChannel(channID);
+	if (m_pChannelView)
+		m_pChannelView->OnUpdateSelectedChannel(channID);
 
 	// repaint the message view
 	m_pMessageList->ClearMessages();
