@@ -490,7 +490,7 @@ public:
 		m_bIsTopDown = bNew;
 	}
 
-	Snowflake GetCurrentChannel() const {
+	Snowflake GetCurrentChannelID() const {
 		return m_channelID;
 	}
 
@@ -557,6 +557,9 @@ private:
 
 	void RequestMarkRead();
 	void HandleRightClickMenuCommand(int command);
+
+	Guild* GetCurrentGuild();
+	Channel* GetCurrentChannel();
 
 	// [Left] [Author] [pinned] [a message](uid) [ to this channel.
 

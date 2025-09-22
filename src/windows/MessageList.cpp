@@ -1174,6 +1174,20 @@ bool MessageList::MayErase()
 	return GetLocalSettings()->GetMessageStyle() != MS_IMAGE;
 }
 
+Guild* MessageList::GetCurrentGuild()
+{
+	return GetDiscordInstance()->GetGuild(m_guildID);
+}
+
+Channel* MessageList::GetCurrentChannel()
+{
+	auto guild = GetCurrentGuild();
+	if (!guild)
+		return nullptr;
+
+	return guild->GetChannel(m_channelID);
+}
+
 void MessageList::HitTestReply(POINT pt, BOOL& hit)
 {
 	auto msg = FindMessageByPointReplyRect(pt);
@@ -3292,7 +3306,7 @@ void MessageList::HandleRightClickMenuCommand(int command)
 		}
 		case ID_DUMMYPOPUP_PINMESSAGE:
 		{
-			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			Channel* pChan = GetCurrentChannel();
 			if (!pChan)
 				break;
 
@@ -3628,7 +3642,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			// disable the Delete button if we're not the user
 			Profile* ourPf = GetDiscordInstance()->GetProfile();
-			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			Channel* pChan = pThis->GetCurrentChannel();
 
 			if (!pChan) break;
 

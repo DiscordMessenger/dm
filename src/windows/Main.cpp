@@ -961,7 +961,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				break;
 
 			g_pChannelView->UpdateAcknowledgement(channelID);
-			if (g_pMessageList->GetCurrentChannel() == channelID)
+			if (g_pMessageList->GetCurrentChannelID() == channelID)
 				g_pMessageList->SetLastViewedMessage(messageID, true);
 			break;
 		}
@@ -1012,7 +1012,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			GetMessageCache()->AddMessage(pParms->channel, pParms->msg);
 
-			if (g_pMessageList->GetCurrentChannel() == pParms->channel)
+			if (g_pMessageList->GetCurrentChannelID() == pParms->channel)
 			{
 				g_pMessageList->AddMessage(pParms->msg.m_snowflake, GetForegroundWindow() == hWnd);
 				OnStopTyping(pParms->channel, pParms->msg.m_author_snowflake);
@@ -1035,7 +1035,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			GetMessageCache()->EditMessage(pParms->channel, pParms->msg);
 
-			if (g_pMessageList->GetCurrentChannel() == pParms->channel)
+			if (g_pMessageList->GetCurrentChannelID() == pParms->channel)
 				g_pMessageList->EditMessage(pParms->msg.m_snowflake);
 
 			break;
@@ -1443,7 +1443,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_FAILMESSAGE:
 		{
 			FailedMessageParams parms = *((FailedMessageParams*)lParam);
-			if (g_pMessageList->GetCurrentChannel() != parms.channel)
+			if (g_pMessageList->GetCurrentChannelID() != parms.channel)
 				return 0;
 
 			g_pMessageList->OnFailedToSendMessage(parms.message);
