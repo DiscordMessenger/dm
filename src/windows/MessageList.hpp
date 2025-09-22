@@ -593,7 +593,7 @@ private:
 		int& icon					      /* OUT */
 	);
 
-	static void ConfirmOpenLink(const std::string& link);
+	static void ConfirmOpenLink(HWND hWnd, const std::string& link);
 
 	static COLORREF DrawMentionBackground(HDC hdc, RECT& rc, COLORREF chosenBkColor);
 

@@ -311,7 +311,7 @@ void StatusBar::UpdateParts(int width)
 		{
 			int scaled10 = ScaleByDPI(10);
 			Widths[IDP_CNTRLS] = width;
-			Widths[IDP_CHRCNT] = width - subWindow->m_MemberListWidth - scaled10 * 3 / 2;
+			Widths[IDP_CHRCNT] = width - (subWindow->m_bMemberListVisible ? subWindow->m_MemberListWidth : 0) - scaled10;
 			Widths[IDP_TYPING] = Widths[IDP_CHRCNT] - subWindow->m_SendButtonWidth - scaled10;
 			Widths[IDP_NOTIFS] = subWindow->m_ChannelViewListWidth + scaled10 * 2;
 		}

@@ -1430,7 +1430,7 @@ void MessageList::OpenInteractable(InteractableItem* pItem, MessageItem* pMsg)
 		}
 		case InteractableItem::LINK:
 		case InteractableItem::EMBED_LINK:
-			ConfirmOpenLink(pItem->m_destination);
+			ConfirmOpenLink(GetParent(m_hwnd), pItem->m_destination);
 			break;
 		case InteractableItem::MENTION: {
 			if (pItem->m_destination.size() < 2)
@@ -1924,7 +1924,7 @@ void MessageList::DetermineMessageData(
 	}
 }
 
-void MessageList::ConfirmOpenLink(const std::string& link)
+void MessageList::ConfirmOpenLink(HWND hWnd, const std::string& link)
 {
 	bool trust = GetLocalSettings()->CheckTrustedDomain(link);
 
@@ -1939,12 +1939,12 @@ void MessageList::ConfirmOpenLink(const std::string& link)
 		if (LOBYTE(GetVersion()) >= 4)
 		{
 			// TODO: This actually works on NT 3.51 at first.  But the second time this causes an abort
-			if (MessageBoxHooked(GetMainHWND(), buffer, TmGetTString(IDS_HOLD_UP_CONFIRM), MB_ICONWARNING | MB_OKCANCEL, IDOK, TmGetTString(IDS_EXCITED_YES)) != IDOK)
+			if (MessageBoxHooked(hWnd, buffer, TmGetTString(IDS_HOLD_UP_CONFIRM), MB_ICONWARNING | MB_OKCANCEL, IDOK, TmGetTString(IDS_EXCITED_YES)) != IDOK)
 				return;
 		}
 		else
 		{
-			if (MessageBox(GetMainHWND(), buffer, TmGetTString(IDS_HOLD_UP_CONFIRM), MB_ICONWARNING | MB_YESNO) != IDYES)
+			if (MessageBox(hWnd, buffer, TmGetTString(IDS_HOLD_UP_CONFIRM), MB_ICONWARNING | MB_YESNO) != IDYES)
 				return;
 		}
 	}

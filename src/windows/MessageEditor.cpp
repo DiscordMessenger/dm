@@ -658,6 +658,9 @@ LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 void MessageEditor::Layout()
 {
+	if (!m_hwnd)
+		return;
+
 	// Re-position controls
 	RECT rcClient{};
 	GetClientRect(m_hwnd, &rcClient);

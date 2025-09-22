@@ -114,7 +114,7 @@ void GuildSubWindow::ProperlySizeControls()
 			- scaled10 * 3  /* Left edge, Right edge, Between GuildLister and the group */
 			- scaled10 * 2; /* Between channelview and messageview, between messageview and memberlist */
 
-		int widthOfAll3ThingsAt800px = ScaleByDPI(694);
+		int widthOfAll3ThingsAt800px = ScaleByDPI(748);
 
 		m_ChannelViewListWidth2 = MulDiv(m_ChannelViewListWidth2, widthOfAll3Things, widthOfAll3ThingsAt800px);
 		m_MemberListWidth       = MulDiv(m_MemberListWidth,       widthOfAll3Things, widthOfAll3ThingsAt800px);
