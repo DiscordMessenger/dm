@@ -419,14 +419,15 @@ public:
 	// Transform snowflake mentions into user, channel, or emoji mentions.
 	std::string ReverseMentions(const std::string& message, Snowflake guild, bool ttsMode = false);
 
-	// Send a message to the current channel.
-	bool SendMessageToCurrentChannel(const std::string& msg, Snowflake& tempSf, Snowflake reply = 0, bool mentionReplied = true);
+	// Send a message to a specified channel.
+	// N.B. would call it SendMessage but it conflicts with Windows' SendMessage.
+	bool SendAMessage(Snowflake channelID, const std::string& msg, Snowflake& tempSf, Snowflake reply = 0, bool mentionReplied = true);
 
-	// Send a message with an attachment to the current channel.
-	bool SendMessageAndAttachmentToCurrentChannel(const std::string& msg, Snowflake& tempSf, uint8_t* pAttData, size_t szAtt, const std::string& attName, bool isSpoiler = false);
+	// Send a message with an attachment to a specified channel.
+	bool SendMessageAndAttachment(Snowflake channelID, const std::string& msg, Snowflake& tempSf, uint8_t* pAttData, size_t szAtt, const std::string& attName, bool isSpoiler = false);
 
-	// Edit a message in the current channel.
-	bool EditMessageInCurrentChannel(const std::string& msg, Snowflake msgId);
+	// Edit a message in a specified channel.
+	bool EditMessage(Snowflake channelID, const std::string& msg, Snowflake msgId);
 
 	// Set current activity status.
 	void SetActivityStatus(eActiveStatus status, bool bRequestServer = true);

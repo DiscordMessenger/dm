@@ -844,6 +844,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			g_pMessageList->UpdateAllowDrop();
 
+			g_pMessageEditor->SetGuildID(guildID);
+			g_pMessageEditor->SetChannelID(channID);
+
 			UpdateMainWindowTitle(hWnd);
 
 			if (IsWindowActive(g_Hwnd))
@@ -1410,9 +1413,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			Snowflake sf;
 			if (parms.m_bEdit)
-				return GetDiscordInstance()->EditMessageInCurrentChannel(msg, parms.m_replyTo) ? 0 : 1;
+				return GetDiscordInstance()->EditMessage(parms.m_channel, msg, parms.m_replyTo) ? 0 : 1;
 			
-			if (!GetDiscordInstance()->SendMessageToCurrentChannel(msg, sf, parms.m_replyTo, parms.m_bMention))
+			if (!GetDiscordInstance()->SendAMessage(parms.m_channel, msg, sf, parms.m_replyTo, parms.m_bMention))
 				return 1;
 
 			SendMessageAuxParams smap;

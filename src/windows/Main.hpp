@@ -123,19 +123,20 @@ struct WebsocketMessageParams
 
 struct TypingParams
 {
-	Snowflake m_user;
-	Snowflake m_guild;
-	Snowflake m_channel;
-	time_t m_timestamp;
+	Snowflake m_user = 0;
+	Snowflake m_guild = 0;
+	Snowflake m_channel = 0;
+	time_t m_timestamp = 0;
 };
 
 struct SendMessageParams
 {
-	LPTSTR m_rawMessage;
-	Snowflake m_replyTo;
-	bool m_bEdit;
-	bool m_bReply;
-	bool m_bMention;
+	LPTSTR m_rawMessage = NULL;
+	Snowflake m_channel = 0;
+	Snowflake m_replyTo = 0;
+	bool m_bEdit = false;
+	bool m_bReply = false;
+	bool m_bMention = false;
 };
 
 struct SendMessageAuxParams

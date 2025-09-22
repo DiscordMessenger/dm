@@ -44,6 +44,9 @@ private:
 	COLORREF m_userNameColor = CLR_NONE;
 	bool m_bWasUploadingAllowed = false;
 
+	Snowflake m_guildID = 0;
+	Snowflake m_channelID = 0;
+
 	AutoComplete m_autoComplete;
 	bool m_bDidMemberLookUpRecently = false;
 	Snowflake m_previousQueriesActiveOnGuild = 0;
@@ -76,6 +79,15 @@ public:
 	void SetJumpPresentHeight(int x) {
 		m_jumpPresentHeight = x;
 	}
+
+	Snowflake GetCurrentGuildID() const { return m_guildID; }
+	Snowflake GetCurrentChannelID() const { return m_channelID; }
+
+	void SetGuildID(Snowflake sf) { m_guildID = sf; }
+	void SetChannelID(Snowflake sf) { m_channelID = sf; }
+
+	Guild* GetCurrentGuild();
+	Channel* GetCurrentChannel();
 
 private:
 	void TryToSendMessage();

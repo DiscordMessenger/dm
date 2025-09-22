@@ -9,6 +9,7 @@ using Json = nlohmann::json;
 
 struct UploadDialogData
 {
+	Snowflake m_channelID = 0;
 	LPCTSTR m_lpstrFile = nullptr;
 	LPCTSTR m_lpstrFileTitle = nullptr;
 	SHFILEINFO m_sfi{};
@@ -233,7 +234,8 @@ static void UploadDialogShowData(UploadDialogData* data)
 
 	Snowflake sf;
 	std::string content = MakeStringFromTString(data->m_comment);
-	if (GetDiscordInstance()->SendMessageAndAttachmentToCurrentChannel(
+	if (GetDiscordInstance()->SendMessageAndAttachment(
+			data->m_channelID,
 			content,
 			sf,
 			data->m_pFileData,
@@ -278,6 +280,7 @@ void UploadDialogShowWithFileName(LPCTSTR lpstrFileName, LPCTSTR lpstrFileTitle)
 		return;
 
 	UploadDialogData* data = new UploadDialogData;
+	data->m_channelID = GetDiscordInstance()->GetCurrentChannelID();
 	data->m_lpstrFile = lpstrFileName;
 	data->m_lpstrFileTitle = lpstrFileTitle;
 
@@ -290,6 +293,7 @@ void UploadDialogShowWithFileData(uint8_t* fileData, size_t fileSize, LPCTSTR lp
 		return;
 
 	UploadDialogData* data = new UploadDialogData;
+	data->m_channelID = GetDiscordInstance()->GetCurrentChannelID();
 	data->m_lpstrFileTitle = lpstrFileTitle;
 	data->m_fileSize = (DWORD) fileSize;
 	data->m_pFileData = new uint8_t[fileSize];

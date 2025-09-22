@@ -208,6 +208,16 @@ bool MessageEditor::MentionRepliedUser()
 	return Button_GetCheck(m_mentionCheck_hwnd) == BST_CHECKED;
 }
 
+Guild* MessageEditor::GetCurrentGuild()
+{
+	return GetDiscordInstance()->GetGuild(m_guildID);
+}
+
+Channel* MessageEditor::GetCurrentChannel()
+{
+	return GetDiscordInstance()->GetChannel(m_channelID);
+}
+
 void MessageEditor::TryToSendMessage()
 {
 	int length = GetWindowTextLength(m_edit_hwnd);
@@ -235,6 +245,7 @@ void MessageEditor::TryToSendMessage()
 	parms.m_bEdit = m_bEditing;
 	parms.m_bReply = m_bReplying;
 	parms.m_bMention = MentionRepliedUser();
+	parms.m_channel = m_channelID;
 
 	// send it as a message to the main window
 	if (!SendMessage(g_Hwnd, WM_SENDMESSAGE, 0, (LPARAM) &parms))

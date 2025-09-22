@@ -1251,18 +1251,21 @@ void DiscordInstance::SendHeartbeat()
 	GetWebsocketClient()->SendMsg(m_gatewayConnId, j.dump());
 }
 
-bool DiscordInstance::EditMessageInCurrentChannel(const std::string& msg_, Snowflake msgId)
+bool DiscordInstance::EditMessage(Snowflake channelID, const std::string& msg_, Snowflake msgId)
 {
-	if (!GetCurrentChannel() || !GetCurrentGuild())
+	Channel* pChan = GetChannelGlobally(channelID);
+	if (!pChan)
 		return false;
 
-	std::string msg = ResolveMentions(msg_, m_CurrentGuild, m_CurrentChannel);
+	Guild* pGuild = GetGuild(pChan->m_parentGuild);
+	if (!pGuild)
+		return false;
 
-	Channel* pChan = GetCurrentChannel();
-	
 	if (!pChan->HasPermission(PERM_SEND_MESSAGES))
 		return false;
-	
+
+	std::string msg = ResolveMentions(msg_, pGuild->m_snowflake, pChan->m_snowflake);
+
 	MessagePtr pMsg = GetMessageCache()->GetLoadedMessage(pChan->m_snowflake, msgId);
 	if (!pMsg)
 		return false;
@@ -1295,19 +1298,22 @@ bool DiscordInstance::EditMessageInCurrentChannel(const std::string& msg_, Snowf
 	return true;
 }
 
-bool DiscordInstance::SendMessageToCurrentChannel(const std::string& msg_, Snowflake& tempSf, Snowflake replyTo, bool mentionReplied)
+bool DiscordInstance::SendAMessage(Snowflake channelID, const std::string& msg_, Snowflake& tempSf, Snowflake replyTo, bool mentionReplied)
 {
-	if (!GetCurrentChannel() || !GetCurrentGuild())
+	Channel* pChan = GetChannelGlobally(channelID);
+	if (!pChan)
 		return false;
 
-	std::string msg = ResolveMentions(msg_, m_CurrentGuild, m_CurrentChannel);
-
-	Channel* pChan = GetCurrentChannel();
-	tempSf = CreateTemporarySnowflake();
+	Guild* pGuild = GetGuild(pChan->m_parentGuild);
+	if (!pGuild)
+		return false;
 
 	if (!pChan->HasPermission(PERM_SEND_MESSAGES))
 		return false;
-	
+
+	std::string msg = ResolveMentions(msg_, pGuild->m_snowflake, pChan->m_snowflake);
+	tempSf = CreateTemporarySnowflake();
+
 	Json j;
 	j["content"] = msg;
 	j["flags"] = 0;
@@ -3185,7 +3191,8 @@ void DiscordInstance::OnUploadAttachmentSecond(NetRequest* pReq)
 	ups.erase(iter);
 }
 
-bool DiscordInstance::SendMessageAndAttachmentToCurrentChannel(
+bool DiscordInstance::SendMessageAndAttachment(
+	Snowflake channelID,
 	const std::string& msg_,
 	Snowflake& tempSf,
 	uint8_t* attData,
@@ -3193,17 +3200,21 @@ bool DiscordInstance::SendMessageAndAttachmentToCurrentChannel(
 	const std::string& attName,
 	bool isSpoiler)
 {
-	if (!GetCurrentChannel() || !GetCurrentGuild())
+	Channel* pChan = GetChannelGlobally(channelID);
+	if (!pChan)
 		return false;
 
-	std::string msg = ResolveMentions(msg_, m_CurrentGuild, m_CurrentChannel);
-
-	Channel* pChan = GetCurrentChannel();
-	tempSf = CreateTemporarySnowflake();
+	Guild* pGuild = GetGuild(pChan->m_parentGuild);
+	if (!pGuild)
+		return false;
 
 	if (!pChan->HasPermission(PERM_SEND_MESSAGES) || !pChan->HasPermission(PERM_ATTACH_FILES))
 		return false;
-	
+
+	std::string msg = ResolveMentions(msg_, pGuild->m_snowflake, pChan->m_snowflake);
+
+	tempSf = CreateTemporarySnowflake();
+
 	std::string newAttName = (isSpoiler ? "SPOILER_" : "") + attName;
 
 	Json file;
@@ -3218,12 +3229,12 @@ bool DiscordInstance::SendMessageAndAttachmentToCurrentChannel(
 	Json j;
 	j["files"] = files;
 
-	m_pendingUploads[m_nextAttachmentID] = PendingUpload(newAttName, attData, attSize, msg, tempSf, m_CurrentChannel);
+	m_pendingUploads[m_nextAttachmentID] = PendingUpload(newAttName, attData, attSize, msg, tempSf, pChan->m_snowflake);
 
 	GetHTTPClient()->PerformRequest(
 		true,
 		NetRequest::POST_JSON,
-		GetDiscordAPI() + "channels/" + std::to_string(m_CurrentChannel) + "/attachments",
+		GetDiscordAPI() + "channels/" + std::to_string(pChan->m_snowflake) + "/attachments",
 		DiscordRequest::UPLOAD_ATTACHMENT,
 		m_nextAttachmentID,
 		j.dump(),
