@@ -100,7 +100,8 @@ MessageEditor::~MessageEditor()
 
 void MessageEditor::UpdateTextBox()
 {
-	bool mayType = GetDiscordInstance()->GetCurrentChannel() && GetDiscordInstance()->GetCurrentChannel()->HasPermission(PERM_SEND_MESSAGES);
+	auto chan = GetCurrentChannel();
+	bool mayType = chan && chan->HasPermission(PERM_SEND_MESSAGES);
 	bool wasDisabled = EnableWindow(m_edit_hwnd, mayType);
 	EnableWindow(m_send_hwnd, mayType);
 
@@ -143,7 +144,7 @@ void MessageEditor::UpdateCommonButtonsShown()
 
 bool MessageEditor::IsUploadingAllowed()
 {
-	Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+	Channel* pChan = GetCurrentChannel();
 	if (!pChan)
 		return true;
 
@@ -215,7 +216,11 @@ Guild* MessageEditor::GetCurrentGuild()
 
 Channel* MessageEditor::GetCurrentChannel()
 {
-	return GetDiscordInstance()->GetChannel(m_channelID);
+	auto guild = GetCurrentGuild();
+	if (!guild)
+		return nullptr;
+
+	return guild->GetChannel(m_channelID);
 }
 
 void MessageEditor::TryToSendMessage()
@@ -339,7 +344,7 @@ void MessageEditor::StopReply()
 
 void MessageEditor::StartEdit(Snowflake messageID)
 {
-	MessagePtr pMsg = GetMessageCache()->GetLoadedMessage(GetDiscordInstance()->GetCurrentChannelID(), messageID);
+	MessagePtr pMsg = GetMessageCache()->GetLoadedMessage(m_channelID, messageID);
 	if (!pMsg)
 		return;
 
@@ -444,7 +449,7 @@ void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std:
 			if (pGld->m_snowflake == 0)
 			{
 				// can do that in DM channels, but have to do it a bit differently.
-				Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+				Channel* pChan = GetCurrentChannel();
 				if (!pChan)
 					break;
 
@@ -623,10 +628,11 @@ LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			if (pThis->m_autoComplete.HandleCharMessage(uMsg, wParam, lParam))
 				return 0;
 
-			if (!GetDiscordInstance()->GetCurrentChannel())
+			Channel* pChan = pThis->GetCurrentChannel();
+			if (!pChan)
 				break;
 
-			if (!GetDiscordInstance()->GetCurrentChannel()->HasPermission(PERM_SEND_MESSAGES))
+			if (!pChan->HasPermission(PERM_SEND_MESSAGES))
 				break;
 
 			if (wParam == '\r' && !m_shiftHeld)
