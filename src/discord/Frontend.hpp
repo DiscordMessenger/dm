@@ -60,7 +60,7 @@ public:
 	virtual void RepaintGuildList() = 0;
 	virtual void RepaintProfile() = 0;
 	virtual void RepaintProfileWithUserID(Snowflake id) = 0;
-	virtual void RefreshMessages(ScrollDir::eScrollDir sd, Snowflake gapCulprit) = 0;
+	virtual void RefreshMessages(Snowflake channelId, ScrollDir::eScrollDir sd, Snowflake gapCulprit) = 0;
 	virtual void RefreshMembers(int viewID, const std::set<Snowflake>& members) = 0;
 	virtual void CloseView(int viewID) = 0;
 

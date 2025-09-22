@@ -188,6 +188,12 @@ bool ShouldMirrorEventToSubViews(UINT uMsg)
 		case WM_REPAINTGUILDLIST:
 		case WM_REPAINTPROFILE:
 		case WM_REFRESHMESSAGES:
+		case WM_REPAINTMSGLIST:
+		case WM_RECALCMSGLIST:
+		case WM_MSGLISTUPDATEMODE:
+		case WM_ADDMESSAGE:
+		case WM_UPDATEMESSAGE:
+		case WM_DELETEMESSAGE:
 			return true;
 	}
 
@@ -283,8 +289,11 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		}
 		case WM_REFRESHMESSAGES:
 		{
-			Snowflake sf = *(Snowflake*)lParam;
-			m_pMessageList->RefetchMessages(sf, true);
+			RefreshMessagesParams* params = (RefreshMessagesParams*)lParam;
+
+			if (m_pMessageList->GetCurrentChannelID() == params->m_channelId)
+				m_pMessageList->RefetchMessages(params->m_gapCulprit, true);
+
 			break;
 		}
 		case WM_REPAINTMSGLIST:
@@ -356,7 +365,6 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		}
 		case WM_UPDATESELECTEDGUILD:
 		{
-			DbgPrintW("Selecting guild %lld, name %s", GetCurrentGuildID(), GetDiscordInstance()->GetGuild(GetCurrentGuildID())->m_name.c_str());
 			SetCurrentGuildID(GetCurrentGuildID());
 			break;
 		}
@@ -453,15 +461,9 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			}
 
 			if (m_pMessageList->GetCurrentChannelID() == pParms->channel)
-			{
 				m_pMessageList->AddMessage(pParms->msg.m_snowflake, GetForegroundWindow() == hWnd);
-				OnStopTyping(pParms->channel, pParms->msg.m_author_snowflake);
-			}
-			else
-			{
-				MirrorMessageToSubViewByChannelID(pParms->channel, uMsg, wParam, lParam);
-			}
 
+			OnStopTyping(pParms->channel, pParms->msg.m_author_snowflake);
 			break;
 		}
 		case WM_UPDATEMESSAGE:
@@ -472,8 +474,6 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 			if (m_pMessageList->GetCurrentChannelID() == pParms->channel)
 				m_pMessageList->EditMessage(pParms->msg.m_snowflake);
-			else
-				MirrorMessageToSubViewByChannelID(pParms->channel, uMsg, wParam, lParam);
 
 			break;
 		}
@@ -621,7 +621,7 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				!m_pLoadingMessage)
 			{
 				DbgPrintW("ERROR: A control failed to be created!");
-				PostQuitMessage(0);
+				m_bInitFailed = true;
 				break;
 			}
 
@@ -1350,7 +1350,7 @@ void MainWindow::OnTyping(Snowflake guildID, Snowflake channelID, Snowflake user
 	ti.m_typingUsers[userID] = tu;
 
 	// Send an update to the message editor
-	if (channelID == m_pStatusBar->GetCurrentChannelID())
+	if (channelID == GetCurrentChannelID())
 	{
 		if (userID == GetDiscordInstance()->GetUserID()) {
 			// Ignore typing start from ourselves for the lower bar
@@ -1359,14 +1359,26 @@ void MainWindow::OnTyping(Snowflake guildID, Snowflake channelID, Snowflake user
 
 		m_pStatusBar->AddTypingName(userID, timeStamp, tu.m_name);
 	}
+
+	for (auto& window : m_subWindows)
+	{
+		if (window->GetCurrentChannelID() == channelID)
+			window->OnTyping(guildID, channelID, userID, timeStamp);
+	}
 }
 
 void MainWindow::OnStopTyping(Snowflake channelID, Snowflake userID)
 {
 	m_typingInfo[channelID].m_typingUsers[userID].m_startTimeMS = 0;
 
-	if (channelID == m_pStatusBar->GetCurrentChannelID())
+	if (channelID == GetCurrentChannelID())
 		m_pStatusBar->RemoveTypingName(userID);
+
+	for (auto& window : m_subWindows)
+	{
+		if (window->GetCurrentChannelID() == channelID)
+			window->OnStopTyping(channelID, userID);
+	}
 }
 
 void MainWindow::CreateGuildSubWindow(Snowflake guildId, Snowflake channelId)
@@ -1421,6 +1433,11 @@ void MainWindow::MirrorMessageToSubViewByChannelID(Snowflake channelId, UINT uMs
 			return;
 		}
 	}
+}
+
+TypingInfo& MainWindow::GetTypingInfo(Snowflake sf)
+{
+	return m_typingInfo[sf];
 }
 
 void MainWindow::SetCurrentGuildID(Snowflake sf)
@@ -1497,6 +1514,8 @@ void MainWindow::SetCurrentChannelID(Snowflake channID)
 	InvalidateRect(m_pMessageList->m_hwnd, NULL, MessageList::MayErase());
 	m_pGuildHeader->Update();
 	m_pMessageEditor->UpdateTextBox();
+
+	m_pStatusBar->SetChannelID(channID);
 
 	// Update the message editor's typing indicators
 	m_pStatusBar->ClearTypers();

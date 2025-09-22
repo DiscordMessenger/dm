@@ -375,7 +375,7 @@ public:
 	void RequestPinnedMessages(Snowflake channel);
 
 	// Send a refresh to the message list.
-	void OnFetchedMessages(Snowflake gap = 0, ScrollDir::eScrollDir dir = ScrollDir::BEFORE);
+	void OnFetchedMessages(Snowflake channelId, Snowflake gap = 0, ScrollDir::eScrollDir dir = ScrollDir::BEFORE);
 
 	// Handle the case where a channel list was fetched from a guild.
 	void OnFetchedChannels(Guild* pGld, const std::string& content);

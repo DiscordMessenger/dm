@@ -16,6 +16,7 @@ void MessageCache::GetLoadedMessages(Snowflake channel, Snowflake guild, std::li
 {
 	MessageChunkList& lst = m_mapMessages[channel];
 	lst.m_guild = guild;
+	lst.m_channel = channel;
 
 	for (auto& msg : lst.m_messages)
 		out.push_back(msg.second);
@@ -24,6 +25,8 @@ void MessageCache::GetLoadedMessages(Snowflake channel, Snowflake guild, std::li
 void MessageCache::ProcessRequest(Snowflake channel, ScrollDir::eScrollDir sd, Snowflake anchor, nlohmann::json& j, const std::string& channelName)
 {
 	MessageChunkList& lst = m_mapMessages[channel];
+	lst.m_channel = channel;
+
 	lst.ProcessRequest(sd, anchor, j, channelName);
 }
 
@@ -155,7 +158,7 @@ void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, j
 		m_messages[msg->m_snowflake] = std::move(msg);
 	}
 
-	GetDiscordInstance()->OnFetchedMessages(gap, sd);
+	GetDiscordInstance()->OnFetchedMessages(m_channel, gap, sd);
 }
 
 void MessageChunkList::AddMessage(const Message& msg)

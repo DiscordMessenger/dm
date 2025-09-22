@@ -25,6 +25,11 @@ struct Channel;
 
 typedef std::shared_ptr<ChatWindow> ChatWindowPtr;
 
+struct TypingInfo
+{
+	std::map<Snowflake, TypingUser> m_typingUsers;
+};
+
 class MainWindow : public ChatWindow
 {
 public:
@@ -64,15 +69,14 @@ public:
 	void CloseCleanup();
 	void OnUpdateAvatar(const std::string& resid);
 	int  OnHTTPError(const std::string& url, const std::string& reasonString, bool isSSL);
-
 	void CreateGuildSubWindow(Snowflake guildId, Snowflake channelId);
 	void CloseSubWindowByViewID(int viewID);
-
 	void Close();
 
 protected:
 	friend class GuildSubWindow;
 
+	TypingInfo& GetTypingInfo(Snowflake sf);
 	void OnClosedWindow(ChatWindow* ptr);
 
 private:
@@ -86,24 +90,20 @@ private:
 	static void CALLBACK TryAgainTimerStatic(HWND hWnd, UINT uMsg, UINT_PTR uTimerID, DWORD dwParam);
 
 private:
-	struct TypingInfo {
-		std::map<Snowflake, TypingUser> m_typingUsers;
-	};
-
 	HWND m_hwnd;
 	WNDCLASS m_wndClass;
 
 	bool m_bInitFailed = false;
 
-	StatusBar* m_pStatusBar;
-	MessageList* m_pMessageList;
-	ProfileView* m_pProfileView;
-	GuildHeader* m_pGuildHeader;
-	GuildLister* m_pGuildLister;
-	IMemberList* m_pMemberList;
-	IChannelView* m_pChannelView;
-	MessageEditor* m_pMessageEditor;
-	LoadingMessage* m_pLoadingMessage;
+	StatusBar* m_pStatusBar = nullptr;
+	MessageList* m_pMessageList = nullptr;
+	ProfileView* m_pProfileView = nullptr;
+	GuildHeader* m_pGuildHeader = nullptr;
+	GuildLister* m_pGuildLister = nullptr;
+	IMemberList* m_pMemberList = nullptr;
+	IChannelView* m_pChannelView = nullptr;
+	MessageEditor* m_pMessageEditor = nullptr;
+	LoadingMessage* m_pLoadingMessage = nullptr;
 
 	Snowflake m_lastGuildID = 0;
 	Snowflake m_lastChannelID = 0;

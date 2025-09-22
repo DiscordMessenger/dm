@@ -14,6 +14,7 @@ struct MessageChunkList
 
 	bool m_lastMessagesLoaded = false;
 	Snowflake m_guild = 0;
+	Snowflake m_channel = 0;
 
 	MessageChunkList();
 	void ProcessRequest(ScrollDir::eScrollDir sd, Snowflake anchor, nlohmann::json& j, const std::string& channelName);

@@ -146,6 +146,13 @@ struct SendMessageAuxParams
 	Snowflake m_snowflake;
 };
 
+struct RefreshMessagesParams
+{
+	Snowflake m_channelId;
+	ScrollDir::eScrollDir m_scrollDir;
+	Snowflake m_gapCulprit;
+};
+
 std::string FormatDiscrim(int discrim);
 std::string GetStringFromHResult(HRESULT hr);
 void WantQuit();

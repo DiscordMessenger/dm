@@ -1,5 +1,6 @@
 #include "StatusBar.hpp"
 #include "Main.hpp"
+#include "GuildSubWindow.hpp"
 
 enum {
 	IDP_NOTIFS,
@@ -293,11 +294,28 @@ void StatusBar::UpdateParts(int width)
 	
 	// TODO: Get rid of GetMainWindow()? Or maybe just don't create this for sub-windows?
 
-	int scaled10 = ScaleByDPI(10);
-	Widths[IDP_CNTRLS] = width;
-	Widths[IDP_CHRCNT] = width - GetMainWindow()->m_MemberListWidth - scaled10 * 3 / 2;
-	Widths[IDP_TYPING] = Widths[IDP_CHRCNT] - GetMainWindow()->m_SendButtonWidth - scaled10;
-	Widths[IDP_NOTIFS] = GetMainWindow()->m_GuildListerWidth + GetMainWindow()->m_ChannelViewListWidth + scaled10 * 3;
+	if (m_pParent == GetMainWindow())
+	{
+		MainWindow* mainWindow = (MainWindow*) m_pParent;
+
+		int scaled10 = ScaleByDPI(10);
+		Widths[IDP_CNTRLS] = width;
+		Widths[IDP_CHRCNT] = width - mainWindow->m_MemberListWidth - scaled10 * 3 / 2;
+		Widths[IDP_TYPING] = Widths[IDP_CHRCNT] - mainWindow->m_SendButtonWidth - scaled10;
+		Widths[IDP_NOTIFS] = mainWindow->m_GuildListerWidth + mainWindow->m_ChannelViewListWidth + scaled10 * 3;
+	}
+	else
+	{
+		GuildSubWindow* subWindow = dynamic_cast<GuildSubWindow*>(m_pParent);
+		if (subWindow)
+		{
+			int scaled10 = ScaleByDPI(10);
+			Widths[IDP_CNTRLS] = width;
+			Widths[IDP_CHRCNT] = width - subWindow->m_MemberListWidth - scaled10 * 3 / 2;
+			Widths[IDP_TYPING] = Widths[IDP_CHRCNT] - subWindow->m_SendButtonWidth - scaled10;
+			Widths[IDP_NOTIFS] = subWindow->m_ChannelViewListWidth + scaled10 * 2;
+		}
+	}
 
 	SendMessage(m_hwnd, SB_SETPARTS, _countof(Widths), (LPARAM) Widths);
 

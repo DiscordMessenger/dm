@@ -736,10 +736,7 @@ void MessageList::DeleteMessage(Snowflake sf)
 	}
 
 	if (iter == m_messages.rend())
-	{
-		DbgPrintW("Message with id %lld not found to be deleted", sf);
 		return;
-	}
 
 	// delete it
 	RECT messageRect = iter->m_rect;

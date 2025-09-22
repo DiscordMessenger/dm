@@ -314,9 +314,14 @@ void Frontend_Win32::RepaintProfileWithUserID(Snowflake id)
 		SendMessage(GetMainHWND(), WM_REPAINTPROFILE, 0, 0);
 }
 
-void Frontend_Win32::RefreshMessages(ScrollDir::eScrollDir sd, Snowflake gapCulprit)
+void Frontend_Win32::RefreshMessages(Snowflake channelId, ScrollDir::eScrollDir sd, Snowflake gapCulprit)
 {
-	SendMessage(GetMainHWND(), WM_REFRESHMESSAGES, (WPARAM) sd, (LPARAM) &gapCulprit);
+	RefreshMessagesParams params;
+	params.m_channelId = channelId;
+	params.m_scrollDir = sd;
+	params.m_gapCulprit = gapCulprit;
+
+	SendMessage(GetMainHWND(), WM_REFRESHMESSAGES, 0, (LPARAM) &params);
 }
 
 void Frontend_Win32::RefreshMembers(int viewID, const std::set<Snowflake>& members)

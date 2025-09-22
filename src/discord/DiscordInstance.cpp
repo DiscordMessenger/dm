@@ -724,9 +724,9 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 #endif
 }
 
-void DiscordInstance::OnFetchedMessages(Snowflake gap, ScrollDir::eScrollDir sd)
+void DiscordInstance::OnFetchedMessages(Snowflake channelId, Snowflake gap, ScrollDir::eScrollDir sd)
 {
-	GetFrontend()->RefreshMessages(sd, gap);
+	GetFrontend()->RefreshMessages(channelId, sd, gap);
 }
 
 void DiscordInstance::GatewayClosed(int errorCode)

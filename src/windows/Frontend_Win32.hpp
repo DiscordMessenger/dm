@@ -46,7 +46,7 @@ public:
 	void RepaintGuildList() override;
 	void RepaintProfile() override;
 	void RepaintProfileWithUserID(Snowflake id) override;
-	void RefreshMessages(ScrollDir::eScrollDir sd, Snowflake gapCulprit) override;
+	void RefreshMessages(Snowflake channelId, ScrollDir::eScrollDir sd, Snowflake gapCulprit) override;
 	void RefreshMembers(int viewID, const std::set<Snowflake>& members) override;
 	void JumpToMessage(int viewID, Snowflake messageInCurrentChannel) override;
 	void OnWebsocketMessage(int gatewayID, const std::string& payload) override;

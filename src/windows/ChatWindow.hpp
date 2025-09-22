@@ -26,6 +26,8 @@ public:
 	virtual void SetCurrentChannelID(Snowflake sf);
 	virtual bool IsChannelListVisible() const { return false; }
 	virtual int GetGuildListerWidth() const { return 0; }
+	virtual void OnTyping(Snowflake guildID, Snowflake channelID, Snowflake userID, time_t timeStamp) = 0;
+	virtual void OnStopTyping(Snowflake channelID, Snowflake userID) = 0;
 
 private:
 	ChatViewPtr m_chatView;
