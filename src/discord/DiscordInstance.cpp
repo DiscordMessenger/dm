@@ -1747,6 +1747,18 @@ void DiscordInstance::ResolveLinks(FormattedText* message, std::vector<Interacta
 	}
 }
 
+void DiscordInstance::RegisterView(ChatViewPtr view)
+{
+	m_chatViews.push_back(view);
+}
+
+void DiscordInstance::UnregisterView(ChatViewPtr view)
+{
+	auto iter = std::find(m_chatViews.begin(), m_chatViews.end(), view);
+	if (iter != m_chatViews.end())
+		m_chatViews.erase(iter);
+}
+
 void DiscordInstance::SetActivityStatus(eActiveStatus status, bool bRequestServer)
 {
 	DbgPrintF("Setting activity status to %d", status);

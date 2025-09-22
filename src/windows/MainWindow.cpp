@@ -63,6 +63,10 @@ MainWindow::MainWindow(LPCTSTR pClassName, int nShowCmd)
 
 	g_pDiscordInstance = new DiscordInstance(GetLocalSettings()->GetToken());
 
+	// since we're the main window, g_pDiscordInstance didn't exist yet, therefore
+	// register us manually
+	g_pDiscordInstance->RegisterView(GetChatView());
+
 	// Initialize the window class.
 	WNDCLASS& wc = m_wndClass;
 
@@ -1298,26 +1302,12 @@ void MainWindow::OnStopTyping(Snowflake channelID, Snowflake userID)
 		m_pStatusBar->RemoveTypingName(userID);
 }
 
-Guild* MainWindow::GetCurrentGuild()
-{
-	return GetDiscordInstance()->GetGuild(m_guildID);
-}
-
-Channel* MainWindow::GetCurrentChannel()
-{
-	auto guild = GetCurrentGuild();
-	if (!guild)
-		return nullptr;
-
-	return guild->GetChannel(m_channelID);
-}
-
 void MainWindow::SetCurrentGuildID(Snowflake sf)
 {
-	if (m_guildID == sf)
+	if (GetCurrentGuildID() == sf)
 		return;
 
-	m_guildID = sf;
+	ChatWindow::SetCurrentGuildID(sf);
 
 	// repaint the guild lister
 	m_pGuildLister->UpdateSelected();
@@ -1329,7 +1319,7 @@ void MainWindow::SetCurrentGuildID(Snowflake sf)
 
 void MainWindow::SetCurrentChannelID(Snowflake channID)
 {
-	if (m_channelID == channID)
+	if (GetCurrentChannelID() == channID)
 		return;
 
 	Channel* pChan = GetDiscordInstance()->GetChannelGlobally(channID);
@@ -1343,7 +1333,7 @@ void MainWindow::SetCurrentChannelID(Snowflake channID)
 	Snowflake guildID = pGuild->m_snowflake;
 	SetCurrentGuildID(guildID);
 
-	m_channelID = channID;
+	ChatWindow::SetCurrentChannelID(channID);
 
 	m_pMessageEditor->StopReply();
 	m_pMessageEditor->Layout();

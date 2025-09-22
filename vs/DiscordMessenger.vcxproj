@@ -584,6 +584,7 @@
     <ClInclude Include="..\src\discord\ActiveStatus.hpp" />
     <ClInclude Include="..\src\discord\Attachment.hpp" />
     <ClInclude Include="..\src\discord\Channel.hpp" />
+    <ClInclude Include="..\src\discord\ChatView.hpp" />
     <ClInclude Include="..\src\discord\ContentType.hpp" />
     <ClInclude Include="..\src\discord\DiscordAPI.hpp" />
     <ClInclude Include="..\src\discord\DiscordClientConfig.hpp" />
@@ -621,6 +622,7 @@
     <ClInclude Include="..\src\windows\AvatarCache.hpp" />
     <ClInclude Include="..\src\windows\ChannelView.hpp" />
     <ClInclude Include="..\src\windows\ChannelViewOld.hpp" />
+    <ClInclude Include="..\src\windows\ChatWindow.hpp" />
     <ClInclude Include="..\src\windows\Config.hpp" />
     <ClInclude Include="..\src\windows\CrashDebugger.hpp" />
     <ClInclude Include="..\src\windows\Frontend_Win32.hpp" />
@@ -669,6 +671,7 @@
     <ClCompile Include="..\deps\md5\MD5.cpp" />
     <ClCompile Include="..\deps\mwas\src\reimpl.cpp" />
     <ClCompile Include="..\src\discord\Channel.cpp" />
+    <ClCompile Include="..\src\discord\ChatView.cpp" />
     <ClCompile Include="..\src\discord\DiscordAPI.cpp" />
     <ClCompile Include="..\src\discord\DiscordClientConfig.cpp" />
     <ClCompile Include="..\src\discord\DiscordInstance.cpp" />
@@ -695,6 +698,7 @@
     <ClCompile Include="..\src\windows\AvatarCache.cpp" />
     <ClCompile Include="..\src\windows\ChannelView.cpp" />
     <ClCompile Include="..\src\windows\ChannelViewOld.cpp" />
+    <ClCompile Include="..\src\windows\ChatWindow.cpp" />
     <ClCompile Include="..\src\windows\CrashDebugger.cpp" />
     <ClCompile Include="..\src\windows\Frontend_Win32.cpp" />
     <ClCompile Include="..\src\windows\GuildHeader.cpp" />

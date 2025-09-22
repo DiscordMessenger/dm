@@ -6,6 +6,7 @@
 #include "WinUtils.hpp"
 #include "StatusBar.hpp"
 #include "TextManager.hpp"
+#include "ChatWindow.hpp"
 
 extern HINSTANCE g_hInstance;
 
@@ -22,7 +23,7 @@ class DiscordInstance;
 struct Guild;
 struct Channel;
 
-class MainWindow
+class MainWindow : public ChatWindow
 {
 public:
 	MainWindow(LPCTSTR pClassName, int nShowCmd);
@@ -31,16 +32,19 @@ public:
 	// cannot copy the main window.
 	MainWindow(const MainWindow& mw) = delete;
 
+	HWND GetHWND() const override {
+		return m_hwnd;
+	}
+
+	void SetCurrentGuildID(Snowflake sf) override;
+	void SetCurrentChannelID(Snowflake sf) override;
+
 	bool InitFailed() const { return m_bInitFailed; }
 
 	bool IsPartOfMainWindow(HWND hWnd);
 
 	MessageEditor* GetMessageEditor() {
 		return m_pMessageEditor;
-	}
-
-	HWND GetHWND() const {
-		return m_hwnd;
 	}
 
 	bool IsChannelListVisible() const { return m_bChannelListVisible; }
@@ -58,15 +62,6 @@ public:
 	void CloseCleanup();
 	void OnUpdateAvatar(const std::string& resid);
 	int  OnHTTPError(const std::string& url, const std::string& reasonString, bool isSSL);
-
-	Guild* GetCurrentGuild();
-	Channel* GetCurrentChannel();
-
-	Snowflake GetCurrentGuildID() const { return m_guildID; }
-	Snowflake GetCurrentChannelID() const { return m_channelID; }
-
-	void SetCurrentGuildID(Snowflake sf);
-	void SetCurrentChannelID(Snowflake sf);
 
 private:
 	LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -107,9 +102,6 @@ private:
 
 	bool m_bMemberListVisible = false;
 	bool m_bChannelListVisible = false;
-
-	Snowflake m_guildID = 0;
-	Snowflake m_channelID = 0;
 
 	std::map<Snowflake, TypingInfo> m_typingInfo;
 

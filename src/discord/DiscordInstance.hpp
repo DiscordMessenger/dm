@@ -20,6 +20,7 @@
 #include "UserGuildSettings.hpp"
 #include "GuildListItem.hpp"
 #include "FormattedText.hpp"
+#include "ChatView.hpp"
 
 struct NetRequest;
 
@@ -213,6 +214,9 @@ public:
 
 	// List of guilds and guild folders.
 	GuildItemList m_guildItemList;
+
+	// List of registered views.
+	std::vector<ChatViewPtr> m_chatViews;
 
 public:
 	Profile* GetProfile() {
@@ -473,6 +477,12 @@ public:
 
 	// Resolves links automatically in a formatted message.
 	void ResolveLinks(FormattedText* message, std::vector<InteractableItem>& interactables, Snowflake guildID = 0);
+
+	// Register a chat view.
+	void RegisterView(ChatViewPtr view);
+
+	// Unregister a chat view.
+	void UnregisterView(ChatViewPtr view);
 
 public:
 	DiscordInstance(std::string token) : m_token(token), m_notificationManager(this) {
