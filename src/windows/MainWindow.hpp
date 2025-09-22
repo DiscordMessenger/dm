@@ -93,7 +93,7 @@ private:
 
 private:
 	HWND m_hwnd;
-	WNDCLASS m_wndClass;
+	WNDCLASS m_wndClass {};
 
 	bool m_bInitFailed = false;
 

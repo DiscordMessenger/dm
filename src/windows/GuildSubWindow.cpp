@@ -13,7 +13,7 @@
 
 #define GUILD_SUB_WINDOW_CLASS TEXT("DiscordMessengerGuildSubWindowClass")
 
-WNDCLASS GuildSubWindow::m_wndClass;
+WNDCLASS GuildSubWindow::m_wndClass {};
 bool GuildSubWindow::InitializeClass()
 {
 	WNDCLASS& wc = m_wndClass;
@@ -471,7 +471,7 @@ LRESULT GuildSubWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	if (uMsg == WM_DESTROY)
 	{
 		GetMainWindow()->OnClosedWindow(pThis);
-		SetWindowLongPtr(hWnd, GWLP_USERDATA, NULL);
+		SetWindowLongPtr(hWnd, GWLP_USERDATA, 0);
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
