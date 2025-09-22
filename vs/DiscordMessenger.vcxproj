@@ -628,6 +628,7 @@
     <ClInclude Include="..\src\windows\Frontend_Win32.hpp" />
     <ClInclude Include="..\src\windows\GuildHeader.hpp" />
     <ClInclude Include="..\src\windows\GuildLister.hpp" />
+    <ClInclude Include="..\src\windows\GuildSubWindow.hpp" />
     <ClInclude Include="..\src\windows\IChannelView.hpp" />
     <ClInclude Include="..\src\windows\ImageLoader.hpp" />
     <ClInclude Include="..\src\windows\ImageViewer.hpp" />
@@ -703,6 +704,7 @@
     <ClCompile Include="..\src\windows\Frontend_Win32.cpp" />
     <ClCompile Include="..\src\windows\GuildHeader.cpp" />
     <ClCompile Include="..\src\windows\GuildLister.cpp" />
+    <ClCompile Include="..\src\windows\GuildSubWindow.cpp" />
     <ClCompile Include="..\src\windows\IChannelView.cpp" />
     <ClCompile Include="..\src\windows\ImageLoader.cpp" />
     <ClCompile Include="..\src\windows\ImageViewer.cpp" />

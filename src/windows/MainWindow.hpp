@@ -23,6 +23,8 @@ class DiscordInstance;
 struct Guild;
 struct Channel;
 
+typedef std::shared_ptr<ChatWindow> ChatWindowPtr;
+
 class MainWindow : public ChatWindow
 {
 public:
@@ -63,7 +65,19 @@ public:
 	void OnUpdateAvatar(const std::string& resid);
 	int  OnHTTPError(const std::string& url, const std::string& reasonString, bool isSSL);
 
+	void CreateGuildSubWindow(Snowflake guildId, Snowflake channelId);
+	void CloseSubWindowByViewID(int viewID);
+
+	void Close();
+
+protected:
+	friend class GuildSubWindow;
+
+	void OnClosedWindow(ChatWindow* ptr);
+
 private:
+	void MirrorMessageToSubViewByChannelID(Snowflake channelId, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 	LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void TryAgainTimer(HWND hWnd, UINT uMsg, UINT_PTR uTimerID, DWORD dwParam);
 	LRESULT HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -107,6 +121,8 @@ private:
 	bool m_bChannelListVisible = false;
 
 	std::map<Snowflake, TypingInfo> m_typingInfo;
+
+	std::vector<ChatWindowPtr> m_subWindows;
 
 protected:
 	friend class StatusBar;

@@ -12,6 +12,7 @@ public:
 	virtual ~ChatWindow();
 
 	virtual HWND GetHWND() const = 0;
+	virtual void Close() = 0;
 
 	ChatViewPtr GetChatView() const;
 
@@ -23,7 +24,6 @@ public:
 
 	virtual void SetCurrentGuildID(Snowflake sf);
 	virtual void SetCurrentChannelID(Snowflake sf);
-
 	virtual bool IsChannelListVisible() const { return false; }
 	virtual int GetGuildListerWidth() const { return 0; }
 

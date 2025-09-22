@@ -40,6 +40,7 @@ GuildHeader::GuildHeader()
 	m_buttons.push_back(Button(IDTB_MEMBERS,  DMIC(IDI_MEMBERS),      BUTTON_RIGHT));
 	m_buttons.push_back(Button(IDTB_PINS,     DMIC(IDI_PIN),          BUTTON_RIGHT));
 	m_buttons.push_back(Button(IDTB_NOTIFS,   DMIC(IDI_NOTIFICATION), BUTTON_RIGHT));
+	m_buttons.push_back(Button(IDTB_FLOAT,    DMIC(IDI_FLOAT),        BUTTON_RIGHT));
 	m_buttons.push_back(Button(IDTB_CHANNELS, DMIC(IDI_SHIFT_LEFT),   BUTTON_GUILD_RIGHT));
 }
 
@@ -604,6 +605,10 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					pThis->Layout();
 					InvalidateRect(hWnd, &pThis->m_rectLeftFull, FALSE);
 					InvalidateRect(hWnd, &pThis->m_rectMidFull, FALSE);
+					break;
+				}
+				case IDTB_FLOAT: {
+					GetMainWindow()->CreateGuildSubWindow(pThis->m_guildID, pThis->m_channelID);
 					break;
 				}
 			}

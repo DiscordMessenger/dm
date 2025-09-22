@@ -26,6 +26,7 @@
 #include "AboutDialog.hpp"
 #include "TextToSpeech.hpp"
 #include "QuickSwitcher.hpp"
+#include "GuildSubWindow.hpp"
 
 #include "../discord/WebsocketClient.hpp"
 #include "../discord/LocalSettings.hpp"
@@ -67,6 +68,8 @@ MainWindow::MainWindow(LPCTSTR pClassName, int nShowCmd)
 	// register us manually
 	g_pDiscordInstance->RegisterView(GetChatView());
 
+	assert(GetChatView()->GetID() == 0);
+
 	// Initialize the window class.
 	WNDCLASS& wc = m_wndClass;
 
@@ -81,6 +84,11 @@ MainWindow::MainWindow(LPCTSTR pClassName, int nShowCmd)
 	if (!RegisterClass(&wc)) {
 		DbgPrintW("MainWindow RegisterClass failed!");
 		m_bInitFailed = true;
+		return;
+	}
+
+	if (!GuildSubWindow::InitializeClass()) {
+		DbgPrintW("GuildSubWindow RegisterClass failed!");
 		return;
 	}
 
@@ -150,6 +158,42 @@ bool MainWindow::IsPartOfMainWindow(HWND hWnd)
 	       hWnd == m_pMessageList->m_hwnd;
 }
 
+bool HasViewIDSpecifier(UINT uMsg)
+{
+	switch (uMsg)
+	{
+		case WM_UPDATESELECTEDGUILD:
+		case WM_UPDATESELECTEDCHANNEL:
+		case WM_UPDATECHANLIST:
+		case WM_UPDATEMEMBERLIST:
+		case WM_REFRESHMEMBERS:
+		case WM_SENDTOMESSAGE:
+		case WM_DELETEMESSAGE:
+		case WM_CLOSEVIEW:
+			return true;
+	}
+
+	return false;
+}
+
+bool ShouldMirrorEventToSubViews(UINT uMsg)
+{
+	switch (uMsg)
+	{
+		case WM_UPDATEUSER:
+		case WM_UPDATEEMOJI:
+		case WM_UPDATEPROFILEAVATAR:
+		case WM_UPDATECHANACKS:
+		case WM_UPDATEATTACHMENT:
+		case WM_REPAINTGUILDLIST:
+		case WM_REPAINTPROFILE:
+		case WM_REFRESHMESSAGES:
+			return true;
+	}
+
+	return false;
+}
+
 LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	KeepOverridingTheFilter();
@@ -158,6 +202,15 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	if (m_agerCounter >= 50) {
 		m_agerCounter = 0;
 		GetAvatarCache()->AgeBitmaps();
+	}
+
+	// Main view always has view ID of 0
+	if (HasViewIDSpecifier(uMsg) && wParam != 0)
+	{
+		for (auto& window : m_subWindows) {
+			if (window->GetChatView()->GetID() == (int) wParam)
+				return SendMessage(window->GetHWND(), uMsg, wParam, lParam);
+		}
 	}
 
 	switch (uMsg)
@@ -390,12 +443,6 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 			GetMessageCache()->AddMessage(pParms->channel, pParms->msg);
 
-			if (m_pMessageList->GetCurrentChannelID() == pParms->channel)
-			{
-				m_pMessageList->AddMessage(pParms->msg.m_snowflake, GetForegroundWindow() == hWnd);
-				OnStopTyping(pParms->channel, pParms->msg.m_author_snowflake);
-			}
-
 			Channel* pChan = GetDiscordInstance()->GetChannel(pParms->channel);
 			if (!pChan)
 				break;
@@ -403,6 +450,16 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			if (pChan->IsDM()) {
 				if (GetDiscordInstance()->ResortChannels(pChan->m_parentGuild))
 					SendMessage(m_hwnd, WM_UPDATECHANLIST, 0, 0);
+			}
+
+			if (m_pMessageList->GetCurrentChannelID() == pParms->channel)
+			{
+				m_pMessageList->AddMessage(pParms->msg.m_snowflake, GetForegroundWindow() == hWnd);
+				OnStopTyping(pParms->channel, pParms->msg.m_author_snowflake);
+			}
+			else
+			{
+				MirrorMessageToSubViewByChannelID(pParms->channel, uMsg, wParam, lParam);
 			}
 
 			break;
@@ -415,6 +472,8 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 			if (m_pMessageList->GetCurrentChannelID() == pParms->channel)
 				m_pMessageList->EditMessage(pParms->msg.m_snowflake);
+			else
+				MirrorMessageToSubViewByChannelID(pParms->channel, uMsg, wParam, lParam);
 
 			break;
 		}
@@ -1041,6 +1100,12 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			break;
 	}
 
+	if (ShouldMirrorEventToSubViews(uMsg))
+	{
+		for (auto& window : m_subWindows)
+			SendMessage(window->GetHWND(), uMsg, wParam, lParam);
+	}
+
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
@@ -1302,6 +1367,60 @@ void MainWindow::OnStopTyping(Snowflake channelID, Snowflake userID)
 
 	if (channelID == m_pStatusBar->GetCurrentChannelID())
 		m_pStatusBar->RemoveTypingName(userID);
+}
+
+void MainWindow::CreateGuildSubWindow(Snowflake guildId, Snowflake channelId)
+{
+	auto window = std::make_shared<GuildSubWindow>();
+	if (window->InitFailed()) {
+		DbgPrintW("Failed to create guild sub window!");
+		return;
+	}
+
+	window->SetCurrentGuildID(guildId);
+	window->SetCurrentChannelID(channelId);
+
+	m_subWindows.push_back(window);
+}
+
+void MainWindow::CloseSubWindowByViewID(int viewID)
+{
+	for (auto& window : m_subWindows)
+	{
+		if (window->GetChatView()->GetID() == viewID)
+			window->Close();
+	}
+}
+
+void MainWindow::Close()
+{
+	DbgPrintW("To close the main window, you have to press the X");
+}
+
+void MainWindow::OnClosedWindow(ChatWindow* ptr)
+{
+	for (auto iter = m_subWindows.begin();
+		iter != m_subWindows.end();
+		++iter)
+	{
+		if (iter->get() == ptr)
+		{
+			m_subWindows.erase(iter);
+			return;
+		}
+	}
+}
+
+void MainWindow::MirrorMessageToSubViewByChannelID(Snowflake channelId, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	for (auto& window : m_subWindows)
+	{
+		if (window->GetCurrentChannelID() == channelId)
+		{
+			SendMessage(window->GetHWND(), uMsg, wParam, lParam);
+			return;
+		}
+	}
 }
 
 void MainWindow::SetCurrentGuildID(Snowflake sf)
@@ -1601,6 +1720,9 @@ void MainWindow::CloseCleanup()
 	ProfilePopout::Dismiss();
 	AutoComplete::DismissAutoCompleteWindowsIfNeeded(m_hwnd);
 	m_pLoadingMessage->Hide();
+
+	while (!m_subWindows.empty())
+		m_subWindows[0]->Close();
 }
 
 void MainWindow::OnUpdateAvatar(const std::string& resid)
