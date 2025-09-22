@@ -408,6 +408,16 @@ LRESULT GuildSubWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			ProperlySizeControls();
 			break;
 		}
+		case WM_DRAWITEM:
+		{
+			switch (wParam)
+			{
+				case CID_STATUSBAR:
+					m_pStatusBar->DrawItem((LPDRAWITEMSTRUCT)lParam);
+					break;
+			}
+			break;
+		}
 		case WM_STARTTYPING:
 		{
 			TypingParams params = *((TypingParams*)lParam);

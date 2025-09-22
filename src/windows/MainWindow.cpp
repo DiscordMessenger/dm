@@ -200,6 +200,24 @@ bool ShouldMirrorEventToSubViews(UINT uMsg)
 	return false;
 }
 
+void MainWindow::UpdateMemberListVisibility()
+{
+	int off = ScaleByDPI(10) + m_MemberListWidth;
+
+	if (m_bMemberListVisible) {
+		ShowWindow(m_pMemberList->m_mainHwnd, SW_SHOWNORMAL);
+		UpdateWindow(m_pMemberList->m_mainHwnd);
+		ResizeWindow(m_pMessageList->m_hwnd, -off, 0, false, false, true);
+		ResizeWindow(m_pMessageEditor->m_hwnd, -off, 0, false, false, true);
+	}
+	else {
+		ShowWindow(m_pMemberList->m_mainHwnd, SW_HIDE);
+		UpdateWindow(m_pMemberList->m_mainHwnd);
+		ResizeWindow(m_pMessageList->m_hwnd, off, 0, false, false, true);
+		ResizeWindow(m_pMessageEditor->m_hwnd, off, 0, false, false, true);
+	}
+}
+
 LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	KeepOverridingTheFilter();
@@ -322,21 +340,7 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		case WM_TOGGLEMEMBERS:
 		{
 			m_bMemberListVisible ^= 1;
-			int off = ScaleByDPI(10) + m_MemberListWidth;
-
-			if (m_bMemberListVisible) {
-				ShowWindow(m_pMemberList->m_mainHwnd, SW_SHOWNORMAL);
-				UpdateWindow(m_pMemberList->m_mainHwnd);
-				ResizeWindow(m_pMessageList->m_hwnd, -off, 0, false, false, true);
-				ResizeWindow(m_pMessageEditor->m_hwnd, -off, 0, false, false, true);
-			}
-			else {
-				ShowWindow(m_pMemberList->m_mainHwnd, SW_HIDE);
-				UpdateWindow(m_pMemberList->m_mainHwnd);
-				ResizeWindow(m_pMessageList->m_hwnd, off, 0, false, false, true);
-				ResizeWindow(m_pMessageEditor->m_hwnd, off, 0, false, false, true);
-			}
-
+			UpdateMemberListVisibility();
 			break;
 		}
 		case WM_TOGGLECHANNELS:
@@ -1344,6 +1348,17 @@ void MainWindow::SetCurrentGuildID(Snowflake sf)
 	if (m_lastGuildID == sf)
 		return;
 
+	bool wasVisible = m_bMemberListVisible;
+	if (m_lastGuildID == 0 && sf != 0)
+	{
+		m_bMemberListVisible = m_bMemberListVisibleBackup;
+	}
+	else if (m_lastGuildID != 0 && sf == 0)
+	{
+		m_bMemberListVisibleBackup = m_bMemberListVisible;
+		m_bMemberListVisible = false;
+	}
+
 	m_lastGuildID = sf;
 
 	ChatWindow::SetCurrentGuildID(sf);
@@ -1351,6 +1366,9 @@ void MainWindow::SetCurrentGuildID(Snowflake sf)
 	// repaint the guild lister
 	m_pGuildLister->UpdateSelected();
 	m_pGuildHeader->Update();
+
+	if (m_bMemberListVisible != wasVisible)
+		UpdateMemberListVisibility();
 
 	SendMessage(m_hwnd, WM_UPDATECHANLIST, 0, 0);
 	SendMessage(m_hwnd, WM_UPDATEMEMBERLIST, 0, 0);

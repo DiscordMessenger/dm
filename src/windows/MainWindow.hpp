@@ -83,6 +83,7 @@ protected:
 
 private:
 	void MirrorMessageToSubViewByChannelID(Snowflake channelId, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	void UpdateMemberListVisibility();
 
 	LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void TryAgainTimer(HWND hWnd, UINT uMsg, UINT_PTR uTimerID, DWORD dwParam);
@@ -120,6 +121,7 @@ private:
 	const UINT_PTR m_TryAgainTimerId = 123456;
 
 	bool m_bMemberListVisible = false;
+	bool m_bMemberListVisibleBackup = true;
 	bool m_bChannelListVisible = false;
 
 	std::map<Snowflake, TypingInfo> m_typingInfo;

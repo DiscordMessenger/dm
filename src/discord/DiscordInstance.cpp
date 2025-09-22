@@ -158,6 +158,9 @@ void DiscordInstance::RequestPinnedMessages(Snowflake channel)
 
 void DiscordInstance::RequestGuildMembers(Snowflake guild, std::set<Snowflake> members, bool bLoadPresences)
 {
+	if (!guild)
+		return;
+
 	Json data;
 	Json guildIdArray, userIdsArray;
 	guildIdArray.push_back(guild);
@@ -171,7 +174,9 @@ void DiscordInstance::RequestGuildMembers(Snowflake guild, std::set<Snowflake> m
 	if (userIdsArray.empty())
 		return;
 
-	data["guild_id"] = guildIdArray;
+	if (!guildIdArray.empty())
+		data["guild_id"] = guildIdArray;
+
 	data["user_ids"] = userIdsArray;
 	data["presences"] = bLoadPresences;
 	data["limit"] = nullptr;
@@ -1428,43 +1433,43 @@ void DiscordInstance::UpdateSubscriptions(bool typing, bool activities, bool thr
 {
 	Json j, data;
 
-	// TODO: Currently just the main view. I need to figure out how to subscribe to more channels at once.
-	Snowflake guildId = GetMainView()->GetCurrentGuildID();
-	Snowflake channelId = GetMainView()->GetCurrentChannelID();
+	j["op"] = GatewayOp::UPDATE_SUBSCRIPTIONS;
 
-	if (guildId == 0)
+	std::map<Snowflake, Snowflake> guildSubscriptions;
+
+	for (auto& view : m_chatViews)
 	{
-		// TODO - Subscriptions for DMs and groups.
-		j["op"] = GatewayOp::SUBSCRIBE_DM;
+		Snowflake guildID = view->GetCurrentGuildID();
+		Snowflake channelID = view->GetCurrentChannelID();
 
-		data["channel_id"] = channelId;
-	}
-	else
-	{
-		j["op"] = GatewayOp::SUBSCRIBE_GUILD;
+		if (guildID == 0)
+			continue;
 
-		Json subs, guild, channels, rangeParent, rangeChildren[1];
+		auto f = guildSubscriptions.find(guildID);
+		if (f != guildSubscriptions.end())
+			continue; // already added
 
-		// Amount of users loaded
-		int arr[2] = { 0, rangeMembers };
-		rangeChildren[0] = arr;
-		rangeParent = rangeChildren;
-
-		if (channelId != 0)
-			channels[std::to_string(channelId)] = rangeParent;
-
-		data["guild_id"] = std::to_string(guildId);
-
-		if (typing)
-			data["typing"] = true;
-		if (activities)
-			data["activities"] = true;
-		if (threads)
-			data["threads"] = true;
-
-		data["channels"] = channels;
+		guildSubscriptions[guildID] = channelID;
 	}
 
+	if (guildSubscriptions.empty())
+		return;
+
+	Json subscriptions;
+	Json array1, array2;
+	array1.push_back(0);
+	array1.push_back(99);
+	array2.push_back(array1);
+
+	for (auto& kvp : guildSubscriptions)
+	{
+		auto guildID = std::to_string(kvp.first), channelID = std::to_string(kvp.second);
+
+		subscriptions[guildID]["channels"][channelID] = array2;
+		subscriptions[guildID]["typing"] = true;
+	}
+
+	data["subscriptions"] = subscriptions;
 	j["d"] = data;
 
 	DbgPrintF("Would be: %s", j.dump().c_str());
@@ -1720,6 +1725,8 @@ void DiscordInstance::UnregisterView(ChatViewPtr view)
 	auto iter = std::find(m_chatViews.begin(), m_chatViews.end(), view);
 	if (iter != m_chatViews.end())
 		m_chatViews.erase(iter);
+
+	assert(m_chatViews.size() != 0);
 }
 
 void DiscordInstance::SetActivityStatus(eActiveStatus status, bool bRequestServer)
