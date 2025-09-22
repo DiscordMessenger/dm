@@ -3424,7 +3424,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				return 0;
 			}
 			
-			UploadDialogShowWithFileName(pThis->m_channelID, fileName, fileTitle);
+			UploadDialogShowWithFileName(pThis->m_pParent->GetHWND(), pThis->m_channelID, fileName, fileTitle);
 			DragFinish(hDrop);
 			return 0;
 		}

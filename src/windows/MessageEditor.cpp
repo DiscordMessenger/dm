@@ -845,7 +845,7 @@ LRESULT MessageEditor::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 					pThis->StopReply();
 					break;
 				case CID_MESSAGEUPLOAD:
-					UploadDialogShow(pThis->m_channelID);
+					UploadDialogShow(pThis->m_pParent->GetHWND(), pThis->m_channelID);
 					break;
 				case CID_MESSAGEJUMPPRESENT: {
 					Snowflake max = UINT64_MAX;

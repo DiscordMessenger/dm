@@ -23,7 +23,7 @@ public:
 	void OnFailedToSendMessage(Snowflake channel, Snowflake message) override;
 	void OnFailedToUploadFile(const std::string& file, int error) override;
 	void OnFailedToCheckForUpdates(int result, const std::string& response) override;
-	void OnStartProgress(Snowflake key, const std::string& fileName, bool isUploading);
+	void OnStartProgress(int viewID, Snowflake key, const std::string& fileName, bool isUploading);
 	bool OnUpdateProgress(Snowflake key, size_t offset, size_t length);
 	void OnStopProgress(Snowflake key);
 	void OnNotification();

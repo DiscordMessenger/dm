@@ -75,9 +75,11 @@ public:
 
 protected:
 	friend class GuildSubWindow;
+	friend class Frontend_Win32;
 
 	TypingInfo& GetTypingInfo(Snowflake sf);
 	void OnClosedWindow(ChatWindow* ptr);
+	std::vector<ChatWindowPtr>& GetSubWindows() { return m_subWindows; }
 
 private:
 	void MirrorMessageToSubViewByChannelID(Snowflake channelId, UINT uMsg, WPARAM wParam, LPARAM lParam);

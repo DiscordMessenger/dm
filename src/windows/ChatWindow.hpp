@@ -29,6 +29,8 @@ public:
 	virtual void OnTyping(Snowflake guildID, Snowflake channelID, Snowflake userID, time_t timeStamp) = 0;
 	virtual void OnStopTyping(Snowflake channelID, Snowflake userID) = 0;
 
+	void ShowPasteFileDialog(HWND editHwnd);
+
 private:
 	ChatViewPtr m_chatView;
 };

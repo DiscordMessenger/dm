@@ -35,6 +35,7 @@ public:
 	void OnStopTyping(Snowflake channelID, Snowflake userID) override;
 
 private:
+	LRESULT HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

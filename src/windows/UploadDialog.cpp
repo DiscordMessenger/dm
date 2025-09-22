@@ -145,6 +145,9 @@ INT_PTR CALLBACK UploadDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	{
 		case WM_INITDIALOG:
 		{
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)lParam);
+			pData = (UploadDialogData*)lParam;
+
 			Channel* pChan = pData->GetChannel();
 			if (!pChan) {
 				EndDialog(hWnd, IDCANCEL);
@@ -156,8 +159,6 @@ INT_PTR CALLBACK UploadDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 				return TRUE;
 			}
 
-			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)lParam);
-			pData = (UploadDialogData*)lParam;
 			pData->m_comment[0] = 0;
 
 			if (pData->m_lpstrFile)
@@ -222,12 +223,12 @@ INT_PTR CALLBACK UploadDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	return FALSE;
 }
 
-static void UploadDialogShowData(UploadDialogData* data)
+static void UploadDialogShowData(HWND hWnd, UploadDialogData* data)
 {
 	if (DialogBoxParam(
 			g_hInstance,
 			MAKEINTRESOURCE(DMDI(IDD_DIALOG_UPLOADFILES)),
-			GetMainHWND(),
+			hWnd,
 			UploadDialogProc,
 			(LPARAM) data
 		) == IDCANCEL)
@@ -255,12 +256,12 @@ static void UploadDialogShowData(UploadDialogData* data)
 		SendMessageAuxParams smap;
 		smap.m_message = content;
 		smap.m_snowflake = sf;
-		SendMessage(GetMainHWND(), WM_SENDMESSAGEAUX, 0, (LPARAM)&smap);
+		SendMessage(hWnd, WM_SENDMESSAGEAUX, 0, (LPARAM)&smap);
 	}
 	else
 	{
 		// TODO: Placeholder, replace
-		MessageBox(GetMainHWND(), TmGetTString(IDS_CANNOT_UPLOAD_ATTACHMENT), TmGetTString(IDS_PROGRAM_NAME), MB_OK);
+		MessageBox(hWnd, TmGetTString(IDS_CANNOT_UPLOAD_ATTACHMENT), TmGetTString(IDS_PROGRAM_NAME), MB_OK);
 	}
 
 	delete data;
@@ -279,7 +280,7 @@ bool UploadDialogCheckHasUploadRights(Snowflake channelID)
 	return true;
 }
 
-void UploadDialogShowWithFileName(Snowflake channelID, LPCTSTR lpstrFileName, LPCTSTR lpstrFileTitle)
+void UploadDialogShowWithFileName(HWND hWnd, Snowflake channelID, LPCTSTR lpstrFileName, LPCTSTR lpstrFileTitle)
 {
 	if (!UploadDialogCheckHasUploadRights(channelID))
 		return;
@@ -289,10 +290,10 @@ void UploadDialogShowWithFileName(Snowflake channelID, LPCTSTR lpstrFileName, LP
 	data->m_lpstrFile = lpstrFileName;
 	data->m_lpstrFileTitle = lpstrFileTitle;
 
-	UploadDialogShowData(data);
+	UploadDialogShowData(hWnd, data);
 }
 
-void UploadDialogShowWithFileData(Snowflake channelID, uint8_t* fileData, size_t fileSize, LPCTSTR lpstrFileTitle)
+void UploadDialogShowWithFileData(HWND hWnd, Snowflake channelID, uint8_t* fileData, size_t fileSize, LPCTSTR lpstrFileTitle)
 {
 	if (!UploadDialogCheckHasUploadRights(channelID))
 		return;
@@ -304,10 +305,10 @@ void UploadDialogShowWithFileData(Snowflake channelID, uint8_t* fileData, size_t
 	data->m_pFileData = new uint8_t[fileSize];
 	memcpy(data->m_pFileData, fileData, fileSize);
 
-	UploadDialogShowData(data);
+	UploadDialogShowData(hWnd, data);
 }
 
-void UploadDialogShow2(Snowflake channelID)
+void UploadDialogShow2(HWND hWnd, Snowflake channelID)
 {
 	if (!UploadDialogCheckHasUploadRights(channelID))
 		return;
@@ -335,18 +336,19 @@ void UploadDialogShow2(Snowflake channelID)
 	}
 
 	UploadDialogShowWithFileName(
+		hWnd,
 		channelID,
 		ofn.lpstrFile,
 		ofn.lpstrFileTitle
 	);
 }
 
-void UploadDialogShow(Snowflake channelID)
+void UploadDialogShow(HWND hWnd, Snowflake channelID)
 {
 	if (!UploadDialogCheckHasUploadRights(channelID))
 		return;
 
 	Snowflake* sf = new Snowflake;
 	*sf = channelID;
-	PostMessage(GetMainHWND(), WM_SHOWUPLOADDIALOG, 0, (LPARAM) sf);
+	PostMessage(hWnd, WM_SHOWUPLOADDIALOG, 0, (LPARAM) sf);
 }

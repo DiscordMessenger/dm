@@ -3139,7 +3139,16 @@ void DiscordInstance::OnUploadAttachmentFirst(NetRequest* pReq)
 			up.m_data.size()
 		);
 
-		GetFrontend()->OnStartProgress(pReq->key, up.m_name, true);
+		int viewID = 0;
+		for (auto& view : m_chatViews)
+		{
+			if (view->GetCurrentChannelID() == up.m_channelSF) {
+				viewID = view->GetID();
+				break;
+			}
+		}
+
+		GetFrontend()->OnStartProgress(viewID, pReq->key, up.m_name, true);
 	}
 }
 

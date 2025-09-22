@@ -315,7 +315,7 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		case WM_SHOWUPLOADDIALOG:
 		{
 			Snowflake* sf = (Snowflake*) lParam;
-			UploadDialogShow2(*sf);
+			UploadDialogShow2(hWnd, *sf);
 			delete sf;
 			break;
 		}
@@ -1197,107 +1197,21 @@ LRESULT MainWindow::HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		}
 		case IDA_PASTE:
 		{
-			if (!OpenClipboard(hWnd)) {
-				DbgPrintW("Error opening clipboard: %d", GetLastError());
-				break;
-			}
+			HWND focus = GetFocus();
 
-			HBITMAP hbm = NULL;
-			HDC hdc = NULL;
-			BYTE* pBytes = nullptr;
-			LPCTSTR fileName = nullptr;
-			std::vector<uint8_t> data;
-			bool isClipboardClosed = false;
-			bool hadToUseLegacyBitmap = false;
-			int width = 0, height = 0, stride = 0, bpp = 0;
-			Channel* pChan = nullptr;
-
-			HANDLE hbmi = GetClipboardData(CF_DIB);
-			if (hbmi)
+			if (IsChild(m_hwnd, focus))
 			{
-				DbgPrintW("Using CF_DIB to fetch image from clipboard");
-				PBITMAPINFO bmi = (PBITMAPINFO) GlobalLock(hbmi);
-
-				// WHAT THE HELL: Windows seems to add 12 extra bytes after the header
-				// representing the colors: [RED] [GREEN] [BLUE]. I don't know why we
-				// have to do this or how to un-hardcode it.  Yes, in this case, the
-				// biClrUsed member is zero.
-				// Does it happen to include only part of the BITMAPV4HEADER???
-				const int HACK_OFFSET = 12;
-
-				width = bmi->bmiHeader.biWidth;
-				height = bmi->bmiHeader.biHeight;
-				bpp = bmi->bmiHeader.biBitCount;
-				stride = ((((width * bpp) + 31) & ~31) >> 3);
-
-				int sz = stride * height;
-				pBytes = new BYTE[sz];
-				memcpy(pBytes, (char*) bmi + bmi->bmiHeader.biSize + HACK_OFFSET, sz);
-
-				GlobalUnlock(hbmi);
+				ShowPasteFileDialog(m_pMessageEditor->m_edit_hwnd);
 			}
 			else
 			{
-				// try legacy CF_BITMAP
-				DbgPrintW("Using legacy CF_BITMAP");
-				HBITMAP hbm = (HBITMAP) GetClipboardData(CF_BITMAP);
-				hadToUseLegacyBitmap = true;
-
-				if (!hbm)
+				// maybe it's pasted into one of the children
+				for (auto& window : m_subWindows)
 				{
-					CloseClipboard();
-
-					// No bitmap, forward to the edit control if selected
-					HWND hFocus = GetFocus();
-					if (hFocus == m_pMessageEditor->m_edit_hwnd)
-						SendMessage(hFocus, WM_PASTE, 0, 0);
-
-					return FALSE;
+					if (IsChild(window->GetHWND(), focus))
+						SendMessage(window->GetHWND(), WM_COMMAND, wParam, lParam);
 				}
-
-				HDC hdc = GetDC(hWnd);
-				bool res = GetDataFromBitmap(hdc, hbm, pBytes, width, height, bpp);
-				ReleaseDC(hWnd, hdc);
-
-				if (!res)
-					goto _fail;
-
-				stride = ((((width * bpp) + 31) & ~31) >> 3);
 			}
-
-			pChan = m_pMessageList->GetCurrentChannel();
-			if (!pChan) {
-				DbgPrintW("No channel!");
-				goto _fail;
-			}
-
-			if (!pChan->HasPermission(PERM_SEND_MESSAGES) ||
-				!pChan->HasPermission(PERM_ATTACH_FILES)) {
-				DbgPrintW("Can't attach files here!");
-				goto _fail;
-			}
-
-			// TODO: Don't always force alpha when pasting from CF_DIB or CF_BITMAP.
-			// I know this sucks, but I've tried a lot of things...
-
-			// have to force alpha always
-			// have to flip vertically if !hadToUseLegacyBitmap
-			if (!ImageLoader::ConvertToPNG(&data, pBytes, width, height, stride, bpp, true, !hadToUseLegacyBitmap)) {
-				DbgPrintW("Cannot convert to PNG!");
-				goto _fail;
-			}
-
-			CloseClipboard(); isClipboardClosed = true;
-
-			fileName = TmGetTString(IDS_UNKNOWN_FILE_NAME);
-			UploadDialogShowWithFileData(m_pMessageList->GetCurrentChannelID(), data.data(), data.size(), fileName);
-
-		_fail:
-			data.clear();
-			if (pBytes) delete[] pBytes;
-			if (hdc) ReleaseDC(hWnd, hdc);
-			if (hbm) DeleteObject(hbm); // should I do this?
-			if (!isClipboardClosed) CloseClipboard();
 			break;
 		}
 

@@ -175,9 +175,20 @@ void Frontend_Win32::OnFailedToCheckForUpdates(int result, const std::string& re
 	MessageBox(GetMainHWND(), buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
 }
 
-void Frontend_Win32::OnStartProgress(Snowflake key, const std::string& fileName, bool isUploading)
+void Frontend_Win32::OnStartProgress(int viewID, Snowflake key, const std::string& fileName, bool isUploading)
 {
-	ProgressDialog::Show(fileName, key, isUploading, GetMainHWND());
+	HWND hWnd = GetMainHWND();
+
+	auto& windows = GetMainWindow()->GetSubWindows();
+	for (auto& window : windows)
+	{
+		if (window->GetChatView()->GetID() == viewID) {
+			hWnd = window->GetHWND();
+			break;
+		}
+	}
+
+	ProgressDialog::Show(fileName, key, isUploading, hWnd);
 }
 
 bool Frontend_Win32::OnUpdateProgress(Snowflake key, size_t offset, size_t length)

@@ -7,6 +7,7 @@
 #include "MessageEditor.hpp"
 #include "StatusBar.hpp"
 #include "ProfilePopout.hpp"
+#include "UploadDialog.hpp"
 
 #include "../discord/LocalSettings.hpp"
 
@@ -36,8 +37,8 @@ GuildSubWindow::GuildSubWindow()
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
-		ScaleByDPI(700), // TODO: Specify non-hardcoded size
-		ScaleByDPI(600),
+		ScaleByDPI(800), // TODO: Specify non-hardcoded size
+		ScaleByDPI(550),
 		NULL,
 		NULL,
 		g_hInstance,
@@ -106,7 +107,7 @@ void GuildSubWindow::ProperlySizeControls()
 	m_ChannelViewListWidth2 = channelViewListWidth;
 
 	// May need to do some adjustments.
-	const int minFullWidth = ScaleByDPI(800);
+	const int minFullWidth = ScaleByDPI(700);
 	if (clientWidth < minFullWidth)
 	{
 		int widthOfAll3Things =
@@ -114,7 +115,7 @@ void GuildSubWindow::ProperlySizeControls()
 			- scaled10 * 3  /* Left edge, Right edge, Between GuildLister and the group */
 			- scaled10 * 2; /* Between channelview and messageview, between messageview and memberlist */
 
-		int widthOfAll3ThingsAt800px = ScaleByDPI(748);
+		int widthOfAll3ThingsAt800px = ScaleByDPI(648);
 
 		m_ChannelViewListWidth2 = MulDiv(m_ChannelViewListWidth2, widthOfAll3Things, widthOfAll3ThingsAt800px);
 		m_MemberListWidth       = MulDiv(m_MemberListWidth,       widthOfAll3Things, widthOfAll3ThingsAt800px);
@@ -160,10 +161,31 @@ void GuildSubWindow::ProperlySizeControls()
 	m_pStatusBar->UpdateParts(rcClient.right - rcClient.left);
 }
 
+LRESULT GuildSubWindow::HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (LOWORD(wParam))
+	{
+		case IDA_PASTE:
+		{
+			ShowPasteFileDialog(m_pMessageEditor->m_edit_hwnd);
+			break;
+		}
+	}
+
+	return 0;
+}
+
 LRESULT GuildSubWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
+		case WM_SHOWUPLOADDIALOG:
+		{
+			Snowflake* sf = (Snowflake*)lParam;
+			UploadDialogShow2(hWnd, *sf);
+			delete sf;
+			break;
+		}
 		case WM_CREATE:
 		{
 			m_hwnd = hWnd;
@@ -197,6 +219,9 @@ LRESULT GuildSubWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			DestroyWindow(hWnd);
 			break;
 		}
+		case WM_COMMAND:
+			return HandleCommand(hWnd, uMsg, wParam, lParam);
+			
 		case WM_DESTROY:
 		{
 			SAFE_DELETE(m_pChannelView);
@@ -239,6 +264,12 @@ LRESULT GuildSubWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		{
 			//m_pMemberList->SetGuild(GetCurrentGuildID());
 			//m_pMemberList->Update();
+			break;
+		}
+		case WM_UPDATEATTACHMENT:
+		{
+			ImagePlace pl = *(ImagePlace*)lParam;
+			m_pMessageList->OnUpdateEmbed(pl.key);
 			break;
 		}
 		case WM_UPDATECHANACKS:
