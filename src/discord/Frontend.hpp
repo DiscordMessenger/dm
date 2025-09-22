@@ -97,6 +97,12 @@ public:
 	virtual std::string GetFormatTimeLongText() = 0;
 	virtual std::string GetFormatTimeShortText() = 0;
 	virtual std::string GetFormatTimeShorterText() = 0;
+	virtual std::string GetFormatTimestampTimeShort() = 0;
+	virtual std::string GetFormatTimestampTimeLong() = 0;
+	virtual std::string GetFormatTimestampDateShort() = 0;
+	virtual std::string GetFormatTimestampDateLong() = 0;
+	virtual std::string GetFormatTimestampDateLongTimeShort() = 0;
+	virtual std::string GetFormatTimestampDateLongTimeLong() = 0;
 
 	virtual void HideWindow() = 0;
 	virtual void RestoreWindow() = 0;

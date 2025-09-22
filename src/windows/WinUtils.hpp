@@ -125,6 +125,7 @@ int GetGradientActiveCaptionColor();
 int GetGradientInactiveCaptionColor();
 void PrepareCutDownFlags(LPSTR cmdLine);
 int GetCutDownFlags();
+HCURSOR GetHandCursor();
 
 #define NT31SimplifiedInterface() (!SupportsDialogEx())
 

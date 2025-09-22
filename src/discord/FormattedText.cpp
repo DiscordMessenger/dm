@@ -40,13 +40,7 @@
 #define CHAR_HERE       (char(0x14))
 #define CHAR_BEG_HEADER (char(0x15))
 #define CHAR_BEG_HDR2   (char(0x16))
-#define CHAR_ESCAPE_UNDERSCORE (char(0x17)) // _
-#define CHAR_ESCAPE_ASTERISK   (char(0x18)) // *
-#define CHAR_ESCAPE_BACKSLASH  (char(0x19)) // \.
-#define CHAR_ESCAPE_BACKTICK   (char(0x1A)) // `
-#define CHAR_ESCAPE_POUND      (char(0x1B)) // #
-#define CHAR_ESCAPE_MINUS      (char(0x1C)) // -
-#define CHAR_ESCAPE_PLUS       (char(0x1D)) // +
+#define CHAR_ESCAPE     (char(0x17)) // passes through the original string
 #define CHAR_END_FORWARD (char(0x1E))
 #define CHAR_BEG_FORWARD (char(0x1F))
 
@@ -62,8 +56,8 @@ int g_tokenTypeTable[] = {
 	Token::ITALIE_END,
 	0, // tab
 	0, // line feed
-	0, // mlcode-chars don't use this system
-	0, // mlcode-chars don't use this system
+	Token::CODE_BEGIN,
+	Token::CODE_END,
 	0, // carriage return
 	Token::MLCODE_BEGIN,
 	Token::MLCODE_END,
@@ -80,6 +74,8 @@ static REN::regex g_StrongMatch("(\\*){2}[^\\*\\r\\n].*?(\\*){2}");
 static REN::regex g_ItalicMatch("\\*[^\\*\\r\\n].*?\\*");
 static REN::regex g_UnderlMatch("(_){2}[^_\\r\\n].*?(_){2}");
 static REN::regex g_ItalieMatch("(?=[ \\_\\r\\n])_.*?_(?<=[ \\_\\r\\n])");
+static REN::regex g_DbtickMatch("(`){2}[^\\*\\r\\n].*?(`){2}");
+static REN::regex g_SbtickMatch("`[^\\*\\r\\n].*?`");
 
 // Basic Markdown syntax:
 //
@@ -137,6 +133,16 @@ static void AddAndClearToken(std::vector<Token>& tokens, std::string& tok, int t
 			return;
 		}
 	}
+
+	// HACK: If the token is LINK then remove <>
+	if (type == Token::LINK)
+	{
+		if (!tok.empty() && *tok.rbegin() == '>')
+			tok.erase(tok.begin() + (tok.size() - 1));
+
+		if (tok[0] == '<') // Discord feature to prevent embedding of the token
+			tok.erase(tok.begin());
+	}
 	
 	tokens.push_back(Token(type, tok, alttext));
 	tok.clear();
@@ -162,16 +168,22 @@ static void RegexReplace(std::string& msg, const REN::regex& regex, int length1,
 	}
 }
 
-void FormattedText::Tokenize(const std::string& msg, const std::string& oldmsg)
+void FormattedText::Tokenize(const std::string& newmsg, const std::string& oldmsg)
 {
-	assert(msg.size() == oldmsg.size());
+	assert(newmsg.size() == oldmsg.size());
 	auto& tokens = m_tokens;
-	std::string current = "";
+
+	std::string msg(newmsg);
 	size_t msgSize = msg.size();
+	for (size_t i = 0; i < msgSize; i++) {
+		if (msg[i] == CHAR_ESCAPE)
+			msg[i] = oldmsg[i];
+	}
+
+	std::string current = "";
 	for (size_t i = 0; i < msgSize; )
 	{
 		char chr = msg[i];
-
 		switch (chr)
 		{
 			case CHAR_BEG_FORWARD:
@@ -183,13 +195,6 @@ void FormattedText::Tokenize(const std::string& msg, const std::string& oldmsg)
 				AddAndClearToken(tokens, current, chr == CHAR_END_FORWARD ? Token::FORWARDE : Token::FORWARD);
 				break;
 			}
-			case CHAR_ESCAPE_UNDERSCORE: chr = '_'; goto _def;
-			case CHAR_ESCAPE_ASTERISK:   chr = '*'; goto _def;
-			case CHAR_ESCAPE_BACKSLASH:  chr ='\\'; goto _def;
-			case CHAR_ESCAPE_BACKTICK:   chr = '`'; goto _def;
-			case CHAR_ESCAPE_POUND:      chr = '#'; goto _def;
-			case CHAR_ESCAPE_MINUS:      chr = '-'; goto _def;
-			case CHAR_ESCAPE_PLUS:       chr = '+'; goto _def;
 			case CHAR_NOOP: i++; break;
 			case CHAR_BEG_STRONG:
 			case CHAR_END_STRONG:
@@ -469,6 +474,8 @@ void FormattedText::ParseText()
 			case Token::FORWARDE:     style &=~WORD_FORWARD;  break;
 			case Token::HEADER:       style |= WORD_HEADER1;  break;
 			case Token::HEADER2:      style |= WORD_HEADER2;  break;
+			case Token::CODE_BEGIN:   style |= WORD_CODE;     break;
+			case Token::CODE_END:     style &=~WORD_CODE;     break;
 			case Token::CODE: {
 				if (tk.m_text.empty()) {
 					AddWord(Word(style, "``````"));
@@ -551,11 +558,17 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 	Point wordPos = { int(rect.left) + offsetX, int(rect.top) };
 
 	bool containsJustEmoji = true;
-	for (auto& word : m_words) {
-		// If a word isn't any one of these:
-		if ((word.m_flags & ~(WORD_SPACE | WORD_NEWLINE | WORD_CEMOJI | WORD_EMOJI | WORD_HEADER1)) || word.m_flags == 0) {
-			containsJustEmoji = false;
-			break;
+
+	if (!m_bAllowBiggerText) {
+		containsJustEmoji = false;
+	}
+	else {
+		for (auto& word : m_words) {
+			// If a word isn't any one of these:
+			if ((word.m_flags & ~(WORD_SPACE | WORD_NEWLINE | WORD_CEMOJI | WORD_EMOJI | WORD_HEADER1)) || word.m_flags == 0) {
+				containsJustEmoji = false;
+				break;
+			}
 		}
 	}
 
@@ -573,16 +586,23 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 
 	int nSpacesBefore = 0;
 	bool bHadNewlineBefore = true;
-	int maxLineY = MdLineHeight(context, 0);
+	int maxLineY = MdLineHeight(context, m_defaultStyle);
 	for (auto& word : m_words) {
 		int& wflags = word.m_flags;
 		wflags &= ~WORD_AFNEWLINE;
+
+		if (!m_bAllowBiggerText) {
+			if (wflags & (WORD_HEADER1 | WORD_HEADER2)) {
+				wflags &= ~(WORD_HEADER1 | WORD_HEADER2);
+				wflags |= WORD_STRONG;
+			}
+		}
 
 		// If this is a new line:
 		if (wflags & WORD_NEWLINE) {
 			wordPos.x = rect.left;
 			wordPos.y += maxLineY;
-			maxLineY = MdLineHeight(context, wflags);
+			maxLineY = MdLineHeight(context, wflags | m_defaultStyle);
 			wflags |= WORD_DONTDRAW;
 			bHadNewlineBefore = true;
 			nSpacesBefore = 0;
@@ -606,14 +626,14 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 			maxWidth = rect.Width();
 		}
 
-		int spaceWidth = MdSpaceWidth(context, wflags) * nSpacesBefore;
+		int spaceWidth = MdSpaceWidth(context, wflags | m_defaultStyle) * nSpacesBefore;
 		nSpacesBefore = 0;
 		Point size = word.m_size;
 		
 		if (word.ShouldRelayout(rect))
 		{
 			bool wrapped = false;
-			size = word.m_size = MdMeasureString(context, word.m_ifContent, wflags, wrapped, maxWidth);
+			size = word.m_size = MdMeasureString(context, word.m_ifContent, wflags | m_defaultStyle, wrapped, maxWidth);
 			if (wrapped)
 				word.m_flags |= WORD_WRAPPED;
 			else
@@ -626,7 +646,7 @@ void FormattedText::Layout(DrawingContext* context, const Rect& rect, int offset
 		if (wordPos.x + size.x + spaceWidth >= rect.right && !bHadNewlineBefore) {
 			wordPos.x = rect.left;
 			wordPos.y += maxLineY;
-			maxLineY = MdLineHeight(context, wflags);
+			maxLineY = MdLineHeight(context, wflags | m_defaultStyle);
 			wflags |= WORD_AFNEWLINE;
 			nSpacesBefore = 0;
 		}
@@ -718,10 +738,17 @@ void FormattedText::Draw(DrawingContext* context, int offsetY)
 			continue;
 
 		Rect rc = w.m_rect;
-		rc.top    += offsetY;
+		rc.top += offsetY;
 		rc.bottom += offsetY;
-		MdDrawString(context, rc, w.m_ifContent, w.m_flags);
+		MdDrawString(context, rc, w.m_ifContent, w.m_flags | m_defaultStyle);
 	}
+}
+
+void FormattedText::DrawConfined(DrawingContext* context, const Rect& rect, int offsetY)
+{
+	MdSetClippingRect(context, rect);
+	Draw(context, offsetY);
+	MdClearClippingRect(context);
 }
 
 void FormattedText::RunForEachCustomEmote(FunctionEachEmote func, void* context)
@@ -737,22 +764,6 @@ void FormattedText::RunForEachCustomEmote(FunctionEachEmote func, void* context)
 	}
 }
 
-std::vector<std::pair<std::string, std::string> >
-FormattedText::SplitBackticks(const std::string& str)
-{
-	std::string emptystr = "";
-	std::vector<std::pair<std::string, std::string> > out;
-	size_t loc = 0, oldloc = 0;
-	while ((loc = str.find('`', oldloc)) < str.size())
-	{
-		out.push_back(std::make_pair(str.substr(oldloc, loc - oldloc), emptystr));
-		oldloc = loc + 1;
-	}
-
-	out.push_back(std::make_pair(str.substr(oldloc), emptystr));
-	return out;
-}
-
 void FormattedText::SplitBlocks()
 {
 	size_t num = 0;
@@ -761,13 +772,7 @@ void FormattedText::SplitBlocks()
 	while ((loc = m_rawMessage.find("```", oldloc)) < m_rawMessage.size())
 	{
 		std::string str = m_rawMessage.substr(oldloc, loc - oldloc);
-
-		if (num & 1)
-			// just the string please
-			m_blocks.push_back({ std::make_pair(str, emptystr) });
-		else
-			// additional processing
-			m_blocks.push_back(SplitBackticks(str));
+		m_blocks.push_back({ std::make_pair(str, emptystr) });
 
 		num++;
 		oldloc = loc + 3;
@@ -775,13 +780,7 @@ void FormattedText::SplitBlocks()
 
 	// the last one
 	std::string str = m_rawMessage.substr(oldloc);
-
-	if (num & 1)
-		// just the string please
-		m_blocks.push_back({ std::make_pair(str, emptystr) });
-	else
-		// additional processing
-		m_blocks.push_back(SplitBackticks(str));
+	m_blocks.push_back({ std::make_pair(str, emptystr) });
 }
 
 void FormattedText::UseRegex(std::string& str)
@@ -795,6 +794,8 @@ void FormattedText::UseRegex(std::string& str)
 	const int HAS_AT     = (1 << 3);
 	const int HAS_BSLASH = (1 << 4);
 	const int HAS_HEADER = (1 << 5);
+	const int HAS_SLASH  = (1 << 6);
+	const int HAS_BTICK  = (1 << 7);
 	int flags = 0;
 
 	for (size_t i = 0; i < str.size(); i++) {
@@ -803,13 +804,58 @@ void FormattedText::UseRegex(std::string& str)
 		if (str[i] == '>') flags |= HAS_QUOTE;
 		if (str[i] == '@') flags |= HAS_AT;
 		if (str[i] == '#') flags |= HAS_HEADER;
+		if (str[i] == '/') flags |= HAS_SLASH;
+		if (str[i] == '`') flags |= HAS_BTICK;
 		if (str[i] == '\\') flags |= HAS_BSLASH;
 
-		if (flags == (HAS_STRONG | HAS_EMPHAS | HAS_QUOTE | HAS_AT | HAS_BSLASH | HAS_HEADER))
+		if (flags == (HAS_STRONG | HAS_EMPHAS | HAS_QUOTE | HAS_AT | HAS_BSLASH | HAS_HEADER | HAS_SLASH | HAS_BTICK))
 			break;
 	}
 
-	// Not too expensive I hope!
+	if (flags & HAS_BTICK)
+	{
+		// "`" and "``" are both valid separators
+		RegexReplace(str, g_DbtickMatch, 2, 2, CHAR_BEG_CODE, CHAR_END_CODE);
+		RegexReplace(str, g_SbtickMatch, 1, 1, CHAR_BEG_CODE, CHAR_END_CODE);
+	}
+
+	if (flags & HAS_SLASH)
+	{
+		// find all http:// and https:// and escape the entire link
+		for (size_t i = 0; i < str.size(); )
+		{
+			size_t beginningLink = i;
+			if (strncmp(str.c_str() + i, "http://", 7) != 0 &&
+				strncmp(str.c_str() + i, "https://", 8) != 0)
+			{
+				i++;
+				continue;
+			}
+
+			i += 7;
+
+			int parenDepth = 0;
+			int brackDepth = 0;
+			int curlyDepth = 0;
+
+			for (; i < str.size(); i++)
+			{
+				/**/ if (str[i] == '(') parenDepth++;
+				else if (str[i] == '[') brackDepth++;
+				else if (str[i] == '{') curlyDepth++;
+				else if (str[i] == ')') parenDepth--;
+				else if (str[i] == ']') brackDepth--;
+				else if (str[i] == '}') curlyDepth--;
+
+				if (parenDepth < 0 || brackDepth < 0 || curlyDepth < 0 ||
+					str[i] == ' ' || str[i] == '\n' || str[i] == '\r' || str[i] == '>')
+					break;
+			}
+
+			for (size_t j = beginningLink; j < i; j++)
+				str[j] = CHAR_ESCAPE;
+		}
+	}
 	if (flags & HAS_BSLASH)
 	{
 		for (size_t i = 0; !str.empty() && i < str.size() - 1; i++) {
@@ -821,13 +867,13 @@ void FormattedText::UseRegex(std::string& str)
 
 			thisChar = CHAR_NOOP;
 			switch (nextChar) {
-				case '_': nextChar = CHAR_ESCAPE_UNDERSCORE; break;
-				case '*': nextChar = CHAR_ESCAPE_ASTERISK;   break;
-				case'\\': nextChar = CHAR_ESCAPE_BACKSLASH;  break;
-				case '#': nextChar = CHAR_ESCAPE_POUND;      break;
-				case '-': nextChar = CHAR_ESCAPE_MINUS;      break;
-				case '+': nextChar = CHAR_ESCAPE_PLUS;       break;
-				case '`': nextChar = CHAR_ESCAPE_BACKTICK;   break;  // NOTE: Processing backtick escapes earlier to disable escapes within code blocks
+				case '_':
+				case '*':
+				case'\\':
+				case '#':
+				case '-':
+				case '+':
+				case '`': nextChar = CHAR_ESCAPE; break;
 				case '!': case '|': case '.': break;
 				default: thisChar = '\\'; break; // just replace it back with backslash
 			}
@@ -886,16 +932,15 @@ void FormattedText::RegexNecessary()
 	// regex only the even ones, because the odd ones are code blocks
 	for (size_t i = 0; i < m_blocks.size(); i += 2)
 	{
-		auto& vec = m_blocks[i];
-		for (size_t j = 0; j < vec.size(); j += 2) {
-			// same here actually (they are single code blocks)
-			vec[j].second = vec[j].first;
-			UseRegex(vec[j].first);
-		}
+		auto& block = m_blocks[i];
+
+		// same here actually (they are single code blocks)
+		block.second = block.first;
+		UseRegex(block.first);
 	}
 }
 
-std::string FormattedText::EscapeChars(const std::string& str)
+std::string FormattedText::EscapeChars(const std::string& str, const std::string& oldstr)
 {
 	std::string outstr;
 	outstr.reserve(str.size());
@@ -904,13 +949,7 @@ std::string FormattedText::EscapeChars(const std::string& str)
 	{
 		switch (str[i]) {
 			case CHAR_NOOP: break;
-			case CHAR_ESCAPE_UNDERSCORE: outstr += '_'; break;
-			case CHAR_ESCAPE_ASTERISK:   outstr += '*'; break;
-			case CHAR_ESCAPE_BACKSLASH:  outstr +='\\'; break;
-			case CHAR_ESCAPE_BACKTICK:   outstr += '`'; break;
-			case CHAR_ESCAPE_POUND:      outstr += '#'; break;
-			case CHAR_ESCAPE_MINUS:      outstr += '-'; break;
-			case CHAR_ESCAPE_PLUS:       outstr += '+'; break;
+			case CHAR_ESCAPE: outstr += oldstr[i]; break;
 			default: outstr += str[i]; break;
 		}
 	}
@@ -924,44 +963,23 @@ void FormattedText::TokenizeAll()
 	{
 		if (i & 1)
 		{
-			assert(m_blocks[i].size() == 1);
-			m_tokens.push_back(Token(Token::CODE, EscapeChars(m_blocks[i][0].first)));
+			m_tokens.push_back(Token(Token::CODE, EscapeChars(m_blocks[i].first, m_blocks[i].second)));
 		}
 		else
 		{
-			// even, so tokenize it all the way.
-			auto& vec = m_blocks[i];
-			for (size_t j = 0; j < vec.size(); j++)
-			{
-				if (j & 1)
-				{
-					// for each word
-					auto& str = m_blocks[i][j].first;
-
-					size_t last = 0, j;
-					for (j = 0; j <= str.size(); j++)
-					{
-						if (j == str.size() || str[j] == ' ')
-						{
-							// push it *including* the space
-							std::string toInsert;
-							if (j == str.size())
-								toInsert = str.substr(last);
-							else
-								toInsert = str.substr(last, j - last + 1);
-
-							m_tokens.push_back(Token(Token::SMALLCODE, EscapeChars(toInsert)));
-							last = j + 1;
-						}
-					}
-				}
-				else
-				{
-					Tokenize(m_blocks[i][j].first, m_blocks[i][j].second);
-				}
-			}
+			Tokenize(m_blocks[i].first, m_blocks[i].second);
 		}
 	}
+}
+
+void FormattedText::SetAllowBiggerText(bool b)
+{
+	m_bAllowBiggerText = b;
+}
+
+void FormattedText::SetDefaultStyle(int style)
+{
+	m_defaultStyle = style;
 }
 
 void FormattedText::SetMessage(const std::string& msg)

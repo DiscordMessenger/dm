@@ -247,7 +247,7 @@ void MessageEditor::TryToSendMessage()
 		m_replyName = "";
 
 		int otherStuff = m_bBrowsingPast ? m_jumpPresentHeight : 0;
-		Expand(-m_expandedBy - otherStuff);
+		Expand(-m_expandedBy + otherStuff);
 	}
 	delete[] data;
 }

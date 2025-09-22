@@ -738,6 +738,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			Snowflake sf = *(Snowflake*) lParam;
 			g_pMessageList->OnUpdateEmoji(sf);
+			g_pGuildHeader->OnUpdateEmoji(sf);
 			PinList::OnUpdateEmoji(sf);
 			break;
 		}
@@ -1063,6 +1064,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (GetQRCodeDialog()->GetGatewayID() == pParm->m_gatewayId)
 				GetQRCodeDialog()->HandleGatewayMessage(pParm->m_payload);
 
+			delete pParm;
 			break;
 		}
 		case WM_REFRESHMEMBERS:
@@ -1257,7 +1259,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_CLOSE:
 			CloseCleanup(hWnd);
 
-			if (GetLocalSettings()->GetMinimizeToNotif())
+			if (GetLocalSettings()->GetMinimizeToNotif() && LOBYTE(GetVersion()) >= 4)
 			{
 				GetFrontend()->HideWindow();
 				return 1;
@@ -1298,6 +1300,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_COMMAND:
 			return HandleCommand(hWnd, uMsg, wParam, lParam);
+
+		case WM_KILLFOCUS:
+			GetLocalSettings()->Save();
+			break;
 
 		case WM_DESTROY:
 		{
@@ -1673,6 +1679,7 @@ HFONT* g_FntMdStyleArray[FONT_TYPE_COUNT] = {
 	&g_FntMdHdrI, // 10
 	&g_FntMdHdr2, // 11
 	&g_FntMdHdrI2,// 12
+	&g_ReplyTextFont, // 13
 };
 
 void InitializeFonts()
@@ -1698,6 +1705,12 @@ void InitializeFonts()
 	if (haveFont) {
 		int h1 = -MulDiv(lf.lfHeight, 8, 3);
 		int h2 = MulDiv(h1, 4, 5);
+
+		if (LOBYTE(GetVersion()) <= 0x4)
+		{
+			h1 = MulDiv(lf.lfHeight, 6, 4);
+			h2 = MulDiv(lf.lfHeight, 5, 4);
+		}
 
 		// BOLD
 		lf.lfWeight = 700;
@@ -1827,7 +1840,6 @@ InstanceMutex g_instanceMutex;
 
 static bool ForceSingleInstance(LPCTSTR pClassName)
 {
-	return true;
 	HRESULT hResult = g_instanceMutex.Init();
 
 	if (hResult != ERROR_ALREADY_EXISTS)

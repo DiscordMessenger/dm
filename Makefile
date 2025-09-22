@@ -1,17 +1,58 @@
 # User settings
+
+# Print debugging information and keep debugging symbols
 DEBUG ?= yes
+
+# Compile the Unicode version or the ANSI version
 UNICODE ?= yes
-MSYS_PATH ?= C:/MinGW/msys/1.0
-OPENSSL_INC_DIR ?= C:/DiscordMessenger/openssl/include
-OPENSSL_LIB_DIR ?= C:/DiscordMessenger/openssl
+
+# Define IS_MINGW_ON_WINDOWS=yes if you're compiling on Windows
+IS_MINGW_ON_WINDOWS ?= no
+
+# NOTE: These defaults only apply on iProgramInCpp's system!
+# You must specify something else on your end by either `export`-ing these
+# environment variables, or by specifying them in the `make` command line.
+ifeq ($(IS_MINGW_ON_WINDOWS),yes)
+	MSYS_PATH    ?= C:/MinGW/msys/1.0
+
+	# OpenSSL install directory
+	OPENSSL_DIR ?= C:/DiscordMessenger/openssl
+	# Libwebp install directory
+	LIBWEBP_DIR ?= C:/DiscordMessenger/libwebp/build
+	
+	# Toolchain
+	DMCC    ?= gcc
+	DMCXX   ?= g++
+	DMWR    ?= windres
+	DMSTRIP ?= strip
+	MKDIR   ?= $(MSYS_PATH)/bin/mkdir.exe
+	FIND    ?= $(MSYS_PATH)/bin/find.exe
+else
+	# OpenSSL install directory
+	OPENSSL_DIR ?= /mnt/c/DiscordMessenger/openssl
+	# Libwebp install directory
+	LIBWEBP_DIR ?= /mnt/c/DiscordMessenger/libwebp/build
+	
+	# Toolchain
+	DMPREFIX ?= i686-w64-mingw32
+	DMCC    ?= $(DMPREFIX)-gcc
+	DMCXX   ?= $(DMPREFIX)-g++
+	DMWR    ?= $(DMPREFIX)-windres
+	DMSTRIP ?= $(DMPREFIX)-strip
+	MKDIR   ?= mkdir
+	FIND    ?= find
+	
+	# Extra flags if you need them
+	EXTRA_FLAGS=-static-libgcc -static-libstdc++ -Wl,--no-whole-archive
+endif
 
 # Print info
 $(info Discord Messenger makefile)
 $(info Debug: $(DEBUG))
 $(info Unicode: $(UNICODE))
 
-USER_INC_DIRS =
-USER_DEFINES  =
+USER_INC_DIRS ?=
+USER_DEFINES  ?=
 
 # WINVER definitions
 WINVER  ?= 0x0501
@@ -22,19 +63,23 @@ BUILD_DIR = build
 BIN_DIR = bin
 SRC_DIR = src
 
+OPENSSL_INC_DIR = $(OPENSSL_DIR)/include
+OPENSSL_LIB_DIR = $(OPENSSL_DIR)
+
 # Target executable
 TARGET = $(BIN_DIR)/DiscordMessenger.exe
 
 # Location of certain utilities.  Because Win32 takes over if you don't
 ifeq ($(USE_MINGW_FIND),yes)
-	MKDIR = $(MSYS_PATH)/bin/mkdir.exe
-	FIND  = $(MSYS_PATH)/bin/find.exe
 else
 	MKDIR ?= mkdir
 	FIND  ?= find
 endif
 
-WR    ?= windres
+SYSROOTD=
+ifdef SYSROOT
+	SYSROOTD = --sysroot=$(SYSROOT)
+endif
 
 INC_DIRS = \
 	$(USER_INC_DIRS) \
@@ -103,6 +148,7 @@ CXXFLAGS = \
 	-mno-mmx       \
 	-mno-sse       \
 	-mno-sse2      \
+	-march=i586    \
 	$(UNICODE_DEF) \
 	$(DEBUG_DEF)
 
@@ -120,6 +166,12 @@ LDFLAGS = \
 	-lcrypto    \
 	-lssl       \
 	$(EXTRA_FLAGS)
+
+ifeq ($(DISABLE_WEBP),1)
+else
+	LIB_DIRS += -L$(LIBWEBP_DIR)
+	LDFLAGS  += -lwebp
+endif
 
 WRFLAGS = \
 	-Ihacks
@@ -145,18 +197,32 @@ clean:
 
 -include $(DEP)
 
+ifeq ($(DEBUG),no)
+
 $(TARGET): $(OBJ)
 	@echo \>\> LINKING $@
 	@$(MKDIR) -p $(dir $@)
-	@$(CXX) $(OBJ) $(LDFLAGS) -o $@
+	@$(DMCXX) $(SYSROOTD) $(OBJ) $(LDFLAGS) -o $@
+	@echo \>\> Duplicating binary and stripping it
+	@cp $@ $(basename $@)-Symbols.exe
+	@$(DMSTRIP) $@
+
+else
+
+$(TARGET): $(OBJ)
+	@echo \>\> LINKING $@
+	@$(MKDIR) -p $(dir $@)
+	@$(DMCXX) $(SYSROOTD) $(OBJ) $(LDFLAGS) -o $@
+
+endif
 
 # NOTE: Using --use-temp-file seems to get rid of some weirdness with MinGW 6.3.0's windres?
 $(BUILD_DIR)/%.o: %.rc
 	@echo \>\> Compiling resource $<
 	@$(MKDIR) -p $(dir $@)
-	@$(WR) $(WRFLAGS) -i $< -o $@ --use-temp-file
+	@$(DMWR) $(WRFLAGS) -i $< -o $@ --use-temp-file
 
 $(BUILD_DIR)/%.o: %.cpp
 	@echo \>\> Compiling $<
 	@$(MKDIR) -p $(dir $@)
-	@$(CXX) $(CXXFLAGS) -c $< -o $@
+	@$(DMCXX) $(SYSROOTD) $(CXXFLAGS) -c $< -o $@

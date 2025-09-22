@@ -202,11 +202,17 @@ public:
 	bool FlashOnNotification() const {
 		return m_bFlashOnNotification;
 	}
+	bool Use12HourTime() const {
+		return m_bUse12HourTime;
+	}
 	void SetEnableNotifications(bool b) {
 		m_bEnableNotifications = b;
 	}
 	void SetFlashOnNotification(bool b) {
 		m_bFlashOnNotification = b;
+	}
+	void SetUse12HourTime(bool b) {
+		m_bUse12HourTime = b;
 	}
 
 private:
@@ -237,6 +243,7 @@ private:
 	bool m_bShowEmbedContent = true;
 	bool m_bEnableNotifications = true;
 	bool m_bFlashOnNotification = true;
+	bool m_bUse12HourTime = false;
 	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
 	int m_height = 700;

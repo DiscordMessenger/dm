@@ -146,6 +146,7 @@ public:
 	void SetTime(time_t t);
 	void SetDateEdited(const std::string& dateStr);
 	void SetTimeEdited(time_t t);
+	void UpdateTimestamp();
 
 	bool CheckWasMentioned(Snowflake user, Snowflake guild, bool bSuppressEveryone = false, bool bSuppressRoles = false) const;
 

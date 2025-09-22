@@ -657,6 +657,8 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 			case IMAGE:
 			case IMAGE_ATTACHMENT:
 			{
+				DbgPrintF("Attachment at url %s downloaded.", pRequest->url.c_str());
+
 				// Since the request is passed in as a string, this could do for getting the binary shit out of it
 				const uint8_t* pData = (const uint8_t*)pRequest->response.data();
 				const size_t nSize = pRequest->response.size();
@@ -1631,6 +1633,119 @@ void DiscordInstance::ClearData()
 	m_nextAttachmentID = 1;
 }
 
+std::string DiscordInstance::ResolveTimestamp(const std::string& timestampCode)
+{
+	if (strncmp(timestampCode.c_str(), "t:", 2) != 0)
+		// doesn't start with t:
+		return "";
+
+	std::string timeStr = timestampCode.substr(2);
+	auto pos = timeStr.find(':');
+	if (pos == std::string::npos || pos == timeStr.size() - 1)
+		// cannot find the second colon, or it's at the end of the string
+		return "";
+
+	char type = timeStr[pos + 1];
+	timeStr = timeStr.substr(0, pos);
+
+	std::stringstream ss(timeStr);
+	time_t timeInt = -1;
+	ss >> timeInt;
+
+	if (timeInt == -1)
+		return "";
+
+	switch (type) {
+		case 't': return FormatTimestampTimeShort(timeInt);
+		case 'T': return FormatTimestampTimeLong(timeInt);
+		case 'd': return FormatTimestampDateShort(timeInt);
+		case 'D': return FormatTimestampDateLong(timeInt);
+		case 'f': return FormatTimestampDateLongTimeShort(timeInt);
+		case 'F': return FormatTimestampDateLongTimeLong(timeInt);
+		case 'R': return FormatTimestampRelative(timeInt);
+	}
+
+	return "";
+}
+
+void DiscordInstance::ResolveLinks(FormattedText* message, std::vector<InteractableItem>& interactables, Snowflake guildID)
+{
+	if (guildID == 0)
+		guildID = GetCurrentGuildID();
+
+	auto& words = message->GetWords();
+	for (size_t i = 0; i < words.size(); i++)
+	{
+		Word& word = words[i];
+		bool isLink = word.m_flags & WORD_LINK;
+		bool isMent = word.m_flags & WORD_MENTION;
+		bool isTime = word.m_flags & WORD_TIMESTAMP;
+
+		InteractableItem item;
+		/**/ if (isLink) item.m_type = InteractableItem::LINK;
+		else if (isMent) item.m_type = InteractableItem::MENTION;
+		else if (isTime) item.m_type = InteractableItem::TIMESTAMP;
+
+		if (item.m_type == InteractableItem::NONE)
+			continue;
+
+		item.m_wordIndex = i;
+		item.m_text = word.GetContentOverride();
+		item.m_destination = word.m_content;
+
+		bool changed = false;
+		if (isMent && !word.m_content.empty())
+		{
+			char mentType = word.m_content[0];
+
+			if (mentType == '#')
+			{
+				std::string mentDest = word.m_content.substr(1);
+				Snowflake sf = (Snowflake)GetIntFromString(mentDest);
+				item.m_text = "#" + GetDiscordInstance()->LookupChannelNameGlobally(sf);
+				item.m_affected = sf;
+				changed = true;
+			}
+			else
+			{
+				bool isRole = false;
+				bool hasExclam = false;
+				if (word.m_content.size() > 2) {
+					if (word.m_content[1] == '&')
+						isRole = true;
+
+					// not totally sure what this does. I only know that certain things use it
+					if (word.m_content[1] == '!')
+						hasExclam = true;
+				}
+
+				std::string mentDest = word.m_content.substr((isRole || hasExclam) ? 2 : 1);
+				Snowflake sf = (Snowflake)GetIntFromString(mentDest);
+				item.m_affected = sf;
+
+				if (isRole)
+					item.m_text = "@" + GetDiscordInstance()->LookupRoleName(sf, guildID);
+				else
+					item.m_text = "@" + GetDiscordInstance()->LookupUserNameGlobally(sf, guildID);
+				changed = true;
+			}
+		}
+		if (isTime && !word.m_content.empty())
+		{
+			std::string resolveTime = ResolveTimestamp(word.m_content);
+			if (!resolveTime.empty()) {
+				item.m_text = resolveTime;
+				changed = true;
+			}
+		}
+
+		if (changed)
+			word.SetContentOverride(item.m_text);
+
+		interactables.push_back(item);
+	}
+}
+
 void DiscordInstance::SetActivityStatus(eActiveStatus status, bool bRequestServer)
 {
 	DbgPrintF("Setting activity status to %d", status);
@@ -1966,19 +2081,21 @@ bool DiscordInstance::SortGuilds()
 			m_guildItemList.AddFolder(guild.first, folderNames[guild.first]);
 		}
 
+		// Set the guild added flag to true even if we aren't adding it, because
+		// I don't feel like adding a redundant check below
+		guildAdded[guild.second] = true;
+
 		// Fetch info about the actual guild.
 		Guild* gld = GetGuild(guild.second);
 		std::string name, avatar;
 		if (!gld) {
 			DbgPrintF("Guild %lld in guild folders doesn't actually exist", guild.second);
-			name = "Unknown guild";
-		}
-		else {
-			name = gld->m_name;
-			avatar = gld->m_avatarlnk;
+			continue;
 		}
 
-		guildAdded[guild.second] = true;
+		name = gld->m_name;
+		avatar = gld->m_avatarlnk;
+
 		m_guildItemList.AddGuild(guild.first, guild.second, name, avatar);
 	}
 
@@ -2163,9 +2280,9 @@ void DiscordInstance::HandleREADY_SUPPLEMENTAL(Json& j)
 			}
 
 			// Look for any activities -- TODO: Server specific activities
-			if (guildPres.contains("game") && !guildPres["game"].is_null())
-				pf->m_status = GetStatusStringFromGameJsonObject(guildPres["game"]);
-			else if (guildPres.contains("activities") && !memPres["activities"].is_null())
+			if (memPres.contains("game") && !memPres["game"].is_null())
+				pf->m_status = GetStatusStringFromGameJsonObject(memPres["game"]);
+			else if (memPres.contains("activities") && !memPres["activities"].is_null())
 				pf->m_status = GetStatusFromActivities(memPres["activities"]);
 			else
 				pf->m_status = "";
@@ -2504,7 +2621,14 @@ void DiscordInstance::HandleUSER_SETTINGS_PROTO_UPDATE(Json& j)
 void DiscordInstance::HandleGUILD_CREATE(Json& j)
 {
 	Json& data = j["d"];
+	Snowflake guildID = GetSnowflake(data, "id");
 	ParseAndAddGuild(data);
+
+	Guild* guild = GetGuild(guildID);
+	if (guild)
+	{
+		m_guildItemList.AddGuild(0, guildID, guild->m_name, guild->m_avatarlnk);
+	}
 
 	GetFrontend()->RepaintGuildList();
 }
@@ -2521,6 +2645,7 @@ void DiscordInstance::HandleGUILD_DELETE(Json& j)
 		if (iter->m_snowflake == sf)
 		{
 			m_guilds.erase(iter);
+			m_guildItemList.EraseGuild(sf);
 			GetFrontend()->RepaintGuildList();
 
 			if (m_CurrentGuild == sf)
@@ -2944,7 +3069,11 @@ void DiscordInstance::HandleGuildMemberListUpdate_Update(Snowflake guild, nlohma
 		return;
 	}
 
-	pGld->m_members[index] = ParseGuildMemberOrGroup(guild, j["item"]);
+	Snowflake sf = ParseGuildMemberOrGroup(guild, j["item"]);
+	pGld->m_members[index] = sf;
+
+	std::set<Snowflake> updates{ sf };
+	GetFrontend()->RefreshMembers(updates);
 }
 
 void DiscordInstance::OnUploadAttachmentFirst(NetRequest* pReq)

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include "Snowflake.hpp"
 #include "TextInterface.hpp"
 
 struct Token
@@ -28,6 +29,8 @@ struct Token
 		UNDERL_END,
 		ITALIE_BEGIN,
 		ITALIE_END,
+		CODE_BEGIN,
+		CODE_END,
 		LIST_ITEM,
 		EVERYONE,
 		HERE,
@@ -77,6 +80,7 @@ struct Token
 #define WORD_FORWARD   (1 << 21) // start of forwarded message
 #define WORD_FORWARDE  (1 << 22) // end of forwarded message
 #define WORD_HEADER2   (1 << 23) // Header 2 style.
+#define WORD_SMALLER   (1 << 24) // Smaller text. (-#)
 
 struct Word
 {
@@ -146,9 +150,12 @@ class FormattedText
 public:
 	typedef void(*FunctionEachEmote) (void* context, const Rect& rect);
 
+	void SetAllowBiggerText(bool b);
+	void SetDefaultStyle(int style);
 	void SetMessage(const std::string& msg);
 	void Layout(DrawingContext* context, const Rect& rect, int offsetX = 0);
 	void Draw(DrawingContext* context, int offsetY = 0);
+	void DrawConfined(DrawingContext* context, const Rect& rect, int offsetY = 0);
 	void RunForEachCustomEmote(FunctionEachEmote func, void* context);
 	Rect GetExtent(int offsetY = 0);
 
@@ -184,13 +191,19 @@ public:
 		return m_bFormatted;
 	}
 
+	const std::string& GetRawMessage() const {
+		return m_rawMessage;
+	}
+
 private:
 	std::string m_rawMessage;
-	std::vector<std::vector<std::pair<std::string, std::string>>> m_blocks; // see note 1. and 2.
+	std::vector<std::pair<std::string, std::string>> m_blocks; // see note 1. and 2.
 	std::vector<Token> m_tokens;
 	std::vector<Word> m_words;
 	bool m_bFormatted = false;
+	bool m_bAllowBiggerText = true;
 	Rect m_layoutRect;
+	int m_defaultStyle = 0;
 
 	// Notes!
 	// 1. This is bullshit, to be honest. But it should work.
@@ -216,7 +229,7 @@ private:
 	std::vector<std::pair<std::string, std::string> > SplitBackticks(const std::string& str); // see note 2. and 4.
 	void UseRegex(std::string& str);
 	void Tokenize(const std::string& str, const std::string& oldmsg);
-	std::string EscapeChars(const std::string& str);
+	std::string EscapeChars(const std::string& str, const std::string& oldstr);
 
 	void SplitBlocks();
 	void RegexNecessary();
@@ -224,3 +237,46 @@ private:
 	void ParseText();
 };
 
+enum {
+	EMBED_IN_TITLE,
+	EMBED_IN_AUTHOR,
+	EMBED_IN_PROVIDER,
+};
+
+class InteractableItem
+{
+public:
+	enum {
+		NONE,
+		LINK,
+		MENTION,
+		TIMESTAMP,
+		EMBED_IMAGE,
+		EMBED_LINK,
+	};
+	enum {
+		EMBED_OFFSET = 1000000000,
+	};
+public:
+	bool TypeUpdatedFromWords() const {
+		return m_type != EMBED_IMAGE && m_type != EMBED_LINK;
+	}
+	bool ShouldInvalidateOnHover() const {
+		return m_type != EMBED_IMAGE;
+	}
+	bool UseLinkColor() const {
+		if (m_type == EMBED_LINK)
+			return m_placeInEmbed == EMBED_IN_TITLE;
+		return true;
+	}
+	int m_type = NONE;
+	Rect m_rect{};
+	std::string m_text;
+	std::string m_destination;
+	std::string m_proxyDest;
+	bool m_bHighlighted = false;
+	size_t m_wordIndex = 0;
+	Snowflake m_affected = 0;
+	int m_imageWidth = 0, m_imageHeight = 0;
+	int m_placeInEmbed = 0;
+};

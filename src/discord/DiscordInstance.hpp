@@ -19,6 +19,7 @@
 #include "NotificationManager.hpp"
 #include "UserGuildSettings.hpp"
 #include "GuildListItem.hpp"
+#include "FormattedText.hpp"
 
 struct NetRequest;
 
@@ -471,6 +472,9 @@ public:
 	// Clears data about the current user when logged out.
 	void ClearData();
 
+	// Resolves links automatically in a formatted message.
+	void ResolveLinks(FormattedText* message, std::vector<InteractableItem>& interactables, Snowflake guildID = 0);
+
 public:
 	DiscordInstance(std::string token) : m_token(token), m_notificationManager(this) {
 		InitDispatchFunctions();
@@ -504,6 +508,7 @@ private:
 	void OnUploadAttachmentFirst(NetRequest* pReq);
 	void OnUploadAttachmentSecond(NetRequest* pReq);
 	void SearchSubGuild(std::vector<QuickMatch>& matches, Guild* pGuild, int matchFlags, const char* query);
+	std::string ResolveTimestamp(const std::string& timestampCode);
 	std::string TransformMention(const std::string& source, Snowflake guild, Snowflake channel);
 
 	// handle functions

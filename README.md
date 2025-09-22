@@ -26,8 +26,10 @@ A Discord server about this client can be joined here: https://discord.gg/cEDjgD
 
 ## Screenshots
 
-![Windows 2000 screenshot](doc/ss_2000.png)
+![Windows 11 screenshot](doc/ss_11.png)
 ![Windows XP screenshot](doc/ss_xp.png)
+![Windows 95 screenshot](doc/ss_95.png)
+![Windows NT 3.1 screenshot](doc/ss_nt31.png)
 
 ## Minimum System Requirements
 
@@ -48,7 +50,7 @@ the correct locations), check out the submodules with the command:
 
 Then you can start the build process.
 
-You can build this project in two ways.
+You can build this project in three ways.
 
 ### 1. Visual Studio
 
@@ -83,19 +85,48 @@ https://developers.google.com/speed/webp/download.  Extract the archive and plac
 
 (Note: x64 compilation with MinGW is currently not supported)
 
+**(NOTE: The versions of MinGW your package manager(s) provide(s) may not target your desired platform!
+If you want Pentium 1 support and/or native Windows 95/NT 3.x support, see: [Pentium Toolchain Build Guide](doc/pentium-toolchain/README.md))**
+
 1. Acquire mingw-w64:
 ```
 sudo apt install mingw-w64 gcc-mingw-w64-x86-64-posix g++-mingw-w64-x86-64-posix
 ```
 
-2. Set `OPENSSL_INC_DIR` and `OPENSSL_LIB_DIR` in your environment variables to your OpenSSL
-include and library directories.  If you want to remember the paths, edit the Makefile to use those
-as your defaults, or `export` them (but make sure to not check in your change when sending a PR!)
+2. Check out Discord Messenger's fork of [https://github.com/DiscordMessenger/openssl](OpenSSL).
 
-3. Use the following command line:
+3. Build it: `./buildit` or `TOOLCHAIN_PATH=[custom toolchain path] ./buildit`
+(if you're using the Pentium toolchain you should specify the TOOLCHAIN_PATH)
+
+4. Set `OPENSSL_DIR` in your environment variables to your OpenSSL checkout directory.  If you want
+to remember the path, edit the Makefile to use it as your default(but make sure to not check in your
+change when sending a PR!), or `export` it.
+
+5. Check out Discord Messenger's fork of [https://github.com/DiscordMessenger/libwebp](LibWebP).
+
+You can skip this step and steps #6 and #7.
+
+6. Run the following commands:
 ```
-CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ WR=x86_64-w64-mingw32-windres make DEBUG=no UNICODE=[no|yes] [-j (your core count)]
+mkdir build && cd build
+
+cmake .. -DCMAKE_TOOLCHAIN_FILE=../win32.cmake
+-or-
+TOOLCHAIN_PATH=[custom toolchain path] cmake .. -DCMAKE_TOOLCHAIN_FILE=../win32.cmake
+
+make -j12
 ```
+
+7. Set `LIBWEBP_DIR` to `[libwebp checkout dir]/build`.
+
+8. Finally, you are ready to compile Discord Messenger.
+
+Use the following command line:
+```
+make DEBUG=no UNICODE=[no|yes] [-j (your core count)]
+```
+
+If you didn't compile LibWebP you must additionally set `DISABLE_WEBP=yes`.
 
 The finished binary will be placed in `./bin/DiscordMessenger.exe`. Enjoy!
 
@@ -124,20 +155,19 @@ final product on anything newer than XP.
 
 3. Ensure that both the MinGW `bin/` AND msys `bin/` directories are in your `PATH`.
 
-4. Set `OPENSSL_INC_DIR` and `OPENSSL_LIB_DIR` in your environment variables to your OpenSSL
-include and library directories.  If you want to remember the paths, edit the Makefile to use those
-as your defaults (but make sure to not check in your change when sending a PR!)
+4. Set `OPENSSL_DIR` in your environment variables to your OpenSSL library directory.
 
-If you wish to use Shining Light Productions' distribution of OpenSSL-Win32, use the
-`%OPENSSL_INSTALL%/include` and `%OPENSSL_INSTALL%/lib/MinGW` directories for the include and lib
-dirs respectively.
+If you wish to use Shining Light Productions' distribution of OpenSSL-Win32, copy the
+`%OPENSSL_INSTALL%/include` and `%OPENSSL_INSTALL%/lib/MinGW` directories to a new folder
+that you assign as `OPENSSL_DIR`, then make sure that your MinGW libraries are actually
+in the root of that new folder!
 
 If you want compatibility on Windows versions which don't support the Microsoft Visual Studio 2015
 runtimes (VCRUNTIME140.DLL), then you will need to compile OpenSSL yourself.  See the section on
 [Compiling OpenSSL for older Windows versions](#compiling-openssl-for-older-windows-versions)
 section.
 
-5. Run the `make` command.
+5. Run the `make IS_MINGW_ON_WINDOWS=yes DISABLE_WEBP=yes` command.
 
 6. Enjoy!
 
@@ -199,42 +229,37 @@ section.
 
 ## Compiling OpenSSL for older Windows versions
 
-You will need to use the later MinGW forks (not the original one as this project wants).
-Start by opening `mingw32` (from `mingw-w64`), then cloning the OpenSSL repo. (found at
-the following link: https://github.com/DiscordMessenger/openssl.git )
+You will need to use the `mingw-w64` (not the original one as this project wanted once upon a time).
+Start by cloning the OpenSSL repo found at the following link: https://github.com/DiscordMessenger/openssl.git.
 
 Then, run the `./buildit` command.
 
-To use the final libraries and DLLs when compiling Discord Messenger, use `[OpenSSL repo root]/include`
-as your `OPENSSL_INC_DIR`, and `[OpenSSL repo root]` as your OPENSSL_LIB_DIR.
+To use the final libraries and DLLs when compiling Discord Messenger, use `[OpenSSL repo root]` as your `OPENSSL_DIR`.
 
-[TODO: Figure out how to avoid this]
-
-[TODO: Maybe remove all scanf uses?]
-
-NOTE: On Windows 2000 and earlier, OpenSSL can't link because it uses `_strtoi64` and
-`_strtoui64`. Replace these imports with functions likely to return 0 such as `iswxdigit`
-and `isleadbyte` respectively, using a hex editor.
-
-## Running on Windows NT 3.1
+## Running on Windows NT 3.x and Windows 9x
 
 **NOTE: You do not need to follow these steps if you don't intend on running
-Discord Messenger on Windows NT 3.1.**
+Discord Messenger on these versions of Windows.**
 
-Windows NT 3.1 doesn't define certain functions in Kernel32 that MinGW libraries expect
-to be there.  It also doesn't come with a copy of `MSVCRT.DLL`.  As such, you must acquire
-a copy of `MSVCRT.DLL` (for example, from Windows 95), then patch all of the binaries
-(including `msvcrt.dll` but except `DiscordMessenger.exe`), to replace all of the
-**uppercase** `KERNEL32.DLL` text to `DIMEKE32.DLL`.  Then, download and compile the
-https://github.com/DiscordMessenger/kernel32shim.git repo with MinGW (the one you used
-to compile DM) by running `make`.  It should produce a `dimeke32.dll` executable which
-you then can place in your installation.
+You will need to use the mingw-w64 Pentium toolchain described in the [Pentium Toolchain Build Guide](doc/pentium-toolchain/README.md)),
+which additionally provides patches for compatibility with Windows NT 3.x / 9x.
 
-One more thing, you must byte patch DiscordMessenger.exe to report a minimum subsystem
-version of 3.10 (as opposed to 4.0).  The version is located at offset 0xC8 or 200
-(**check if the bytes match `04 00 00 00`**).  Overwrite it with the following byte
-string: `03 00 0A 00`. Then, save.  You must also do this on libgcc_s_dw2-1.dll,
-libstdc++-6.dll, and msvcrt.dll.
+One more thing, you must byte patch DiscordMessenger.exe to report a minimum subsystem version of
+3.10 (as opposed to 4.0).  The subsystem version is typically located at offset 0xC8 or 200
+(**make sure to check if the bytes match `04 00 00 00`**).  Overwrite it with the following byte
+string: `03 00 0A 00`. Then, save.
+
+## Short File Names
+
+If you are planning to run Discord Messenger from a FAT partition on a Windows OS that does not support
+LFNs (Windows NT 3.1, 3.5, and Windows 95 betas), then you will need to edit the final executable and its
+DLLs to use SFN versions thereof.
+
+- `libcrypto-3.dll` -> `libcrypt.dll`
+- `libssl-3.dll` -> `libssl.dll`
+
+You can use a hex editor for this purpose or you can use CFF Explorer.  These changes must be applied to
+`DiscordMessenger.exe` *and* `libssl-3.dll`. Also, make sure to rename the libcrypto and libssl DLLs.
 
 ## Attributions
 

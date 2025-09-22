@@ -104,3 +104,6 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 void MdDrawCodeBackground(DrawingContext* context, const Rect& rect);
 void MdDrawForwardBackground(DrawingContext* context, const Rect& rect);
 int MdGetQuoteIndentSize();
+void MdSetClippingRect(DrawingContext* context, const Rect& rect);
+void MdClearClippingRect(DrawingContext* context);
+

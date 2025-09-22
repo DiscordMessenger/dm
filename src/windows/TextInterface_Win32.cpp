@@ -14,6 +14,8 @@ extern HFONT* g_FntMdStyleArray[FONT_TYPE_COUNT];
 static int MdDetermineFontID(int styleFlags) {
 	if (styleFlags & (WORD_CODE | WORD_MLCODE))
 		return 8;
+	if (styleFlags & WORD_SMALLER)
+		return 13; // I don't feel like writing even more code
 	if (styleFlags & WORD_HEADER1)
 		return (styleFlags & WORD_ITALIC) ? 10 : 9;
 	if (styleFlags & WORD_HEADER2)
@@ -34,6 +36,30 @@ static HFONT MdGetFontByID(int id) {
 static HFONT MdDetermineFont(int styleFlags)
 {
 	return MdGetFontByID(MdDetermineFontID(styleFlags));
+}
+
+int MdGetOverhang(HDC hdc, TCHAR chr)
+{
+	ABC abc{};
+	if (GetCharABCWidths(hdc, chr, chr, &abc)) {
+		return -abc.abcC;
+	}
+
+	// slow!
+	LOGFONT lf;
+	HFONT hf = (HFONT) GetCurrentObject(hdc, OBJ_FONT);
+	if (!hf)
+		return 0;
+
+	if (!GetObject(hf, sizeof lf, &lf))
+		return 0;
+
+	if (!lf.lfItalic)
+		return 0;
+
+	SIZE sz{};
+	GetTextExtentPoint32(hdc, &chr, 1, &sz);
+	return MulDiv(sz.cy, 1, 2) - 2;
 }
 
 Point MdMeasureString(DrawingContext* context, const String& word, int styleFlags, bool& outWasWordWrapped, int maxWidth)
@@ -76,6 +102,13 @@ Point MdMeasureString(DrawingContext* context, const String& word, int styleFlag
 		}
 	}
 
+	if ((styleFlags & (WORD_ITALIC | WORD_SMALLER)) && word.GetSize() != 0)
+	{
+		// subtract the overhang (C spacing) of the last character.
+		TCHAR chr = word.GetWrapped()[word.GetSize() - 1];
+		rect.right -= MdGetOverhang(hdc, chr);
+	}
+
 	SelectObject(hdc, old);
 
 	return { rect.right - rect.left, rect.bottom - rect.top };
@@ -83,6 +116,9 @@ Point MdMeasureString(DrawingContext* context, const String& word, int styleFlag
 int GetProfilePictureSize();
 int MdLineHeight(DrawingContext* context, int styleFlags)
 {
+	if (styleFlags & WORD_HEADER1)
+		return GetProfilePictureSize();
+
 	int fontId = MdDetermineFontID(styleFlags);
 	if (context->m_cachedHeights[fontId])
 		return context->m_cachedHeights[fontId];
@@ -107,10 +143,20 @@ int MdSpaceWidth(DrawingContext* context, int styleFlags)
 	HDC hdc = context->m_hdc;
 	HFONT font = MdGetFontByID(fontId);
 	HGDIOBJ old = SelectObject(hdc, font);
-	SIZE sz{};
-	GetTextExtentPoint32(hdc, TEXT(" "), 1, &sz);
+	ABC abc{};
+	BOOL res = GetCharABCWidths(hdc, ' ', ' ', &abc);
 	SelectObject(hdc, old);
-	int wd = sz.cx;
+	int wd = abc.abcA + abc.abcB + abc.abcC;
+
+	if (!res) {
+		INT sz = 0;
+		GetCharWidth32(hdc, ' ', ' ', &sz);
+		if (sz == 0) {
+			sz = 3;
+		}
+		wd = sz;
+	}
+
 	context->m_cachedSpaceWidths[fontId] = wd;
 	return wd;
 }
@@ -172,11 +218,6 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 		rc.right  -= 4;
 		rc.bottom -= 4;
 	}
-	if (styleFlags & WORD_CODE) {
-		// TODO: why should I do this?
-		rc.left   -= 2;
-		rc.right  -= 2;
-	}
 	COLORREF oldColor   = CLR_NONE;
 	COLORREF oldColorBG = CLR_NONE;
 	bool setColor   = false;
@@ -214,7 +255,23 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 		rc2.right = rc2.left + ScaleByDPI(3);
 		FillRect(hdc, &rc2, ri::GetSysColorBrush(COLOR_SCROLLBAR));
 	}
+
+	// prevent italics that overflow the rect from being clipped
+	if (styleFlags & (WORD_ITALIC | WORD_SMALLER)) {
+		TCHAR chr = str.GetWrapped()[str.GetSize() - 1];
+		ABC abc{};
+		if (GetCharABCWidths(hdc, chr, chr, &abc)) {
+			rc.right -= abc.abcC;
+		}
+		else {
+			// Windows NT 3.1 mode
+			rc.left -= 4;
+			rc.right += 8;
+		}
+	}
+
 	DrawText(context->m_hdc, str.GetWrapped(), -1, &rc, flags);
+
 	SelectObject(hdc, old);
 	if (setColor)
 		SetTextColor(hdc, oldColor);
@@ -258,4 +315,27 @@ void MdDrawForwardBackground(DrawingContext* context, const Rect& rect)
 int MdGetQuoteIndentSize()
 {
 	return ScaleByDPI(SIZE_QUOTE_INDENT);
+}
+
+HRGN _clippingRectRgn = NULL;
+
+void MdSetClippingRect(DrawingContext* context, const Rect& rect)
+{
+	if (_clippingRectRgn) {
+		SelectClipRgn(context->m_hdc, NULL);
+		DeleteRgn(_clippingRectRgn);
+	}
+
+	_clippingRectRgn = CreateRectRgn(W32RECT(rect));
+	SelectClipRgn(context->m_hdc, _clippingRectRgn);
+}
+
+void MdClearClippingRect(DrawingContext* context)
+{
+	if (!_clippingRectRgn)
+		return;
+
+	SelectClipRgn(context->m_hdc, NULL);
+	DeleteRgn(_clippingRectRgn);
+	_clippingRectRgn = NULL;
 }

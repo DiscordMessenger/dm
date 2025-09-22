@@ -3,6 +3,7 @@
 #include <map>
 #include "Main.hpp"
 #include "../discord/Channel.hpp"
+#include "../discord/FormattedText.hpp"
 
 #define T_GUILD_HEADER_CLASS TEXT("GuildHeader")
 
@@ -21,6 +22,7 @@ public:
 	~GuildHeader();
 
 	void Update();
+	void OnUpdateEmoji(Snowflake sf);
 
 public:
 	static WNDCLASS g_GuildHeaderClass;
@@ -80,6 +82,9 @@ private:
 	LONG m_minRightToolbarX = 0;
 
 	std::map<int, HICON> m_hIcons;
+	
+	std::string m_currentChannelDescription;
+	FormattedText m_channelDescription;
 
 	void Layout();
 
@@ -90,5 +95,7 @@ private:
 	void HitTestButton(HDC hdc, Button& button, POINT& pt);
 	void CheckClickButton(HDC hdc, Button& button, POINT& pt);
 	void CheckReleaseButton(HDC hdc, HWND hWnd, Button& button, int buttonIndex, POINT& pt);
+
+	static void InvalidateEmote(void* context, const Rect& rc);
 };
 
