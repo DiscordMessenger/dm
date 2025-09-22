@@ -37,6 +37,7 @@ StatusBar* StatusBar::Create(HWND hParent)
 	if (!pBar->m_hwnd) {
 		delete pBar;
 		pBar = nullptr;
+		return nullptr;
 	}
 
 	SetWindowFont(pBar->m_hwnd, g_MessageTextFont, TRUE);
@@ -271,11 +272,6 @@ void StatusBar::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 	SetBkMode(lpDIS->hDC, mode);
 }
 
-extern int g_GuildListerWidth; // all in main.cpp
-extern int g_ChannelViewListWidth;
-extern int g_MemberListWidth;
-extern int g_SendButtonWidth;
-
 StatusBar::~StatusBar()
 {
 	if (m_hwnd) {
@@ -295,9 +291,9 @@ void StatusBar::UpdateParts(int width)
 	
 	int scaled10 = ScaleByDPI(10);
 	Widths[IDP_CNTRLS] = width;
-	Widths[IDP_CHRCNT] = width - g_MemberListWidth - scaled10 * 3 / 2;
-	Widths[IDP_TYPING] = Widths[IDP_CHRCNT] - g_SendButtonWidth - scaled10;
-	Widths[IDP_NOTIFS] = g_GuildListerWidth + g_ChannelViewListWidth + scaled10 * 3;
+	Widths[IDP_CHRCNT] = width - GetMainWindow()->m_MemberListWidth - scaled10 * 3 / 2;
+	Widths[IDP_TYPING] = Widths[IDP_CHRCNT] - GetMainWindow()->m_SendButtonWidth - scaled10;
+	Widths[IDP_NOTIFS] = GetMainWindow()->m_GuildListerWidth + GetMainWindow()->m_ChannelViewListWidth + scaled10 * 3;
 
 	SendMessage(m_hwnd, SB_SETPARTS, _countof(Widths), (LPARAM) Widths);
 

@@ -170,7 +170,7 @@ HImage* ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& ou
 	hdr.biCompression = BI_RGB;
 	hdr.biSize = sizeof(BITMAPINFOHEADER);
 
-	HDC wndHdc = GetDC(g_Hwnd);
+	HDC wndHdc = GetDC(GetMainHWND());
 	HDC hdc = CreateCompatibleDC(wndHdc);
 
 	for (size_t i = 0; i < loadedImageCount; i++)
@@ -390,7 +390,7 @@ HImage* ImageLoader::ConvertToBitmap(const uint8_t* pData, size_t size, bool& ou
 	}
 
 	DeleteDC(hdc);
-	ReleaseDC(g_Hwnd, wndHdc);
+	ReleaseDC(GetMainHWND(), wndHdc);
 	return himg;
 }
 

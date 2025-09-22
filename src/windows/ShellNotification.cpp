@@ -21,7 +21,7 @@ void ShellNotification::Initialize()
 	ZeroMemory(&d, sizeof d);
 
 	d.cbSize = NOTIFYICONDATA_V2_SIZE;
-	d.hWnd   = g_Hwnd;
+	d.hWnd   = GetMainHWND();
 	d.uID    = NOTIFICATION_ID;
 	d.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_SHOWTIP;
 	d.hIcon  = LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)));
@@ -43,7 +43,7 @@ void ShellNotification::Deinitialize()
 	ZeroMemory(&d, sizeof d);
 	d.cbSize = NOTIFYICONDATA_V2_SIZE;
 	d.uID    = NOTIFICATION_ID;
-	d.hWnd   = g_Hwnd;
+	d.hWnd   = GetMainHWND();
 	ri::Shell_NotifyIcon(NIM_DELETE, &d);
 
 	m_bInitialized = false;
@@ -63,16 +63,14 @@ void ShellNotification::ShowBalloon(const std::string& titleString, const std::s
 			return;
 	}
 
-	if (GetLocalSettings()->FlashOnNotification() && IsIconic(g_Hwnd))
-	{
-		FlashWindow(g_Hwnd, FALSE);
-	}
+	if (GetLocalSettings()->FlashOnNotification() && IsIconic(GetMainHWND()))
+		FlashWindow(GetMainHWND(), FALSE);
 
 	NOTIFYICONDATA d;
 	ZeroMemory(&d, sizeof d);
 	d.cbSize = NOTIFYICONDATA_V2_SIZE;
 	d.uID    = NOTIFICATION_ID;
-	d.hWnd   = g_Hwnd;
+	d.hWnd   = GetMainHWND();
 	d.uFlags = NIF_INFO | NIF_REALTIME;
 	d.dwInfoFlags = NIIF_USER;
 	d.uTimeout = 5000;
@@ -203,8 +201,8 @@ void ShellNotification::ShowContextMenu()
 	}
 
 	const HMENU popupMenu = GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_NOTIFICATION_CONTEXT)), 0);
-	SetForegroundWindow(g_Hwnd);
-	TrackPopupMenu(popupMenu, TPM_LEFTBUTTON, cursor.x, cursor.y, 0, g_Hwnd, NULL);
+	SetForegroundWindow(GetMainHWND());
+	TrackPopupMenu(popupMenu, TPM_LEFTBUTTON, cursor.x, cursor.y, 0, GetMainHWND(), NULL);
 }
 
 void ShellNotification::Callback(WPARAM wParam, LPARAM lParam)
@@ -237,14 +235,14 @@ void ShellNotification::Callback(WPARAM wParam, LPARAM lParam)
 			// TODO: Don't know how to know which one we clicked
 			DbgPrintW("Acknowledge Notification");
 
-			ShowWindow(g_Hwnd, SW_SHOW);
-			SetActiveWindow(g_Hwnd);
+			ShowWindow(GetMainHWND(), SW_SHOW);
+			SetActiveWindow(GetMainHWND());
 
 			break;
 		}
 
 		case WM_LBUTTONUP:
-			SendMessage(g_Hwnd, WM_RESTOREAPP, 0, 0);
+			SendMessage(GetMainHWND(), WM_RESTOREAPP, 0, 0);
 			break;
 
 		case WM_RBUTTONUP:

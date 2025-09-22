@@ -72,5 +72,5 @@ static INT_PTR CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 bool LogonDialogShow()
 {
-	return DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_LOGON)), g_Hwnd, DialogProc) != IDCANCEL;
+	return DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_LOGON)), GetMainHWND(), DialogProc) != IDCANCEL;
 }

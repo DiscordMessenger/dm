@@ -17,7 +17,7 @@ void NotificationViewer::Show(int x, int y, bool rightJustify)
 	m_appearXY = { x, y };
 	m_bRightJustify = rightJustify;
 
-	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_NOTIFICATIONS)), g_Hwnd, DlgProc);
+	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_NOTIFICATIONS)), GetMainHWND(), DlgProc);
 }
 
 void NotificationViewer::Initialize(HWND hWnd)

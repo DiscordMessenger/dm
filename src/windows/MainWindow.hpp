@@ -1,0 +1,121 @@
+#pragma once
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <map>
+#include "WinUtils.hpp"
+#include "StatusBar.hpp"
+#include "TextManager.hpp"
+
+extern HINSTANCE g_hInstance;
+
+class MessageList;
+class GuildLister;
+class GuildHeader;
+class ProfileView;
+class IMemberList;
+class IChannelView;
+class MessageEditor;
+class LoadingMessage;
+class DiscordInstance;
+
+class MainWindow
+{
+public:
+	MainWindow(LPCTSTR pClassName, int nShowCmd);
+	~MainWindow();
+
+	// cannot copy the main window.
+	MainWindow(const MainWindow& mw) = delete;
+
+	bool InitFailed() const { return m_bInitFailed; }
+
+	bool IsPartOfMainWindow(HWND hWnd);
+
+	MessageEditor* GetMessageEditor() {
+		return m_pMessageEditor;
+	}
+
+	HWND GetHWND() const {
+		return m_hwnd;
+	}
+
+	bool IsChannelListVisible() const { return m_bChannelListVisible; }
+	bool IsMemberListVisible() const { return m_bMemberListVisible; }
+	int GetGuildListerWidth() const { return m_GuildListerWidth; }
+
+	void SetHeartbeatInterval(int timeMs);
+	void TryConnectAgainIn(int time);
+	void ResetTryAgainInTime();
+	void UpdateMainWindowTitle();
+	void OnTyping(Snowflake guildID, Snowflake channelID, Snowflake userID, time_t timeStamp);
+	void OnStopTyping(Snowflake channelID, Snowflake userID);
+	void ProperlySizeControls();
+	void AddOrRemoveAppFromStartup();
+	void CloseCleanup();
+	void OnUpdateAvatar(const std::string& resid);
+	int  OnHTTPError(const std::string& url, const std::string& reasonString, bool isSSL);
+
+private:
+	LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	void TryAgainTimer(HWND hWnd, UINT uMsg, UINT_PTR uTimerID, DWORD dwParam);
+	LRESULT HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static void CALLBACK OnHeartbeatTimer(HWND hWnd, UINT uInt, UINT_PTR uIntPtr, DWORD dWord);
+	static void CALLBACK TryAgainTimerStatic(HWND hWnd, UINT uMsg, UINT_PTR uTimerID, DWORD dwParam);
+
+private:
+	struct TypingInfo {
+		std::map<Snowflake, TypingUser> m_typingUsers;
+	};
+
+	HWND m_hwnd;
+	WNDCLASS m_wndClass;
+
+	bool m_bInitFailed = false;
+
+	StatusBar* m_pStatusBar;
+	MessageList* m_pMessageList;
+	ProfileView* m_pProfileView;
+	GuildHeader* m_pGuildHeader;
+	GuildLister* m_pGuildLister;
+	IMemberList* m_pMemberList;
+	IChannelView* m_pChannelView;
+	MessageEditor* m_pMessageEditor;
+	LoadingMessage* m_pLoadingMessage;
+
+	int m_agerCounter = 0;
+	int m_HeartbeatTimerInterval = 0;
+	int m_TryAgainTimerInterval = 100;
+
+	UINT_PTR m_HeartbeatTimer = 0;
+	UINT_PTR m_TryAgainTimer = 0;
+
+	const UINT_PTR m_TryAgainTimerId = 123456;
+
+	bool m_bMemberListVisible = false;
+	bool m_bChannelListVisible = false;
+
+	std::map<Snowflake, TypingInfo> m_typingInfo;
+
+protected:
+	friend class StatusBar;
+
+	// Proportions
+	int m_ChannelViewListWidth = 0;
+	int m_ChannelViewListWidth2 = 0;
+	int m_BottomBarHeight = 0;
+	int m_BottomInputHeight = 0;
+	int m_SendButtonWidth = 0;
+	int m_SendButtonHeight = 0;
+	int m_GuildHeaderHeight = 0;
+	int m_GuildListerWidth = 0;
+	int m_GuildListerWidth2 = 0;
+	int m_MemberListWidth = 0;
+	int m_MessageEditorHeight = 0;
+};
+
+MainWindow* GetMainWindow();
+HWND GetMainHWND();
+DiscordInstance* GetDiscordInstance();
+std::string GetDiscordToken();

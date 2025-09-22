@@ -128,7 +128,7 @@ INT_PTR ProgressDialog::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 			Animate_Open(GetDlgItem(hWnd, IDC_PROGRESS_ANIMATE), MAKEINTRESOURCE(res));
 
-			CenterWindow(hWnd, g_Hwnd);
+			CenterWindow(hWnd, GetParent(hWnd));
 			break;
 		}
 

@@ -3,7 +3,7 @@
 #include <nlohmann/json.h>
 #include <boost/base64/base64.hpp>
 #include "QRCodeDialog.hpp"
-#include "Main.hpp"
+#include "MainWindow.hpp"
 #include "../discord/WebsocketClient.hpp"
 
 // NOTE - This is unused, probably won't be finished
@@ -254,5 +254,5 @@ CLEANUPOK:
 
 void QRCodeDialog::Show()
 {
-	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_QRCODELOGIN)), g_Hwnd, &QRCodeDialog::OnMessage);
+	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_QRCODELOGIN)), GetMainHWND(), &QRCodeDialog::OnMessage);
 }

@@ -572,8 +572,6 @@
     <None Include="..\res\animations\upload_lc.avi" />
     <None Include="..\res\cursors\cur_zoomin.cur" />
     <None Include="..\res\cursors\cur_zoomout.cur" />
-    <None Include="..\src\arrow.cur" />
-    <None Include="arrow.cur" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\res\app.manifest" />
@@ -636,6 +634,7 @@
     <ClInclude Include="..\src\windows\LoadingMessage.hpp" />
     <ClInclude Include="..\src\windows\LogonDialog.hpp" />
     <ClInclude Include="..\src\windows\Main.hpp" />
+    <ClInclude Include="..\src\windows\MainWindow.hpp" />
     <ClInclude Include="..\src\windows\Measurements.hpp" />
     <ClInclude Include="..\src\windows\MemberList.hpp" />
     <ClInclude Include="..\src\windows\MemberListOld.hpp" />
@@ -708,6 +707,7 @@
     <ClCompile Include="..\src\windows\LoadingMessage.cpp" />
     <ClCompile Include="..\src\windows\LogonDialog.cpp" />
     <ClCompile Include="..\src\windows\Main.cpp" />
+    <ClCompile Include="..\src\windows\MainWindow.cpp" />
     <ClCompile Include="..\src\windows\MemberList.cpp" />
     <ClCompile Include="..\src\windows\MemberListOld.cpp" />
     <ClCompile Include="..\src\windows\MessageEditor.cpp" />

@@ -42,6 +42,7 @@
 #include "AvatarCache.hpp"
 #include "NetworkerThread.hpp"
 #include "TextInterface_Win32.hpp"
+#include "MainWindow.hpp"
 
 #include "../discord/DiscordAPI.hpp"
 #include "../discord/SettingsManager.hpp"
@@ -52,9 +53,7 @@
 #define MAX_MESSAGE_SIZE 2000 // 4000 with nitro
 
 extern HINSTANCE g_hInstance;
-extern WNDCLASS g_MainWindowClass;
 extern HBRUSH   g_backgroundBrush;
-extern HWND     g_Hwnd;
 extern HICON    g_Icon;
 extern HICON    g_BotIcon;
 extern HICON    g_SendIcon;
@@ -62,6 +61,8 @@ extern HICON    g_JumpIcon;
 extern HICON    g_CancelIcon;
 extern HICON    g_UploadIcon;
 extern HICON    g_DownloadIcon;
+
+extern int g_ProfilePictureSize;
 
 extern HFONT
 	g_MessageTextFont,
@@ -147,10 +148,7 @@ struct SendMessageAuxParams
 
 std::string FormatDiscrim(int discrim);
 std::string GetStringFromHResult(HRESULT hr);
-std::string GetDiscordToken();
-void OnUpdateAvatar(const std::string& resid);
-DiscordInstance* GetDiscordInstance();
 void WantQuit();
-void SetHeartbeatInterval(int timeMs);
 int GetProfilePictureSize();
 HBITMAP GetDefaultBitmap();
+bool IsFromStartup();

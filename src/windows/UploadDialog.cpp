@@ -200,7 +200,7 @@ INT_PTR CALLBACK UploadDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 
 			Static_SetIcon(GetDlgItem(hWnd, IDC_FILE_ICON), pData->m_sfi.hIcon);
 
-			CenterWindow(hWnd, g_Hwnd);
+			CenterWindow(hWnd, GetParent(hWnd));
 
 			SetFocus(GetDlgItem(hWnd, IDC_ATTACH_COMMENT));
 			break;
@@ -227,7 +227,7 @@ static void UploadDialogShowData(UploadDialogData* data)
 	if (DialogBoxParam(
 			g_hInstance,
 			MAKEINTRESOURCE(DMDI(IDD_DIALOG_UPLOADFILES)),
-			g_Hwnd,
+			GetMainHWND(),
 			UploadDialogProc,
 			(LPARAM) data
 		) == IDCANCEL)
@@ -255,12 +255,12 @@ static void UploadDialogShowData(UploadDialogData* data)
 		SendMessageAuxParams smap;
 		smap.m_message = content;
 		smap.m_snowflake = sf;
-		SendMessage(g_Hwnd, WM_SENDMESSAGEAUX, 0, (LPARAM)&smap);
+		SendMessage(GetMainHWND(), WM_SENDMESSAGEAUX, 0, (LPARAM)&smap);
 	}
 	else
 	{
 		// TODO: Placeholder, replace
-		MessageBox(g_Hwnd, TmGetTString(IDS_CANNOT_UPLOAD_ATTACHMENT), TmGetTString(IDS_PROGRAM_NAME), MB_OK);
+		MessageBox(GetMainHWND(), TmGetTString(IDS_CANNOT_UPLOAD_ATTACHMENT), TmGetTString(IDS_PROGRAM_NAME), MB_OK);
 	}
 
 	delete data;
@@ -319,7 +319,7 @@ void UploadDialogShow2(Snowflake channelID)
 
 	OPENFILENAME ofn{};
 	ofn.lStructSize    = SIZEOF_OPENFILENAME_NT4;
-	ofn.hwndOwner      = g_Hwnd;
+	ofn.hwndOwner      = GetMainHWND();
 	ofn.hInstance      = g_hInstance;
 	ofn.nMaxFile       = MAX_FILE;
 	ofn.lpstrFile      = buffer;
@@ -348,5 +348,5 @@ void UploadDialogShow(Snowflake channelID)
 
 	Snowflake* sf = new Snowflake;
 	*sf = channelID;
-	PostMessage(g_Hwnd, WM_SHOWUPLOADDIALOG, 0, (LPARAM) sf);
+	PostMessage(GetMainHWND(), WM_SHOWUPLOADDIALOG, 0, (LPARAM) sf);
 }

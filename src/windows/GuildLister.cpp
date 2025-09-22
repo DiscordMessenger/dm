@@ -16,8 +16,6 @@ WNDCLASS GuildLister::g_GuildListerClass;
 WNDCLASS GuildLister::g_GuildListerParentClass;
 GuildLister::GuildLister() {}
 
-extern int g_GuildListerWidth;
-
 enum {
 	GCMD_MORE,
 	GCMD_BAR,
@@ -51,7 +49,7 @@ void GuildLister::ProperlyResizeSubWindows()
 	int buttonHeight = ScaleByDPI(24);
 
 	bool wasScrollBarVisible = m_bIsScrollBarVisible;
-	m_bIsScrollBarVisible = rect.right - rect.left > g_GuildListerWidth;
+	m_bIsScrollBarVisible = rect.right - rect.left > GetMainWindow()->GetGuildListerWidth();
 
 	if (wasScrollBarVisible != m_bIsScrollBarVisible) {
 		if (wasScrollBarVisible) {
@@ -299,7 +297,7 @@ void GuildLister::RestoreScrollInfo()
 
 void GuildLister::ShowGuildChooserMenu()
 {
-	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_GUILD_CHOOSER)), g_Hwnd, &ChooserDlgProc);
+	DialogBox(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_GUILD_CHOOSER)), GetParent(m_hwnd), &ChooserDlgProc);
 }
 
 void GuildLister::OnScroll()
@@ -425,7 +423,7 @@ void GuildLister::AskLeave(Snowflake guild)
 	TCHAR buff[4096];
 	WAsnprintf(buff, _countof(buff), TmGetTString(IDS_CONFIRM_LEAVE_GUILD), pGuild->m_name.c_str());
 
-	if (MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_YESNO | MB_ICONQUESTION) == IDYES)
+	if (MessageBox(GetParent(m_hwnd), buff, TmGetTString(IDS_PROGRAM_NAME), MB_YESNO | MB_ICONQUESTION) == IDYES)
 	{
 		// Leave Server
 		GetDiscordInstance()->RequestLeaveGuild(guild);
@@ -467,7 +465,7 @@ LRESULT CALLBACK GuildLister::ParentWndProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 					GetLocalSettings()->SetShowScrollBarOnGuildList(
 						!GetLocalSettings()->ShowScrollBarOnGuildList()
 					);
-					SendMessage(g_Hwnd, WM_REPOSITIONEVERYTHING, 0, 0);
+					SendMessage(GetParent(pThis->m_hwnd), WM_REPOSITIONEVERYTHING, 0, 0);
 					break;
 			}
 		}

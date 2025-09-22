@@ -131,8 +131,6 @@ void GuildHeader::LayoutButton(Button& button, RECT& chanNameRect, RECT& guildNa
 	}
 }
 
-extern bool g_bChannelListVisible; // main.cpp
-
 void GuildHeader::Layout()
 {
 	RECT rect = {};
@@ -143,7 +141,7 @@ void GuildHeader::Layout()
 	RECT &rrect1 = m_rectLeftFull, &rrect2 = m_rectMidFull, &rrect3 = m_rectRightFull;
 		
 	rrect1 = rect, rrect2 = rect, rrect3 = rect;
-	rrect1.right = rrect1.left + g_bChannelListVisible ? ScaleByDPI(CHANNEL_VIEW_LIST_WIDTH) : (rect.bottom - rect.top);
+	rrect1.right = rrect1.left + GetMainWindow()->IsChannelListVisible() ? ScaleByDPI(CHANNEL_VIEW_LIST_WIDTH) : (rect.bottom - rect.top);
 	rrect2.left  = rrect1.right;
 	rrect3.left  = rrect3.right - ScaleByDPI(MEMBER_LIST_WIDTH);
 	rrect2.right = rrect3.left;
@@ -306,9 +304,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_NCCREATE:
 		{
 			CREATESTRUCT* strct = (CREATESTRUCT*)lParam;
-
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)strct->lpCreateParams);
-
 			break;
 		}
 		case WM_DESTROY:
@@ -383,7 +379,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					// Show the info in a full textbox.
 					LPCTSTR ctstr1 = ConvertCppStringToTString(cinfo);
 					LPCTSTR ctstr2 = ConvertCppStringToTString("Discord Messenger - " + cname);
-					MessageBox(g_Hwnd, ctstr1, ctstr2, MB_OK | MB_ICONINFORMATION);
+					MessageBox(GetParent(pThis->m_hwnd), ctstr1, ctstr2, MB_OK | MB_ICONINFORMATION);
 					free((void*)ctstr1);
 					free((void*)ctstr2);
 				}
@@ -474,7 +470,8 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			RECT nameRect;
 			int nameHeight;
 
-			if (g_bChannelListVisible)
+			bool channelListVisible = GetMainWindow()->IsChannelListVisible();
+			if (channelListVisible)
 			{
 				nameRect = pThis->m_rectLeft;
 				nameRect.left += ScaleByDPI(8);
@@ -593,17 +590,21 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					NotificationViewer::Show(pt.x, pt.y, true);
 					break;
 				}
-				case IDTB_MEMBERS:
-					SendMessage(g_Hwnd, WM_TOGGLEMEMBERS, 0, 0);
+				case IDTB_MEMBERS: {
+					SendMessage(GetParent(pThis->m_hwnd), WM_TOGGLEMEMBERS, 0, 0);
 					break;
-				case IDTB_CHANNELS:
-					SendMessage(g_Hwnd, WM_TOGGLECHANNELS, 0, 0);
-					pThis->m_buttons[lParam].m_iconID = DMIC(g_bChannelListVisible ? IDI_SHIFT_LEFT : IDI_SHIFT_RIGHT);
-					pThis->m_buttons[lParam].m_placement = g_bChannelListVisible ? BUTTON_GUILD_RIGHT : BUTTON_GUILD_LEFT;
+				}
+				case IDTB_CHANNELS: {
+					SendMessage(GetParent(pThis->m_hwnd), WM_TOGGLECHANNELS, 0, 0);
+					bool channelListVisible = GetMainWindow()->IsChannelListVisible();
+
+					pThis->m_buttons[lParam].m_iconID = DMIC(channelListVisible ? IDI_SHIFT_LEFT : IDI_SHIFT_RIGHT);
+					pThis->m_buttons[lParam].m_placement = channelListVisible ? BUTTON_GUILD_RIGHT : BUTTON_GUILD_LEFT;
 					pThis->Layout();
 					InvalidateRect(hWnd, &pThis->m_rectLeftFull, FALSE);
 					InvalidateRect(hWnd, &pThis->m_rectMidFull, FALSE);
 					break;
+				}
 			}
 			break;
 		}

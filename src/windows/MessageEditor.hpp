@@ -6,6 +6,8 @@
 #include "Main.hpp"
 #include "AutoComplete.hpp"
 
+class MessageList;
+
 class MessageEditor
 {
 public:
@@ -52,6 +54,7 @@ private:
 	Snowflake m_previousQueriesActiveOnGuild = 0;
 	uint64_t m_lastRemoteQuery = 0;
 	std::set<std::string> m_previousQueries;
+	MessageList* m_pMessageList;
 
 	static WNDPROC m_editWndProc;
 	static bool m_shiftHeld;
@@ -69,6 +72,7 @@ public:
 	void StopBrowsingPast();
 	void Layout();
 	void OnLoadedMemberChunk();
+	void SetMessageList(MessageList* messageList);
 
 	Snowflake ReplyingTo() const {
 		return m_replyMessage;

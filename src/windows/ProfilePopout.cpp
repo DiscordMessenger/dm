@@ -594,7 +594,7 @@ void ProfilePopout::DeferredShow(const ShowProfilePopoutParams& params)
 	m_user = user;
 	m_guild = guild;
 	m_size = { 10, 10 };
-	m_hwnd = CreateDialog(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_PROFILE_POPOUT)), g_Hwnd, &Proc);
+	m_hwnd = CreateDialog(g_hInstance, MAKEINTRESOURCE(DMDI(IDD_DIALOG_PROFILE_POPOUT)), GetMainHWND(), &Proc);
 
 	// calculated in WM_CREATE
 	int wndWidth = m_size.cx;
@@ -641,7 +641,7 @@ void ProfilePopout::Show(Snowflake user, Snowflake guild, int x, int y, bool bRi
 	// N.B. The parms struct is now owned by the main window.
 	// Don't send immediately (the message gets enqueued instead). It'd be useless to do
 	// it like that as it ends up just calling the deferred version directly
-	if (!PostMessage(g_Hwnd, WM_SHOWPROFILEPOPOUT, 0, (LPARAM) parms))
+	if (!PostMessage(GetMainHWND(), WM_SHOWPROFILEPOPOUT, 0, (LPARAM) parms))
 		delete parms;
 }
 

@@ -156,7 +156,6 @@ void MessageEditor::Expand(int Amount)
 	if (Amount == 0)
 		return;
 
-	extern MessageList* g_pMessageList; // main.cpp - This sucks, should ideally have a function for that
 	m_expandedBy += Amount;
 
 	ShowOrHideReply(m_bReplying);
@@ -165,13 +164,13 @@ void MessageEditor::Expand(int Amount)
 	GetChildRect(m_hwnd, m_send_hwnd, &rcSend);
 
 	RECT rect{}, rectM{};
-	GetChildRect(g_Hwnd, g_pMessageList->m_hwnd, &rect);
+	GetChildRect(GetParent(m_hwnd), m_pMessageList->m_hwnd, &rect);
 	int oldBottom = rect.bottom;
 	rect.bottom -= Amount;
-	MoveWindow(g_pMessageList->m_hwnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, FALSE);
+	MoveWindow(m_pMessageList->m_hwnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, FALSE);
 	rectM = rect;
 
-	GetChildRect(g_Hwnd, m_hwnd, &rect);
+	GetChildRect(GetParent(m_hwnd), m_hwnd, &rect);
 	rect.top -= Amount;
 	MoveWindow(m_hwnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, FALSE);
 
@@ -179,7 +178,7 @@ void MessageEditor::Expand(int Amount)
 	RECT gap = rectM;
 	gap.top = std::min(int(rectM.bottom) - 2, oldBottom - 2);
 	gap.bottom = rect.top;
-	InvalidateRect(g_Hwnd, &gap, TRUE);
+	InvalidateRect(GetParent(m_hwnd), &gap, TRUE);
 
 	RECT rcClient{};
 	GetClientRect(m_hwnd, &rcClient);
@@ -238,7 +237,7 @@ void MessageEditor::TryToSendMessage()
 
 	if (ContainsAuthenticationToken(data))
 	{
-		if (MessageBox(g_Hwnd, TmGetTString(IDS_MAY_CONTAIN_TOKEN), TmGetTString(IDS_HOLD_UP_CONFIRM), MB_YESNO | MB_ICONQUESTION) != IDYES) {
+		if (MessageBox(GetParent(m_hwnd), TmGetTString(IDS_MAY_CONTAIN_TOKEN), TmGetTString(IDS_HOLD_UP_CONFIRM), MB_YESNO | MB_ICONQUESTION) != IDYES) {
 			delete[] data;
 			return;
 		}
@@ -253,7 +252,7 @@ void MessageEditor::TryToSendMessage()
 	parms.m_channel = m_channelID;
 
 	// send it as a message to the main window
-	if (!SendMessage(g_Hwnd, WM_SENDMESSAGE, 0, (LPARAM) &parms))
+	if (!SendMessage(GetParent(m_hwnd), WM_SENDMESSAGE, 0, (LPARAM) &parms))
 	{
 		// Message was sent, so clear the box
 		SetWindowText(m_edit_hwnd, TEXT(""));
@@ -537,7 +536,7 @@ void MessageEditor::OnUpdateText()
 	// \r character in the input buffer.  If you need this to be exact, make it go through
 	// the entire text every character, or count the characters.  Use for speed.
 	int length = Edit_GetTextLength(m_edit_hwnd);
-	SendMessage(g_Hwnd, WM_UPDATEMESSAGELENGTH, 0, (LPARAM)length);
+	SendMessage(GetParent(m_hwnd), WM_UPDATEMESSAGELENGTH, 0, (LPARAM)length);
 	return;
 	*/
 
@@ -553,7 +552,7 @@ void MessageEditor::OnUpdateText()
 			actualLength--;
 	}
 
-	SendMessage(g_Hwnd, WM_UPDATEMESSAGELENGTH, 0, (LPARAM)actualLength);
+	SendMessage(GetParent(m_hwnd), WM_UPDATEMESSAGELENGTH, 0, (LPARAM)actualLength);
 
 	m_autoComplete.Update(tchr, length);
 	delete[] tchr;
@@ -566,6 +565,11 @@ void MessageEditor::OnLoadedMemberChunk()
 
 	m_bDidMemberLookUpRecently = false;
 	m_autoComplete.Update();
+}
+
+void MessageEditor::SetMessageList(MessageList* messageList)
+{
+	m_pMessageList = messageList;
 }
 
 LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -595,7 +599,7 @@ LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		case WM_UPDATETEXTSIZE:
 		{
 			RECT rect{};
-			GetClientRect(g_Hwnd, &rect);
+			GetClientRect(GetParent(pThis->m_hwnd), &rect);
 			int maxHeight = (rect.bottom - rect.top) / 3;
 
 			// Now check for expansion.
@@ -842,12 +846,12 @@ LRESULT MessageEditor::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 					break;
 				case CID_MESSAGEJUMPPRESENT: {
 					Snowflake max = UINT64_MAX;
-					SendMessage(g_Hwnd, WM_SENDTOMESSAGE, 0, (LPARAM)&max);
+					SendMessage(GetParent(pThis->m_hwnd), WM_SENDTOMESSAGE, 0, (LPARAM)&max);
 					break;
 				}
 				case CID_MESSAGEREPLYJUMP: {
 					if (pThis->m_replyMessage)
-						SendMessage(g_Hwnd, WM_SENDTOMESSAGE, 0, (LPARAM) &pThis->m_replyMessage);
+						SendMessage(GetParent(pThis->m_hwnd), WM_SENDTOMESSAGE, 0, (LPARAM) &pThis->m_replyMessage);
 					break;
 				}
 			}
