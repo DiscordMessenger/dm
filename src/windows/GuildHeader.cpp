@@ -459,7 +459,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 				// N.B. Interactables currently unused for now.
 				std::vector<InteractableItem> interactables;
-				GetDiscordInstance()->ResolveLinks(&pThis->m_channelDescription, interactables, GetDiscordInstance()->GetCurrentGuildID());
+				GetDiscordInstance()->ResolveLinks(&pThis->m_channelDescription, interactables, pThis->GetCurrentGuildID());
 			}
 
 			LPCTSTR ctstrName = ConvertCppStringToTString(gname);

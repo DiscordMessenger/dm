@@ -190,7 +190,7 @@ void GuildLister::UpdateSelected()
 		InvalidateRect(m_hwnd, &it->second, FALSE);
 	}
 
-	m_selectedGuild = GetDiscordInstance()->GetCurrentGuildID();
+	m_selectedGuild = GetMainWindow()->GetCurrentGuildID();
 	it = m_iconRects.find(m_selectedGuild);
 	if (it != m_iconRects.end()) {
 		InvalidateRect(m_hwnd, &it->second, FALSE);
@@ -479,13 +479,13 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 	int height = 0;
 	int pfpSize = GetProfilePictureSize();
 	int pfpBorderSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
-	bool isCurrent = GetDiscordInstance()->GetCurrentGuildID() == id;
+	bool isCurrent = GetMainWindow()->GetCurrentGuildID() == id;
 
 	SetRectEmpty(&m_iconRects[id]);
 
 	bool isFolderIcon = currentFolder && (id & ~BIT_FOLDER) == currentFolder;
 
-	m_selectedGuild = GetDiscordInstance()->GetCurrentGuildID();
+	m_selectedGuild = GetMainWindow()->GetCurrentGuildID();
 	if (hdc && hicon)
 	{
 		HICON hborder = NULL;
@@ -1003,8 +1003,8 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				else if (GetDiscordInstance()->GetGuild(selected))
 				{
 					Snowflake sf1 = 0;
-					if (GetDiscordInstance()->GetCurrentGuild())
-						sf1 = GetDiscordInstance()->GetCurrentGuild()->m_snowflake;
+					if (GetMainWindow()->GetCurrentGuild())
+						sf1 = GetMainWindow()->GetCurrentGuild()->m_snowflake;
 
 					if (sf1 != selected)
 						GetDiscordInstance()->OnSelectGuild(selected);

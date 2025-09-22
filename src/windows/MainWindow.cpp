@@ -253,69 +253,6 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			delete sf;
 			break;
 		}
-		case WM_UPDATESELECTEDCHANNEL:
-		{
-			m_pMessageEditor->StopReply();
-			m_pMessageEditor->Layout();
-
-			Snowflake guildID = GetDiscordInstance()->GetCurrentGuildID();
-			Snowflake channID = GetDiscordInstance()->GetCurrentChannelID();
-
-			m_pChannelView->OnUpdateSelectedChannel(channID);
-
-			// repaint the message view
-			m_pMessageList->ClearMessages();
-			m_pMessageList->SetGuild(guildID);
-			m_pMessageList->SetChannel(channID);
-
-			m_pMessageList->UpdateAllowDrop();
-
-			m_pMessageEditor->SetGuildID(guildID);
-			m_pMessageEditor->SetChannelID(channID);
-
-			m_pGuildHeader->SetGuildID(guildID);
-			m_pGuildHeader->SetChannelID(channID);
-
-			UpdateMainWindowTitle();
-
-			if (IsWindowActive(m_hwnd))
-				SetFocus(m_pMessageEditor->m_edit_hwnd);
-
-			if (!m_pMessageList->GetCurrentChannel())
-			{
-				InvalidateRect(m_pMessageList->m_hwnd, NULL, TRUE);
-				InvalidateRect(m_pGuildHeader->m_hwnd, NULL, FALSE);
-				break;
-			}
-
-			GetDiscordInstance()->HandledChannelSwitch();
-
-			m_pMessageList->RefetchMessages(m_pMessageList->GetMessageSentTo());
-
-			InvalidateRect(m_pMessageList->m_hwnd, NULL, MessageList::MayErase());
-			m_pGuildHeader->Update();
-			m_pMessageEditor->UpdateTextBox();
-
-			// Update the message editor's typing indicators
-			m_pStatusBar->ClearTypers();
-
-			Snowflake myUserID = GetDiscordInstance()->GetUserID();
-			TypingInfo& ti = m_typingInfo[channID];
-			for (auto& tu : ti.m_typingUsers) {
-				if (tu.second.m_key == myUserID)
-					continue;
-				
-				m_pStatusBar->AddTypingName(tu.second.m_key, tu.second.m_startTimeMS / 1000ULL, tu.second.m_name);
-			}
-
-			break;
-		}
-		case WM_UPDATEMEMBERLIST:
-		{
-			m_pMemberList->SetGuild(GetDiscordInstance()->GetCurrentGuild()->m_snowflake);
-			m_pMemberList->Update();
-			break;
-		}
 		case WM_TOGGLEMEMBERS:
 		{
 			m_bMemberListVisible ^= 1;
@@ -362,12 +299,12 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		}
 		case WM_UPDATESELECTEDGUILD:
 		{
-			// repaint the guild lister
-			m_pGuildLister->UpdateSelected();
-			m_pGuildHeader->Update();
-
-			SendMessage(hWnd, WM_UPDATECHANLIST, 0, 0);
-			SendMessage(hWnd, WM_UPDATEMEMBERLIST, 0, 0);
+			SetCurrentGuildID(GetDiscordInstance()->GetCurrentGuildID());
+			break;
+		}
+		case WM_UPDATESELECTEDCHANNEL:
+		{
+			SetCurrentChannelID(GetDiscordInstance()->GetCurrentChannelID());
 			break;
 		}
 		case WM_UPDATECHANACKS:
@@ -397,14 +334,19 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				m_pMessageList->SetLastViewedMessage(messageID, true);
 			break;
 		}
+		case WM_UPDATEMEMBERLIST:
+		{
+			m_pMemberList->SetGuild(GetCurrentGuildID());
+			m_pMemberList->Update();
+			break;
+		}
 		case WM_UPDATECHANLIST:
 		{
 			// repaint the channel view
 			m_pChannelView->ClearChannels();
 
 			// get the current guild
-			auto inst = GetDiscordInstance();
-			Guild* pGuild = inst->GetGuild(inst->m_CurrentGuild);
+			Guild* pGuild = GetDiscordInstance()->GetGuild(GetCurrentGuildID());
 			if (!pGuild) break;
 
 			m_pChannelView->SetMode(pGuild->m_snowflake == 0);
@@ -818,7 +760,7 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				case IDM_INVITEPEOPLE:
 				{
 					Profile* pf = GetDiscordInstance()->GetProfile();
-					Guild* pGuild = GetDiscordInstance()->GetCurrentGuild();
+					Guild* pGuild = GetCurrentGuild();
 					if (!pGuild || !pf)
 						break;
 
@@ -1164,7 +1106,7 @@ LRESULT MainWindow::HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		}
 		case IDM_LEAVEGUILD: // Server > Leave Server
 		{
-			m_pGuildLister->AskLeave(GetDiscordInstance()->GetCurrentGuildID());
+			m_pGuildLister->AskLeave(GetCurrentGuildID());
 			break;
 		}
 		// Accelerators
@@ -1354,6 +1296,104 @@ void MainWindow::OnStopTyping(Snowflake channelID, Snowflake userID)
 
 	if (channelID == m_pStatusBar->GetCurrentChannelID())
 		m_pStatusBar->RemoveTypingName(userID);
+}
+
+Guild* MainWindow::GetCurrentGuild()
+{
+	return GetDiscordInstance()->GetGuild(m_guildID);
+}
+
+Channel* MainWindow::GetCurrentChannel()
+{
+	auto guild = GetCurrentGuild();
+	if (!guild)
+		return nullptr;
+
+	return guild->GetChannel(m_channelID);
+}
+
+void MainWindow::SetCurrentGuildID(Snowflake sf)
+{
+	if (m_guildID == sf)
+		return;
+
+	m_guildID = sf;
+
+	// repaint the guild lister
+	m_pGuildLister->UpdateSelected();
+	m_pGuildHeader->Update();
+
+	SendMessage(m_hwnd, WM_UPDATECHANLIST, 0, 0);
+	SendMessage(m_hwnd, WM_UPDATEMEMBERLIST, 0, 0);
+}
+
+void MainWindow::SetCurrentChannelID(Snowflake channID)
+{
+	if (m_channelID == channID)
+		return;
+
+	Channel* pChan = GetDiscordInstance()->GetChannelGlobally(channID);
+	if (!pChan)
+		return;
+
+	Guild* pGuild = GetDiscordInstance()->GetGuild(pChan->m_parentGuild);
+	if (!pGuild)
+		return;
+
+	Snowflake guildID = pGuild->m_snowflake;
+	SetCurrentGuildID(guildID);
+
+	m_channelID = channID;
+
+	m_pMessageEditor->StopReply();
+	m_pMessageEditor->Layout();
+
+	m_pChannelView->OnUpdateSelectedChannel(channID);
+
+	// repaint the message view
+	m_pMessageList->ClearMessages();
+	m_pMessageList->SetGuild(guildID);
+	m_pMessageList->SetChannel(channID);
+
+	m_pMessageList->UpdateAllowDrop();
+
+	m_pMessageEditor->SetGuildID(guildID);
+	m_pMessageEditor->SetChannelID(channID);
+
+	m_pGuildHeader->SetGuildID(guildID);
+	m_pGuildHeader->SetChannelID(channID);
+
+	UpdateMainWindowTitle();
+
+	if (IsWindowActive(m_hwnd))
+		SetFocus(m_pMessageEditor->m_edit_hwnd);
+
+	if (!m_pMessageList->GetCurrentChannel())
+	{
+		InvalidateRect(m_pMessageList->m_hwnd, NULL, TRUE);
+		InvalidateRect(m_pGuildHeader->m_hwnd, NULL, FALSE);
+		return;
+	}
+
+	GetDiscordInstance()->HandledChannelSwitch();
+
+	m_pMessageList->RefetchMessages(m_pMessageList->GetMessageSentTo());
+
+	InvalidateRect(m_pMessageList->m_hwnd, NULL, MessageList::MayErase());
+	m_pGuildHeader->Update();
+	m_pMessageEditor->UpdateTextBox();
+
+	// Update the message editor's typing indicators
+	m_pStatusBar->ClearTypers();
+
+	Snowflake myUserID = GetDiscordInstance()->GetUserID();
+	TypingInfo& ti = m_typingInfo[channID];
+	for (auto& tu : ti.m_typingUsers) {
+		if (tu.second.m_key == myUserID)
+			continue;
+				
+		m_pStatusBar->AddTypingName(tu.second.m_key, tu.second.m_startTimeMS / 1000ULL, tu.second.m_name);
+	}
 }
 
 LRESULT MainWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

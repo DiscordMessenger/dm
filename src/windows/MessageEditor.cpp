@@ -295,7 +295,7 @@ void MessageEditor::StartReply(Snowflake messageID, Snowflake authorID)
 	std::string userName = "<UNKNOWN>";
 	if (pf)
 	{
-		Snowflake guildID = GetDiscordInstance()->GetCurrentGuildID();
+		Snowflake guildID = GetCurrentGuildID();
 		userName = pf->GetName(guildID);
 
 		COLORREF clr = CLR_NONE;
@@ -396,7 +396,7 @@ void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std:
 	{
 		case ':': // EMOJI
 		{
-			Guild* pGld = GetDiscordInstance()->GetCurrentGuild();
+			Guild* pGld = GetCurrentGuild();
 			if (!pGld)
 				break;
 
@@ -421,7 +421,7 @@ void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std:
 		}
 		case '#': // CHANNELS
 		{
-			Guild* pGld = GetDiscordInstance()->GetCurrentGuild();
+			Guild* pGld = GetCurrentGuild();
 			if (!pGld)
 				break;
 			if (pGld->m_snowflake == 0)
@@ -439,7 +439,7 @@ void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std:
 		}
 		case '@': // USERS
 		{
-			Guild* pGld = GetDiscordInstance()->GetCurrentGuild();
+			Guild* pGld = GetCurrentGuild();
 			if (!pGld)
 				break;
 
@@ -494,7 +494,7 @@ void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std:
 				break;
 
 			// send a query to Discord if needed
-			Snowflake guildID = GetDiscordInstance()->GetCurrentGuildID();
+			Snowflake guildID = GetCurrentGuildID();
 			if (guildID == 0)
 				break;
 
