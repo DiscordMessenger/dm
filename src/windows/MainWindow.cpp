@@ -182,7 +182,6 @@ bool ShouldMirrorEventToSubViews(UINT uMsg)
 	{
 		case WM_UPDATEUSER:
 		case WM_UPDATEEMOJI:
-		case WM_UPDATEPROFILEAVATAR:
 		case WM_UPDATECHANACKS:
 		case WM_UPDATEATTACHMENT:
 		case WM_REPAINTGUILDLIST:
@@ -194,6 +193,7 @@ bool ShouldMirrorEventToSubViews(UINT uMsg)
 		case WM_ADDMESSAGE:
 		case WM_UPDATEMESSAGE:
 		case WM_DELETEMESSAGE:
+		case WM_STARTTYPING:
 			return true;
 	}
 
@@ -1359,12 +1359,6 @@ void MainWindow::OnTyping(Snowflake guildID, Snowflake channelID, Snowflake user
 
 		m_pStatusBar->AddTypingName(userID, timeStamp, tu.m_name);
 	}
-
-	for (auto& window : m_subWindows)
-	{
-		if (window->GetCurrentChannelID() == channelID)
-			window->OnTyping(guildID, channelID, userID, timeStamp);
-	}
 }
 
 void MainWindow::OnStopTyping(Snowflake channelID, Snowflake userID)
@@ -1373,12 +1367,6 @@ void MainWindow::OnStopTyping(Snowflake channelID, Snowflake userID)
 
 	if (channelID == GetCurrentChannelID())
 		m_pStatusBar->RemoveTypingName(userID);
-
-	for (auto& window : m_subWindows)
-	{
-		if (window->GetCurrentChannelID() == channelID)
-			window->OnStopTyping(channelID, userID);
-	}
 }
 
 void MainWindow::CreateGuildSubWindow(Snowflake guildId, Snowflake channelId)

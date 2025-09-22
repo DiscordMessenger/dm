@@ -47,7 +47,7 @@ private:
 
 	MessageList*   m_pMessageList = nullptr;
 	MessageEditor* m_pMessageEditor = nullptr;
-	IMemberList*   m_pMemberList = nullptr;
+	//IMemberList*   m_pMemberList = nullptr;
 	IChannelView*  m_pChannelView = nullptr;
 	StatusBar*     m_pStatusBar = nullptr;
 

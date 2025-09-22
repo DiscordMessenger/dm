@@ -299,7 +299,7 @@ void FormattedText::Tokenize(const std::string& newmsg, const std::string& oldms
 				{
 					switch (state) {
 						case 0:
-							if (!isalnum(msg[i]) && msg[i] != ' ' && msg[i] != ']')
+							if ((msg[i] < 0 || !isalnum(msg[i])) && msg[i] != ' ' && msg[i] != ']')
 								isok = false;
 
 							if (msg[i] == ']')

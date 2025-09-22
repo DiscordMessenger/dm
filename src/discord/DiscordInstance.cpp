@@ -2816,10 +2816,8 @@ void DiscordInstance::HandleGUILD_MEMBER_LIST_UPDATE(Json& j)
 			pMember->m_groupId = currentGroup;
 	}
 
-	for (auto& view : m_chatViews) {
-		if (view->GetCurrentGuildID() == guildId)
-			GetFrontend()->UpdateMemberList(view->GetID());
-	}
+	if (GetMainView()->GetCurrentGuildID() == guildId)
+		GetFrontend()->UpdateMemberList(GetMainView()->GetID());
 }
 
 Snowflake DiscordInstance::ParseGuildMember(Snowflake guild, nlohmann::json& memb, Snowflake userID)

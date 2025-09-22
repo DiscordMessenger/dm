@@ -78,7 +78,7 @@ void GuildSubWindow::ProperlySizeControls()
 
 	HWND hWndMsg = m_pMessageList->m_hwnd;
 	HWND hWndChv = m_pChannelView->m_hwnd;
-	HWND hWndMel = m_pMemberList->m_mainHwnd;
+	//HWND hWndMel = m_pMemberList->m_mainHwnd;
 	HWND hWndTin = m_pMessageEditor->m_hwnd;
 	HWND hWndStb = m_pStatusBar->m_hwnd;
 
@@ -130,11 +130,11 @@ void GuildSubWindow::ProperlySizeControls()
 	if (m_bMemberListVisible) rect.right -= m_MemberListWidth + scaled10;
 	MoveWindow(hWndMsg, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
 
-	rect.left = rect.right + scaled10;
-	if (!m_bMemberListVisible) rect.left -= m_MemberListWidth;
-	rect.right = rect.left + m_MemberListWidth;
-	rect.bottom = rect2.bottom;
-	MoveWindow(hWndMel, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
+	//rect.left = rect.right + scaled10;
+	//if (!m_bMemberListVisible) rect.left -= m_MemberListWidth;
+	//rect.right = rect.left + m_MemberListWidth;
+	//rect.bottom = rect2.bottom;
+	//MoveWindow(hWndMel, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
 	rect = rect2;
 
 	rect.left = scaled10;
@@ -167,17 +167,17 @@ LRESULT GuildSubWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		case WM_CREATE:
 		{
 			m_hwnd = hWnd;
-			m_bMemberListVisible = true;
+			m_bMemberListVisible = false;
 			m_bChannelListVisible = true;
 
 			RECT rect { 0, 0, 10, 10 };
 			m_pMessageList = MessageList::Create(this, NULL, &rect);
 			m_pMessageEditor = MessageEditor::Create(this, &rect);
-			m_pMemberList = IMemberList::CreateMemberList(this, &rect);
+			//m_pMemberList = IMemberList::CreateMemberList(this, &rect);
 			m_pChannelView = IChannelView::CreateChannelView(this, &rect);
 			m_pStatusBar = StatusBar::Create(this);
 
-			if (!m_pMemberList ||
+			if (//!m_pMemberList ||
 				!m_pMessageList ||
 				!m_pChannelView ||
 				!m_pMessageEditor)
@@ -201,9 +201,23 @@ LRESULT GuildSubWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		{
 			SAFE_DELETE(m_pChannelView);
 			SAFE_DELETE(m_pMessageList);
-			SAFE_DELETE(m_pMemberList);
+			//SAFE_DELETE(m_pMemberList);
 			SAFE_DELETE(m_pMessageEditor);
 			SAFE_DELETE(m_pStatusBar);
+			break;
+		}
+		case WM_UPDATEEMOJI:
+		{
+			Snowflake sf = *(Snowflake*)lParam;
+			m_pMessageList->OnUpdateEmoji(sf);
+			break;
+		}
+		case WM_UPDATEUSER:
+		{
+			Snowflake sf = *(Snowflake*)lParam;
+			m_pMessageList->OnUpdateAvatar(sf);
+			//m_pMemberList->OnUpdateAvatar(sf);
+			m_pChannelView->OnUpdateAvatar(sf);
 			break;
 		}
 		case WM_UPDATEMESSAGELENGTH:
@@ -223,8 +237,34 @@ LRESULT GuildSubWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		}
 		case WM_UPDATEMEMBERLIST:
 		{
-			m_pMemberList->SetGuild(GetCurrentGuildID());
-			m_pMemberList->Update();
+			//m_pMemberList->SetGuild(GetCurrentGuildID());
+			//m_pMemberList->Update();
+			break;
+		}
+		case WM_UPDATECHANACKS:
+		{
+			Snowflake* sfs = (Snowflake*)lParam;
+
+			Snowflake channelID = sfs[0];
+			Snowflake messageID = sfs[1];
+
+			Channel* pChan = GetDiscordInstance()->GetChannelGlobally(channelID);
+
+			// Update the icon for the specific guild
+			//m_pGuildLister->RedrawIconForGuild(pChan->m_parentGuild);
+
+			// Get the channel as is in the current guild; if found,
+			// update the channel view's ack status
+			Guild* pGuild = GetDiscordInstance()->GetGuild(GetCurrentGuildID());
+			if (!pGuild) break;
+
+			pChan = pGuild->GetChannel(channelID);
+			if (!pChan)
+				break;
+
+			m_pChannelView->UpdateAcknowledgement(channelID);
+			if (m_pMessageList->GetCurrentChannelID() == channelID)
+				m_pMessageList->SetLastViewedMessage(messageID, true);
 			break;
 		}
 		case WM_ADDMESSAGE:
@@ -234,6 +274,7 @@ LRESULT GuildSubWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			if (m_pMessageList->GetCurrentChannelID() == pParms->channel)
 				m_pMessageList->AddMessage(pParms->msg.m_snowflake, GetForegroundWindow() == hWnd);
 
+			OnStopTyping(pParms->channel, pParms->msg.m_author_snowflake);
 			break;
 		}
 		case WM_UPDATEMESSAGE:
@@ -312,6 +353,65 @@ LRESULT GuildSubWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		{
 			ProperlySizeControls();
 			break;
+		}
+		case WM_STARTTYPING:
+		{
+			TypingParams params = *((TypingParams*)lParam);
+			OnTyping(params.m_guild, params.m_channel, params.m_user, params.m_timestamp);
+			break;
+		}
+		case WM_SENDMESSAGE:
+		{
+			SendMessageParams parms = *((SendMessageParams*)lParam);
+
+			std::string msg = MakeStringFromEditData(parms.m_rawMessage);
+
+			if (msg.empty())
+				return 1;
+
+			// send it!
+			if (msg.size() >= MAX_MESSAGE_SIZE)
+			{
+				MessageBox(
+					hWnd,
+					TmGetTString(IDS_MESSAGE_TOO_LONG_MSG),
+					TmGetTString(IDS_PROGRAM_NAME),
+					MB_ICONINFORMATION | MB_OK
+				);
+				return 1;
+			}
+
+			Snowflake sf;
+			if (parms.m_bEdit)
+				return GetDiscordInstance()->EditMessage(parms.m_channel, msg, parms.m_replyTo) ? 0 : 1;
+			
+			if (!GetDiscordInstance()->SendAMessage(parms.m_channel, msg, sf, parms.m_replyTo, parms.m_bMention))
+				return 1;
+
+			SendMessageAuxParams smap;
+			smap.m_message = msg;
+			smap.m_snowflake = sf;
+			SendMessage(hWnd, WM_SENDMESSAGEAUX, 0, (LPARAM)&smap);
+			return 0;
+		}
+		case WM_SENDMESSAGEAUX:
+		{
+			SendMessageAuxParams* psmap = (SendMessageAuxParams*) lParam;
+
+			time_t lastTime = m_pMessageList->GetLastSentMessageTime();
+			Profile* pf = GetDiscordInstance()->GetProfile();
+			MessagePtr m = MakeMessage();
+			m->m_snowflake = psmap->m_snowflake;
+			m->m_author_snowflake = pf->m_snowflake;
+			m->m_author = pf->m_name;
+			m->m_avatar = pf->m_avatarlnk;
+			m->m_message = psmap->m_message;
+			m->m_type = MessageType::SENDING_MESSAGE;
+			m->SetTime(time(NULL));
+			m->m_dateFull = "Sending...";
+			m->m_dateCompact = "Sending...";
+			m_pMessageList->AddMessage(m, true);
+			return 0;
 		}
 	}
 
