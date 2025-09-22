@@ -248,7 +248,7 @@ LRESULT ChannelViewOld::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			Snowflake sf = member.m_id;
 
 			pView->m_currentChannel = sf;
-			GetDiscordInstance()->OnSelectChannel(sf);
+			GetMainWindow()->GetChatView()->OnSelectChannel(sf);
 			break;
 		}
 	}

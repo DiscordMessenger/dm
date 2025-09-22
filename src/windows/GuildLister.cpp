@@ -1007,7 +1007,7 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						sf1 = GetMainWindow()->GetCurrentGuild()->m_snowflake;
 
 					if (sf1 != selected)
-						GetDiscordInstance()->OnSelectGuild(selected);
+						GetMainWindow()->GetChatView()->OnSelectGuild(selected);
 				}
 			}
 
@@ -1215,7 +1215,7 @@ INT_PTR GuildLister::ChooserDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 						break;
 
 					Snowflake guild = pData->m_guildIDs[index];
-					GetDiscordInstance()->OnSelectGuild(guild);
+					GetMainWindow()->GetChatView()->OnSelectGuild(guild);
 					EndDialog(hWnd, TRUE);
 					break;
 				}
@@ -1246,7 +1246,7 @@ INT_PTR GuildLister::ChooserDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 						break;
 
 					Snowflake guild = pData->m_guildIDs[index];
-					GetDiscordInstance()->OnSelectGuild(guild);
+					GetMainWindow()->GetChatView()->OnSelectGuild(guild);
 					EndDialog(hWnd, TRUE);
 					break;
 				}

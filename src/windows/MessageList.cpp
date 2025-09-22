@@ -664,7 +664,7 @@ void MessageItem::Update(Snowflake guildID)
 		m_pRepliedMessage->SetMessage(m_msg->m_pReferencedMessage->m_message);
 
 		std::vector<InteractableItem> interactables;
-		GetDiscordInstance()->ResolveLinks(m_pRepliedMessage, interactables);
+		GetDiscordInstance()->ResolveLinks(m_pRepliedMessage, interactables, guildID);
 	}
 	else if (m_pRepliedMessage)
 	{
@@ -1464,10 +1464,10 @@ void MessageList::OpenInteractable(InteractableItem* pItem, MessageItem* pMsg)
 					Snowflake oldGuildID = m_guildID, oldChannelID = m_channelID;
 
 					if (oldGuildID != pNewChan->m_parentGuild)
-						GetDiscordInstance()->OnSelectGuild(pNewChan->m_parentGuild);
+						GetMainWindow()->GetChatView()->OnSelectGuild(pNewChan->m_parentGuild);
 
 					if (oldChannelID != pNewChan->m_snowflake)
-						GetDiscordInstance()->OnSelectChannel(pNewChan->m_snowflake);
+						GetMainWindow()->GetChatView()->OnSelectChannel(pNewChan->m_snowflake);
 				}
 			}
 
@@ -2189,7 +2189,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 			item.m_pRepliedMessage->SetMessage(item.m_msg->m_pReferencedMessage->m_message);
 
 			std::vector<InteractableItem> interactables;
-			GetDiscordInstance()->ResolveLinks(item.m_pRepliedMessage, interactables);
+			GetDiscordInstance()->ResolveLinks(item.m_pRepliedMessage, interactables, m_guildID);
 		}
 
 		DrawingContext dc(hdc);

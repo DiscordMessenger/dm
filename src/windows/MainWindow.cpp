@@ -303,12 +303,13 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		}
 		case WM_UPDATESELECTEDGUILD:
 		{
-			SetCurrentGuildID(GetDiscordInstance()->GetCurrentGuildID());
+			DbgPrintW("Selecting guild %lld, name %s", GetCurrentGuildID(), GetDiscordInstance()->GetGuild(GetCurrentGuildID())->m_name.c_str());
+			SetCurrentGuildID(GetCurrentGuildID());
 			break;
 		}
 		case WM_UPDATESELECTEDCHANNEL:
 		{
-			SetCurrentChannelID(GetDiscordInstance()->GetCurrentChannelID());
+			SetCurrentChannelID(GetCurrentChannelID());
 			break;
 		}
 		case WM_UPDATECHANACKS:
@@ -317,7 +318,6 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 			Snowflake channelID = sfs[0];
 			Snowflake messageID = sfs[1];
-			auto inst = GetDiscordInstance();
 
 			Channel* pChan = GetDiscordInstance()->GetChannelGlobally(channelID);
 
@@ -326,7 +326,7 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 			// Get the channel as is in the current guild; if found,
 			// update the channel view's ack status
-			Guild* pGuild = inst->GetGuild(inst->m_CurrentGuild);
+			Guild* pGuild = GetDiscordInstance()->GetGuild(GetCurrentGuildID());
 			if (!pGuild) break;
 
 			pChan = pGuild->GetChannel(channelID);
@@ -1304,8 +1304,10 @@ void MainWindow::OnStopTyping(Snowflake channelID, Snowflake userID)
 
 void MainWindow::SetCurrentGuildID(Snowflake sf)
 {
-	if (GetCurrentGuildID() == sf)
+	if (m_lastGuildID == sf)
 		return;
+
+	m_lastGuildID = sf;
 
 	ChatWindow::SetCurrentGuildID(sf);
 
@@ -1319,8 +1321,10 @@ void MainWindow::SetCurrentGuildID(Snowflake sf)
 
 void MainWindow::SetCurrentChannelID(Snowflake channID)
 {
-	if (GetCurrentChannelID() == channID)
+	if (m_lastChannelID == channID)
 		return;
+
+	m_lastChannelID = channID;
 
 	Channel* pChan = GetDiscordInstance()->GetChannelGlobally(channID);
 	if (!pChan)

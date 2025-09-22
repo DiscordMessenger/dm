@@ -163,8 +163,6 @@ private:
 
 public:
 	Snowflake m_mySnowflake = 0;
-	Snowflake m_CurrentGuild   = 0;
-	Snowflake m_CurrentChannel = 0;
 
 	// Guild DB
 	std::list<Guild> m_guilds;
@@ -330,18 +328,9 @@ public:
 		}
 	}
 
-	Snowflake GetCurrentGuildID() const {
-		return m_CurrentGuild;
-	}
-
 	Channel* GetChannel(Snowflake sf)
 	{
 		Channel* pChan;
-		Guild* pGuild = GetCurrentGuild();
-		if (pGuild) {
-			pChan = pGuild->GetChannel(sf);
-			if (pChan) return pChan;
-		}
 
 		for (auto& gld : m_guilds) {
 			pChan = gld.GetChannel(sf);
@@ -350,18 +339,6 @@ public:
 		}
 
 		return m_dmGuild.GetChannel(sf);
-	}
-
-	Guild* GetCurrentGuild() {
-		return GetGuild(m_CurrentGuild);
-	}
-
-	Channel* GetCurrentChannel() {
-		return GetChannel(m_CurrentChannel);
-	}
-
-	Snowflake GetCurrentChannelID() const {
-		return m_CurrentChannel;
 	}
 
 	Channel* GetChannelGlobally(Snowflake sf) {
@@ -384,12 +361,6 @@ public:
 
 	// Search for channels using the quick switcher query format.
 	std::vector<QuickMatch> Search(const std::string& query);
-
-	// Select a guild.
-	void OnSelectGuild(Snowflake sf, Snowflake chan = 0);
-
-	// Select a channel in the current guild.
-	void OnSelectChannel(Snowflake sf, bool bSendSubscriptionUpdate = true);
 
 	// Fetch messages in specified channel.
 	void RequestMessages(Snowflake sf, ScrollDir::eScrollDir dir = ScrollDir::BEFORE, Snowflake source = 0, Snowflake gapper = 0);
@@ -457,7 +428,7 @@ public:
 	void RequestLeaveGuild(Snowflake guild);
 
 	// Update channels that we are subscribed to.
-	void UpdateSubscriptions(Snowflake guild, Snowflake channel, bool typing, bool activities, bool threads, int rangeMembers = 99);
+	void UpdateSubscriptions(bool typing = true, bool activities = true, bool threads = true, int rangeMembers = 99);
 
 	// Request a jump to a message.
 	void JumpToMessage(Snowflake guild, Snowflake channel, Snowflake message);
@@ -476,13 +447,24 @@ public:
 	void ClearData();
 
 	// Resolves links automatically in a formatted message.
-	void ResolveLinks(FormattedText* message, std::vector<InteractableItem>& interactables, Snowflake guildID = 0);
+	void ResolveLinks(FormattedText* message, std::vector<InteractableItem>& interactables, Snowflake guildID);
 
 	// Register a chat view.
 	void RegisterView(ChatViewPtr view);
 
 	// Unregister a chat view.
 	void UnregisterView(ChatViewPtr view);
+
+	// Gets a pointer to the main (first) view.
+	ChatViewPtr GetMainView() const {
+		return m_chatViews[0];
+	}
+
+	// Checks if a guild is opened in a view.
+	bool IsGuildOpened(Snowflake sf) const;
+
+	// Checks if a channel is opened in a view.
+	bool IsChannelOpened(Snowflake sf) const;
 
 public:
 	DiscordInstance(std::string token) : m_token(token), m_notificationManager(this) {

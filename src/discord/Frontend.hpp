@@ -25,7 +25,7 @@ public:
 	virtual void OnConnected() = 0;
 	virtual void OnAddMessage(Snowflake channelID, const Message& msg) = 0;
 	virtual void OnUpdateMessage(Snowflake channelID, const Message& msg) = 0;
-	virtual void OnDeleteMessage(Snowflake messageInCurrentChannel) = 0;
+	virtual void OnDeleteMessage(int viewID, Snowflake messageInCurrentChannel) = 0;
 	virtual void OnStartTyping(Snowflake userID, Snowflake guildID, Snowflake channelID, time_t startTime) = 0;
 	virtual void OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_t* pData, size_t nSize, const std::string& additData) = 0;
 	virtual void OnAttachmentFailed(bool bIsProfilePicture, const std::string& additData) = 0;
@@ -48,10 +48,10 @@ public:
 	virtual void OnProtobufError(Protobuf::ErrorCode code) = 0;
 
 	// Update requests
-	virtual void UpdateSelectedGuild() = 0;
-	virtual void UpdateSelectedChannel() = 0;
-	virtual void UpdateChannelList() = 0;
-	virtual void UpdateMemberList() = 0;
+	virtual void UpdateSelectedGuild(int viewID) = 0;
+	virtual void UpdateSelectedChannel(int viewID) = 0;
+	virtual void UpdateChannelList(int viewID) = 0;
+	virtual void UpdateMemberList(int viewID) = 0;
 	virtual void UpdateChannelAcknowledge(Snowflake channelID, Snowflake messageID) = 0;
 	virtual void UpdateProfileAvatar(Snowflake userID, const std::string& resid) = 0;
 	virtual void UpdateProfilePopout(Snowflake userID) = 0; // <-- Updates if userID is the ID of the profile currently open
@@ -61,10 +61,11 @@ public:
 	virtual void RepaintProfile() = 0;
 	virtual void RepaintProfileWithUserID(Snowflake id) = 0;
 	virtual void RefreshMessages(ScrollDir::eScrollDir sd, Snowflake gapCulprit) = 0;
-	virtual void RefreshMembers(const std::set<Snowflake>& members) = 0;
+	virtual void RefreshMembers(int viewID, const std::set<Snowflake>& members) = 0;
+	virtual void CloseView(int viewID) = 0;
 
 	// Interactive requests
-	virtual void JumpToMessage(Snowflake messageInCurrentChannel) = 0;
+	virtual void JumpToMessage(int viewID, Snowflake messageInCurrentChannel) = 0;
 	virtual void LaunchURL(const std::string& url) = 0;
 
 	// Called by WebSocketClient, dispatches to relevant places including DiscordInstance

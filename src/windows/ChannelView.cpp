@@ -555,7 +555,7 @@ bool ChannelView::OnNotifyTree(LRESULT& out, WPARAM wParam, LPARAM lParam)
 
 			if (sf) {
 				m_currentChannel = sf;
-				GetDiscordInstance()->OnSelectChannel(sf);
+				GetMainWindow()->GetChatView()->OnSelectChannel(sf);
 			}
 
 			break;
@@ -614,7 +614,7 @@ bool ChannelView::OnNotifyList(LRESULT& out, WPARAM wParam, LPARAM lParam)
 					return false;
 
 				ChannelMember* pMember = &m_channels[itemID];
-				GetDiscordInstance()->OnSelectChannel(pMember->m_snowflake);
+				GetMainWindow()->GetChatView()->OnSelectChannel(pMember->m_snowflake);
 			}
 			break;
 		}

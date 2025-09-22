@@ -51,9 +51,9 @@ void Frontend_Win32::OnUpdateMessage(Snowflake channelID, const Message& msg)
 	SendMessage(GetMainHWND(), WM_UPDATEMESSAGE, 0, (LPARAM)&parms);
 }
 
-void Frontend_Win32::OnDeleteMessage(Snowflake messageInCurrentChannel)
+void Frontend_Win32::OnDeleteMessage(int viewID, Snowflake messageInCurrentChannel)
 {
-	SendMessage(GetMainHWND(), WM_DELETEMESSAGE, 0, (LPARAM)&messageInCurrentChannel);
+	SendMessage(GetMainHWND(), WM_DELETEMESSAGE, viewID, (LPARAM)&messageInCurrentChannel);
 }
 
 void Frontend_Win32::OnStartTyping(Snowflake userID, Snowflake guildID, Snowflake channelID, time_t startTime)
@@ -246,24 +246,24 @@ void Frontend_Win32::OnAttachmentFailed(bool bIsProfilePicture, const std::strin
 	GetMainWindow()->OnUpdateAvatar(additData);
 }
 
-void Frontend_Win32::UpdateSelectedGuild()
+void Frontend_Win32::UpdateSelectedGuild(int viewID)
 {
-	SendMessage(GetMainHWND(), WM_UPDATESELECTEDGUILD, 0, 0);
+	SendMessage(GetMainHWND(), WM_UPDATESELECTEDGUILD, viewID, 0);
 }
 
-void Frontend_Win32::UpdateSelectedChannel()
+void Frontend_Win32::UpdateSelectedChannel(int viewID)
 {
-	SendMessage(GetMainHWND(), WM_UPDATESELECTEDCHANNEL, 0, 0);
+	SendMessage(GetMainHWND(), WM_UPDATESELECTEDCHANNEL, viewID, 0);
 }
 
-void Frontend_Win32::UpdateChannelList()
+void Frontend_Win32::UpdateChannelList(int viewID)
 {
-	SendMessage(GetMainHWND(), WM_UPDATECHANLIST, 0, 0);
+	SendMessage(GetMainHWND(), WM_UPDATECHANLIST, viewID, 0);
 }
 
-void Frontend_Win32::UpdateMemberList()
+void Frontend_Win32::UpdateMemberList(int viewID)
 {
-	SendMessage(GetMainHWND(), WM_UPDATEMEMBERLIST, 0, 0);
+	SendMessage(GetMainHWND(), WM_UPDATEMEMBERLIST, viewID, 0);
 }
 
 void Frontend_Win32::UpdateChannelAcknowledge(Snowflake channelID, Snowflake messageID)
@@ -319,14 +319,14 @@ void Frontend_Win32::RefreshMessages(ScrollDir::eScrollDir sd, Snowflake gapCulp
 	SendMessage(GetMainHWND(), WM_REFRESHMESSAGES, (WPARAM) sd, (LPARAM) &gapCulprit);
 }
 
-void Frontend_Win32::RefreshMembers(const std::set<Snowflake>& members)
+void Frontend_Win32::RefreshMembers(int viewID, const std::set<Snowflake>& members)
 {
-	SendMessage(GetMainHWND(), WM_REFRESHMEMBERS, 0, (LPARAM) &members);
+	SendMessage(GetMainHWND(), WM_REFRESHMEMBERS, viewID, (LPARAM) &members);
 }
 
-void Frontend_Win32::JumpToMessage(Snowflake messageInCurrentChannel)
+void Frontend_Win32::JumpToMessage(int viewID, Snowflake messageInCurrentChannel)
 {
-	SendMessage(GetMainHWND(), WM_SENDTOMESSAGE, 0, (LPARAM) &messageInCurrentChannel);
+	SendMessage(GetMainHWND(), WM_SENDTOMESSAGE, viewID, (LPARAM) &messageInCurrentChannel);
 }
 
 void Frontend_Win32::OnWebsocketMessage(int gatewayID, const std::string& payload)
@@ -471,6 +471,11 @@ void Frontend_Win32::RegisterAttachment(Snowflake sf, const std::string& avatarl
 void Frontend_Win32::RegisterChannelIcon(Snowflake sf, const std::string& avatarlnk)
 {
 	GetAvatarCache()->AddImagePlace(avatarlnk, eImagePlace::CHANNEL_ICONS, avatarlnk, sf);
+}
+
+void Frontend_Win32::CloseView(int viewID)
+{
+	SendMessage(GetMainHWND(), WM_CLOSEVIEW, viewID, 0);
 }
 
 std::string Frontend_Win32::GetDirectMessagesText()

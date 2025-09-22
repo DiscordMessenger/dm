@@ -91,49 +91,10 @@ void DiscordInstance::OnFetchedChannels(Guild* pGld, const std::string& content)
 	pGld->m_bChannelsLoaded = true;
 	pGld->m_currentChannel = chan;
 
-	GetFrontend()->UpdateSelectedGuild();
-}
-
-void DiscordInstance::OnSelectChannel(Snowflake sf, bool bSendSubscriptionUpdate)
-{
-	if (m_CurrentChannel == sf)
-		return;
-
-	// check if there are any channels and select the first (for now)
-	Guild* pGuild = GetGuild(m_CurrentGuild);
-	if (!pGuild) return;
-
-	Channel* pChan = pGuild->GetChannel(sf);
-
-	if (!pChan)
+	for (auto& view : m_chatViews)
 	{
-		if (sf != 0)
-			return;
-	}
-	else if (pChan->m_channelType == Channel::CATEGORY)
-		return;
-
-	// Check if we have permission to view the channel.
-	if (m_channelDenyList.find(sf) != m_channelDenyList.end() ||
-		(pChan && !pChan->HasPermission(PERM_VIEW_CHANNEL)))
-	{
-		GetFrontend()->OnCantViewChannel(pChan->m_name);
-		return;
-	}
-
-	m_channelHistory.AddToHistory(m_CurrentChannel);
-	m_CurrentChannel = sf;
-
-	pGuild->m_currentChannel = m_CurrentChannel;
-
-	GetFrontend()->UpdateSelectedChannel();
-
-	if (!GetCurrentChannel() || !GetCurrentGuild())
-		return;
-
-	// send an update subscriptions message
-	if (bSendSubscriptionUpdate) {
-		UpdateSubscriptions(m_CurrentGuild, sf, false, false, false);
+		if (view->GetCurrentGuildID() == pGld->m_snowflake)
+			GetFrontend()->UpdateSelectedGuild(view->GetID());
 	}
 }
 
@@ -304,11 +265,33 @@ std::string DiscordInstance::LookupUserNameGlobally(Snowflake sf, Snowflake gld)
 #define MATCH_DMS    (1 << 2)
 #define MATCH_GUILDS (1 << 3)
 
+bool DiscordInstance::IsGuildOpened(Snowflake sf) const
+{
+	for (auto& view : m_chatViews)
+	{
+		if (view->GetCurrentGuildID() == sf)
+			return true;
+	}
+
+	return false;
+}
+
+bool DiscordInstance::IsChannelOpened(Snowflake sf) const
+{
+	for (auto& view : m_chatViews)
+	{
+		if (view->GetCurrentChannelID() == sf)
+			return true;
+	}
+
+	return false;
+}
+
 void DiscordInstance::SearchSubGuild(std::vector<QuickMatch>& matches, Guild* pGuild, int matchFlags, const char* queryPtr)
 {
 	for (auto& chan : pGuild->m_channels)
 	{
-		if (chan.m_snowflake == m_CurrentChannel)
+		if (IsChannelOpened(chan.m_snowflake))
 			continue;
 
 		if (chan.IsText()) {
@@ -388,7 +371,7 @@ std::vector<QuickMatch> DiscordInstance::Search(const std::string& query)
 		{
 			for (auto& gld : m_guilds)
 			{
-				if (gld.m_snowflake == m_CurrentGuild)
+				if (IsGuildOpened(gld.m_snowflake))
 					continue;
 
 				float fzc = CompareFuzzy(gld.m_name, queryPtr);
@@ -403,55 +386,6 @@ std::vector<QuickMatch> DiscordInstance::Search(const std::string& query)
 	std::sort(matches.begin(), matches.end());
 
 	return matches;
-}
-
-void DiscordInstance::OnSelectGuild(Snowflake sf, Snowflake chan)
-{
-	if (m_CurrentGuild == sf)
-	{
-		if (chan)
-			OnSelectChannel(chan);
-
-		return;
-	}
-
-	m_channelHistory.AddToHistory(m_CurrentChannel);
-
-	// select the guild
-	m_CurrentGuild = sf;
-
-	// check if there are any channels and select the first (for now)
-	Guild* pGuild = GetGuild(sf);
-	if (!pGuild) return;
-	
-	GetFrontend()->UpdateSelectedGuild();
-
-	if (pGuild->m_bChannelsLoaded && pGuild->m_channels.size())
-	{
-		// Determine the first channel we should load.
-		// TODO: Note, unfortunately this isn't really the right order, but it works for now.
-		if (!chan && pGuild->m_currentChannel == 0)
-		{
-			for (auto& ch : pGuild->m_channels)
-			{
-				if (ch.HasPermission(PERM_VIEW_CHANNEL) && ch.m_channelType != Channel::CATEGORY) {
-					pGuild->m_currentChannel = ch.m_snowflake;
-					break;
-				}
-			}
-		}
-
-		if (!chan)
-			chan = pGuild->m_currentChannel;
-
-		OnSelectChannel(chan);
-	}
-	else
-	{
-		OnSelectChannel(0);
-	}
-
-	UpdateSubscriptions(sf, chan, true, true, true);
 }
 
 void OnUpdateAvatar(const std::string& resid);
@@ -510,8 +444,11 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 
 					str = "Sorry, you're not allowed to view the channel " + name + ".";
 
-					if (m_CurrentChannel == pRequest->key)
-						OnSelectChannel(0);
+					for (auto& view : m_chatViews)
+					{
+						if (view->GetCurrentChannelID() == pRequest->key)
+							view->OnSelectChannel(0);
+					}
 
 					m_channelDenyList.insert(pRequest->key);
 
@@ -526,7 +463,7 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 					// Can't create a message here, buckaroo
 					Snowflake nonce = GetIntFromString(pRequest->additional_data);
 
-					GetFrontend()->OnFailedToSendMessage(m_CurrentChannel, nonce);
+					GetFrontend()->OnFailedToSendMessage(pRequest->key, nonce);
 
 					Message msg;
 					msg.m_type = MessageType::DEFAULT;
@@ -539,7 +476,7 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 					msg.SetTime(time(NULL));
 
 					// *1 - I checked, the official Discord client also does that :)
-					GetFrontend()->OnAddMessage(m_CurrentChannel, msg);
+					GetFrontend()->OnAddMessage(pRequest->key, msg);
 
 					break;
 				}
@@ -712,8 +649,7 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 				for (auto& elem : j)
 					ParseAndAddGuild(elem);
 
-				m_CurrentChannel = 0;
-
+				GetMainView()->SetCurrentChannelID(0);
 				GetFrontend()->RepaintGuildList();
 
 				// select the first one, if possible
@@ -721,7 +657,7 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 				if (m_guilds.size() > 0)
 					guildsf = m_guilds.front().m_snowflake;
 
-				OnSelectGuild(guildsf);
+				GetMainView()->OnSelectGuild(guildsf);
 				break;
 			}
 			case GUILD:
@@ -1324,10 +1260,10 @@ bool DiscordInstance::SendAMessage(Snowflake channelID, const std::string& msg_,
 	if (replyTo)
 	{
 		Json mr;
-		if (m_CurrentGuild)
-			mr["guild_id"] = m_CurrentGuild;
+		if (pGuild != &m_dmGuild)
+			mr["guild_id"] = pGuild->m_snowflake;
 
-		mr["channel_id"] = m_CurrentChannel;
+		mr["channel_id"] = pChan->m_snowflake;
 		mr["message_id"] = replyTo;
 		j["message_reference"] = mr;
 	}
@@ -1488,9 +1424,13 @@ void DiscordInstance::RequestDeleteMessage(Snowflake chan, Snowflake msg)
 	);
 }
 
-void DiscordInstance::UpdateSubscriptions(Snowflake guildId, Snowflake channelId, bool typing, bool activities, bool threads, int rangeMembers)
+void DiscordInstance::UpdateSubscriptions(bool typing, bool activities, bool threads, int rangeMembers)
 {
 	Json j, data;
+
+	// TODO: Currently just the main view. I need to figure out how to subscribe to more channels at once.
+	Snowflake guildId = GetMainView()->GetCurrentGuildID();
+	Snowflake channelId = GetMainView()->GetCurrentChannelID();
 
 	if (guildId == 0)
 	{
@@ -1549,15 +1489,28 @@ void DiscordInstance::RequestLeaveGuild(Snowflake guild)
 
 void DiscordInstance::JumpToMessage(Snowflake guild, Snowflake channel, Snowflake message)
 {
-	// jump there!
-	if (m_CurrentGuild != guild) {
-		OnSelectGuild(guild);
+	// check if any views already have the guild opened
+	ChatViewPtr viewPtr = nullptr;
+
+	for (auto& view : m_chatViews)
+	{
+		if (view->GetCurrentGuildID() == guild)
+		{
+			if (!viewPtr || view->GetCurrentChannelID() == channel)
+				viewPtr = view;
+		}
 	}
-	if (m_CurrentChannel != channel) {
-		OnSelectChannel(channel);
-	}
+
+	// if we couldn't find the best view for the job, select the main one
+	if (!viewPtr)
+		viewPtr = GetMainView();
+
+	// just jump there
+	viewPtr->OnSelectGuild(guild);
+	viewPtr->OnSelectChannel(channel);
+
 	if (message)
-		GetFrontend()->JumpToMessage(message);
+		GetFrontend()->JumpToMessage(viewPtr->GetID(), message);
 }
 
 void DiscordInstance::LaunchURL(const std::string& url)
@@ -1626,12 +1579,15 @@ void DiscordInstance::ClearData()
 	m_relationships.clear();
 
 	m_mySnowflake = 0;
-	m_CurrentGuild = 0;
-	m_CurrentChannel = 0;
 	m_gatewayConnId = -1;
 	m_heartbeatSequenceId = -1;
 	m_ackVersion = 0;
 	m_nextAttachmentID = 1;
+
+	for (auto& view : m_chatViews) {
+		view->SetCurrentGuildID(0);
+		view->SetCurrentChannelID(0);
+	}
 }
 
 std::string DiscordInstance::ResolveTimestamp(const std::string& timestampCode)
@@ -1671,9 +1627,6 @@ std::string DiscordInstance::ResolveTimestamp(const std::string& timestampCode)
 
 void DiscordInstance::ResolveLinks(FormattedText* message, std::vector<InteractableItem>& interactables, Snowflake guildID)
 {
-	if (guildID == 0)
-		guildID = GetCurrentGuildID();
-
 	auto& words = message->GetWords();
 	for (size_t i = 0; i < words.size(); i++)
 	{
@@ -1749,7 +1702,17 @@ void DiscordInstance::ResolveLinks(FormattedText* message, std::vector<Interacta
 
 void DiscordInstance::RegisterView(ChatViewPtr view)
 {
+	// give it a unique view ID
+	int viewId = 0;
+	for (size_t i = 0; i < m_chatViews.size(); i++)
+	{
+		if (m_chatViews[i]->GetID() == viewId)
+			viewId++;
+	}
+
+	view->SetID(viewId);
 	m_chatViews.push_back(view);
+
 }
 
 void DiscordInstance::UnregisterView(ChatViewPtr view)
@@ -2478,24 +2441,27 @@ void DiscordInstance::HandleREADY(Json& j)
 	
 	// select the first guild, if possible
 	Snowflake guildsf = 0;
+	ChatViewPtr mainView = GetMainView();
 
 	if (firstReadyOnThisUser) {
-		m_CurrentChannel = 0;
+		GetMainView()->OnSelectChannel(0);
 
 		auto list = m_guildItemList.GetItems();
 		if (list->size() > 0)
 			guildsf = list->front()->GetID();
 	}
 	else {
-		guildsf = m_CurrentGuild;
+		guildsf = GetMainView()->GetCurrentGuildID();
 	}
 
 	GetFrontend()->RepaintGuildList();
-	OnSelectGuild(guildsf);
+	GetMainView()->OnSelectGuild(guildsf);
 
 	// Doing this because the contents of all channels might be outdated.
 	GetMessageCache()->ClearAllChannels();
-	GetFrontend()->UpdateSelectedChannel();
+
+	for (auto& view : m_chatViews)
+		GetFrontend()->UpdateSelectedChannel(view->GetID());
 }
 
 void DiscordInstance::HandleMessageInsertOrUpdate(Json& j, bool bIsUpdate)
@@ -2538,13 +2504,13 @@ void DiscordInstance::HandleMessageInsertOrUpdate(Json& j, bool bIsUpdate)
 			suppRoles    = pSettings->m_bSuppressRoles;
 		}
 
-		if (msg.CheckWasMentioned(m_mySnowflake, guildId, suppEveryone, suppRoles) && m_CurrentChannel != channelId)
+		if (msg.CheckWasMentioned(m_mySnowflake, guildId, suppEveryone, suppRoles) && !IsChannelOpened(channelId))
 			pChan->m_mentionCount++;
 	}
 
 	bool updateAck = false;
 
-	if (m_CurrentChannel == channelId && pChan->m_lastViewedMsg == oldSentMsg)
+	if (IsChannelOpened(channelId) && pChan->m_lastViewedMsg == oldSentMsg)
 		pChan->m_lastViewedMsg = pChan->m_lastSentMsg;
 	else
 		updateAck = true;
@@ -2580,10 +2546,14 @@ void DiscordInstance::HandleMESSAGE_DELETE(Json& j)
 	
 	GetMessageCache()->DeleteMessage(channelId, messageId);
 
-	if (m_CurrentGuild != guildId || m_CurrentChannel != channelId)
-		return;
-
-	GetFrontend()->OnDeleteMessage(messageId);
+	for (auto& view : m_chatViews)
+	{
+		if (view->GetCurrentGuildID() == guildId &&
+			view->GetCurrentChannelID() == channelId)
+		{
+			GetFrontend()->OnDeleteMessage(view->GetID(), messageId);
+		}
+	}
 }
 
 void DiscordInstance::HandleMESSAGE_ACK(nlohmann::json& j)
@@ -2661,12 +2631,23 @@ void DiscordInstance::HandleGUILD_DELETE(Json& j)
 			m_guildItemList.EraseGuild(sf);
 			GetFrontend()->RepaintGuildList();
 
-			if (m_CurrentGuild == sf)
+			for (auto& view : m_chatViews)
 			{
-				Snowflake sf = 0;
-				if (!m_guilds.empty())
-					sf = m_guilds.begin()->m_snowflake;
-				OnSelectGuild(sf);
+				if (view->GetCurrentGuildID() != sf)
+					continue;
+
+				if (view == GetMainView())
+				{
+					Snowflake sf = 0;
+					if (!m_guilds.empty())
+						sf = m_guilds.begin()->m_snowflake;
+					
+					view->OnSelectGuild(sf);
+				}
+				else
+				{
+					GetFrontend()->CloseView(view->GetID());
+				}
 			}
 			break;
 		}
@@ -2690,8 +2671,11 @@ void DiscordInstance::HandleCHANNEL_CREATE(Json& j)
 	pGuild->m_channels.push_back(chn);
 	pGuild->m_channels.sort();
 
-	if (m_CurrentGuild == guildId)
-		GetFrontend()->UpdateChannelList();
+	for (auto& view : m_chatViews)
+	{
+		if (view->GetCurrentGuildID() == guildId)
+			GetFrontend()->UpdateChannelList(view->GetID());
+	}
 }
 
 void DiscordInstance::HandleCHANNEL_UPDATE(Json& j)
@@ -2722,8 +2706,12 @@ void DiscordInstance::HandleCHANNEL_UPDATE(Json& j)
 		pGuild->m_channels.sort();
 	}
 
-	if (modifiedOrder || oldPerms != pChan->ComputePermissionOverwrites(m_mySnowflake, pGuild->ComputeBasePermissions(m_mySnowflake))) {
-		GetFrontend()->UpdateChannelList();
+	if (modifiedOrder || oldPerms != pChan->ComputePermissionOverwrites(m_mySnowflake, pGuild->ComputeBasePermissions(m_mySnowflake)))
+	{
+		for (auto& view : m_chatViews) {
+			if (view->GetCurrentGuildID() == guildId)
+				GetFrontend()->UpdateChannelList(view->GetID());
+		}
 	}
 }
 
@@ -2747,11 +2735,20 @@ void DiscordInstance::HandleCHANNEL_DELETE(Json& j)
 		}
 	}
 
-	if (m_CurrentChannel == channelId)
-		OnSelectChannel(0);
+	for (auto& view : m_chatViews)
+	{
+		if (view->GetCurrentChannelID() == channelId)
+		{
+			// if a DM, close immediately, otherwise select no channel
+			if (view->GetCurrentGuildID() == 0)
+				GetFrontend()->CloseView(view->GetID());
+			else
+				view->OnSelectChannel(0);
+		}
 
-	if (m_CurrentGuild == guildId)
-		GetFrontend()->UpdateChannelList();
+		if (view->GetCurrentGuildID() == guildId)
+			GetFrontend()->UpdateChannelList(view->GetID());
+	}
 }
 
 static Snowflake GetGroupId(std::string idStr)
@@ -2819,7 +2816,10 @@ void DiscordInstance::HandleGUILD_MEMBER_LIST_UPDATE(Json& j)
 			pMember->m_groupId = currentGroup;
 	}
 
-	GetFrontend()->UpdateMemberList();
+	for (auto& view : m_chatViews) {
+		if (view->GetCurrentGuildID() == guildId)
+			GetFrontend()->UpdateMemberList(view->GetID());
+	}
 }
 
 Snowflake DiscordInstance::ParseGuildMember(Snowflake guild, nlohmann::json& memb, Snowflake userID)
@@ -2960,8 +2960,11 @@ void DiscordInstance::HandleGUILD_MEMBERS_CHUNK(nlohmann::json& j)
 		}
 	}
 
-	if (m_CurrentGuild == guildId)
-		GetFrontend()->RefreshMembers(memsToRefresh);
+	for (auto& view : m_chatViews)
+	{
+		if (view->GetCurrentGuildID() == guildId)
+			GetFrontend()->RefreshMembers(view->GetID(), memsToRefresh);
+	}
 }
 
 void DiscordInstance::HandleTYPING_START(nlohmann::json& j)
@@ -3086,7 +3089,11 @@ void DiscordInstance::HandleGuildMemberListUpdate_Update(Snowflake guild, nlohma
 	pGld->m_members[index] = sf;
 
 	std::set<Snowflake> updates{ sf };
-	GetFrontend()->RefreshMembers(updates);
+
+	for (auto& view : m_chatViews) {
+		if (view->GetCurrentGuildID() == pGld->m_snowflake)
+			GetFrontend()->RefreshMembers(view->GetID(), updates);
+	}
 }
 
 void DiscordInstance::OnUploadAttachmentFirst(NetRequest* pReq)

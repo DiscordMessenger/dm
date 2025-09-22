@@ -91,6 +91,9 @@ private:
 	MessageEditor* m_pMessageEditor;
 	LoadingMessage* m_pLoadingMessage;
 
+	Snowflake m_lastGuildID = 0;
+	Snowflake m_lastChannelID = 0;
+
 	int m_agerCounter = 0;
 	int m_HeartbeatTimerInterval = 0;
 	int m_TryAgainTimerInterval = 100;

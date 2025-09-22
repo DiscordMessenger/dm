@@ -206,9 +206,9 @@ void QuickSwitcher::SwitchToChannelAtIndex(int idx)
 	QuickSwitchItem& qsi = g_qsItems[idx];
 
 	if (qsi.m_match.IsChannel())
-		GetDiscordInstance()->OnSelectGuild(qsi.m_guildID, qsi.m_match.Id());
+		GetMainWindow()->GetChatView()->OnSelectGuild(qsi.m_guildID, qsi.m_match.Id());
 	else
-		GetDiscordInstance()->OnSelectGuild(qsi.m_guildID);
+		GetMainWindow()->GetChatView()->OnSelectGuild(qsi.m_guildID);
 }
 
 void QuickSwitcher::SwitchToSelectedChannel(HWND hWnd)

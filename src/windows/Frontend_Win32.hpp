@@ -15,7 +15,7 @@ public:
 	void OnConnected() override;
 	void OnAddMessage(Snowflake channelID, const Message& msg) override;
 	void OnUpdateMessage(Snowflake channelID, const Message& msg) override;
-	void OnDeleteMessage(Snowflake messageInCurrentChannel) override;
+	void OnDeleteMessage(int viewID, Snowflake messageInCurrentChannel) override;
 	void OnStartTyping(Snowflake userID, Snowflake guildID, Snowflake channelID, time_t startTime) override;
 	void OnRequestDone(NetRequest* pRequest) override;
 	void OnLoadedPins(Snowflake channel, const std::string& data) override;
@@ -34,10 +34,10 @@ public:
 	void OnProtobufError(Protobuf::ErrorCode code) override;
 	void OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_t* pData, size_t nSize, const std::string& additData) override;
 	void OnAttachmentFailed(bool bIsProfilePicture, const std::string& additData) override;
-	void UpdateSelectedGuild() override;
-	void UpdateSelectedChannel() override;
-	void UpdateChannelList() override;
-	void UpdateMemberList() override;
+	void UpdateSelectedGuild(int viewID) override;
+	void UpdateSelectedChannel(int viewID) override;
+	void UpdateChannelList(int viewID) override;
+	void UpdateMemberList(int viewID) override;
 	void UpdateChannelAcknowledge(Snowflake channelID, Snowflake messageID) override;
 	void UpdateProfileAvatar(Snowflake userID, const std::string& resid) override;
 	void UpdateProfilePopout(Snowflake userID) override;
@@ -47,8 +47,8 @@ public:
 	void RepaintProfile() override;
 	void RepaintProfileWithUserID(Snowflake id) override;
 	void RefreshMessages(ScrollDir::eScrollDir sd, Snowflake gapCulprit) override;
-	void RefreshMembers(const std::set<Snowflake>& members) override;
-	void JumpToMessage(Snowflake messageInCurrentChannel) override;
+	void RefreshMembers(int viewID, const std::set<Snowflake>& members) override;
+	void JumpToMessage(int viewID, Snowflake messageInCurrentChannel) override;
 	void OnWebsocketMessage(int gatewayID, const std::string& payload) override;
 	void OnWebsocketClose(int gatewayID, int errorCode, const std::string& message) override;
 	void OnWebsocketFail(int gatewayID, int errorCode, const std::string& message, bool isTLSError, bool mayRetry) override;
@@ -58,6 +58,7 @@ public:
 	void RegisterAvatar(Snowflake sf, const std::string& avatarlnk) override;
 	void RegisterAttachment(Snowflake sf, const std::string& avatarlnk) override;
 	void RegisterChannelIcon(Snowflake sf, const std::string& avatarlnk) override;
+	void CloseView(int viewID) override;
 	void RequestQuit() override;
 	void HideWindow() override;
 	void RestoreWindow() override;
