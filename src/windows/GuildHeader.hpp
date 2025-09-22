@@ -11,6 +11,7 @@ class GuildHeader
 {
 public:
 	HWND m_hwnd = NULL;
+	ChatWindow* m_pParent = nullptr;
 	Snowflake m_guildID = 0;
 	Snowflake m_channelID = 0;
 
@@ -40,7 +41,7 @@ public:
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void InitializeClass();
 
-	static GuildHeader* Create(HWND hwnd, LPRECT pRect);
+	static GuildHeader* Create(ChatWindow* parent, LPRECT pRect);
 
 private:
 	enum eButtonPlacement {

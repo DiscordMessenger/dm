@@ -2,6 +2,7 @@
 #include <set>
 #include <map>
 #include "Main.hpp"
+#include "ChatWindow.hpp"
 #include "../discord/FormattedText.hpp"
 
 #define T_MESSAGE_LIST_PARENT_CLASS TEXT("MessageListParent")
@@ -360,6 +361,8 @@ public:
 	HWND m_hwnd = NULL;
 
 private:
+	ChatWindow* m_pParent = nullptr;
+
 	UINT_PTR m_flash_timer = 0;
 	int m_flash_counter = 0;
 
@@ -527,7 +530,7 @@ public:
 	static WNDCLASS g_MsgListClass;
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void InitializeClass();
-	static MessageList* Create (HWND hwnd, LPRECT pRect);
+	static MessageList* Create(ChatWindow* parent, HWND hwnd, LPRECT pRect);
 	static bool IsCompact();
 	static bool MayErase();// checks if InvalidateRect or *Rgn should NEVER be passed true
 	

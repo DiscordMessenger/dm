@@ -48,7 +48,7 @@ void NotificationViewer::Initialize(HWND hWnd)
 
 	SAFE_DELETE(m_pMessageList);
 
-	m_pMessageList = MessageList::Create(hWnd, &rect);
+	m_pMessageList = MessageList::Create(nullptr, hWnd, &rect);
 	m_pMessageList->SetManagedByOwner(true);
 	m_pMessageList->SetTopDown(true);
 	m_pMessageList->SetGuild(0);

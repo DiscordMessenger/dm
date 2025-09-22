@@ -475,11 +475,11 @@ LRESULT MemberList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc( hWnd, uMsg, wParam, lParam );
 }
 
-MemberList* MemberList::Create(HWND hWnd, LPRECT rect)
+MemberList* MemberList::Create(ChatWindow* parent, LPRECT rect)
 {
 	MemberList* list = new MemberList;
-
-	list->m_hwndParent = hWnd;
+	list->m_pParent = parent;
+	list->m_hwndParent = parent->GetHWND();
 
 	list->m_mainHwnd = CreateWindowEx(
 		WS_EX_CLIENTEDGE,
@@ -490,7 +490,7 @@ MemberList* MemberList::Create(HWND hWnd, LPRECT rect)
 		rect->top,
 		rect->right - rect->left,
 		rect->bottom - rect->top,
-		hWnd,
+		parent->GetHWND(),
 		(HMENU)CID_MEMBERLIST,
 		g_hInstance,
 		list

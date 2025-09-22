@@ -68,7 +68,7 @@ void PinList::Initialize(HWND hWnd)
 		GetDiscordInstance()->RequestPinnedMessages(m_channel);
 	}
 
-	m_pMessageList = MessageList::Create(hWnd, &rect);
+	m_pMessageList = MessageList::Create(nullptr, hWnd, &rect);
 	m_pMessageList->SetManagedByOwner(true);
 	m_pMessageList->SetTopDown(true);
 	m_pMessageList->SetGuild(m_guild);

@@ -49,7 +49,7 @@ void GuildLister::ProperlyResizeSubWindows()
 	int buttonHeight = ScaleByDPI(24);
 
 	bool wasScrollBarVisible = m_bIsScrollBarVisible;
-	m_bIsScrollBarVisible = rect.right - rect.left > GetMainWindow()->GetGuildListerWidth();
+	m_bIsScrollBarVisible = rect.right - rect.left > m_pParent->GetGuildListerWidth();
 
 	if (wasScrollBarVisible != m_bIsScrollBarVisible) {
 		if (wasScrollBarVisible) {
@@ -190,7 +190,7 @@ void GuildLister::UpdateSelected()
 		InvalidateRect(m_hwnd, &it->second, FALSE);
 	}
 
-	m_selectedGuild = GetMainWindow()->GetCurrentGuildID();
+	m_selectedGuild = m_pParent->GetCurrentGuildID();
 	it = m_iconRects.find(m_selectedGuild);
 	if (it != m_iconRects.end()) {
 		InvalidateRect(m_hwnd, &it->second, FALSE);
@@ -479,13 +479,13 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 	int height = 0;
 	int pfpSize = GetProfilePictureSize();
 	int pfpBorderSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
-	bool isCurrent = GetMainWindow()->GetCurrentGuildID() == id;
+	bool isCurrent = m_pParent->GetCurrentGuildID() == id;
 
 	SetRectEmpty(&m_iconRects[id]);
 
 	bool isFolderIcon = currentFolder && (id & ~BIT_FOLDER) == currentFolder;
 
-	m_selectedGuild = GetMainWindow()->GetCurrentGuildID();
+	m_selectedGuild = m_pParent->GetCurrentGuildID();
 	if (hdc && hicon)
 	{
 		HICON hborder = NULL;
@@ -1353,9 +1353,10 @@ void GuildLister::InitializeClass()
 	RegisterClass(&wc);
 }
 
-GuildLister* GuildLister::Create(HWND hwnd, LPRECT pRect)
+GuildLister* GuildLister::Create(ChatWindow* parent, LPRECT pRect)
 {
 	GuildLister* newThis = new GuildLister;
+	newThis->m_pParent = parent;
 
 	int width = pRect->right - pRect->left, height = pRect->bottom - pRect->top;
 
@@ -1368,7 +1369,7 @@ GuildLister* GuildLister::Create(HWND hwnd, LPRECT pRect)
 
 	newThis->m_hwnd = CreateWindowEx(
 		flagsex, T_GUILD_LISTER_PARENT_CLASS, NULL, WS_CHILD | WS_VISIBLE,
-		pRect->left, pRect->top, width, height, hwnd, (HMENU)CID_GUILDLISTER, g_hInstance, newThis
+		pRect->left, pRect->top, width, height, parent->GetHWND(), (HMENU)CID_GUILDLISTER, g_hInstance, newThis
 	);
 
 	newThis->m_scrollable_hwnd = CreateWindowEx(

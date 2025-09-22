@@ -13,6 +13,7 @@ class MessageEditor
 public:
 	HWND m_hwnd      = NULL;
 	HWND m_edit_hwnd = NULL;
+	ChatWindow* m_pParent = nullptr;
 
 private:
 	HWND m_parent_hwnd         = NULL;
@@ -111,6 +112,6 @@ public:
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void InitializeClass();
 
-	static MessageEditor* Create(HWND hwnd, LPRECT pRect);
+	static MessageEditor* Create(ChatWindow* parent, LPRECT pRect);
 };
 

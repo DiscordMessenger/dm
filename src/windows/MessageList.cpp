@@ -1464,10 +1464,16 @@ void MessageList::OpenInteractable(InteractableItem* pItem, MessageItem* pMsg)
 					Snowflake oldGuildID = m_guildID, oldChannelID = m_channelID;
 
 					if (oldGuildID != pNewChan->m_parentGuild)
-						GetMainWindow()->GetChatView()->OnSelectGuild(pNewChan->m_parentGuild);
+					{
+						if (m_pParent)
+							m_pParent->GetChatView()->OnSelectGuild(pNewChan->m_parentGuild);
+					}
 
 					if (oldChannelID != pNewChan->m_snowflake)
-						GetMainWindow()->GetChatView()->OnSelectChannel(pNewChan->m_snowflake);
+					{
+						if (m_pParent)
+							m_pParent->GetChatView()->OnSelectChannel(pNewChan->m_snowflake);
+					}
 				}
 			}
 
@@ -5021,15 +5027,25 @@ void MessageList::UpdateAllowDrop()
 	DragAcceptFiles(m_hwnd, Accept);
 }
 
-MessageList* MessageList::Create(HWND hwnd, LPRECT pRect)
+MessageList* MessageList::Create(ChatWindow* parent, HWND hwnd, LPRECT pRect)
 {
+	if (!hwnd)
+		hwnd = parent->GetHWND();
+
 	MessageList* newThis = new MessageList;
+	newThis->m_pParent = parent;
+
 	int width = pRect->right - pRect->left, height = pRect->bottom - pRect->top;
 
 	newThis->m_hwnd = CreateWindowEx(
 		WS_EX_CLIENTEDGE, T_MESSAGE_LIST_CLASS, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL,
 		pRect->left, pRect->top, width, height, hwnd, (HMENU)CID_MESSAGELIST, g_hInstance, newThis
 	);
+
+	if (!newThis->m_hwnd) {
+		delete newThis;
+		return nullptr;
+	}
 
 	newThis->UpdateBackgroundBrush();
 

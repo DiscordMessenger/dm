@@ -886,21 +886,22 @@ void MessageEditor::InitializeClass()
 	RegisterClass(&wc);
 }
 
-MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
+MessageEditor* MessageEditor::Create(ChatWindow* parent, LPRECT pRect)
 {
 	MessageEditor* newThis = new MessageEditor;
+	newThis->m_pParent = parent;
 
 	int sendButtonWidth = 1, sendButtonHeight = 1;
 	int width = pRect->right - pRect->left, height = pRect->bottom - pRect->top;
 
-	newThis->m_parent_hwnd = hwnd;
+	newThis->m_parent_hwnd = parent->GetHWND();
 	newThis->m_hwnd = CreateWindowEx(
 		0,
 		T_MESSAGE_EDITOR_CLASS,
 		NULL,
 		WS_CHILD | WS_VISIBLE,
 		pRect->left, pRect->top, width, height,
-		hwnd,
+		parent->GetHWND(),
 		(HMENU)CID_MESSAGEEDITOR,
 		g_hInstance,
 		newThis

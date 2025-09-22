@@ -541,14 +541,14 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			ClientToScreen(m_hwnd, &pt);
 			OffsetRect(&rcLoading, pt.x, pt.y);
 
-			m_pStatusBar   = StatusBar::Create(m_hwnd);
-			m_pMessageList = MessageList::Create(m_hwnd, &rect);
+			m_pStatusBar   = StatusBar::Create(this);
+			m_pMessageList = MessageList::Create(this, NULL, &rect);
 			m_pProfileView = ProfileView::Create(m_hwnd, &rect, CID_PROFILEVIEW, true);
-			m_pGuildHeader = GuildHeader::Create(m_hwnd, &rect);
-			m_pGuildLister = GuildLister::Create(m_hwnd, &rect);
-			m_pMemberList  = IMemberList::CreateMemberList(m_hwnd, &rect);
-			m_pChannelView = IChannelView::CreateChannelView(m_hwnd, &rect);
-			m_pMessageEditor = MessageEditor::Create(m_hwnd, &rect);
+			m_pGuildHeader = GuildHeader::Create(this, &rect);
+			m_pGuildLister = GuildLister::Create(this, &rect);
+			m_pMemberList  = IMemberList::CreateMemberList(this, &rect);
+			m_pChannelView = IChannelView::CreateChannelView(this, &rect);
+			m_pMessageEditor = MessageEditor::Create(this, &rect);
 			m_pLoadingMessage = LoadingMessage::Create(m_hwnd, &rcLoading);
 
 			if (!m_pStatusBar ||
@@ -737,7 +737,9 @@ LRESULT MainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			RECT rc{};
 			GetChildRect(hWnd, m_pMemberList->m_mainHwnd, &rc);
 			SAFE_DELETE(m_pMemberList);
-			m_pMemberList = IMemberList::CreateMemberList(hWnd, &rc);
+
+			m_pMemberList = IMemberList::CreateMemberList(this, &rc);
+
 			WindowProc(hWnd, WM_UPDATEMEMBERLIST, 0, 0);
 			break;
 		}

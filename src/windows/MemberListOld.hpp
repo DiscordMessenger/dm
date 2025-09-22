@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IMemberList.hpp"
+#include "ChatWindow.hpp"
 
 #define T_MEMBER_LIST_CLASS_OLD TEXT("MemberListOld")
 
@@ -19,7 +20,7 @@ class MemberListOld : public IMemberList
 	};
 
 public:
-	static MemberListOld* Create(HWND hwnd, LPRECT lprect);
+	static MemberListOld* Create(ChatWindow* parent, LPRECT lprect);
 	static void InitializeClass();
 
 	void SetGuild(Snowflake sf) override;
@@ -35,6 +36,7 @@ private:
 
 	HWND m_listHwnd = NULL;
 	HWND m_hwndParent = NULL;
+	ChatWindow* m_pParent = nullptr;
 
 	Snowflake m_guild = 0;
 

@@ -47,9 +47,9 @@ public:
 		return m_pMessageEditor;
 	}
 
-	bool IsChannelListVisible() const { return m_bChannelListVisible; }
+	bool IsChannelListVisible() const override { return m_bChannelListVisible; }
+	int GetGuildListerWidth() const override { return m_GuildListerWidth; }
 	bool IsMemberListVisible() const { return m_bMemberListVisible; }
-	int GetGuildListerWidth() const { return m_GuildListerWidth; }
 
 	void SetHeartbeatInterval(int timeMs);
 	void TryConnectAgainIn(int time);

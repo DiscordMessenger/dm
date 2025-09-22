@@ -141,7 +141,7 @@ void GuildHeader::Layout()
 	RECT &rrect1 = m_rectLeftFull, &rrect2 = m_rectMidFull, &rrect3 = m_rectRightFull;
 		
 	rrect1 = rect, rrect2 = rect, rrect3 = rect;
-	rrect1.right = rrect1.left + GetMainWindow()->IsChannelListVisible() ? ScaleByDPI(CHANNEL_VIEW_LIST_WIDTH) : (rect.bottom - rect.top);
+	rrect1.right = rrect1.left + m_pParent->IsChannelListVisible() ? ScaleByDPI(CHANNEL_VIEW_LIST_WIDTH) : (rect.bottom - rect.top);
 	rrect2.left  = rrect1.right;
 	rrect3.left  = rrect3.right - ScaleByDPI(MEMBER_LIST_WIDTH);
 	rrect2.right = rrect3.left;
@@ -470,7 +470,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			RECT nameRect;
 			int nameHeight;
 
-			bool channelListVisible = GetMainWindow()->IsChannelListVisible();
+			bool channelListVisible = pThis->m_pParent->IsChannelListVisible();
 			if (channelListVisible)
 			{
 				nameRect = pThis->m_rectLeft;
@@ -596,7 +596,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 				case IDTB_CHANNELS: {
 					SendMessage(GetParent(pThis->m_hwnd), WM_TOGGLECHANNELS, 0, 0);
-					bool channelListVisible = GetMainWindow()->IsChannelListVisible();
+					bool channelListVisible = pThis->m_pParent->IsChannelListVisible();
 
 					pThis->m_buttons[lParam].m_iconID = DMIC(channelListVisible ? IDI_SHIFT_LEFT : IDI_SHIFT_RIGHT);
 					pThis->m_buttons[lParam].m_placement = channelListVisible ? BUTTON_GUILD_RIGHT : BUTTON_GUILD_LEFT;
@@ -626,9 +626,10 @@ void GuildHeader::InitializeClass()
 	RegisterClass(&wc);
 }
 
-GuildHeader* GuildHeader::Create(HWND hwnd, LPRECT pRect)
+GuildHeader* GuildHeader::Create(ChatWindow* parent, LPRECT pRect)
 {
 	GuildHeader* newThis = new GuildHeader;
+	newThis->m_pParent = parent;
 
 	int width = pRect->right - pRect->left, height = pRect->bottom - pRect->top;
 
@@ -639,7 +640,7 @@ GuildHeader* GuildHeader::Create(HWND hwnd, LPRECT pRect)
 		WS_CHILD | WS_VISIBLE,
 		pRect->left, pRect->top,
 		width, height,
-		hwnd,
+		parent->GetHWND(),
 		(HMENU)CID_GUILDHEADER,
 		g_hInstance,
 		newThis

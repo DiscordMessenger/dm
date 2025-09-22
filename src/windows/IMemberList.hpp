@@ -8,7 +8,7 @@ public:
 	HWND m_mainHwnd;
 
 public:
-	static IMemberList* CreateMemberList(HWND hwnd, LPRECT lprect);
+	static IMemberList* CreateMemberList(ChatWindow* parent, LPRECT lprect);
 	static void InitializeClasses();
 
 	virtual void SetGuild(Snowflake sf) = 0;

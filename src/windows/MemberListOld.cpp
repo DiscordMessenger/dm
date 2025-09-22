@@ -2,11 +2,11 @@
 
 WNDCLASS MemberListOld::g_memberListOldClass;
 
-MemberListOld* MemberListOld::Create(HWND hWnd, LPRECT rect)
+MemberListOld* MemberListOld::Create(ChatWindow* parent, LPRECT rect)
 {
 	MemberListOld* list = new MemberListOld;
-
-	list->m_hwndParent = hWnd;
+	list->m_pParent = parent;
+	list->m_hwndParent = parent->GetHWND();
 
 	list->m_mainHwnd = CreateWindowEx(
 		0,
@@ -17,7 +17,7 @@ MemberListOld* MemberListOld::Create(HWND hWnd, LPRECT rect)
 		rect->top,
 		rect->right - rect->left,
 		rect->bottom - rect->top,
-		hWnd,
+		parent->GetHWND(),
 		(HMENU)CID_MEMBERLIST,
 		g_hInstance,
 		list

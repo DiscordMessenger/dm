@@ -2,10 +2,11 @@
 
 WNDCLASS ChannelViewOld::g_ChannelViewLegacyClass;
 
-ChannelViewOld* ChannelViewOld::Create(HWND hwnd, LPRECT rect)
+ChannelViewOld* ChannelViewOld::Create(ChatWindow* parent, LPRECT rect)
 {
 	ChannelViewOld* view = new ChannelViewOld;
-	view->m_hwndParent = hwnd;
+	view->m_pParent = parent;
+	view->m_hwndParent = parent->GetHWND();
 
 	view->m_hwnd = CreateWindowEx(
 		0,
@@ -16,7 +17,7 @@ ChannelViewOld* ChannelViewOld::Create(HWND hwnd, LPRECT rect)
 		rect->top,
 		rect->right - rect->left,
 		rect->bottom - rect->top,
-		hwnd,
+		view->m_hwndParent,
 		(HMENU)(CID_CHANNELVIEW),
 		g_hInstance,
 		view
@@ -248,7 +249,7 @@ LRESULT ChannelViewOld::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			Snowflake sf = member.m_id;
 
 			pView->m_currentChannel = sf;
-			GetMainWindow()->GetChatView()->OnSelectChannel(sf);
+			pView->m_pParent->GetChatView()->OnSelectChannel(sf);
 			break;
 		}
 	}

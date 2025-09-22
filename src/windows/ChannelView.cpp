@@ -420,10 +420,11 @@ void ChannelView::RemoveCategoryIfNeeded(const Channel& ch)
 	mem.m_hItem = NULL;
 }
 
-ChannelView* ChannelView::Create(HWND hwnd, LPRECT rect)
+ChannelView* ChannelView::Create(ChatWindow* parent, LPRECT rect)
 {
 	ChannelView* view = new ChannelView;
-	view->m_hwndParent = hwnd;
+	view->m_pParent = parent;
+	view->m_hwndParent = parent->GetHWND();
 
 	view->m_hwnd = CreateWindowEx(
 		WS_EX_CLIENTEDGE,
@@ -434,7 +435,7 @@ ChannelView* ChannelView::Create(HWND hwnd, LPRECT rect)
 		rect->top,
 		rect->right - rect->left,
 		rect->bottom - rect->top,
-		hwnd,
+		parent->GetHWND(),
 		(HMENU)(CID_CHANNELVIEW),
 		g_hInstance,
 		view
@@ -555,7 +556,7 @@ bool ChannelView::OnNotifyTree(LRESULT& out, WPARAM wParam, LPARAM lParam)
 
 			if (sf) {
 				m_currentChannel = sf;
-				GetMainWindow()->GetChatView()->OnSelectChannel(sf);
+				m_pParent->GetChatView()->OnSelectChannel(sf);
 			}
 
 			break;
@@ -614,7 +615,7 @@ bool ChannelView::OnNotifyList(LRESULT& out, WPARAM wParam, LPARAM lParam)
 					return false;
 
 				ChannelMember* pMember = &m_channels[itemID];
-				GetMainWindow()->GetChatView()->OnSelectChannel(pMember->m_snowflake);
+				m_pParent->GetChatView()->OnSelectChannel(pMember->m_snowflake);
 			}
 			break;
 		}

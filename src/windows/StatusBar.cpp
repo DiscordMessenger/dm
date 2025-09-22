@@ -8,16 +8,18 @@ enum {
 	IDP_CNTRLS
 };
 
-StatusBar* StatusBar::Create(HWND hParent)
+StatusBar* StatusBar::Create(ChatWindow* parent)
 {
 	StatusBar* pBar = new StatusBar;
+	pBar->m_pParent = parent;
+
 	pBar->m_hwnd = CreateWindowEx(
 		0,
 		STATUSCLASSNAME,
 		NULL,
 		WS_CHILD | WS_VISIBLE,
 		0, 0, 0, 0,
-		hParent,
+		parent->GetHWND(),
 		(HMENU)CID_STATUSBAR,
 		g_hInstance,
 		NULL
@@ -29,7 +31,7 @@ StatusBar* StatusBar::Create(HWND hParent)
 		pBar->m_hwnd = ri::CreateStatusWindowANSI(
 			WS_CHILD | WS_VISIBLE,
 			"",
-			hParent,
+			parent->GetHWND(),
 			CID_STATUSBAR
 		);
 	}
@@ -289,6 +291,8 @@ void StatusBar::UpdateParts(int width)
 	// Part 2 - Under the send button, character count
 	// Part 3 - Under the member list, some controls, I don't know
 	
+	// TODO: Get rid of GetMainWindow()? Or maybe just don't create this for sub-windows?
+
 	int scaled10 = ScaleByDPI(10);
 	Widths[IDP_CNTRLS] = width;
 	Widths[IDP_CHRCNT] = width - GetMainWindow()->m_MemberListWidth - scaled10 * 3 / 2;

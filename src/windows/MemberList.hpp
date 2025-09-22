@@ -11,6 +11,7 @@ class MemberList : public IMemberList
 {
 private:
 	HWND m_hwndParent;
+	ChatWindow* m_pParent = nullptr;
 
 public:
 	HWND m_listHwnd;
@@ -38,7 +39,7 @@ public:
 	void StopUpdate();
 
 public:
-	static MemberList* Create(HWND hWnd, LPRECT lpRect);
+	static MemberList* Create(ChatWindow* parent, LPRECT lpRect);
 	static void InitializeClass();
 
 private:

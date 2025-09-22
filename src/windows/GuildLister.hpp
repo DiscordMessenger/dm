@@ -22,6 +22,7 @@ public:
 	HWND m_tooltip_hwnd    = NULL;
 	HWND m_more_btn_hwnd   = NULL;
 	HWND m_bar_btn_hwnd    = NULL;
+	ChatWindow* m_pParent = nullptr;
 
 	bool m_bIsScrollBarVisible = false;
 	SCROLLINFO m_simulatedScrollInfo{};
@@ -69,6 +70,6 @@ public:
 	static INT_PTR CALLBACK ChooserDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void InitializeClass();
 
-	static GuildLister* Create(HWND hwnd, LPRECT pRect);
+	static GuildLister* Create(ChatWindow* parent, LPRECT pRect);
 };
 

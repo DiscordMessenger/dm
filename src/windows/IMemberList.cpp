@@ -2,12 +2,12 @@
 #include "MemberList.hpp"
 #include "MemberListOld.hpp"
 
-IMemberList* IMemberList::CreateMemberList(HWND hwnd, LPRECT lprect)
+IMemberList* IMemberList::CreateMemberList(ChatWindow* parent, LPRECT lprect)
 {
-	IMemberList* pMList = MemberList::Create(hwnd, lprect);
+	IMemberList* pMList = MemberList::Create(parent, lprect);
 
 	if (!pMList)
-		pMList = MemberListOld::Create(hwnd, lprect);
+		pMList = MemberListOld::Create(parent, lprect);
 
 	return pMList;
 }

@@ -2,12 +2,12 @@
 #include "ChannelView.hpp"
 #include "ChannelViewOld.hpp"
 
-IChannelView* IChannelView::CreateChannelView(HWND hwnd, LPRECT rect)
+IChannelView* IChannelView::CreateChannelView(ChatWindow* parent, LPRECT rect)
 {
-	IChannelView* pChView = ChannelView::Create(hwnd, rect);
+	IChannelView* pChView = ChannelView::Create(parent, rect);
 
 	if (!pChView)
-		pChView = ChannelViewOld::Create(hwnd, rect);
+		pChView = ChannelViewOld::Create(parent, rect);
 
 	return pChView;
 }
