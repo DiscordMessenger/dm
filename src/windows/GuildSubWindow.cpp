@@ -604,6 +604,8 @@ void GuildSubWindow::SetCurrentChannelID(Snowflake channID)
 	ChatWindow::SetCurrentChannelID(channID);
 
 	m_pMessageEditor->StopReply();
+	m_pMessageEditor->StopEdit();
+	m_pMessageEditor->StopBrowsingPast();
 	m_pMessageEditor->Layout();
 
 	if (m_pChannelView)
