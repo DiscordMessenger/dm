@@ -422,21 +422,21 @@ void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std:
 			}
 			break;
 		}
-		case '@': // USERS
+		case '@': // USERS or ROLES
 		{
 			Guild* pGld = GetDiscordInstance()->GetCurrentGuild();
 			if (!pGld)
+				break;
+
+			// can do that in DM channels, but have to do it a bit differently.
+			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			if (!pChan)
 				break;
 
 			bool trimmed = false;
 
 			if (pGld->m_snowflake == 0)
 			{
-				// can do that in DM channels, but have to do it a bit differently.
-				Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
-				if (!pChan)
-					break;
-
 				for (auto& recid : pChan->m_recipients)
 				{
 					Profile* pf = GetProfileCache()->LookupProfile(recid, "", "", "", false);
@@ -459,10 +459,27 @@ void MessageEditor::AutoCompleteLookup(const std::string& word, char query, std:
 					if (!pf)
 						continue;
 
+					if (!pChan->HasPermissionUser(recid, PERM_VIEW_CHANNEL))
+						continue;
+
 					float fm = word.empty() ? 1.0f : pf->FuzzyMatch(word.c_str(), pGld->m_snowflake);
 					if (fm != 0.0f) {
 						// Add user name instead, since that's the one that will be resolved
 						matches.push_back(AutoCompleteMatch(pf->GetUsername(), pf->GetName(pGld->m_snowflake), fm));
+					}
+				}
+
+				// Scan for mentionable roles.
+				Profile* self = GetDiscordInstance()->GetProfile();
+				for (auto& role : pGld->m_roles)
+				{
+					if (!role.second.m_bMentionable && !pChan->HasPermission(PERM_MENTION_EVERYONE))
+						continue;
+
+					float fm = word.empty() ? 1.0f : CompareFuzzy(role.second.m_name, word.c_str());
+					if (fm != 0.0f) {
+						// Add role name
+						matches.push_back(AutoCompleteMatch(role.second.m_name, "Notify users with this role.", fm, "", true));
 					}
 				}
 

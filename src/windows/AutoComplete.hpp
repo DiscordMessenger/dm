@@ -13,14 +13,18 @@ struct AutoCompleteMatch
 	std::string substr;
 	std::string displaystr;
 	float fuzzy = 0;
+	bool isRole = false;
 
 	AutoCompleteMatch() {}
 
-	AutoCompleteMatch(const std::string& s, const std::string& ss, float fuz, const std::string& ds = "") :
-		str(s), substr(ss), fuzzy(fuz), displaystr(ds) {}
+	AutoCompleteMatch(const std::string& s, const std::string& ss, float fuz, const std::string& ds = "", bool isRole = false) :
+		str(s), substr(ss), fuzzy(fuz), displaystr(ds), isRole(isRole) {}
 
 	bool operator<(const AutoCompleteMatch& oth) const
 	{
+		if (isRole && !oth.isRole) return false;
+		if (!isRole && oth.isRole) return true;
+
 		if (fuzzy != oth.fuzzy)
 			return fuzzy > oth.fuzzy;
 

@@ -86,6 +86,9 @@ struct Channel
 	bool HasPermission(uint64_t Permission);
 	bool HasPermissionConst(uint64_t Permission) const;
 
+	// Check if an arbitrary user has a permission.
+	bool HasPermissionUser(Snowflake sf, uint64_t Permission);
+
 	bool WasMentioned() const {
 		return m_mentionCount > 0;
 	}

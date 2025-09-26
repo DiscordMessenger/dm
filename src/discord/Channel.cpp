@@ -46,6 +46,15 @@ uint64_t Channel::ComputePermissionOverwrites(Snowflake Member, uint64_t BasePer
 	return BasePermissions;
 }
 
+bool Channel::HasPermissionUser(Snowflake sf, uint64_t Permission)
+{
+	Guild* pGuild = GetDiscordInstance()->GetGuild(m_parentGuild);
+	assert(pGuild);
+	uint64_t perms = ComputePermissionOverwrites(sf, pGuild->ComputeBasePermissions(sf));
+
+	return (perms & Permission) != 0;
+}
+
 bool Channel::HasPermission(uint64_t Permission)
 {
 	if (!m_bCurrentUserPermsCalculated)
