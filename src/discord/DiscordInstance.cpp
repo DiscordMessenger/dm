@@ -2653,7 +2653,8 @@ void DiscordInstance::HandleGUILD_CREATE(Json& j)
 	Guild* guild = GetGuild(guildID);
 	if (guild)
 	{
-		m_guildItemList.AddGuild(0, guildID, guild->m_name, guild->m_avatarlnk);
+		if (!m_guildItemList.ContainsGuild(guildID))
+			m_guildItemList.AddGuild(0, guildID, guild->m_name, guild->m_avatarlnk);
 	}
 
 	GetFrontend()->RepaintGuildList();

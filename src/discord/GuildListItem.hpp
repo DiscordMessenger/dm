@@ -31,6 +31,9 @@ public:
 	// Erase a guild if this is a folder.
 	virtual void EraseGuild(Snowflake sf) { }
 
+	// Check if this guild folder contains an item.
+	virtual bool ContainsGuild(Snowflake sf) { return false; }
+
 protected:
 	friend class FolderGuildItem;
 	friend class GuildGuildItem;
@@ -73,6 +76,20 @@ public:
 				item->EraseGuild(guildId);
 			}
 		}
+	}
+
+	bool ContainsGuild(Snowflake sf)
+	{
+		for (auto& item : m_items)
+		{
+			if (item->GetID() == sf)
+				return true;
+
+			if (item->ContainsGuild(sf))
+				return true;
+		}
+
+		return false;
 	}
 
 private:
@@ -127,6 +144,20 @@ public:
 	{
 		// TODO: If needed, support folder depths >1? Discord doesn't (yet)
 		m_items.push_back(new FolderGuildItem(folderId, name));
+	}
+
+	bool ContainsGuild(Snowflake snowflake)
+	{
+		for (auto& gi : m_items)
+		{
+			if (gi->GetID() == snowflake)
+				return true;
+
+			if (gi->ContainsGuild(snowflake))
+				return true;
+		}
+
+		return false;
 	}
 
 	void Dump()
