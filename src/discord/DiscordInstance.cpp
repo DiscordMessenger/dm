@@ -849,6 +849,7 @@ std::string DiscordInstance::TransformMention(const std::string& source, Snowfla
 	std::string longestMatchStr;
 	std::string longestMatchMeta;
 	Snowflake longestMatchID = 0;
+	bool isRole = false;
 
 	char firstChar = source[0];
 
@@ -856,6 +857,10 @@ std::string DiscordInstance::TransformMention(const std::string& source, Snowfla
 	{
 		Guild* pGuild = GetGuild(guild);
 		if (!pGuild)
+			return source;
+
+		Channel* pChannel = pGuild->GetChannel(channel);
+		if (!pChannel)
 			return source;
 
 		switch (firstChar)
@@ -876,6 +881,26 @@ std::string DiscordInstance::TransformMention(const std::string& source, Snowfla
 					longestMatchStr = uname;
 					longestMatchID = pf->m_snowflake;
 				}
+
+				// Also look for mentionable roles.
+				for (auto role : pGuild->m_roles)
+				{
+					std::string uname = "@" + role.second.m_name;
+					if (!BeginsWith(source, uname))
+						continue;
+
+					assert(uname.size() <= source.size());
+					if (longestMatchStr.size() >= uname.size())
+						continue;
+
+					if (!role.second.m_bMentionable && !pChannel->HasPermission(PERM_MENTION_EVERYONE))
+						continue;
+
+					longestMatchStr = uname;
+					longestMatchID = role.first;
+					isRole = true;
+				}
+
 				break;
 
 			case '#':
@@ -951,6 +976,7 @@ std::string DiscordInstance::TransformMention(const std::string& source, Snowfla
 	str  = "<";
 	str += longestMatchMeta;
 	str += firstChar;
+	str += isRole ? "&" : "";
 	str += std::to_string(longestMatchID);
 	str += ">";
 	str += source.substr(longestMatchStr.size());
