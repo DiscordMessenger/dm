@@ -5,7 +5,7 @@
 
 constexpr int MESSAGES_PER_REQUEST = 50;
 
-using nlohmann::json;
+using iprog::JsonObject;
 static MessageCache g_MCSingleton;
 
 MessageCache::MessageCache()
@@ -21,7 +21,7 @@ void MessageCache::GetLoadedMessages(Snowflake channel, Snowflake guild, std::li
 		out.push_back(msg.second);
 }
 
-void MessageCache::ProcessRequest(Snowflake channel, ScrollDir::eScrollDir sd, Snowflake anchor, nlohmann::json& j, const std::string& channelName)
+void MessageCache::ProcessRequest(Snowflake channel, ScrollDir::eScrollDir sd, Snowflake anchor, iprog::JsonObject& j, const std::string& channelName)
 {
 	MessageChunkList& lst = m_mapMessages[channel];
 	lst.ProcessRequest(sd, anchor, j, channelName);
@@ -87,7 +87,7 @@ MessageChunkList::MessageChunkList()
 	m_messages[msg->m_snowflake] = msg;
 }
 
-void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, json& j, const std::string& channelName)
+void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, JsonObject& j, const std::string& channelName)
 {
 	Snowflake lowestMsg = (Snowflake) -1LL, highestMsg = 0;
 
@@ -103,7 +103,7 @@ void MessageChunkList::ProcessRequest(ScrollDir::eScrollDir sd, Snowflake gap, j
 
 	// for each message
 	int receivedMessages = 0;
-	for (json& data : j)
+	for (auto& data : j)
 	{
 		auto msg = MakeMessage();
 		msg->Load(data, m_guild);

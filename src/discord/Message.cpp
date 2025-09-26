@@ -2,7 +2,7 @@
 #include "DiscordInstance.hpp"
 #include "Util.hpp"
 
-using Json = nlohmann::json;
+using Json = iprog::JsonObject;
 
 void Message::SetDate(const std::string & dateStr)
 {
@@ -87,7 +87,7 @@ bool Message::CheckWasMentioned(Snowflake user, Snowflake guild, bool bSuppressE
 	return false;
 }
 
-void ReferenceMessage::Load(nlohmann::json& data, Snowflake guild)
+void ReferenceMessage::Load(iprog::JsonObject& data, Snowflake guild)
 {
 	// Cheap clone
 	Json& author = data["author"];

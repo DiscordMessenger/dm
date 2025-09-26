@@ -5,7 +5,7 @@
 #include <string>
 #include <list>
 #include <set>
-#include <nlohmann/json.h>
+#include <iprogsjson.hpp>
 #include "DiscordAPI.hpp"
 #include "Snowflake.hpp"
 #include "SettingsManager.hpp"
@@ -494,17 +494,17 @@ public:
 
 public:
 	// returns user's id. The user parameter is used only if j["user"] doesn't exist
-	Snowflake ParseGuildMember(Snowflake guild, nlohmann::json& j, Snowflake user = 0);
-	Snowflake ParseGuildMemberOrGroup(Snowflake guild, nlohmann::json& j);
+	Snowflake ParseGuildMember(Snowflake guild, iprog::JsonObject& j, Snowflake user = 0);
+	Snowflake ParseGuildMemberOrGroup(Snowflake guild, iprog::JsonObject& j);
 
 private:
 	void InitDispatchFunctions();
 	void UpdateSettingsInfo();
 	bool SortGuilds();
-	void ParseChannel(Channel& c, nlohmann::json& j, int& num);
-	void ParseAndAddGuild(nlohmann::json& j);
-	void ParsePermissionOverwrites(Channel& c, nlohmann::json& j);
-	void ParseReadStateObject(nlohmann::json& j, bool bAlternate);
+	void ParseChannel(Channel& c, iprog::JsonObject& j, int& num);
+	void ParseAndAddGuild(iprog::JsonObject& j);
+	void ParsePermissionOverwrites(Channel& c, iprog::JsonObject& j);
+	void ParseReadStateObject(iprog::JsonObject& j, bool bAlternate);
 	void OnUploadAttachmentFirst(NetRequest* pReq);
 	void OnUploadAttachmentSecond(NetRequest* pReq);
 	void SearchSubGuild(std::vector<QuickMatch>& matches, Guild* pGuild, int matchFlags, const char* query);
@@ -512,43 +512,43 @@ private:
 	std::string TransformMention(const std::string& source, Snowflake guild, Snowflake channel);
 
 	// handle functions
-	void HandleREADY(nlohmann::json& j);
-	void HandleREADY_SUPPLEMENTAL(nlohmann::json& j);
-	void HandleMESSAGE_CREATE(nlohmann::json& j);
-	void HandleMESSAGE_DELETE(nlohmann::json& j);
-	void HandleMESSAGE_UPDATE(nlohmann::json& j);
-	void HandleMESSAGE_ACK(nlohmann::json& j);
-	void HandleUSER_GUILD_SETTINGS_UPDATE(nlohmann::json& j);
-	void HandleUSER_SETTINGS_PROTO_UPDATE(nlohmann::json& j);
-	void HandleUSER_NOTE_UPDATE(nlohmann::json& j);
-	void HandleGUILD_CREATE(nlohmann::json& j);
-	void HandleGUILD_DELETE(nlohmann::json& j);
-	void HandleCHANNEL_CREATE(nlohmann::json& j);
-	void HandleCHANNEL_DELETE(nlohmann::json& j);
-	void HandleCHANNEL_UPDATE(nlohmann::json& j);
-	void HandleGUILD_MEMBER_LIST_UPDATE(nlohmann::json& j);
-	void HandleGUILD_MEMBERS_CHUNK(nlohmann::json& j);
-	void HandleTYPING_START(nlohmann::json& j);
-	void HandlePRESENCE_UPDATE(nlohmann::json& j);
-	void HandlePASSIVE_UPDATE_V1(nlohmann::json& j);
+	void HandleREADY(iprog::JsonObject& j);
+	void HandleREADY_SUPPLEMENTAL(iprog::JsonObject& j);
+	void HandleMESSAGE_CREATE(iprog::JsonObject& j);
+	void HandleMESSAGE_DELETE(iprog::JsonObject& j);
+	void HandleMESSAGE_UPDATE(iprog::JsonObject& j);
+	void HandleMESSAGE_ACK(iprog::JsonObject& j);
+	void HandleUSER_GUILD_SETTINGS_UPDATE(iprog::JsonObject& j);
+	void HandleUSER_SETTINGS_PROTO_UPDATE(iprog::JsonObject& j);
+	void HandleUSER_NOTE_UPDATE(iprog::JsonObject& j);
+	void HandleGUILD_CREATE(iprog::JsonObject& j);
+	void HandleGUILD_DELETE(iprog::JsonObject& j);
+	void HandleCHANNEL_CREATE(iprog::JsonObject& j);
+	void HandleCHANNEL_DELETE(iprog::JsonObject& j);
+	void HandleCHANNEL_UPDATE(iprog::JsonObject& j);
+	void HandleGUILD_MEMBER_LIST_UPDATE(iprog::JsonObject& j);
+	void HandleGUILD_MEMBERS_CHUNK(iprog::JsonObject& j);
+	void HandleTYPING_START(iprog::JsonObject& j);
+	void HandlePRESENCE_UPDATE(iprog::JsonObject& j);
+	void HandlePASSIVE_UPDATE_V1(iprog::JsonObject& j);
 
 private:
-	void HandleGuildMemberListUpdate_Sync(Snowflake guild, nlohmann::json& j);
-	void HandleGuildMemberListUpdate_Insert(Snowflake guild, nlohmann::json& j);
-	void HandleGuildMemberListUpdate_Delete(Snowflake guild, nlohmann::json& j);
-	void HandleGuildMemberListUpdate_Update(Snowflake guild, nlohmann::json& j);
-	void HandleMessageInsertOrUpdate(nlohmann::json& j, bool bIsUpdate);
+	void HandleGuildMemberListUpdate_Sync(Snowflake guild, iprog::JsonObject& j);
+	void HandleGuildMemberListUpdate_Insert(Snowflake guild, iprog::JsonObject& j);
+	void HandleGuildMemberListUpdate_Delete(Snowflake guild, iprog::JsonObject& j);
+	void HandleGuildMemberListUpdate_Update(Snowflake guild, iprog::JsonObject& j);
+	void HandleMessageInsertOrUpdate(iprog::JsonObject& j, bool bIsUpdate);
 };
 
 DiscordInstance* GetDiscordInstance();
 
 int64_t GetIntFromString(const std::string& str);
 
-Snowflake GetSnowflake(const nlohmann::json& j, const std::string& key);
+Snowflake GetSnowflake(const iprog::JsonObject& j, const std::string& key);
 
 // Fetches a key
-std::string GetFieldSafe(const nlohmann::json& j, const std::string& key);
+std::string GetFieldSafe(const iprog::JsonObject& j, const std::string& key);
 
-int GetFieldSafeInt(const nlohmann::json& j, const std::string& key);
+int GetFieldSafeInt(const iprog::JsonObject& j, const std::string& key);
 
 #define TYPING_INTERVAL 10000 // 10 sec
