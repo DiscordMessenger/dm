@@ -830,6 +830,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_UPDATESELECTEDCHANNEL:
 		{
 			g_pMessageEditor->StopReply();
+			g_pMessageEditor->StopEdit();
+			g_pMessageEditor->StopBrowsingPast();
 			g_pMessageEditor->Layout();
 
 			Snowflake guildID = GetDiscordInstance()->GetCurrentGuildID();
