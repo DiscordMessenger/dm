@@ -1,6 +1,6 @@
 #include "UpdateChecker.hpp"
 #include "Util.hpp"
-#include <nlohmann/json.h>
+#include <iprogsjson.hpp>
 
 std::string UpdateChecker::GetUpdateAPIURL()
 {
@@ -25,7 +25,7 @@ void UpdateChecker::OnRequestDone(NetRequest* pReq)
 		return;
 	}
 
-	nlohmann::json j = nlohmann::json::parse(pReq->response);
+	iprog::JsonObject j = iprog::JsonParser::parse(pReq->response);
 
 	// This is specific to the GitHub API.  If moving away from GitHub, redo this:
 	std::string tagName = j["tag_name"];

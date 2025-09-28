@@ -5,7 +5,7 @@
 #include "DiscordRequest.hpp"
 #include "DiscordInstance.hpp"
 
-void GuildRole::Load(nlohmann::json& j)
+void GuildRole::Load(iprog::JsonObject& j)
 {
 	m_id = GetSnowflake(j, "id");
 	m_permissions = GetIntFromString(j["permissions"]);

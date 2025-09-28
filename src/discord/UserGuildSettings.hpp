@@ -2,7 +2,7 @@
 
 #include <ctime>
 #include <map>
-#include <nlohmann/json.h>
+#include <iprogsjson.hpp>
 #include "Snowflake.hpp"
 
 enum eMessageNotifications
@@ -23,8 +23,8 @@ struct MuteConfig
 	time_t m_endTime = 0;
 	int m_selectedTimeWindow = 0;
 
-	void Load(const nlohmann::json& j);
-	void Load(const nlohmann::json& parent, const std::string& key);
+	void Load(const iprog::JsonObject& j);
+	void Load(const iprog::JsonObject& parent, const std::string& key);
 };
 
 struct ChannelOverride
@@ -36,7 +36,7 @@ struct ChannelOverride
 	bool m_bMuted = false;
 	MuteConfig m_muteConfig;
 
-	void Load(const nlohmann::json& j);
+	void Load(const iprog::JsonObject& j);
 	bool IsMuted() const;
 };
 
@@ -56,7 +56,7 @@ struct GuildSettings
 	eMessageNotifications m_messageNotifications = NOTIF_ALL_MESSAGES;
 	std::map<Snowflake, ChannelOverride> m_channelOverride;
 
-	void Load(const nlohmann::json& j);
+	void Load(const iprog::JsonObject& j);
 	const ChannelOverride* GetOverride(Snowflake channel) const;
 	bool IsMuted() const;
 };
@@ -67,7 +67,7 @@ struct UserGuildSettings
 	std::map<Snowflake, GuildSettings> m_guildSettings;
 	int m_version = 0;
 
-	void Load(const nlohmann::json& j);
+	void Load(const iprog::JsonObject& j);
 	void Clear();
 
 	const GuildSettings* GetSettings(Snowflake guild) const;

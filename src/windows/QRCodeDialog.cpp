@@ -1,6 +1,6 @@
 #include <openssl/ssl.h>
 #include <openssl/rsa.h>
-#include <nlohmann/json.h>
+#include <iprogsjson.hpp>
 #include <boost/base64/base64.hpp>
 #include "QRCodeDialog.hpp"
 #include "Main.hpp"
@@ -11,7 +11,7 @@
 #define C_RSA_BITS     (2048)
 #define C_RSA_EXPONENT RSA_F4 // Node.js default exponent value
 
-using Json = nlohmann::json;
+using Json = iprog::JsonObject;
 
 // singleton
 static QRCodeDialog g_qcd;
@@ -45,7 +45,7 @@ void CheckError()
 
 void QRCodeDialog::HandleGatewayMessage(const std::string& payload)
 {
-	Json j = Json::parse(payload);
+	Json j = iprog::JsonParser::parse(payload);
 	std::string op = j["op"];
 
 	if (op == "heartbeat")

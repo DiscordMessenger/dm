@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <nlohmann/json.h>
+#include <iprogsjson.hpp>
 #include "Snowflake.hpp"
 
 enum eRelationshipType
@@ -22,5 +22,5 @@ public:
 	std::string m_nickname; // Friend nickname
 
 public:
-	void Load(const nlohmann::json& j);
+	void Load(const iprog::JsonObject& j);
 };

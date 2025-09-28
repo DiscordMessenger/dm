@@ -2,7 +2,7 @@
 
 #include <set>
 #include <cstdarg>
-#include <nlohmann/json.h>
+#include <iprogsjson.hpp>
 #include <protobuf/Protobuf.hpp>
 #include "Snowflake.hpp"
 #include "ScrollDir.hpp"

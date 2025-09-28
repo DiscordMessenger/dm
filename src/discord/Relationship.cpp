@@ -1,7 +1,7 @@
 #include "Relationship.hpp"
 #include "Util.hpp"
 
-void Relationship::Load(const nlohmann::json& j)
+void Relationship::Load(const iprog::JsonObject& j)
 {
 	m_id       = GetSnowflake(j, "id");
 	m_userID   = GetSnowflake(j, "user_id");

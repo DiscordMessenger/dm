@@ -2,8 +2,8 @@
 #include "Main.hpp"
 #include <commdlg.h>
 #include <shellapi.h>
-#include <nlohmann/json.h>
-using Json = nlohmann::json;
+#include <iprogsjson.hpp>
+using Json = iprog::JsonObject;
 
 #define C_FILE_MAX_SIZE (25*1024*1024)
 

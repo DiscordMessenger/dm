@@ -1,13 +1,13 @@
 #pragma once
 
 #include <string>
-#include <nlohmann/json.h>
+#include <iprogsjson.hpp>
 #include "Snowflake.hpp"
 
 class Emoji
 {
 public:
-	void Load(const nlohmann::json& j);
+	void Load(const iprog::JsonObject& j);
 
 public:
 	Snowflake m_id = 0;

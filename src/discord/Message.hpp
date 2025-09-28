@@ -4,7 +4,7 @@
 #include <set>
 #include <ctime>
 #include <memory>
-#include <nlohmann/json.h>
+#include <iprogsjson.hpp>
 #include "Snowflake.hpp"
 #include "Attachment.hpp"
 #include "MessageType.hpp"
@@ -28,7 +28,7 @@ struct ReferenceMessage
 	bool m_bIsAuthorBot = false;
 	std::set<Snowflake> m_userMentions;
 
-	void Load(nlohmann::json& msgData, Snowflake guild);
+	void Load(iprog::JsonObject& msgData, Snowflake guild);
 };
 
 struct RichEmbedField
@@ -85,7 +85,7 @@ struct RichEmbed
 	// list of fields
 	std::vector<RichEmbedField> m_fields;
 
-	void Load(nlohmann::json& j);
+	void Load(iprog::JsonObject& j);
 };
 
 class Message
@@ -150,7 +150,7 @@ public:
 
 	bool CheckWasMentioned(Snowflake user, Snowflake guild, bool bSuppressEveryone = false, bool bSuppressRoles = false) const;
 
-	void Load(nlohmann::json& j, Snowflake guild);
+	void Load(iprog::JsonObject& j, Snowflake guild);
 };
 
 typedef std::shared_ptr<Message> MessagePtr;

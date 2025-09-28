@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nlohmann/json.h>
+#include <iprogsjson.hpp>
 #include <string>
 
 class DiscordClientConfig
@@ -14,7 +14,7 @@ public:
 	const std::string& GetTimezone() const;
 	const std::string& GetOS() const;
 
-	nlohmann::json Serialize() const;
+	iprog::JsonObject Serialize() const;
 	const std::string& GetSerializedJsonBlob() const;
 	const std::string& GetSerializedBase64Blob() const;
 
