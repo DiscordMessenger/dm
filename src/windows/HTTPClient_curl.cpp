@@ -1,7 +1,6 @@
 #include "HTTPClient_curl.h"
 #include "../discord/Util.hpp"
 
-static std::vector<uint8_t> s_pemData;
 static curl_blob s_pemDataBlob;
 
 bool AddExtraHeaders()
@@ -43,8 +42,57 @@ void HTTPClient_curl::PrepareQuit()
 
 std::string HTTPClient_curl::ErrorMessage(int code) const
 {
-	// TODO
-	return "TODO";
+	if (code < 0)
+		return "Client Error";
+
+	switch (code)
+	{
+		case 100: return "Continue";
+		case 101: return "Switching Protocols";
+		case 102: return "Processing";
+		case 200: return "OK";
+		case 201: return "Created";
+		case 202: return "Accepted";
+		case 203: return "Non-Authoritative Information";
+		case 204: return "No Content";
+		case 205: return "Reset Content";
+		case 206: return "Partial Content";
+		case 300: return "Multiple Choices";
+		case 301: return "Moved Permanently";
+		case 302: return "Found";
+		case 303: return "See Other";
+		case 304: return "Not Modified";
+		case 307: return "Temporary Redirect";
+		case 308: return "Permanent Redirect";
+		case 400: return "Bad Request";
+		case 401: return "Unauthorized";
+		case 402: return "Payment Required";
+		case 403: return "Forbidden";
+		case 404: return "Not Found";
+		case 405: return "Method Not Allowed";
+		case 406: return "Not Acceptable";
+		case 407: return "Proxy Authentication Required";
+		case 408: return "Request Timeout";
+		case 409: return "Conflict";
+		case 410: return "Gone";
+		case 411: return "Length Required";
+		case 412: return "Precondition Failed";
+		case 413: return "Payload Too Large";
+		case 414: return "URI Too Long";
+		case 415: return "Unsupported Media Type";
+		case 416: return "Range Not Satisfiable";
+		case 417: return "Expectation Failed";
+		case 418: return "I'm a teapot";   // RFC 2324
+		case 422: return "Unprocessable Entity";
+		case 426: return "Upgrade Required";
+		case 500: return "Internal Server Error";
+		case 501: return "Not Implemented";
+		case 502: return "Bad Gateway";
+		case 503: return "Service Unavailable";
+		case 504: return "Gateway Timeout";
+		case 505: return "HTTP Version Not Supported";
+		default:  return "Unknown Status " + std::to_string(code);
+	}
 }
 
 int HTTPClient_curl::GetProgress(void* userp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow)
@@ -131,7 +179,7 @@ void HTTPClient_curl::PerformRequest(
 	curl_easy_setopt(pRequest->easyHandle, CURLOPT_READDATA, pRequest);
 	curl_easy_setopt(pRequest->easyHandle, CURLOPT_PRIVATE, pRequest);
 	curl_easy_setopt(pRequest->easyHandle, CURLOPT_FOLLOWLOCATION, 1L);
-
+	
 	curl_easy_setopt(pRequest->easyHandle, CURLOPT_WRITEFUNCTION, WriteCallback);
 	curl_easy_setopt(pRequest->easyHandle, CURLOPT_READFUNCTION, ReadCallback);
 	
@@ -289,7 +337,7 @@ bool HTTPClient_curl::ProcessMultiEvent()
 	}
 
 	NetRequest* netRequest = request->netRequest;
-
+	
 	if (result != CURLE_OK)
 	{
 		netRequest->result = -1;
@@ -306,9 +354,12 @@ bool HTTPClient_curl::ProcessMultiEvent()
 	auto func = netRequest->pFunc;
 	func(netRequest);
 
+	// if this is the default handler, then simply transfer ownership
+	if (func == &HTTPClient::DefaultRequestHandler)
+		request->netRequest = nullptr;
+
 	// and then cleanup
 	delete request;
-
 	return true;
 }
 
@@ -336,18 +387,16 @@ void HTTPClient_curl::WorkerThreadInit(HTTPClient_curl* instance)
 
 #include "../discord/Frontend.hpp"
 
-void HTTPClient_curl::DefaultHandler(NetRequest* pRequest)
-{
-	GetFrontend()->OnRequestDone(pRequest);
-}
-
 curl_blob* HTTPClient_curl::GetCABlob()
 {
 	return &s_pemDataBlob;
 }
 
+#ifdef _WIN32
 #include <windows.h>
 #include "../resource.h"
+
+static std::vector<uint8_t> s_pemData;
 
 void HTTPClient_curl::InitializeCABlob()
 {
@@ -361,9 +410,26 @@ void HTTPClient_curl::InitializeCABlob()
 
 	curl_blob blob;
 	blob.data = s_pemData.data();
-	blob.len = s_pemData.size();
+	blob.len  = s_pemData.size();
 	blob.flags = CURL_BLOB_NOCOPY;
 	s_pemDataBlob = blob;
 
 	UnlockResource(pemData);
 }
+
+#else
+
+const char* s_pemData =
+#include "CACertPem.h"
+;
+
+void HTTPClient_curl::InitializeCABlob()
+{
+	curl_blob blob;
+	blob.data = (void*) s_pemData;
+	blob.len = strlen(s_pemData);
+	blob.flags = CURL_BLOB_NOCOPY;
+	s_pemDataBlob = blob;
+}
+
+#endif

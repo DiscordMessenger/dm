@@ -1,6 +1,7 @@
+#include <fcntl.h>
 #include "WebsocketClient_curl.h"
 #include "HTTPClient_curl.h"
-#include "Frontend_Win32.hpp"
+#include "../discord/Frontend.hpp"
 #include "../discord/Util.hpp"
 
 WebsocketClient_curl::WebsocketClient_curl()
@@ -133,43 +134,78 @@ void WebsocketClient_curl::WSConnection::ConnectInternal()
 
 	curl_easy_setopt(m_easy, CURLOPT_CONNECT_ONLY, 2L);
 
+	DbgPrintF("Please wait, connecting to %s...", m_uri.c_str());
 	CURLcode res = curl_easy_perform(m_easy);
 	if (res != CURLE_OK)
 	{
 		m_errorReason = std::string(curl_easy_strerror(res));
+		DbgPrintF("Failure!  %s", m_errorReason.c_str());
 		GetFrontend()->OnWebsocketFail(m_id, res, "Could not connect: " + m_errorReason, false, true);
 		return;
 	}
 
 	// Connected
+	DbgPrintF("Connected");
 	m_recvThread = std::thread(ReceiveThread, this);
 }
 
-void DumpCurrentPayload(std::vector<uint8_t>& payload) {
+void WebsocketClient_curl::WSConnection::SetNonBlockingHack()
+{
+	curl_socket_t sockfd;
+	curl_easy_getinfo(m_easy, CURLINFO_ACTIVESOCKET, &sockfd);
 	
-	std::string stuff = "Payload after this: ";
-
-	for (size_t i = 0; i < payload.size(); i++) {
-		if (!payload[i]) {
-			stuff += "\\0";
-		}
-		else if (payload[i] < 0x20 || payload[i] >= 0x7F) {
-			char buffer[8];
-			snprintf(buffer, sizeof buffer, "\\x%02X", payload[i]);
-			stuff += std::string(buffer);
-		}
-		else {
-			stuff += (char)payload[i];
-		}
+	// Apple wants us to use fcntl.  (This probably works on Linux too)
+	// Windows doesn't have that, so WSAIoctl it is.
+#ifdef __APPLE__
+	int flags = fcntl(sockfd, F_GETFL, 0);
+	if (flags == -1)
+	{
+		DbgPrintF(
+			"WebsocketClient_curl: fcntl(F_GETFL) failed (%s) - sockets will be blocking and the app WILL be slow",
+			strerror(errno)
+		);
+		return;
 	}
+	
+	if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == -1)
+	{
+		DbgPrintF(
+			"WebsocketClient_curl: fcntl(F_SETFL) failed (%s) - sockets will be blocking and the app WILL be slow",
+			strerror(errno)
+		);
+		return;
+	}
+#else
 
-	stuff += "\n";
-	OutputDebugStringA(stuff.c_str());
+#ifdef _WIN32
+#define WSC_ioctl ioctlsocket
+#else
+#define WSC_ioctl ioctl
+#endif
+
+	unsigned long z = 1;
+	int result = ioctlsocket(sockfd, FIONBIO, &z);
+	if (result == -1)
+	{
+		DbgPrintF(
+			"WebsocketClient_curl: ioctl(FIONBIO) failed (%s) - sockets will be blocking and the app WILL be slow",
+			strerror(errno)
+		);
+		return;
+	}
+#endif
 }
 
 void WebsocketClient_curl::WSConnection::ReceiveThread2()
 {
 	std::vector<uint8_t> currentMessage;
+	DbgPrintF("ReceiveThread active");
+	
+	// this is a hack because we are deliberately bypassing libcurl
+	//
+	// it turns out, for some reason, the sockets become blocking after logging in,
+	// so we gotta force them to be non-blocking even if this doesn't seem necessary
+	SetNonBlockingHack();
 
 	while (m_bIsOpen)
 	{
@@ -180,8 +216,9 @@ void WebsocketClient_curl::WSConnection::ReceiveThread2()
 
 		// Read data
 		{
-			std::lock_guard<std::mutex> guard(m_mutex);
+			m_mutex.lock();
 			rc = curl_ws_recv(m_easy, m_buffer, m_bufferSize, &bytesRead, &meta);
+			m_mutex.unlock();
 		}
 
 		if (rc == CURLE_AGAIN)
