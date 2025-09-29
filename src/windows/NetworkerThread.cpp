@@ -3,7 +3,7 @@
 #include "WindowMessages.hpp"
 #include "../core/network/DiscordRequest.hpp"
 #include "../core/config/LocalSettings.hpp"
-#include "../discord/Frontend.hpp"
+#include "../core/Frontend.hpp"
 #include "../core/config/DiscordClientConfig.hpp"
 
 #define CPPHTTPLIB_OPENSSL_SUPPORT

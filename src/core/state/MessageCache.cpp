@@ -1,6 +1,6 @@
 #include "MessageCache.hpp"
 #include "ProfileCache.hpp"
-#include "../../discord/Frontend.hpp"
+#include "../../core/Frontend.hpp"
 #include "../DiscordInstance.hpp"
 
 constexpr int MESSAGES_PER_REQUEST = 50;

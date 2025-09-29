@@ -1,5 +1,5 @@
 #include "HTTPClient.hpp"
-#include "../../discord/Frontend.hpp"
+#include "../../core/Frontend.hpp"
 
 NetRequest::NetRequest(
 	int _result,

@@ -16,9 +16,6 @@
     <Filter Include="Resource Files\Resources">
       <UniqueIdentifier>{ec175753-84d9-4781-bd7a-c2a1bcb56cab}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Discord">
-      <UniqueIdentifier>{19720693-d546-4980-b291-a943e984edae}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Windows">
       <UniqueIdentifier>{bd66bef8-5b49-4965-8fa0-fde4f0ba3e48}</UniqueIdentifier>
     </Filter>
@@ -539,9 +536,6 @@
     <ClInclude Include="..\src\resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\discord\Frontend.hpp">
-      <Filter>Header Files\Discord</Filter>
-    </ClInclude>
     <ClInclude Include="..\deps\httplib\httplib.h">
       <Filter>Source Files\Deps\Httplib</Filter>
     </ClInclude>
@@ -778,6 +772,9 @@
     </ClInclude>
     <ClInclude Include="..\src\windows\MissingDefinitions.hpp">
       <Filter>Header Files\Windows\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\discord\Frontend.hpp">
+      <Filter>Header Files\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

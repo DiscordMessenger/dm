@@ -7,7 +7,7 @@
 #include <ctime>
 #include "Util.hpp"
 
-#include "../../discord/Frontend.hpp"
+#include "../../core/Frontend.hpp"
 
 std::string g_BasePath = "";
 std::string g_ProgramNamePath = "";

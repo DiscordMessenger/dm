@@ -1,6 +1,6 @@
 #include "NotificationManager.hpp"
 #include "../DiscordInstance.hpp"
-#include "../../discord/Frontend.hpp"
+#include "../../core/Frontend.hpp"
 #include "../utils/Util.hpp"
 
 NotificationManager::NotificationManager(DiscordInstance* pDiscord):

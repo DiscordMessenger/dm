@@ -3,9 +3,7 @@
 #include "LocalSettings.hpp"
 #include "../utils/Util.hpp"
 #include "../network/DiscordAPI.hpp"
-
-// TODO: move Frontend to another place
-#include "../../discord/Frontend.hpp" 
+#include "../../core/Frontend.hpp" 
 using nlohmann::json;
 
 static LocalSettings* g_pInstance;

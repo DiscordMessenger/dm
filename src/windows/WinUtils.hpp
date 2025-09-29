@@ -8,7 +8,7 @@
 #include <tchar.h>
 
 #include "../core/models/ActiveStatus.hpp"
-#include "../discord/Frontend.hpp"
+#include "../core/Frontend.hpp"
 
 // Cut Down Flags
 #define DMCDF_USER32   0x0001
