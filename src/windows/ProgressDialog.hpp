@@ -2,7 +2,7 @@
 
 #include <windows.h>
 #include <string>
-#include "../discord/Snowflake.hpp"
+#include "../core/models/Snowflake.hpp"
 
 class ProgressDialog
 {

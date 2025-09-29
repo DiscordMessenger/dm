@@ -7,8 +7,8 @@
 #include "PinList.hpp"
 #include "ProgressDialog.hpp"
 #include "ShellNotification.hpp"
-#include "../discord/UpdateChecker.hpp"
-#include "../discord/LocalSettings.hpp"
+#include "../core/utils/UpdateChecker.hpp"
+#include "../core/config/LocalSettings.hpp"
 
 void Frontend_Win32::OnLoginAgain()
 {

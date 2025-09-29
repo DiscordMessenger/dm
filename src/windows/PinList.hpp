@@ -2,8 +2,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <string>
 #include <windows.h>
-#include "../discord/Snowflake.hpp"
-#include "../discord/Message.hpp"
+#include "../core/models/Snowflake.hpp"
+#include "../core/models/Message.hpp"
 
 // GET Request: discordapi/channels/$CHANNEL_ID/pins
 // RESPONSE: Array of message objects

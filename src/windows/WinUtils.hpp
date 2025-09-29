@@ -7,7 +7,7 @@
 #include <string>
 #include <tchar.h>
 
-#include "../discord/ActiveStatus.hpp"
+#include "../core/models/ActiveStatus.hpp"
 #include "../discord/Frontend.hpp"
 
 // Cut Down Flags
@@ -154,7 +154,7 @@ bool IsIconMostlyBlack(HICON hic);
 #define IsTextColorLight() (!IsTextColorDark())
 
 // Profile utils
-#include "../discord/Profile.hpp"
+#include "../core/models/Profile.hpp"
 COLORREF GetNameColor(Profile* pf, Snowflake guild);
 
 // URL utils

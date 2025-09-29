@@ -1,6 +1,6 @@
 #include "Main.hpp"
 #include "LogonDialog.hpp"
-#include "../discord/LocalSettings.hpp"
+#include "../core/config/LocalSettings.hpp"
 
 BOOL LogonDialogOnCommand(HWND hWnd, WPARAM wParam)
 {

@@ -43,11 +43,11 @@
 #include "NetworkerThread.hpp"
 #include "TextInterface_Win32.hpp"
 
-#include "../discord/DiscordAPI.hpp"
-#include "../discord/SettingsManager.hpp"
-#include "../discord/Util.hpp"
-#include "../discord/ProfileCache.hpp"
-#include "../discord/DiscordInstance.hpp"
+#include "../core/network/DiscordAPI.hpp"
+#include "../core/config/SettingsManager.hpp"
+#include "../core/utils/Util.hpp"
+#include "../core/state/ProfileCache.hpp"
+#include "../core/DiscordInstance.hpp"
 
 #define MAX_MESSAGE_SIZE 2000 // 4000 with nitro
 

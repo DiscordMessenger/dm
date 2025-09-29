@@ -4,7 +4,7 @@
 #include <boost/base64/base64.hpp>
 #include "QRCodeDialog.hpp"
 #include "Main.hpp"
-#include "../discord/WebsocketClient.hpp"
+#include "../core/network/WebsocketClient.hpp"
 
 // NOTE - This is unused, probably won't be finished
 

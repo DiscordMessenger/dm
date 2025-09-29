@@ -1,7 +1,7 @@
 #pragma once
 
 #include <windows.h>
-#include "../discord/Snowflake.hpp"
+#include "../core/models/Snowflake.hpp"
 
 class MessageList;
 

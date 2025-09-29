@@ -1,6 +1,6 @@
 #include "ShellNotification.hpp"
 #include "Main.hpp"
-#include "../discord/LocalSettings.hpp"
+#include "../core/config/LocalSettings.hpp"
 
 constexpr int NOTIFICATION_ID = 1000;
 

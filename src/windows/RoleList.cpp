@@ -1,5 +1,5 @@
 #include "RoleList.hpp"
-#include "../discord/LocalSettings.hpp"
+#include "../core/config/LocalSettings.hpp"
 
 #define ROLE_VIEWER_COLOR COLOR_WINDOW
 #define GAP_BETWEEN_EDGE_AND_COLOR (5)
