@@ -97,6 +97,66 @@
     <Filter Include="Header Files\Core\State">
       <UniqueIdentifier>{ee4e145b-ff7d-4002-811a-e96284c08b8c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Windows\Core">
+      <UniqueIdentifier>{3d6ec66b-587e-404b-bec9-34da8a13a962}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Windows\UI">
+      <UniqueIdentifier>{b641bd7e-2c0f-466a-95e8-de1086ce6fda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Windows\UI\Widgets">
+      <UniqueIdentifier>{de502b4e-e5af-40ae-bc3b-0afab325bc42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Windows\UI\Lists">
+      <UniqueIdentifier>{68b04e56-4284-4a49-9f01-a027492acb86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Windows\UI\Views">
+      <UniqueIdentifier>{42f3664c-6668-4a66-ae1e-9b90f7406594}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Windows\UI\Dialogs">
+      <UniqueIdentifier>{401a8a8b-48c3-44be-a7a7-0806caffed8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Windows\Services">
+      <UniqueIdentifier>{43a6386d-bfd2-4dae-adc3-7866859098c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Windows\Utils">
+      <UniqueIdentifier>{c66eaeaa-0fb6-42e8-aa85-fb58babe0b34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Windows\Interfaces">
+      <UniqueIdentifier>{deeb5cc1-b8c7-4920-93a6-0bb66059d3e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Windows\Debug">
+      <UniqueIdentifier>{5ce66466-6962-437d-8299-5ffdfbe892b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windows\Core">
+      <UniqueIdentifier>{6c207956-8528-48ef-a290-a1686ff40ab5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windows\UI">
+      <UniqueIdentifier>{b5c484ca-392c-4c63-894e-6f6b613139ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windows\Services">
+      <UniqueIdentifier>{83488ca4-c926-4039-ae70-dc27a25f22b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windows\Interfaces">
+      <UniqueIdentifier>{ba8567dd-648b-4949-b7cd-499353273ead}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windows\Debug">
+      <UniqueIdentifier>{4d8466d3-2ce7-4abf-a0cd-a2950a7dc8b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windows\UI\Widgets">
+      <UniqueIdentifier>{115edbf1-97c2-4dc6-8469-4f6e18a8a99d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windows\UI\Lists">
+      <UniqueIdentifier>{635d1618-f2d2-40f9-a17e-7ea52b1a32e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windows\UI\Views">
+      <UniqueIdentifier>{32fcc713-38d5-4da6-b3fe-656513fcbd70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windows\UI\Dialogs">
+      <UniqueIdentifier>{088d016f-d2ab-4604-95c7-b2b8077009be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windows\Utils">
+      <UniqueIdentifier>{3f27ecaa-4a00-4892-8851-e9c6dbd01f78}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\res\bitmaps\bmp_voice.bmp">
@@ -479,122 +539,11 @@
     <ClInclude Include="..\src\resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\windows\QRCodeDialog.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\RoleList.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\TextManager.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\TextToSpeech.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\UploadDialog.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\WindowMessages.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\WinUtils.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\AboutDialog.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\AvatarCache.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\ChannelView.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\Config.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\Frontend_Win32.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\GuildHeader.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\GuildLister.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\ImageLoader.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\ImageViewer.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\LoadingMessage.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\LogonDialog.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\Main.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\Measurements.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\MemberList.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\MessageEditor.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\MessageList.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\MissingDefinitions.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\NetworkerThread.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\OptionsDialog.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\ProfilePopout.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\ProfileView.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\discord\Frontend.hpp">
       <Filter>Header Files\Discord</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\windows\TextInterface_Win32.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\StatusBar.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\QuickSwitcher.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
     <ClInclude Include="..\deps\httplib\httplib.h">
       <Filter>Source Files\Deps\Httplib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\PinList.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\ProgressDialog.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\AutoComplete.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\ShellNotification.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\InstanceMutex.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\NotificationViewer.hpp">
-      <Filter>Header Files\Windows</Filter>
     </ClInclude>
     <ClInclude Include="..\deps\iprogramsterminate.h">
       <Filter>Source Files\Deps</Filter>
@@ -604,21 +553,6 @@
     </ClInclude>
     <ClInclude Include="..\deps\mwas\include\ri\reimpl.hpp">
       <Filter>Source Files\Deps\Mwas</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\IChannelView.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\ChannelViewOld.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\IMemberList.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\MemberListOld.hpp">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\CrashDebugger.hpp">
-      <Filter>Header Files\Windows</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\DiscordInstance.hpp">
       <Filter>Header Files\Core</Filter>
@@ -719,6 +653,132 @@
     <ClInclude Include="..\src\core\state\UserGuildSettings.hpp">
       <Filter>Header Files\Core\State</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\windows\AboutDialog.hpp">
+      <Filter>Header Files\Windows\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\LogonDialog.hpp">
+      <Filter>Header Files\Windows\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\OptionsDialog.hpp">
+      <Filter>Header Files\Windows\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\ProgressDialog.hpp">
+      <Filter>Header Files\Windows\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\QRCodeDialog.hpp">
+      <Filter>Header Files\Windows\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\UploadDialog.hpp">
+      <Filter>Header Files\Windows\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\ChannelView.hpp">
+      <Filter>Header Files\Windows\UI\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\ChannelViewOld.hpp">
+      <Filter>Header Files\Windows\UI\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\ProfileView.hpp">
+      <Filter>Header Files\Windows\UI\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\ProfilePopout.hpp">
+      <Filter>Header Files\Windows\UI\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\MessageList.hpp">
+      <Filter>Header Files\Windows\UI\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\MessageEditor.hpp">
+      <Filter>Header Files\Windows\UI\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\LoadingMessage.hpp">
+      <Filter>Header Files\Windows\UI\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\MemberList.hpp">
+      <Filter>Header Files\Windows\UI\Lists</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\PinList.hpp">
+      <Filter>Header Files\Windows\UI\Lists</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\RoleList.hpp">
+      <Filter>Header Files\Windows\UI\Lists</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\GuildLister.hpp">
+      <Filter>Header Files\Windows\UI\Lists</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\GuildHeader.hpp">
+      <Filter>Header Files\Windows\UI\Lists</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\QuickSwitcher.hpp">
+      <Filter>Header Files\Windows\UI\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\StatusBar.hpp">
+      <Filter>Header Files\Windows\UI\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\AutoComplete.hpp">
+      <Filter>Header Files\Windows\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\ImageLoader.hpp">
+      <Filter>Header Files\Windows\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\ImageViewer.hpp">
+      <Filter>Header Files\Windows\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\TextManager.hpp">
+      <Filter>Header Files\Windows\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\TextToSpeech.hpp">
+      <Filter>Header Files\Windows\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\WinUtils.hpp">
+      <Filter>Header Files\Windows\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\InstanceMutex.hpp">
+      <Filter>Header Files\Windows\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\AvatarCache.hpp">
+      <Filter>Header Files\Windows\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\NetworkerThread.hpp">
+      <Filter>Header Files\Windows\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\NotificationViewer.hpp">
+      <Filter>Header Files\Windows\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\ShellNotification.hpp">
+      <Filter>Header Files\Windows\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\CrashDebugger.hpp">
+      <Filter>Header Files\Windows\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\IChannelView.hpp">
+      <Filter>Header Files\Windows\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\IMemberList.hpp">
+      <Filter>Header Files\Windows\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\MemberListOld.hpp">
+      <Filter>Header Files\Windows\UI\Lists</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\Config.hpp">
+      <Filter>Header Files\Windows\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\Frontend_Win32.hpp">
+      <Filter>Header Files\Windows\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\Main.hpp">
+      <Filter>Header Files\Windows\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\Measurements.hpp">
+      <Filter>Header Files\Windows\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\WindowMessages.hpp">
+      <Filter>Header Files\Windows\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\TextInterface_Win32.hpp">
+      <Filter>Header Files\Windows\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\MissingDefinitions.hpp">
+      <Filter>Header Files\Windows\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\deps\asio\src\asio.cpp">
@@ -800,118 +860,118 @@
       <Filter>Source Files\Core\State</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\AboutDialog.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\AutoComplete.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\AvatarCache.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\ChannelView.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\ChannelViewOld.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\CrashDebugger.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\Frontend_Win32.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\GuildHeader.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\GuildLister.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\IChannelView.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\ImageLoader.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\ImageViewer.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\IMemberList.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\InstanceMutex.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\LoadingMessage.cpp">
-      <Filter>Source Files\Windows</Filter>
+      <Filter>Source Files\Windows\UI\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\LogonDialog.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\Main.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\MemberList.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\MemberListOld.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\MessageEditor.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\MessageList.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\NetworkerThread.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\NotificationViewer.cpp">
-      <Filter>Source Files\Windows</Filter>
+      <Filter>Source Files\Windows\UI\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\OptionsDialog.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\PinList.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\ProfilePopout.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\ProfileView.cpp">
-      <Filter>Source Files\Windows</Filter>
+      <Filter>Source Files\Windows\UI\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\ProgressDialog.cpp">
-      <Filter>Source Files\Windows</Filter>
+      <Filter>Source Files\Windows\UI\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\QRCodeDialog.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\QuickSwitcher.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\RoleList.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\ShellNotification.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\StatusBar.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\TextInterface_Win32.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\TextManager.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\TextToSpeech.cpp">
-      <Filter>Source Files\Windows</Filter>
+      <Filter>Source Files\Windows\UI\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\UploadDialog.cpp">
-      <Filter>Source Files\Windows</Filter>
+      <Filter>Source Files\Windows\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\ChannelView.cpp">
+      <Filter>Source Files\Windows\UI\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\ChannelViewOld.cpp">
+      <Filter>Source Files\Windows\UI\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\LoadingMessage.cpp">
+      <Filter>Source Files\Windows\UI\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\MessageEditor.cpp">
+      <Filter>Source Files\Windows\UI\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\MessageList.cpp">
+      <Filter>Source Files\Windows\UI\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\ProfilePopout.cpp">
+      <Filter>Source Files\Windows\UI\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\ProfileView.cpp">
+      <Filter>Source Files\Windows\UI\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\QuickSwitcher.cpp">
+      <Filter>Source Files\Windows\UI\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\StatusBar.cpp">
+      <Filter>Source Files\Windows\UI\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\GuildHeader.cpp">
+      <Filter>Source Files\Windows\UI\Lists</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\GuildLister.cpp">
+      <Filter>Source Files\Windows\UI\Lists</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\MemberList.cpp">
+      <Filter>Source Files\Windows\UI\Lists</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\MemberListOld.cpp">
+      <Filter>Source Files\Windows\UI\Lists</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\PinList.cpp">
+      <Filter>Source Files\Windows\UI\Lists</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\RoleList.cpp">
+      <Filter>Source Files\Windows\UI\Lists</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\AvatarCache.cpp">
+      <Filter>Source Files\Windows\Services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\NetworkerThread.cpp">
+      <Filter>Source Files\Windows\Services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\NotificationViewer.cpp">
+      <Filter>Source Files\Windows\Services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\ShellNotification.cpp">
+      <Filter>Source Files\Windows\Services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\CrashDebugger.cpp">
+      <Filter>Source Files\Windows\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\IChannelView.cpp">
+      <Filter>Source Files\Windows\Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\IMemberList.cpp">
+      <Filter>Source Files\Windows\Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\AutoComplete.cpp">
+      <Filter>Source Files\Windows\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\ImageLoader.cpp">
+      <Filter>Source Files\Windows\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\ImageViewer.cpp">
+      <Filter>Source Files\Windows\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\InstanceMutex.cpp">
+      <Filter>Source Files\Windows\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\TextManager.cpp">
+      <Filter>Source Files\Windows\Utils</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\WinUtils.cpp">
-      <Filter>Source Files\Windows</Filter>
+      <Filter>Source Files\Windows\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\Frontend_Win32.cpp">
+      <Filter>Source Files\Windows\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\Main.cpp">
+      <Filter>Source Files\Windows\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\TextInterface_Win32.cpp">
+      <Filter>Source Files\Windows\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\TextToSpeech.cpp">
+      <Filter>Source Files\Windows\Core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
