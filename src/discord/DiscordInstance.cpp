@@ -1,4 +1,4 @@
-﻿#include <nlohmann/json.h>
+#include <nlohmann/json.h>
 #include <boost/base64/base64.hpp>
 #include "DiscordInstance.hpp"
 #include "WebsocketClient.hpp"
