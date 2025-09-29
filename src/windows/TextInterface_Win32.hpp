@@ -2,14 +2,14 @@
 
 #include <windows.h>
 #include <commctrl.h>
-#include "../discord/TextInterface.hpp"
-#include "../discord/FormattedText.hpp"
+#include "text/TextInterface.hpp"
+#include "text/FormattedText.hpp"
 
 #define COLOR_LINK    RGB(  0, 108, 235)
 #define COLOR_MENT    RGB( 88, 101, 242)
 
 #define SIZE_QUOTE_INDENT (10)
-#define FONT_TYPE_COUNT (13)
+#define FONT_TYPE_COUNT (14)
 
 struct DrawingContext {
 	HDC m_hdc = NULL;

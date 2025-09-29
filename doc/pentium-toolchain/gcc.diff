@@ -1,0 +1,364 @@
+diff -ruN gcc-clean/libgcc/config/i386/gthr-win32.h gcc-workdir/libgcc/config/i386/gthr-win32.h
+--- gcc-clean/libgcc/config/i386/gthr-win32.h	2023-04-26 10:09:43.000000000 +0300
++++ gcc-workdir/libgcc/config/i386/gthr-win32.h	2025-09-18 15:09:05.727022700 +0300
+@@ -625,7 +625,7 @@
+ __GTHREAD_WIN32_INLINE int
+ __gthread_equal (__gthread_t __t1, __gthread_t __t2)
+ {
+-  return GetThreadId ((HANDLE) __t1) == GetThreadId ((HANDLE) __t2);
++  return __t1 == __t2; //GetThreadId ((HANDLE) __t1) == GetThreadId ((HANDLE) __t2);
+ }
+ 
+ __GTHREAD_WIN32_INLINE int
+@@ -738,6 +738,7 @@
+ __GTHREAD_WIN32_INLINE int
+ __gthread_mutex_trylock (__gthread_mutex_t *__mutex)
+ {
++/*
+   if (__GTHREAD_WIN32_ACTIVE_P ())
+     {
+       BOOL __ret = TryEnterCriticalSection ((LPCRITICAL_SECTION) __mutex);
+@@ -756,6 +757,9 @@
+     }
+   else
+     return 0;
++*/
++	// TODO
++	return 0;
+ }
+ 
+ __GTHREAD_WIN32_INLINE int
+@@ -769,10 +773,14 @@
+ __GTHREAD_WIN32_INLINE int
+ __gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *__mutex)
+ {
++/*
+   if (__GTHREAD_WIN32_ACTIVE_P ())
+     return TryEnterCriticalSection ((LPCRITICAL_SECTION) __mutex) ? 0 : 1;
+   else
+     return 0;
++*/
++	// TODO
++	return 0;
+ }
+ 
+ #if __GTHREAD_HAS_COND
+diff -ruN gcc-clean/libstdc++-v3/src/c++11/random.cc gcc-workdir/libstdc++-v3/src/c++11/random.cc
+--- gcc-clean/libstdc++-v3/src/c++11/random.cc	2023-04-26 10:09:43.000000000 +0300
++++ gcc-workdir/libstdc++-v3/src/c++11/random.cc	2025-09-18 13:54:20.255687400 +0300
+@@ -45,6 +45,14 @@
+ #include <cstdio>
+ #include <cctype> // For std::isdigit.
+ 
++/* CRTDLL compatibility */
++#if __MSVCRT_VERSION__ < 0x100
++#warning Disabling rand_s
++#ifdef _GLIBCXX_USE_CRT_RAND_S
++#undef _GLIBCXX_USE_CRT_RAND_S
++#endif
++#endif // __MSVCRT_VERSION__ < 0x100
++
+ #if defined _GLIBCXX_HAVE_UNISTD_H && defined _GLIBCXX_HAVE_FCNTL_H
+ # include <unistd.h>
+ # include <fcntl.h>
+diff -ruN gcc-clean/libstdc++-v3/src/c++17/fs_ops.cc gcc-workdir/libstdc++-v3/src/c++17/fs_ops.cc
+--- gcc-clean/libstdc++-v3/src/c++17/fs_ops.cc	2023-04-26 10:09:43.000000000 +0300
++++ gcc-workdir/libstdc++-v3/src/c++17/fs_ops.cc	2025-09-18 13:37:41.090125800 +0300
+@@ -96,24 +96,24 @@
+ 
+ #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+   // s must remain null-terminated
+-  wstring_view s = p.native();
++  string_view s = p.native();
+ 
+   if (p.has_root_directory()) // implies !p.has_root_name()
+     {
+-      // GetFullPathNameW("//") gives unwanted result (PR 88884).
++      // GetFullPathNameA("//") gives unwanted result (PR 88884).
+       // If there are multiple directory separators at the start,
+       // skip all but the last of them.
+-      const auto pos = s.find_first_not_of(L"/\\");
++      const auto pos = s.find_first_not_of("/\\");
+       __glibcxx_assert(pos != 0);
+       s.remove_prefix(std::min(s.length(), pos) - 1);
+     }
+ 
+   uint32_t len = 1024;
+-  wstring buf;
++  string buf;
+   do
+     {
+       buf.resize(len);
+-      len = GetFullPathNameW(s.data(), len, buf.data(), nullptr);
++      len = GetFullPathNameA(s.data(), len, buf.data(), nullptr);
+     }
+   while (len > buf.size());
+ 
+@@ -688,7 +688,7 @@
+   else
+     ec.clear();
+ #elif defined _GLIBCXX_FILESYSTEM_IS_WINDOWS
+-  if (CreateHardLinkW(new_hard_link.c_str(), to.c_str(), NULL))
++  if (CreateHardLinkA(new_hard_link.c_str(), to.c_str(), NULL))
+     ec.clear();
+   else
+     ec = __last_system_error();
+@@ -861,7 +861,7 @@
+ 
+       struct auto_handle {
+ 	explicit auto_handle(const path& p_)
+-	: handle(CreateFileW(p_.c_str(), 0,
++	: handle(CreateFileA(p_.c_str(), 0,
+ 	      FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+ 	      0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0))
+ 	{ }
+@@ -1257,8 +1257,8 @@
+   auto st = symlink_status(p, ec);
+   if (exists(st))
+     {
+-      if ((is_directory(p, ec) && RemoveDirectoryW(p.c_str()))
+-	  || DeleteFileW(p.c_str()))
++      if ((is_directory(p, ec) && RemoveDirectoryA(p.c_str()))
++	  || DeleteFile(p.c_str()))
+ 	{
+ 	  ec.clear();
+ 	  return true;
+diff -ruN gcc-clean/libstdc++-v3/src/c++17/fs_path.cc gcc-workdir/libstdc++-v3/src/c++17/fs_path.cc
+--- gcc-clean/libstdc++-v3/src/c++17/fs_path.cc	2023-04-26 10:09:43.000000000 +0300
++++ gcc-workdir/libstdc++-v3/src/c++17/fs_path.cc	2025-09-18 13:47:56.350665900 +0300
+@@ -42,14 +42,14 @@
+ static inline bool is_dir_sep(path::value_type ch)
+ {
+ #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+-    return ch == L'/' || ch == path::preferred_separator;
++    return ch == '/' || ch == path::preferred_separator;
+ #else
+     return ch == '/';
+ #endif
+ }
+ 
+ #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+-static inline bool is_disk_designator(std::wstring_view s)
++static inline bool is_disk_designator(std::string_view s)
+ {
+   return s.length() == 2 && s[1] == L':';
+ }
+@@ -135,7 +135,7 @@
+ 	    root.second.str = input.substr(2, 1);
+ 	    root.second.type = _Type::_Root_dir;
+ 	  }
+-	pos = input.find_first_not_of(L"/\\", 2);
++	pos = input.find_first_not_of("/\\", 2);
+       }
+ #endif
+ 
+@@ -150,7 +150,7 @@
+   cmpt next() noexcept
+   {
+ #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+-    string_view_type sep = L"/\\";
++    string_view_type sep = "/\\";
+ #else
+     char sep = '/';
+ #endif
+@@ -1297,7 +1297,7 @@
+ }
+ 
+ #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+-const fs::path::value_type dot = L'.';
++const fs::path::value_type dot = '.';
+ #else
+ const fs::path::value_type dot = '.';
+ #endif
+@@ -1710,7 +1710,7 @@
+       if (p._M_type() == _Type::_Root_name || p._M_type() == _Type::_Root_dir)
+ 	{
+ 	  string_type s = p.native();
+-	  std::replace(s.begin(), s.end(), L'/', L'\\');
++	  std::replace(s.begin(), s.end(), '/', '\\');
+ 	  ret /= s;
+ 	  continue;
+ 	}
+@@ -1949,7 +1949,7 @@
+ path::_S_convert_loc(const char* __first, const char* __last,
+ 		     const std::locale& __loc)
+ {
+-#if _GLIBCXX_USE_WCHAR_T
++/*#if _GLIBCXX_USE_WCHAR_T
+   auto& __cvt = std::use_facet<codecvt<wchar_t, char, mbstate_t>>(__loc);
+   basic_string<wchar_t> __ws;
+   if (!__str_codecvt_in_all(__first, __last, __ws, __cvt))
+@@ -1957,9 +1957,9 @@
+ 	  "Cannot convert character sequence",
+ 	  std::make_error_code(errc::illegal_byte_sequence)));
+   return _S_convert(std::move(__ws));
+-#else
++#else*/
+   return {__first, __last};
+-#endif
++//#endif
+ }
+ 
+ std::size_t
+diff -ruN gcc-clean/libstdc++-v3/src/c++20/tzdb.cc gcc-workdir/libstdc++-v3/src/c++20/tzdb.cc
+--- gcc-clean/libstdc++-v3/src/c++20/tzdb.cc	2023-04-26 10:09:43.000000000 +0300
++++ gcc-workdir/libstdc++-v3/src/c++20/tzdb.cc	2025-09-18 11:36:31.775713100 +0300
+@@ -1,4 +1,5 @@
+ // chrono::tzdb -*- C++ -*-
++#if 0
+ 
+ // Copyright The GNU Toolchain Authors.
+ //
+@@ -2037,3 +2038,5 @@
+   } // namespace
+ #endif // TZDB_DISABLED
+ } // namespace std::chrono
++
++#endif // 0
+diff -ruN gcc-clean/libstdc++-v3/src/filesystem/dir-common.h gcc-workdir/libstdc++-v3/src/filesystem/dir-common.h
+--- gcc-clean/libstdc++-v3/src/filesystem/dir-common.h	2023-04-26 10:09:43.000000000 +0300
++++ gcc-workdir/libstdc++-v3/src/filesystem/dir-common.h	2025-09-18 13:43:28.138737200 +0300
+@@ -51,12 +51,12 @@
+ {
+ #if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+ // Adapt the Windows _wxxx functions to look like POSIX xxx, but for wchar_t*.
+-using char_type = wchar_t;
+-using DIR = ::_WDIR;
+-using dirent = _wdirent;
+-inline DIR* opendir(const wchar_t* path) { return ::_wopendir(path); }
+-inline dirent* readdir(DIR* dir) { return ::_wreaddir(dir); }
+-inline int closedir(DIR* dir) { return ::_wclosedir(dir); }
++using char_type = char;
++using DIR = ::DIR;
++using dirent = dirent;
++inline DIR* opendir(const char* path) { return ::opendir(path); }
++inline dirent* readdir(DIR* dir) { return ::readdir(dir); }
++inline int closedir(DIR* dir) { return ::closedir(dir); }
+ #elif defined _GLIBCXX_HAVE_DIRENT_H
+ using char_type = char;
+ using DIR = ::DIR;
+diff -ruN gcc-clean/libstdc++-v3/src/filesystem/ops-common.h gcc-workdir/libstdc++-v3/src/filesystem/ops-common.h
+--- gcc-clean/libstdc++-v3/src/filesystem/ops-common.h	2023-04-26 10:09:43.000000000 +0300
++++ gcc-workdir/libstdc++-v3/src/filesystem/ops-common.h	2025-09-18 13:37:14.001366200 +0300
+@@ -105,21 +105,21 @@
+ {
+ #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+ // Adapt the Windows _wxxx functions to look like POSIX xxx, but for wchar_t*.
+-  inline int open(const wchar_t* path, int flags)
+-  { return ::_wopen(path, flags); }
++  inline int open(const char* path, int flags)
++  { return ::_open(path, flags); }
+ 
+-  inline int open(const wchar_t* path, int flags, int mode)
+-  { return ::_wopen(path, flags, mode); }
++  inline int open(const char* path, int flags, int mode)
++  { return ::_open(path, flags, mode); }
+ 
+   inline int close(int fd)
+   { return ::_close(fd); }
+ 
+-  typedef struct ::__stat64 stat_type;
++  typedef struct ::_stat32 stat_type;
+ 
+-  inline int stat(const wchar_t* path, stat_type* buffer)
+-  { return ::_wstat64(path, buffer); }
++  inline int stat(const char* path, stat_type* buffer)
++  { return ::_stat(path, buffer); }
+ 
+-  inline int lstat(const wchar_t* path, stat_type* buffer)
++  inline int lstat(const char* path, stat_type* buffer)
+   {
+     // FIXME: symlinks not currently supported
+     return stat(path, buffer);
+@@ -127,28 +127,30 @@
+ 
+   using ::mode_t;
+ 
+-  inline int chmod(const wchar_t* path, mode_t mode)
+-  { return ::_wchmod(path, mode); }
++  inline int chmod(const char* path, mode_t mode)
++  { return ::_chmod(path, mode); }
+ 
+-  inline int mkdir(const wchar_t* path, mode_t)
+-  { return ::_wmkdir(path); }
++  inline int mkdir(const char* path, mode_t)
++  { return ::mkdir(path); }
+ 
+-  inline wchar_t* getcwd(wchar_t* buf, size_t size)
+-  { return ::_wgetcwd(buf, size > (size_t)INT_MAX ? INT_MAX : (int)size); }
++  inline char* getcwd(char* buf, size_t size)
++  { return ::_getcwd(buf, size > (size_t)INT_MAX ? INT_MAX : (int)size); }
+ 
+-  inline int chdir(const wchar_t* path)
+-  { return ::_wchdir(path); }
++  inline int chdir(const char* path)
++  { return ::chdir(path); }
+ 
+ #if !_GLIBCXX_USE_UTIMENSAT && _GLIBCXX_HAVE_UTIME_H
+   using utimbuf = _utimbuf;
+ 
+-  inline int utime(const wchar_t* path, utimbuf* times)
+-  { return ::_wutime(path, times); }
++  inline int utime(const char* path, utimbuf* times)
++  { return ::_utime(path, times); }
+ #endif
+ 
+-  inline int rename(const wchar_t* oldname, const wchar_t* newname)
++  inline int rename(const char* oldname, const char* newname)
+   {
+-    if (MoveFileExW(oldname, newname,
++    // N.B. Win95 does not implement this, only implements MoveFileA!
++    // Either call GetProcAddress and blah blah, or never call this.
++    if (MoveFileExA(oldname, newname,
+ 		    MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED))
+       return 0;
+     if (GetLastError() == ERROR_ACCESS_DENIED)
+@@ -159,9 +161,9 @@
+   }
+ 
+   using off_t = _off64_t;
+-  inline int truncate(const wchar_t* path, _off64_t length)
++  inline int truncate(const char* path, _off64_t length)
+   {
+-    const int fd = ::_wopen(path, _O_BINARY|_O_RDWR);
++    const int fd = ::_open(path, _O_BINARY|_O_RDWR);
+     if (fd == -1)
+       return fd;
+     const int ret = ::ftruncate64(fd, length);
+@@ -171,7 +173,7 @@
+     ::_set_errno(err);
+     return ret;
+   }
+-  using char_type = wchar_t;
++  using char_type = char;
+ #elif defined _GLIBCXX_HAVE_UNISTD_H && ! defined __AVR__
+   using ::open;
+   using ::close;
+@@ -592,7 +594,7 @@
+       }
+ #elif _GLIBCXX_FILESYSTEM_IS_WINDOWS
+     ULARGE_INTEGER bytes_avail = {}, bytes_total = {}, bytes_free = {};
+-    if (GetDiskFreeSpaceExW(pathname, &bytes_avail, &bytes_total, &bytes_free))
++    if (GetDiskFreeSpaceExA(pathname, &bytes_avail, &bytes_total, &bytes_free))
+       {
+ 	if (bytes_total.QuadPart != 0)
+ 	  capacity = bytes_total.QuadPart;
+@@ -616,15 +618,15 @@
+   // Find OS-specific name of temporary directory from the environment,
+   // Caller must check that the path is an accessible directory.
+ #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+-  inline wstring
++  inline string
+   get_temp_directory_from_env(error_code& ec)
+   {
+     unsigned len = 1024;
+-    std::wstring buf;
++    std::string buf;
+     do
+       {
+ 	buf.resize(len);
+-	len = GetTempPathW(buf.size(), buf.data());
++	len = GetTempPathA(buf.size(), buf.data());
+       }
+     while (len > buf.size());
+ 

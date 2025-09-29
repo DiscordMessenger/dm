@@ -99,6 +99,7 @@
 #define IDI_NOTIFICATION                99
 #define IDI_NOTIFICATION_2K             100
 #define IDI_FOLDER                      101
+#define IDC_CLICKER                     102
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -328,6 +329,7 @@
 #define IDS_STRING773                   773
 #define IDS_SAVED_STRING_EXE            773
 #define IDS_GET_TOKEN_TUTORIAL          774
+#define IDS_CANT_LAUNCH_URL_UNS         775
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803
@@ -423,6 +425,7 @@
 #define IDC_IMAGES_WHEN_UPLOADED        894
 #define IDC_IMAGES_WHEN_EMBEDDED        895
 #define IDC_SHOW_EMBEDS                 896
+#define IDC_USE_12HR_TIME               897
 #define IDC_ENABLE_BALLOON_NOTIFS       898
 #define IDC_FLASH_TASKBAR               899
 #define IDC_USE_DISCORD_SOUND           900
@@ -511,7 +514,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        106
+#define _APS_NEXT_RESOURCE_VALUE        103
 #define _APS_NEXT_COMMAND_VALUE         1080
 #define _APS_NEXT_CONTROL_VALUE         917
 #define _APS_NEXT_SYMED_VALUE           40000

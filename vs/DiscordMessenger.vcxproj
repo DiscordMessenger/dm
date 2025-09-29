@@ -55,7 +55,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{3249eac3-35d9-4646-ace2-e2bd3b7f4812}</ProjectGuid>
     <RootNamespace>DiscordMessenger</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>DiscordMessenger</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -352,7 +352,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>CURL_STATICLIB;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;IS_64_BIT;FKG_FORCED_USAGE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL64)\include;$(MBEDTLS_INSTALL_MSVC64)\include;$(CURL_INSTALL_MSVC64)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL64)\include;$(MBEDTLS_INSTALL_MSVC64)\include;$(CURL_INSTALL_MSVC64)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -468,6 +468,7 @@
     <Image Include="..\res\bitmaps\bmp_status_offline.bmp" />
     <Image Include="..\res\bitmaps\bmp_status_online.bmp" />
     <Image Include="..\res\bitmaps\bmp_voice.bmp" />
+    <Image Include="..\res\bitmaps\target.bmp" />
     <Image Include="..\res\icons\icon_add.ico" />
     <Image Include="..\res\icons\icon_balloon.ico" />
     <Image Include="..\res\icons\icon_balloon_block.ico" />
@@ -563,7 +564,6 @@
     <Image Include="..\res\icons\icon_wait.ico" />
     <Image Include="..\res\icons\icon_warning.ico" />
     <Image Include="..\res\icons\modern_app.ico" />
-    <Image Include="..\res\bitmaps\target.bmp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\res\animations\download_hc.avi" />
@@ -571,6 +571,7 @@
     <None Include="..\res\animations\upload_hc.avi" />
     <None Include="..\res\animations\upload_lc.avi" />
     <None Include="..\res\cacert.pem" />
+    <None Include="..\res\cursors\cur_clicker.cur" />
     <None Include="..\res\cursors\cur_zoomin.cur" />
     <None Include="..\res\cursors\cur_zoomout.cur" />
   </ItemGroup>
@@ -581,40 +582,39 @@
     <ClInclude Include="..\deps\iprogramsterminate.h" />
     <ClInclude Include="..\deps\mwas\include\ri\recrypt.hpp" />
     <ClInclude Include="..\deps\mwas\include\ri\reimpl.hpp" />
-    <ClInclude Include="..\src\discord\ActiveStatus.hpp" />
-    <ClInclude Include="..\src\discord\Attachment.hpp" />
-    <ClInclude Include="..\src\discord\Channel.hpp" />
-    <ClInclude Include="..\src\discord\ContentType.hpp" />
-    <ClInclude Include="..\src\discord\DiscordAPI.hpp" />
-    <ClInclude Include="..\src\discord\DiscordClientConfig.hpp" />
-    <ClInclude Include="..\src\discord\DiscordInstance.hpp" />
-    <ClInclude Include="..\src\discord\DiscordRequest.hpp" />
-    <ClInclude Include="..\src\discord\Emoji.hpp" />
-    <ClInclude Include="..\src\discord\FormattedText.hpp" />
-    <ClInclude Include="..\src\discord\Frontend.hpp" />
-    <ClInclude Include="..\src\discord\Guild.hpp" />
-    <ClInclude Include="..\src\discord\GuildListItem.hpp" />
-    <ClInclude Include="..\src\discord\GuildMember.hpp" />
-    <ClInclude Include="..\src\discord\HTTPClient.hpp" />
-    <ClInclude Include="..\src\discord\LocalSettings.hpp" />
-    <ClInclude Include="..\src\discord\Message.hpp" />
-    <ClInclude Include="..\src\discord\MessageCache.hpp" />
-    <ClInclude Include="..\src\discord\MessagePoll.hpp" />
-    <ClInclude Include="..\src\discord\MessageType.hpp" />
-    <ClInclude Include="..\src\discord\NotificationManager.hpp" />
-    <ClInclude Include="..\src\discord\Permissions.hpp" />
-    <ClInclude Include="..\src\discord\Profile.hpp" />
-    <ClInclude Include="..\src\discord\ProfileCache.hpp" />
-    <ClInclude Include="..\src\discord\RectAndPoint.hpp" />
-    <ClInclude Include="..\src\discord\Relationship.hpp" />
-    <ClInclude Include="..\src\discord\ScrollDir.hpp" />
-    <ClInclude Include="..\src\discord\SettingsManager.hpp" />
-    <ClInclude Include="..\src\discord\Snowflake.hpp" />
-    <ClInclude Include="..\src\discord\TextInterface.hpp" />
-    <ClInclude Include="..\src\discord\UpdateChecker.hpp" />
-    <ClInclude Include="..\src\discord\UserGuildSettings.hpp" />
-    <ClInclude Include="..\src\discord\Util.hpp" />
-    <ClInclude Include="..\src\discord\WebsocketClient.hpp" />
+    <ClInclude Include="..\src\core\config\DiscordClientConfig.hpp" />
+    <ClInclude Include="..\src\core\config\LocalSettings.hpp" />
+    <ClInclude Include="..\src\core\config\SettingsManager.hpp" />
+    <ClInclude Include="..\src\core\DiscordInstance.hpp" />
+    <ClInclude Include="..\src\core\models\ActiveStatus.hpp" />
+    <ClInclude Include="..\src\core\models\Attachment.hpp" />
+    <ClInclude Include="..\src\core\models\Channel.hpp" />
+    <ClInclude Include="..\src\core\models\ContentType.hpp" />
+    <ClInclude Include="..\src\core\models\Guild.hpp" />
+    <ClInclude Include="..\src\core\models\GuildListItem.hpp" />
+    <ClInclude Include="..\src\core\models\GuildMember.hpp" />
+    <ClInclude Include="..\src\core\models\Message.hpp" />
+    <ClInclude Include="..\src\core\models\MessageType.hpp" />
+    <ClInclude Include="..\src\core\models\Permissions.hpp" />
+    <ClInclude Include="..\src\core\models\Profile.hpp" />
+    <ClInclude Include="..\src\core\models\RectAndPoint.hpp" />
+    <ClInclude Include="..\src\core\models\Relationship.hpp" />
+    <ClInclude Include="..\src\core\models\ScrollDir.hpp" />
+    <ClInclude Include="..\src\core\models\Snowflake.hpp" />
+    <ClInclude Include="..\src\core\network\DiscordAPI.hpp" />
+    <ClInclude Include="..\src\core\network\DiscordRequest.hpp" />
+    <ClInclude Include="..\src\core\network\HTTPClient.hpp" />
+    <ClInclude Include="..\src\core\network\MessagePoll.hpp" />
+    <ClInclude Include="..\src\core\network\WebsocketClient.hpp" />
+    <ClInclude Include="..\src\core\state\MessageCache.hpp" />
+    <ClInclude Include="..\src\core\state\NotificationManager.hpp" />
+    <ClInclude Include="..\src\core\state\ProfileCache.hpp" />
+    <ClInclude Include="..\src\core\state\UserGuildSettings.hpp" />
+    <ClInclude Include="..\src\core\text\FormattedText.hpp" />
+    <ClInclude Include="..\src\core\text\TextInterface.hpp" />
+    <ClInclude Include="..\src\core\utils\Emoji.hpp" />
+    <ClInclude Include="..\src\core\utils\UpdateChecker.hpp" />
+    <ClInclude Include="..\src\core\utils\Util.hpp" />
     <ClInclude Include="..\src\resource.h" />
     <ClInclude Include="..\src\windows\AboutDialog.hpp" />
     <ClInclude Include="..\src\windows\AutoComplete.hpp" />
@@ -665,27 +665,28 @@
   <ItemGroup>
     <ClCompile Include="..\deps\md5\MD5.cpp" />
     <ClCompile Include="..\deps\mwas\src\reimpl.cpp" />
-    <ClCompile Include="..\src\discord\Channel.cpp" />
-    <ClCompile Include="..\src\discord\DiscordAPI.cpp" />
-    <ClCompile Include="..\src\discord\DiscordClientConfig.cpp" />
-    <ClCompile Include="..\src\discord\DiscordInstance.cpp" />
-    <ClCompile Include="..\src\discord\Emoji.cpp" />
-    <ClCompile Include="..\src\discord\FormattedText.cpp" />
-    <ClCompile Include="..\src\discord\Guild.cpp" />
-    <ClCompile Include="..\src\discord\GuildListItem.cpp" />
-    <ClCompile Include="..\src\discord\HTTPClient.cpp" />
-    <ClCompile Include="..\src\discord\LocalSettings.cpp" />
-    <ClCompile Include="..\src\discord\Message.cpp" />
-    <ClCompile Include="..\src\discord\MessageCache.cpp" />
-    <ClCompile Include="..\src\discord\MessagePoll.cpp" />
-    <ClCompile Include="..\src\discord\NotificationManager.cpp" />
-    <ClCompile Include="..\src\discord\Profile.cpp" />
-    <ClCompile Include="..\src\discord\ProfileCache.cpp" />
-    <ClCompile Include="..\src\discord\Relationship.cpp" />
-    <ClCompile Include="..\src\discord\SettingsManager.cpp" />
-    <ClCompile Include="..\src\discord\UpdateChecker.cpp" />
-    <ClCompile Include="..\src\discord\UserGuildSettings.cpp" />
-    <ClCompile Include="..\src\discord\Util.cpp" />
+    <ClCompile Include="..\src\core\config\DiscordClientConfig.cpp" />
+    <ClCompile Include="..\src\core\config\LocalSettings.cpp" />
+    <ClCompile Include="..\src\core\config\SettingsManager.cpp" />
+    <ClCompile Include="..\src\core\DiscordInstance.cpp" />
+    <ClCompile Include="..\src\core\models\Channel.cpp" />
+    <ClCompile Include="..\src\core\models\Guild.cpp" />
+    <ClCompile Include="..\src\core\models\GuildListItem.cpp" />
+    <ClCompile Include="..\src\core\models\Message.cpp" />
+    <ClCompile Include="..\src\core\models\Profile.cpp" />
+    <ClCompile Include="..\src\core\models\Relationship.cpp" />
+    <ClCompile Include="..\src\core\network\DiscordAPI.cpp" />
+    <ClCompile Include="..\src\core\network\HTTPClient.cpp" />
+    <ClCompile Include="..\src\core\network\MessagePoll.cpp" />
+    <ClCompile Include="..\src\core\network\WebsocketClient.cpp" />
+    <ClCompile Include="..\src\core\state\MessageCache.cpp" />
+    <ClCompile Include="..\src\core\state\NotificationManager.cpp" />
+    <ClCompile Include="..\src\core\state\ProfileCache.cpp" />
+    <ClCompile Include="..\src\core\state\UserGuildSettings.cpp" />
+    <ClCompile Include="..\src\core\text\FormattedText.cpp" />
+    <ClCompile Include="..\src\core\utils\Emoji.cpp" />
+    <ClCompile Include="..\src\core\utils\UpdateChecker.cpp" />
+    <ClCompile Include="..\src\core\utils\Util.cpp" />
     <ClCompile Include="..\src\windows\AboutDialog.cpp" />
     <ClCompile Include="..\src\windows\AutoComplete.cpp" />
     <ClCompile Include="..\src\windows\AvatarCache.cpp" />
@@ -715,11 +716,11 @@
     <ClCompile Include="..\src\windows\ProfileView.cpp" />
     <ClCompile Include="..\src\windows\QuickSwitcher.cpp" />
     <ClCompile Include="..\src\windows\RoleList.cpp" />
+    <ClCompile Include="..\src\windows\ShellNotification.cpp" />
     <ClCompile Include="..\src\windows\StatusBar.cpp" />
     <ClCompile Include="..\src\windows\TextInterface_Win32.cpp" />
     <ClCompile Include="..\src\windows\TextManager.cpp" />
     <ClCompile Include="..\src\windows\TextToSpeech.cpp" />
-    <ClCompile Include="..\src\windows\ShellNotification.cpp" />
     <ClCompile Include="..\src\windows\UploadDialog.cpp" />
     <ClCompile Include="..\src\windows\ProgressDialog.cpp" />
     <ClCompile Include="..\src\windows\WebsocketClient_curl.cpp" />

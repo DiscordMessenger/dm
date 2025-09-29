@@ -1,5 +1,5 @@
 #include "GuildLister.hpp"
-#include "../discord/LocalSettings.hpp"
+#include "config/LocalSettings.hpp"
 
 #define C_GUILD_ICON_WIDTH (PROFILE_PICTURE_SIZE + 4)
 #define C_GUILD_GAP_HEIGHT 5
@@ -763,7 +763,7 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			if (selected != 2) {
-				SetCursor(LoadCursor(NULL, IDC_HAND));
+				SetCursor(GetHandCursor());
 				return TRUE;
 			}
 
@@ -1002,7 +1002,8 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 					InvalidateRect(hWnd, &selectedRect, FALSE);
 				}
-				else {
+				else if (GetDiscordInstance()->GetGuild(selected))
+				{
 					Snowflake sf1 = 0;
 					if (GetDiscordInstance()->GetCurrentGuild())
 						sf1 = GetDiscordInstance()->GetCurrentGuild()->m_snowflake;

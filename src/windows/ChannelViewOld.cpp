@@ -160,10 +160,10 @@ void ChannelViewOld::AddChannel(const Channel& ch)
 
 	// TODO: Implement category order sorting. For now, they're sorted by ID.
 	// 11/06/2025 - Are they!?
-	int categIndex = ch.IsCategory() ? ++m_nextCategIndex : 0;
+	int categIndex = ch.IsCategory() ? ch.m_pos : 0;
 
 	m_idToIdx[ch.m_snowflake] = (int) m_items.size();
-	m_items.push_back({ ch.m_parentCateg, ch.m_snowflake, ch.m_channelType, GetChannelString(ch), categIndex});
+	m_items.push_back({ ch.m_parentCateg, ch.m_snowflake, ch.m_channelType, GetChannelString(ch), categIndex, ch.m_pos, ch.m_lastSentMsg });
 }
 
 void ChannelViewOld::RemoveCategoryIfNeeded(const Channel& ch)
@@ -185,6 +185,15 @@ void ChannelViewOld::CommitChannels()
 	}
 
 	std::sort(m_items.begin(), m_items.end());
+
+	for (size_t i = 0; i < m_items.size(); )
+	{
+		// remove any empty categories.
+		if (m_items[i].IsCategory() && (i + 1 >= m_items.size() || m_items[i + 1].IsCategory()))
+			m_items.erase(m_items.begin() + i);
+		else
+			i++;
+	}
 
 	for (auto& item : m_items)
 	{

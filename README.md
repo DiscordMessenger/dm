@@ -26,8 +26,10 @@ A Discord server about this client can be joined here: https://discord.gg/cEDjgD
 
 ## Screenshots
 
-![Windows 2000 screenshot](doc/ss_2000.png)
+![Windows 11 screenshot](doc/ss_11.png)
 ![Windows XP screenshot](doc/ss_xp.png)
+![Windows 95 screenshot](doc/ss_95.png)
+![Windows NT 3.1 screenshot](doc/ss_nt31.png)
 
 ## Minimum System Requirements
 
@@ -48,7 +50,7 @@ the correct locations), check out the submodules with the command:
 
 Then you can start the build process.
 
-You can build this project in two ways.
+You can build this project in three ways.
 
 ### 1. Visual Studio
 
@@ -190,42 +192,37 @@ If you want to build the 64-bit build, change Win32 to x64 in the configuration 
 
 ## Compiling OpenSSL for older Windows versions
 
-You will need to use the later MinGW forks (not the original one as this project wants).
-Start by opening `mingw32` (from `mingw-w64`), then cloning the OpenSSL repo. (found at
-the following link: https://github.com/DiscordMessenger/openssl.git )
+You will need to use the `mingw-w64` (not the original one as this project wanted once upon a time).
+Start by cloning the OpenSSL repo found at the following link: https://github.com/DiscordMessenger/openssl.git.
 
 Then, run the `./buildit` command.
 
-To use the final libraries and DLLs when compiling Discord Messenger, use `[OpenSSL repo root]/include`
-as your `OPENSSL_INC_DIR`, and `[OpenSSL repo root]` as your OPENSSL_LIB_DIR.
+To use the final libraries and DLLs when compiling Discord Messenger, use `[OpenSSL repo root]` as your `OPENSSL_DIR`.
 
-[TODO: Figure out how to avoid this]
-
-[TODO: Maybe remove all scanf uses?]
-
-NOTE: On Windows 2000 and earlier, OpenSSL can't link because it uses `_strtoi64` and
-`_strtoui64`. Replace these imports with functions likely to return 0 such as `iswxdigit`
-and `isleadbyte` respectively, using a hex editor.
-
-## Running on Windows NT 3.1
+## Running on Windows NT 3.x and Windows 9x
 
 **NOTE: You do not need to follow these steps if you don't intend on running
-Discord Messenger on Windows NT 3.1.**
+Discord Messenger on these versions of Windows.**
 
-Windows NT 3.1 doesn't define certain functions in Kernel32 that MinGW libraries expect
-to be there.  It also doesn't come with a copy of `MSVCRT.DLL`.  As such, you must acquire
-a copy of `MSVCRT.DLL` (for example, from Windows 95), then patch all of the binaries
-(including `msvcrt.dll` but except `DiscordMessenger.exe`), to replace all of the
-**uppercase** `KERNEL32.DLL` text to `DIMEKE32.DLL`.  Then, download and compile the
-https://github.com/DiscordMessenger/kernel32shim.git repo with MinGW (the one you used
-to compile DM) by running `make`.  It should produce a `dimeke32.dll` executable which
-you then can place in your installation.
+You will need to use the mingw-w64 Pentium toolchain described in the [Pentium Toolchain Build Guide](doc/pentium-toolchain/README.md)),
+which additionally provides patches for compatibility with Windows NT 3.x / 9x.
 
-One more thing, you must byte patch DiscordMessenger.exe to report a minimum subsystem
-version of 3.10 (as opposed to 4.0).  The version is located at offset 0xC8 or 200
-(**check if the bytes match `04 00 00 00`**).  Overwrite it with the following byte
-string: `03 00 0A 00`. Then, save.  You must also do this on libgcc_s_dw2-1.dll,
-libstdc++-6.dll, and msvcrt.dll.
+One more thing, you must byte patch DiscordMessenger.exe to report a minimum subsystem version of
+3.10 (as opposed to 4.0).  The subsystem version is typically located at offset 0xC8 or 200
+(**make sure to check if the bytes match `04 00 00 00`**).  Overwrite it with the following byte
+string: `03 00 0A 00`. Then, save.
+
+## Short File Names
+
+If you are planning to run Discord Messenger from a FAT partition on a Windows OS that does not support
+LFNs (Windows NT 3.1, 3.5, and Windows 95 betas), then you will need to edit the final executable and its
+DLLs to use SFN versions thereof.
+
+- `libcrypto-3.dll` -> `libcrypt.dll`
+- `libssl-3.dll` -> `libssl.dll`
+
+You can use a hex editor for this purpose or you can use CFF Explorer.  These changes must be applied to
+`DiscordMessenger.exe` *and* `libssl-3.dll`. Also, make sure to rename the libcrypto and libssl DLLs.
 
 ## Attributions
 

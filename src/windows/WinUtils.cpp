@@ -21,7 +21,7 @@
 
 #ifndef OLD_WINDOWS
 #include <shlwapi.h>
-#include "../discord/Util.hpp"
+#include "utils/Util.hpp"
 #endif
 
 #include "../discord/HTTPClient.hpp"
@@ -228,7 +228,11 @@ void CopyStringToClipboard(const std::string& str)
 		GlobalUnlock(clipbuffer);
 
 		// set the clipboard data
+#if UNICODE
 		SetClipboardData(CF_UNICODETEXT, clipbuffer);
+#else
+		SetClipboardData(CF_TEXT, clipbuffer);
+#endif
 
 		// release everything we have
 		CloseClipboard();
@@ -750,7 +754,7 @@ COLORREF LerpColor(COLORREF a, COLORREF b, int progMul, int progDiv)
 	return RGB(r1, g1, b1);
 }
 
-#include "../discord/DiscordInstance.hpp"
+#include "DiscordInstance.hpp"
 
 COLORREF GetNameColor(Profile* pf, Snowflake guild)
 {
@@ -786,17 +790,32 @@ void LaunchURL(const std::string& link)
 		return; // was fine
 	}
 
+	LPCTSTR errorCode = NULL;
 	TCHAR buff[4096];
 	switch (res)
 	{
 		case 0:
-			WAsnprintf(buff, _countof(buff), TmGetTString(IDS_CANT_LAUNCH_URL_MEM), tstr);
+		case SE_ERR_OOM:
+			errorCode = TEXT("Out of memory");
 			break;
 
-		default:
-			WAsnprintf(buff, _countof(buff), TmGetTString(IDS_CANT_LAUNCH_URL_ERR), tstr, res, res);
+		case SE_ERR_FNF:
+			errorCode = TEXT("File not found");
+			break;
+
+		case SE_ERR_PNF:
+			errorCode = TEXT("Path not found");
+			break;
+
+		case SE_ERR_ACCESSDENIED:
+			errorCode = TEXT("Access denied");
 			break;
 	}
+
+	if (errorCode)
+		WAsnprintf(buff, _countof(buff), TmGetTString(IDS_CANT_LAUNCH_URL_UNS), tstr, errorCode);
+	else
+		WAsnprintf(buff, _countof(buff), TmGetTString(IDS_CANT_LAUNCH_URL_ERR), tstr, res, res);
 
 	free(tstr);
 	MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
@@ -1642,4 +1661,22 @@ time_t MakeGMTime(const tm* ptime)
 		return 0;
 
 	return FileTimeToTimeT(&ft);
+}
+
+// N.B. WINVER<=0x0500 doesn't define it. We'll force it
+#ifndef IDC_HAND
+#define IDC_HAND            MAKEINTRESOURCE(32649)
+#endif//IDC_HAND
+
+HCURSOR GetHandCursor()
+{
+	static HCURSOR loaded = NULL;
+	if (loaded)
+		return loaded;
+
+	loaded = LoadCursor(NULL, IDC_HAND);
+	if (!loaded)
+		loaded = LoadCursor(g_hInstance, MAKEINTRESOURCE(IDC_CLICKER));
+
+	return loaded;
 }

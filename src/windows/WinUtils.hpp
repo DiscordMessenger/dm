@@ -7,8 +7,8 @@
 #include <string>
 #include <tchar.h>
 
-#include "../discord/ActiveStatus.hpp"
-#include "../discord/Frontend.hpp"
+#include "models/ActiveStatus.hpp"
+#include "Frontend.hpp"
 
 // Cut Down Flags
 #define DMCDF_USER32   0x0001
@@ -125,6 +125,7 @@ int GetGradientActiveCaptionColor();
 int GetGradientInactiveCaptionColor();
 void PrepareCutDownFlags(LPSTR cmdLine);
 int GetCutDownFlags();
+HCURSOR GetHandCursor();
 
 #define NT31SimplifiedInterface() (!SupportsDialogEx())
 
@@ -153,7 +154,7 @@ bool IsIconMostlyBlack(HICON hic);
 #define IsTextColorLight() (!IsTextColorDark())
 
 // Profile utils
-#include "../discord/Profile.hpp"
+#include "models/Profile.hpp"
 COLORREF GetNameColor(Profile* pf, Snowflake guild);
 
 // URL utils

@@ -26,9 +26,9 @@
 #include "InstanceMutex.hpp"
 #include "CrashDebugger.hpp"
 #include "HTTPClient_curl.h"
-#include "../discord/LocalSettings.hpp"
-#include "../discord/WebsocketClient.hpp"
-#include "../discord/UpdateChecker.hpp"
+#include "config/LocalSettings.hpp"
+#include "network/WebsocketClient.hpp"
+#include "utils/UpdateChecker.hpp"
 
 #include <system_error>
 #include <shellapi.h>
@@ -737,6 +737,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			Snowflake sf = *(Snowflake*) lParam;
 			g_pMessageList->OnUpdateEmoji(sf);
+			g_pGuildHeader->OnUpdateEmoji(sf);
 			PinList::OnUpdateEmoji(sf);
 			break;
 		}
@@ -828,6 +829,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_UPDATESELECTEDCHANNEL:
 		{
 			g_pMessageEditor->StopReply();
+			g_pMessageEditor->StopEdit();
+			g_pMessageEditor->StopBrowsingPast();
 			g_pMessageEditor->Layout();
 
 			Snowflake guildID = GetDiscordInstance()->GetCurrentGuildID();
@@ -1240,7 +1243,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_CLOSE:
 			CloseCleanup(hWnd);
 
-			if (GetLocalSettings()->GetMinimizeToNotif())
+			if (GetLocalSettings()->GetMinimizeToNotif() && LOBYTE(GetVersion()) >= 4)
 			{
 				GetFrontend()->HideWindow();
 				return 1;
@@ -1281,6 +1284,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_COMMAND:
 			return HandleCommand(hWnd, uMsg, wParam, lParam);
+
+		case WM_KILLFOCUS:
+			GetLocalSettings()->Save();
+			break;
 
 		case WM_DESTROY:
 		{
@@ -1653,6 +1660,7 @@ HFONT* g_FntMdStyleArray[FONT_TYPE_COUNT] = {
 	&g_FntMdHdrI, // 10
 	&g_FntMdHdr2, // 11
 	&g_FntMdHdrI2,// 12
+	&g_ReplyTextFont, // 13
 };
 
 void InitializeFonts()
@@ -1678,6 +1686,12 @@ void InitializeFonts()
 	if (haveFont) {
 		int h1 = -MulDiv(lf.lfHeight, 8, 3);
 		int h2 = MulDiv(h1, 4, 5);
+
+		if (LOBYTE(GetVersion()) <= 0x4)
+		{
+			h1 = MulDiv(lf.lfHeight, 6, 4);
+			h2 = MulDiv(lf.lfHeight, 5, 4);
+		}
 
 		// BOLD
 		lf.lfWeight = 700;
@@ -1807,7 +1821,6 @@ InstanceMutex g_instanceMutex;
 
 static bool ForceSingleInstance(LPCTSTR pClassName)
 {
-	return true;
 	HRESULT hResult = g_instanceMutex.Init();
 
 	if (hResult != ERROR_ALREADY_EXISTS)
