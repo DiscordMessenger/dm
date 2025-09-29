@@ -194,7 +194,7 @@ all: $(TARGET)
 
 clean:
 	@echo ">> Cleaning build directory"
-	@rm -rf $(BUILD_DIR)/*
+	@$(FIND) $(BUILD_DIR) -mindepth 1 -exec rm -rf {} +
 
 # Include dependency files
 -include $(DEP)
