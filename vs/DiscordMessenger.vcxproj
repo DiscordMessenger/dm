@@ -55,7 +55,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{3249eac3-35d9-4646-ace2-e2bd3b7f4812}</ProjectGuid>
     <RootNamespace>DiscordMessenger</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>DiscordMessenger</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
