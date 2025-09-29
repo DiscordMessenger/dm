@@ -3,7 +3,7 @@
 #include "LocalSettings.hpp"
 #include "../utils/Util.hpp"
 #include "../network/DiscordAPI.hpp"
-#include "../Frontend.hpp" 
+#include "../Frontend.hpp"
 using nlohmann::json;
 
 static LocalSettings* g_pInstance;
