@@ -3,15 +3,15 @@
 # -----------------------------
 # User-configurable variables
 # -----------------------------
-DEBUG ?= yes                 # yes = build debug with symbols, no = release
-UNICODE ?= yes               # yes = build Unicode, no = ANSI
+DEBUG               ?= yes   # yes = build debug with symbols, no = release
+UNICODE             ?= yes   # yes = build Unicode, no = ANSI
 IS_MINGW_ON_WINDOWS ?= no    # yes if compiling on native Windows with MinGW
 
 
 # Optional environment overrides
 USER_INC_DIRS ?=
 USER_DEFINES  ?=
-COMMIT_HASH ?= undefined
+COMMIT_HASH   ?= undefined
 
 # Windows version macros
 WINVER  ?= 0x0501
@@ -73,10 +73,10 @@ ifdef SYSROOT
 endif
 
 INC_DIRS = \
-	$(USER_INC_DIRS) \
-	-I$(OPENSSL_INC_DIR) \
-	-Ideps \
-	-Ideps/asio \
+	$(USER_INC_DIRS)             \
+	-I$(OPENSSL_INC_DIR)         \
+	-Ideps                       \
+	-Ideps/asio                  \
 	-Ideps/iprogsthreads/include \
 	-Ideps/mwas/include
 
@@ -139,21 +139,21 @@ SSYSVER = $(MJSSV) 4 $(MNSSV) 0 $(MJOSV) 1 $(MNOSV) 0
 # Compiler and linker flags
 # -----------------------------
 CXXFLAGS = \
-	$(INC_DIRS) \
-	$(DEFINES) \
-	-MMD \
-	-std=c++11 \
-	-mno-mmx \
-	-mno-sse \
-	-mno-sse2 \
-	-march=i586 \
+	$(INC_DIRS)    \
+	$(DEFINES)     \
+	-MMD           \
+	-std=c++11     \
+	-mno-mmx       \
+	-mno-sse       \
+	-mno-sse2      \
+	-march=i586    \
 	$(UNICODE_DEF) \
 	$(DEBUG_DEF)
 
 LDFLAGS = \
-	$(LIB_DIRS) \
-	$(SSYSVER) \
-	-mwindows \
+	$(LIB_DIRS)    \
+	$(SSYSVER)     \
+	-mwindows      \
 	-lmswsock -lwsock32 -lcomctl32 -lgdi32 -luser32 -lole32 -lcrypt32 \
 	-lcrypto -lssl \
 	$(EXTRA_FLAGS)
