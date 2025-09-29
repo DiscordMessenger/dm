@@ -1,5 +1,5 @@
 #include "SettingsManager.hpp"
-#include "../../core/Frontend.hpp" 
+#include "../Frontend.hpp" 
 #include "../DiscordInstance.hpp"
 
 static SettingsManager g_SMSingleton;

@@ -1,7 +1,7 @@
 #include "../network/DiscordAPI.hpp"
 #include "ProfileCache.hpp"
 #include "../utils/Util.hpp"
-#include "../../core/Frontend.hpp"
+#include "../Frontend.hpp"
 #include "../network/DiscordRequest.hpp"
 #include "../DiscordInstance.hpp"
 

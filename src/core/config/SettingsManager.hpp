@@ -5,7 +5,7 @@
 #include "../models/Snowflake.hpp"
 #include "../models/ActiveStatus.hpp"
 
-// thanks https://github.com/discord-net/Discord.Net/blob/dev/src/Discord.Net.Core/Entities/Activities/ActivityType.cs
+// thanks https://github.com/discord-net/Discord.Net/blob/dev/src/Discord.Net.Entities/Activities/ActivityType.cs
 enum eActivityType
 {
 	ACTIVITY_PLAYING,

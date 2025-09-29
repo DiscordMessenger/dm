@@ -4,11 +4,11 @@
 #include <cstdarg>
 #include <nlohmann/json.h>
 #include <protobuf/Protobuf.hpp>
-#include "../core/models/Snowflake.hpp"
-#include "../core/models/ScrollDir.hpp"
-#include "../core/models/Message.hpp"
-#include "../core/network/HTTPClient.hpp"
-#include "../core/utils/Util.hpp"
+#include "models/Snowflake.hpp"
+#include "models/ScrollDir.hpp"
+#include "models/Message.hpp"
+#include "network/HTTPClient.hpp"
+#include "utils/Util.hpp"
 
 // Cross platform interface between the DiscordInstance and the actual front-end.
 class Frontend

@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-#include "../core/state/NotificationManager.hpp"
+#include "state/NotificationManager.hpp"
 
 class ShellNotification
 {

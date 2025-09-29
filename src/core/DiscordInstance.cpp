@@ -5,7 +5,7 @@
 #include "network/WebsocketClient.hpp"
 #include "config/SettingsManager.hpp"
 #include "utils/Util.hpp"
-#include "../core/Frontend.hpp"
+#include "Frontend.hpp"
 #include "network/HTTPClient.hpp"
 #include "config/DiscordClientConfig.hpp"
 

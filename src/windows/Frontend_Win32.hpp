@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../core/Frontend.hpp"
+#include "Frontend.hpp"
 
 class Frontend_Win32 : public Frontend
 {

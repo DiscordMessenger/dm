@@ -32,7 +32,7 @@
 
 #define STBI_SUP
 
-#include "../resource.h"
+#include "resource.h"
 
 #include "MissingDefinitions.hpp"
 #include "WindowMessages.hpp"
@@ -43,11 +43,11 @@
 #include "NetworkerThread.hpp"
 #include "TextInterface_Win32.hpp"
 
-#include "../core/network/DiscordAPI.hpp"
-#include "../core/config/SettingsManager.hpp"
-#include "../core/utils/Util.hpp"
-#include "../core/state/ProfileCache.hpp"
-#include "../core/DiscordInstance.hpp"
+#include "network/DiscordAPI.hpp"
+#include "config/SettingsManager.hpp"
+#include "utils/Util.hpp"
+#include "state/ProfileCache.hpp"
+#include "DiscordInstance.hpp"
 
 #define MAX_MESSAGE_SIZE 2000 // 4000 with nitro
 

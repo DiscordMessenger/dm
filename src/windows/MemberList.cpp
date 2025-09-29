@@ -1,7 +1,7 @@
 #include "MemberList.hpp"
 #include "ProfilePopout.hpp"
-#include "../core/state/ProfileCache.hpp"
-#include "../core/config/LocalSettings.hpp"
+#include "state/ProfileCache.hpp"
+#include "config/LocalSettings.hpp"
 WNDCLASS MemberList::g_MemberListClass;
 
 #define GRPID_ONLINE  (1)

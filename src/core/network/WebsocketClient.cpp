@@ -1,6 +1,6 @@
 #include "WebsocketClient.hpp"
 #include "../config/DiscordClientConfig.hpp"
-#include "../../core/Frontend.hpp"
+#include "../Frontend.hpp"
 #include "../utils/Util.hpp"
 #include "../config/SettingsManager.hpp"
 #include "../config/LocalSettings.hpp"

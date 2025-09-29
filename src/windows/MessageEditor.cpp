@@ -3,9 +3,9 @@
 #include "MessageEditor.hpp"
 #include "MessageList.hpp"
 #include "UploadDialog.hpp"
-#include "../core/state/ProfileCache.hpp"
-#include "../core/state/MessageCache.hpp"
-#include "../core/config/LocalSettings.hpp"
+#include "state/ProfileCache.hpp"
+#include "state/MessageCache.hpp"
+#include "config/LocalSettings.hpp"
 
 #define T_MESSAGE_EDITOR_CLASS TEXT("DMMessageEditorClass")
 #define T_MESSAGE_EDITOR_AUTOCOMPLETE_CLASS TEXT("DMMessageEditorAutoCompleteClass")

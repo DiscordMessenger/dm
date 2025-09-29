@@ -7,7 +7,7 @@
 #include <ctime>
 #include "Util.hpp"
 
-#include "../../core/Frontend.hpp"
+#include "../Frontend.hpp"
 
 std::string g_BasePath = "";
 std::string g_ProgramNamePath = "";

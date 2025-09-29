@@ -1,5 +1,5 @@
 #include "UpdateChecker.hpp"
-#include "../../core/Frontend.hpp"
+#include "../Frontend.hpp"
 #include "Util.hpp"
 #include <nlohmann/json.h>
 

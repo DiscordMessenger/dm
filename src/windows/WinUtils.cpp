@@ -22,7 +22,7 @@
 
 #ifndef OLD_WINDOWS
 #include <shlwapi.h>
-#include "../core/utils/Util.hpp"
+#include "utils/Util.hpp"
 #endif
 
 constexpr int DEFAULT_DPI  = 96;
@@ -753,7 +753,7 @@ COLORREF LerpColor(COLORREF a, COLORREF b, int progMul, int progDiv)
 	return RGB(r1, g1, b1);
 }
 
-#include "../core/DiscordInstance.hpp"
+#include "DiscordInstance.hpp"
 
 COLORREF GetNameColor(Profile* pf, Snowflake guild)
 {

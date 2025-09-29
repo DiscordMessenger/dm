@@ -5,7 +5,7 @@
 #include <windows.h>
 #include <commctrl.h>
 
-#include "../core/models/Snowflake.hpp"
+#include "models/Snowflake.hpp"
 
 #define IDT_EXPIRY    (1)
 #define IDT_ANIMATION (2)

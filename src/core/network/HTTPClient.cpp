@@ -1,5 +1,5 @@
 #include "HTTPClient.hpp"
-#include "../../core/Frontend.hpp"
+#include "../Frontend.hpp"
 
 NetRequest::NetRequest(
 	int _result,
