@@ -2,8 +2,8 @@
 
 #include <map>
 #include "Main.hpp"
-#include "../discord/Channel.hpp"
-#include "../discord/FormattedText.hpp"
+#include "models/Channel.hpp"
+#include "text/FormattedText.hpp"
 
 #define T_GUILD_HEADER_CLASS TEXT("GuildHeader")
 

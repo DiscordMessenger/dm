@@ -1,7 +1,7 @@
 #include "Config.hpp"
 #include "OptionsDialog.hpp"
 #include "ShellNotification.hpp"
-#include "../discord/LocalSettings.hpp"
+#include "config/LocalSettings.hpp"
 
 #ifdef NEW_WINDOWS
 #include <uxtheme.h>

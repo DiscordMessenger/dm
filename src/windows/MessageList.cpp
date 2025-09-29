@@ -7,7 +7,7 @@
 #include "ImageViewer.hpp"
 #include "UploadDialog.hpp"
 #include "ImageLoader.hpp"
-#include "../discord/LocalSettings.hpp"
+#include "config/LocalSettings.hpp"
 
 #define STRAVAILABLE(str) ((str) && (str)[0] != 0)
 

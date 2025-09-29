@@ -27,9 +27,9 @@
 #include "ShellNotification.hpp"
 #include "InstanceMutex.hpp"
 #include "CrashDebugger.hpp"
-#include "../discord/LocalSettings.hpp"
-#include "../discord/WebsocketClient.hpp"
-#include "../discord/UpdateChecker.hpp"
+#include "config/LocalSettings.hpp"
+#include "network/WebsocketClient.hpp"
+#include "utils/UpdateChecker.hpp"
 
 #include <system_error>
 #include <shellapi.h>

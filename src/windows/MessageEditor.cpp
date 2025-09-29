@@ -3,9 +3,9 @@
 #include "MessageEditor.hpp"
 #include "MessageList.hpp"
 #include "UploadDialog.hpp"
-#include "../discord/ProfileCache.hpp"
-#include "../discord/MessageCache.hpp"
-#include "../discord/LocalSettings.hpp"
+#include "state/ProfileCache.hpp"
+#include "state/MessageCache.hpp"
+#include "config/LocalSettings.hpp"
 
 #define T_MESSAGE_EDITOR_CLASS TEXT("DMMessageEditorClass")
 #define T_MESSAGE_EDITOR_AUTOCOMPLETE_CLASS TEXT("DMMessageEditorAutoCompleteClass")

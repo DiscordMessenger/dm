@@ -2,7 +2,7 @@
 #include <set>
 #include <map>
 #include "Main.hpp"
-#include "../discord/FormattedText.hpp"
+#include "text/FormattedText.hpp"
 
 #define T_MESSAGE_LIST_PARENT_CLASS TEXT("MessageListParent")
 #define T_MESSAGE_LIST_CLASS TEXT("MessageList")

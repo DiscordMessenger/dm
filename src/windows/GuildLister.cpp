@@ -1,5 +1,5 @@
 #include "GuildLister.hpp"
-#include "../discord/LocalSettings.hpp"
+#include "config/LocalSettings.hpp"
 
 #define C_GUILD_ICON_WIDTH (PROFILE_PICTURE_SIZE + 4)
 #define C_GUILD_GAP_HEIGHT 5

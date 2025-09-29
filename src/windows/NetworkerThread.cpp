@@ -1,10 +1,10 @@
 #include "NetworkerThread.hpp"
 #include "WinUtils.hpp"
 #include "WindowMessages.hpp"
-#include "../discord/DiscordRequest.hpp"
-#include "../discord/LocalSettings.hpp"
-#include "../discord/Frontend.hpp"
-#include "../discord/DiscordClientConfig.hpp"
+#include "network/DiscordRequest.hpp"
+#include "config/LocalSettings.hpp"
+#include "Frontend.hpp"
+#include "config/DiscordClientConfig.hpp"
 
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 

@@ -1,26 +1,39 @@
 # User settings
 
-# Print debugging information and keep debugging symbols
-DEBUG ?= yes
+# -----------------------------
+# User-configurable variables
+# -----------------------------
+DEBUG               ?= yes   # yes = build debug with symbols, no = release
+UNICODE             ?= yes   # yes = build Unicode, no = ANSI
+IS_MINGW_ON_WINDOWS ?= no    # yes if compiling on native Windows with MinGW
 
-# Compile the Unicode version or the ANSI version
-UNICODE ?= yes
 
-# Define IS_MINGW_ON_WINDOWS=yes if you're compiling on Windows
-IS_MINGW_ON_WINDOWS ?= no
+# Optional environment overrides
+USER_INC_DIRS ?=
+USER_DEFINES  ?=
+COMMIT_HASH   ?= undefined
 
-# NOTE: These defaults only apply on iProgramInCpp's system!
-# You must specify something else on your end by either `export`-ing these
-# environment variables, or by specifying them in the `make` command line.
+# Windows version macros
+WINVER  ?= 0x0501
+WIN32IE ?= 0x0500
+
+# Build directories
+BUILD_DIR = build
+BIN_DIR   = bin
+SRC_DIR   = src
+
+# Target executable
+TARGET = $(BIN_DIR)/DiscordMessenger.exe
+
+# -----------------------------
+# Toolchain configuration
+# -----------------------------
 ifeq ($(IS_MINGW_ON_WINDOWS),yes)
 	MSYS_PATH    ?= C:/MinGW/msys/1.0
 
-	# OpenSSL install directory
-	OPENSSL_DIR ?= C:/DiscordMessenger/openssl
-	# Libwebp install directory
-	LIBWEBP_DIR ?= C:/DiscordMessenger/libwebp/build
+	OPENSSL_DIR  ?= C:/DiscordMessenger/openssl
+	LIBWEBP_DIR  ?= C:/DiscordMessenger/libwebp/build
 	
-	# Toolchain
 	DMCC    ?= gcc
 	DMCXX   ?= g++
 	DMWR    ?= windres
@@ -28,21 +41,18 @@ ifeq ($(IS_MINGW_ON_WINDOWS),yes)
 	MKDIR   ?= $(MSYS_PATH)/bin/mkdir.exe
 	FIND    ?= $(MSYS_PATH)/bin/find.exe
 else
-	# OpenSSL install directory
-	OPENSSL_DIR ?= /mnt/c/DiscordMessenger/openssl
-	# Libwebp install directory
-	LIBWEBP_DIR ?= /mnt/c/DiscordMessenger/libwebp/build
-	
-	# Toolchain
+	OPENSSL_DIR  ?= /mnt/c/DiscordMessenger/openssl
+	LIBWEBP_DIR  ?= /mnt/c/DiscordMessenger/libwebp/build
+
 	DMPREFIX ?= i686-w64-mingw32
-	DMCC    ?= $(DMPREFIX)-gcc
-	DMCXX   ?= $(DMPREFIX)-g++
-	DMWR    ?= $(DMPREFIX)-windres
-	DMSTRIP ?= $(DMPREFIX)-strip
-	MKDIR   ?= mkdir
-	FIND    ?= find
-	
-	# Extra flags if you need them
+	DMCC     ?= $(DMPREFIX)-gcc
+	DMCXX    ?= $(DMPREFIX)-g++
+	DMWR     ?= $(DMPREFIX)-windres
+	DMSTRIP  ?= $(DMPREFIX)-strip
+	MKDIR    ?= mkdir
+	FIND     ?= find
+
+	# Extra flags for static linking
 	EXTRA_FLAGS=-static-libgcc -static-libstdc++ -Wl,--no-whole-archive
 endif
 
@@ -51,30 +61,11 @@ $(info Discord Messenger makefile)
 $(info Debug: $(DEBUG))
 $(info Unicode: $(UNICODE))
 
-USER_INC_DIRS ?=
-USER_DEFINES  ?=
-
-# WINVER definitions
-WINVER  ?= 0x0501
-WIN32IE ?= 0x0500
-
-# == Don't change below unless you know what you are doing! ==
-BUILD_DIR = build
-BIN_DIR = bin
-SRC_DIR = src
-
+# -----------------------------
+# Include and library paths
+# -----------------------------
 OPENSSL_INC_DIR = $(OPENSSL_DIR)/include
 OPENSSL_LIB_DIR = $(OPENSSL_DIR)
-
-# Target executable
-TARGET = $(BIN_DIR)/DiscordMessenger.exe
-
-# Location of certain utilities.  Because Win32 takes over if you don't
-ifeq ($(USE_MINGW_FIND),yes)
-else
-	MKDIR ?= mkdir
-	FIND  ?= find
-endif
 
 SYSROOTD=
 ifdef SYSROOT
@@ -82,8 +73,10 @@ ifdef SYSROOT
 endif
 
 INC_DIRS = \
-	$(USER_INC_DIRS) \
+	$(USER_INC_DIRS)             \
 	-I$(OPENSSL_INC_DIR)         \
+	-I$(SRC_DIR)                 \
+	-I$(SRC_DIR)/core            \
 	-Ideps                       \
 	-Ideps/asio                  \
 	-Ideps/iprogsthreads/include \
@@ -110,26 +103,30 @@ DEFINES = \
 	-DASIO_DISABLE_WINDOWS_OBJECT_HANDLE \
 	$(USER_DEFINES)
 
-COMMIT_HASH ?= undefined
+# Optional git commit hash define
 ifneq ($(COMMIT_HASH),undefined)
 	DEFINES += -DGIT_COMMIT_HASH=$(COMMIT_HASH)
 endif
 
-#note: USE_IPROGS_REIMPL is defined so that iprogsthreads will use the mwas
-#version of certain APIs such as TryEnterCriticalSection
-
-ifeq ($(UNICODE), no)
-	UNICODE_DEF =
-else
+# Unicode defines
+# note: USE_IPROGS_REIMPL is defined so that iprogsthreads will use the mwas
+# version of certain APIs such as TryEnterCriticalSection
+ifeq ($(UNICODE), yes)
 	UNICODE_DEF = -DUNICODE -D_UNICODE
+else
+	UNICODE_DEF =
 endif
 
+# Debug/release flags
 ifeq ($(DEBUG), yes)
 	DEBUG_DEF = -D_DEBUG -g -O0 -fno-omit-frame-pointer
 else
 	DEBUG_DEF = -DNDEBUG -O2 -fno-omit-frame-pointer
 endif
 
+# -----------------------------
+# Linker subsystem version
+# -----------------------------
 XL = -Xlinker
 MJSSV = $(XL) --major-subsystem-version $(XL)
 MNSSV = $(XL) --minor-subsystem-version $(XL)
@@ -140,6 +137,9 @@ MNOSV = $(XL) --minor-os-version $(XL)
 # (replace with 3.10 if you intend to run on NT 3.1)
 SSYSVER = $(MJSSV) 4 $(MNSSV) 0 $(MJOSV) 1 $(MNOSV) 0
 
+# -----------------------------
+# Compiler and linker flags
+# -----------------------------
 CXXFLAGS = \
 	$(INC_DIRS)    \
 	$(DEFINES)     \
@@ -153,76 +153,86 @@ CXXFLAGS = \
 	$(DEBUG_DEF)
 
 LDFLAGS = \
-	$(LIB_DIRS) \
-	$(SSYSVER)  \
-	-mwindows   \
-	-lmswsock   \
-	-lwsock32   \
-	-lcomctl32  \
-	-lgdi32     \
-	-luser32    \
-	-lole32     \
-	-lcrypt32   \
-	-lcrypto    \
-	-lssl       \
+	$(LIB_DIRS)    \
+	$(SSYSVER)     \
+	-mwindows      \
+	-lmswsock -lwsock32 -lcomctl32 -lgdi32 -luser32 -lole32 -lcrypt32 \
+	-lcrypto -lssl \
 	$(EXTRA_FLAGS)
 
+# Optional WebP support
 ifeq ($(DISABLE_WEBP),1)
 else
 	LIB_DIRS += -L$(LIBWEBP_DIR)
 	LDFLAGS  += -lwebp
 endif
 
-WRFLAGS = \
-	-Ihacks
+# Resource compiler flags
+WRFLAGS = -Ihacks
 
+# -----------------------------
+# Source files
+# -----------------------------
+# Auxiliary dependencies
 AUX_CXXFILES = \
 	$(shell $(FIND) deps/iprogsthreads/src -not -path '*/.*' -type f -name '*.cpp') \
 	$(shell $(FIND) deps/asio/src          -not -path '*/.*' -type f -name '*.cpp') \
 	$(shell $(FIND) deps/mwas/src          -not -path '*/.*' -type f -name '*.cpp') \
 	$(shell $(FIND) deps/md5               -not -path '*/.*' -type f -name '*.cpp')
 
-# Use find to glob all *.cpp files in the directory and extract the object names.
-override CXXFILES := $(shell $(FIND) $(SRC_DIR) -not -path '*/.*' -type f -name '*.cpp') $(AUX_CXXFILES)
-override RESFILES := $(shell $(FIND) $(SRC_DIR) -not -path '*/.*' -type f -name '*.rc')
-override OBJ := $(patsubst %, $(BUILD_DIR)/%, $(CXXFILES:.cpp=.o) $(RESFILES:.rc=.o))
-override DEP := $(patsubst %, $(BUILD_DIR)/%, $(CXXFILES:.cpp=.d))
+# All source files
+CXXFILES := $(shell $(FIND) $(SRC_DIR) -not -path '*/.*' -type f -name '*.cpp') $(AUX_CXXFILES)
+RESFILES := $(shell $(FIND) $(SRC_DIR) -not -path '*/.*' -type f -name '*.rc')
 
-.PHONY: all
-all: all2
-all2: $(TARGET)
+# Objects and dependency files
+OBJ := $(patsubst %, $(BUILD_DIR)/%, $(CXXFILES:.cpp=.o) $(RESFILES:.rc=.o))
+DEP := $(patsubst %, $(BUILD_DIR)/%, $(CXXFILES:.cpp=.d))
+
+# -----------------------------
+# Default targets
+# -----------------------------
+.PHONY: all clean
+all: $(TARGET)
 
 clean:
-	rm -rf $(BUILD_DIR)/*
+	@echo ">> Cleaning build directory"
+	@rm -rf $(BUILD_DIR)
 
+# Include dependency files
 -include $(DEP)
 
-ifeq ($(DEBUG),no)
+# -----------------------------
+# Directory creation rule
+# -----------------------------
+# Creates any directory needed for a target
+$(BUILD_DIR)/%/:
+	@mkdir -p $@
 
+# -----------------------------
+# Compilation patterns
+# -----------------------------
+# Compute object directory for a given source file
+OBJ_DIR = $(BUILD_DIR)/$(dir $<)
+
+# Compile C++ files
+$(BUILD_DIR)/%.o: %.cpp | $(BUILD_DIR)/%/
+	@echo ">> Compiling $<"
+	@$(DMCXX) $(SYSROOTD) $(CXXFLAGS) -c $< -o $@ -MMD -MF $(BUILD_DIR)/$*.d
+
+# Compile resource files
+$(BUILD_DIR)/%.o: %.rc | $(BUILD_DIR)/%/
+	@echo ">> Compiling resource $<"
+	@$(DMWR) $(WRFLAGS) -i $< -o $@
+
+# -----------------------------
+# Linking
+# -----------------------------
 $(TARGET): $(OBJ)
-	@echo \>\> LINKING $@
+	@echo ">> LINKING $@"
 	@$(MKDIR) -p $(dir $@)
-	@$(DMCXX) $(SYSROOTD) $(OBJ) $(LDFLAGS) -o $@
-	@echo \>\> Duplicating binary and stripping it
+	@$(DMCXX) $(SYSROOTD) $^ $(LDFLAGS) -o $@
+ifeq ($(DEBUG),no)
+	@echo ">> Duplicating binary and stripping symbols"
 	@cp $@ $(basename $@)-Symbols.exe
 	@$(DMSTRIP) $@
-
-else
-
-$(TARGET): $(OBJ)
-	@echo \>\> LINKING $@
-	@$(MKDIR) -p $(dir $@)
-	@$(DMCXX) $(SYSROOTD) $(OBJ) $(LDFLAGS) -o $@
-
 endif
-
-# NOTE: Using --use-temp-file seems to get rid of some weirdness with MinGW 6.3.0's windres?
-$(BUILD_DIR)/%.o: %.rc
-	@echo \>\> Compiling resource $<
-	@$(MKDIR) -p $(dir $@)
-	@$(DMWR) $(WRFLAGS) -i $< -o $@ --use-temp-file
-
-$(BUILD_DIR)/%.o: %.cpp
-	@echo \>\> Compiling $<
-	@$(MKDIR) -p $(dir $@)
-	@$(DMCXX) $(SYSROOTD) $(CXXFLAGS) -c $< -o $@
