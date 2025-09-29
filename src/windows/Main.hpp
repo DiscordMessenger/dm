@@ -40,10 +40,10 @@
 #include "TextManager.hpp"
 #include "WinUtils.hpp"
 #include "AvatarCache.hpp"
-#include "NetworkerThread.hpp"
 #include "TextInterface_Win32.hpp"
 
 #include "network/DiscordAPI.hpp"
+#include "network/HTTPClient.hpp"
 #include "config/SettingsManager.hpp"
 #include "utils/Util.hpp"
 #include "state/ProfileCache.hpp"

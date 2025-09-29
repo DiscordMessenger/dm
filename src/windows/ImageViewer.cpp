@@ -1,7 +1,7 @@
 #include "ImageViewer.hpp"
 #include "ImageLoader.hpp"
 #include "Main.hpp"
-#include "NetworkerThread.hpp"
+#include "../discord/HTTPClient.hpp"
 
 #define DM_IMAGE_VIEWER_CLASS       TEXT("DMImageViewerClass")
 #define DM_IMAGE_VIEWER_CHILD_CLASS TEXT("DMImageViewerChildClass")

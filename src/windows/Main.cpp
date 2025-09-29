@@ -10,13 +10,11 @@
 #include "GuildHeader.hpp"
 #include "GuildLister.hpp"
 #include "TextToSpeech.hpp"
-#include "NetworkerThread.hpp"
 #include "ImageLoader.hpp"
 #include "ProfilePopout.hpp"
 #include "ImageViewer.hpp"
 #include "PinList.hpp"
 #include "LogonDialog.hpp"
-#include "QRCodeDialog.hpp"
 #include "LoadingMessage.hpp"
 #include "UploadDialog.hpp"
 #include "StatusBar.hpp"
@@ -27,6 +25,7 @@
 #include "ShellNotification.hpp"
 #include "InstanceMutex.hpp"
 #include "CrashDebugger.hpp"
+#include "HTTPClient_curl.h"
 #include "config/LocalSettings.hpp"
 #include "network/WebsocketClient.hpp"
 #include "utils/UpdateChecker.hpp"
@@ -541,7 +540,7 @@ LRESULT HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case ID_ACTIONS_SEARCH:
 		{
 			// TODO
-			//GetWebsocketClient()->Close(GetDiscordInstance()->GetGatewayID(), websocketpp::close::status::normal);
+			//GetWebsocketClient()->Close(GetDiscordInstance()->GetGatewayID(), CloseCode::NORMAL);
 			DbgPrintW("Search!");
 			break;
 		}
@@ -1063,10 +1062,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (GetDiscordInstance()->GetGatewayID() == pParm->m_gatewayId)
 				GetDiscordInstance()->HandleGatewayMessage(pParm->m_payload);
 
-			if (GetQRCodeDialog()->GetGatewayID() == pParm->m_gatewayId)
-				GetQRCodeDialog()->HandleGatewayMessage(pParm->m_payload);
-
-			delete pParm;
 			break;
 		}
 		case WM_REFRESHMEMBERS:
@@ -1086,20 +1081,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			ForgetSystemDPI();
 			g_ProfilePictureSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF);
 
-			try {
-				GetWebsocketClient()->Init();
-			}
-			catch (websocketpp::exception ex) {
-				Terminate("hey, websocketpp excepted: %s | %d | %s", ex.what(), ex.code(), ex.m_msg.c_str());
-			}
-			catch (std::exception ex) {
-				Terminate("hey, websocketpp excepted (generic std::exception): %s", ex.what());
-			}
-			catch (...) {
-				MessageBox(hWnd, TmGetTString(IDS_CANNOT_INIT_WS), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
-				g_bQuittingEarly = true;
-				break;
-			}
+			GetWebsocketClient()->Init();
 
 			if (GetLocalSettings()->IsFirstStart())
 			{
@@ -1537,9 +1519,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (wParam == VK_F7) {
 				SendMessage(hWnd, WM_LOGGEDOUT, 0, 0);
 			}
-			if (wParam == VK_F8) {
-				GetQRCodeDialog()->Show();
-			}
 			if (wParam == VK_F9) {
 				ProgressDialog::Show("Test!", 1234, true, g_Hwnd);
 			}
@@ -1826,7 +1805,7 @@ void InitializeFonts()
 }
 
 Frontend_Win32* g_pFrontEnd;
-NetworkerThreadManager* g_pHTTPClient;
+HTTPClient_curl* g_pHTTPClient;
 
 Frontend* GetFrontend()
 {
@@ -1865,6 +1844,7 @@ static bool ForceSingleInstance(LPCTSTR pClassName)
 
 #include "MemberListOld.hpp"
 
+
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nShowCmd)
 {
 	g_hInstance = hInstance;
@@ -1878,11 +1858,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	SetupCrashDebugging();
 #endif
 
-	ERR_load_crypto_strings();
 	LPCTSTR pClassName = TEXT("DiscordMessengerClass");
 
 	InitializeCOM(); // important because otherwise TTS/shell stuff might not work
 	InitCommonControls(); // actually a dummy but adds the needed reference to comctl32
+	
+	curl_global_init(CURL_GLOBAL_ALL);
+	HTTPClient_curl::InitializeCABlob();
+
 	// (see https://devblogs.microsoft.com/oldnewthing/20050718-16/?p=34913 )
 
 	if (!ForceSingleInstance(pClassName))
@@ -1891,7 +1874,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	CheckIfItsStartup(pCmdLine);
 
 	g_pFrontEnd = new Frontend_Win32;
-	g_pHTTPClient = new NetworkerThreadManager;
+	g_pHTTPClient = new HTTPClient_curl;
 
 	// Create a background brush.
 	g_backgroundBrush = ri::GetSysColorBrush(COLOR_3DFACE);

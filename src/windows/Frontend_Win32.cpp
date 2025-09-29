@@ -3,7 +3,6 @@
 #include "Main.hpp"
 #include "ImageLoader.hpp"
 #include "ProfilePopout.hpp"
-#include "QRCodeDialog.hpp"
 #include "PinList.hpp"
 #include "ProgressDialog.hpp"
 #include "ShellNotification.hpp"
@@ -66,19 +65,9 @@ void Frontend_Win32::OnStartTyping(Snowflake userID, Snowflake guildID, Snowflak
 	SendMessage(g_Hwnd, WM_STARTTYPING, 0, (LPARAM)&parms);
 }
 
-extern int g_latestSSLError; // HACK -- defined by the NetworkerThread.  Used to debug an issue.
-
 void Frontend_Win32::OnGenericError(const std::string& message)
 {
 	std::string newMsg = message;
-
-	// TODO HACK: remove soon
-	if (g_latestSSLError) {
-		char buff[128];
-		snprintf(buff, sizeof buff, "\n\nAdditionally, an SSL error code of 0x%x was provided.  Consider sending this to iProgramInCpp!", g_latestSSLError);
-		newMsg += std::string(buff);
-		g_latestSSLError = 0;
-	}
 
 	LPCTSTR pMsgBoxText = ConvertCppStringToTString(newMsg);
 	MessageBox(g_Hwnd, pMsgBoxText, TmGetTString(IDS_ERROR), MB_OK | MB_ICONERROR);
@@ -343,13 +332,9 @@ void Frontend_Win32::OnWebsocketClose(int gatewayID, int errorCode, const std::s
 {
 	if (GetDiscordInstance()->GetGatewayID() == gatewayID)
 		GetDiscordInstance()->GatewayClosed(errorCode);
-	else if (GetQRCodeDialog()->GetGatewayID() == gatewayID)
-		GetQRCodeDialog()->HandleGatewayClose(errorCode);
 	else
 		DbgPrintW("Unknown gateway connection %d closed: %d", gatewayID, errorCode);
 }
-
-#include <websocketpp/close.hpp>
 
 void Frontend_Win32::OnWebsocketFail(int gatewayID, int errorCode, const std::string& message, bool isTLSError, bool mayRetry)
 {

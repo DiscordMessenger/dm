@@ -93,7 +93,6 @@ void AvatarCache::LoadedResource(const std::string& resource)
 }
 
 #include "Main.hpp"
-#include "NetworkerThread.hpp"
 
 //extern HBITMAP GetDefaultBitmap(); // main.cpp
 extern HImage* GetDefaultImage(); // main.cpp
