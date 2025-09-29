@@ -468,6 +468,7 @@
     <Image Include="..\res\bitmaps\bmp_status_offline.bmp" />
     <Image Include="..\res\bitmaps\bmp_status_online.bmp" />
     <Image Include="..\res\bitmaps\bmp_voice.bmp" />
+    <Image Include="..\res\bitmaps\target.bmp" />
     <Image Include="..\res\icons\icon_add.ico" />
     <Image Include="..\res\icons\icon_balloon.ico" />
     <Image Include="..\res\icons\icon_balloon_block.ico" />
@@ -563,17 +564,15 @@
     <Image Include="..\res\icons\icon_wait.ico" />
     <Image Include="..\res\icons\icon_warning.ico" />
     <Image Include="..\res\icons\modern_app.ico" />
-    <Image Include="..\res\bitmaps\target.bmp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\res\animations\download_hc.avi" />
     <None Include="..\res\animations\download_lc.avi" />
     <None Include="..\res\animations\upload_hc.avi" />
     <None Include="..\res\animations\upload_lc.avi" />
+    <None Include="..\res\cursors\cur_clicker.cur" />
     <None Include="..\res\cursors\cur_zoomin.cur" />
     <None Include="..\res\cursors\cur_zoomout.cur" />
-    <None Include="..\src\arrow.cur" />
-    <None Include="arrow.cur" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\res\app.manifest" />
