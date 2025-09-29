@@ -220,7 +220,7 @@ $(BUILD_DIR)/%.o: %.cpp | $(BUILD_DIR)/%/
 # Compile resource files
 $(BUILD_DIR)/%.o: %.rc | $(BUILD_DIR)/%/
 	@echo ">> Compiling resource $<"
-	@$(DMWR) $(WRFLAGS) -i $< -o $@ --use-temp-file
+	@$(DMWR) $(WRFLAGS) -i $< -o $@
 
 # -----------------------------
 # Linking
