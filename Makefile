@@ -75,6 +75,8 @@ endif
 INC_DIRS = \
 	$(USER_INC_DIRS)             \
 	-I$(OPENSSL_INC_DIR)         \
+	-I$(SRC_DIR)                 \
+	-I$(SRC_DIR)/core            \
 	-Ideps                       \
 	-Ideps/asio                  \
 	-Ideps/iprogsthreads/include \
