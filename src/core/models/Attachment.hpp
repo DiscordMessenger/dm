@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
-#include "./Snowflake.hpp"
-#include "./ContentType.hpp"
+#include "Snowflake.hpp"
+#include "ContentType.hpp"
 
 class Attachment
 {

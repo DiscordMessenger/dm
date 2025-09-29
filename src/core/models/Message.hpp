@@ -5,9 +5,9 @@
 #include <ctime>
 #include <memory>
 #include <nlohmann/json.h>
-#include "./Snowflake.hpp"
-#include "./Attachment.hpp"
-#include "./MessageType.hpp"
+#include "Snowflake.hpp"
+#include "Attachment.hpp"
+#include "MessageType.hpp"
 #include "../network/MessagePoll.hpp"
 
 // XXX: Ok, I'm going to be cheap here and implement a separate class for the referenced message stuff.

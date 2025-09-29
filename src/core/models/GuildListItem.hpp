@@ -2,7 +2,7 @@
 
 #include <string>
 #include <list>
-#include "./Snowflake.hpp"
+#include "Snowflake.hpp"
 #include "../utils/Util.hpp"
 
 class AbstractGuildItem

@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include "../models/Snowflake.hpp"
-#include "./TextInterface.hpp"
+#include "TextInterface.hpp"
 
 struct Token
 {

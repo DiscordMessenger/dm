@@ -2,8 +2,8 @@
 
 #include <string>
 #include <vector>
-#include "./Snowflake.hpp"
-#include "./Permissions.hpp"
+#include "Snowflake.hpp"
+#include "Permissions.hpp"
 
 // Read state object "flags" member.  Only seems to have this.
 #define RSTATE_FLAG_HAS_LASTVIEWED (1 << 0)

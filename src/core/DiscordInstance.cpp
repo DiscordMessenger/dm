@@ -2,12 +2,12 @@
 #include <boost/base64/base64.hpp>
 
 #include "DiscordInstance.hpp"
-#include "./network/WebsocketClient.hpp"
-#include "./config/SettingsManager.hpp"
-#include "./utils/Util.hpp"
+#include "network/WebsocketClient.hpp"
+#include "config/SettingsManager.hpp"
+#include "utils/Util.hpp"
 #include "../core/Frontend.hpp"
-#include "./network/HTTPClient.hpp"
-#include "./config/DiscordClientConfig.hpp"
+#include "network/HTTPClient.hpp"
+#include "config/DiscordClientConfig.hpp"
 
 #define DISCORD_WSS_DETAILS "?encoding=json&v=" DISCORD_API_VERSION
 

@@ -4,7 +4,7 @@
 #include <vector>
 #include <cstring>
 #include <cstdint>
-#include "./DiscordRequest.hpp"
+#include "DiscordRequest.hpp"
 
 enum eHttpResponseCodes
 {

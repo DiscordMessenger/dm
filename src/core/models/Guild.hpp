@@ -5,8 +5,8 @@
 #include <map>
 #include <vector>
 #include <nlohmann/json.h>
-#include "./Snowflake.hpp"
-#include "./Channel.hpp"
+#include "Snowflake.hpp"
+#include "Channel.hpp"
 #include "../utils/Emoji.hpp"
 #include "../state/UserGuildSettings.hpp"
 
@@ -14,9 +14,9 @@
 #define GROUP_ONLINE  9000000000000000000LL
 #define GROUP_OFFLINE 9000000000000000001LL
 
-#include "./Permissions.hpp"
+#include "Permissions.hpp"
 #include "../state/ProfileCache.hpp"
-#include "./GuildMember.hpp"
+#include "GuildMember.hpp"
 
 struct GuildRole
 {

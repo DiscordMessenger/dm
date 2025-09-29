@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "./Snowflake.hpp"
+#include "Snowflake.hpp"
 
 struct GuildMember
 {

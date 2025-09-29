@@ -2,9 +2,9 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "./Snowflake.hpp"
-#include "./ActiveStatus.hpp"
-#include "./GuildMember.hpp"
+#include "Snowflake.hpp"
+#include "ActiveStatus.hpp"
+#include "GuildMember.hpp"
 
 struct Profile
 {

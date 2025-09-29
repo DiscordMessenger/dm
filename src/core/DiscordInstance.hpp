@@ -6,20 +6,20 @@
 #include <list>
 #include <set>
 #include <nlohmann/json.h>
-#include "./network/DiscordAPI.hpp"
-#include "./models/Snowflake.hpp"
-#include "./config/SettingsManager.hpp"
-#include "./models/Guild.hpp"
-#include "./network/DiscordRequest.hpp"
-#include "./state/MessageCache.hpp"
-#include "./state/ProfileCache.hpp"
-#include "./models/ScrollDir.hpp"
-#include "./models/Message.hpp"
-#include "./models/Relationship.hpp"
-#include "./state/NotificationManager.hpp"
-#include "./state/UserGuildSettings.hpp"
-#include "./models/GuildListItem.hpp"
-#include "./text/FormattedText.hpp"
+#include "network/DiscordAPI.hpp"
+#include "models/Snowflake.hpp"
+#include "config/SettingsManager.hpp"
+#include "models/Guild.hpp"
+#include "network/DiscordRequest.hpp"
+#include "state/MessageCache.hpp"
+#include "state/ProfileCache.hpp"
+#include "models/ScrollDir.hpp"
+#include "models/Message.hpp"
+#include "models/Relationship.hpp"
+#include "state/NotificationManager.hpp"
+#include "state/UserGuildSettings.hpp"
+#include "models/GuildListItem.hpp"
+#include "text/FormattedText.hpp"
 
 struct NetRequest;
 

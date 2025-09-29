@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./Snowflake.hpp"
+#include "Snowflake.hpp"
 
 // Permission flags, thanks to Discord API reference
 #define PERM_CREATE_INSTANT_INVITE 0x0000000000000001
