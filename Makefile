@@ -200,16 +200,17 @@ clean:
 -include $(DEP)
 
 # -----------------------------
+# Directory creation rule
+# -----------------------------
+# Creates any directory needed for a target
+$(BUILD_DIR)/%/:
+	@mkdir -p $@
+
+# -----------------------------
 # Compilation patterns
 # -----------------------------
 # Compute object directory for a given source file
 OBJ_DIR = $(BUILD_DIR)/$(dir $<)
-
-# Pattern rule automatically creates object directories
-$(BUILD_DIR)/%.o: %.cpp
-	@mkdir -p $(dir $@)
-	@echo ">> Compiling $<"
-	@$(DMCXX) $(SYSROOTD) $(CXXFLAGS) -c $< -o $@ -MMD -MF $(BUILD_DIR)/$*.d
 
 # Compile C++ files
 $(BUILD_DIR)/%.o: %.cpp | $(BUILD_DIR)/%/
