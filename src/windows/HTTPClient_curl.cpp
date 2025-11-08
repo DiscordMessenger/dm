@@ -99,7 +99,7 @@ int HTTPClient_curl::GetProgress(void* userp, curl_off_t dltotal, curl_off_t dln
 {
 	HTTPRequest* request = (HTTPRequest*) userp;
 	NetRequest* netRequest = request->netRequest;
-	
+
 	netRequest->m_bCancelOp = false;
 	netRequest->m_offset = dlnow;
 	netRequest->m_length = dltotal;
@@ -113,10 +113,10 @@ int HTTPClient_curl::PutProgress(void* userp, curl_off_t dltotal, curl_off_t dln
 {
 	HTTPRequest* request = (HTTPRequest*) userp;
 	NetRequest* netRequest = request->netRequest;
-	
+
 	netRequest->m_bCancelOp = false;
 	netRequest->m_offset = ulnow;
-	netRequest->m_length = ultotal;
+	netRequest->m_length = ultotal ? ultotal : netRequest->params_bytes.size();
 	netRequest->result = HTTP_PROGRESS;
 	netRequest->pFunc(netRequest);
 	
@@ -148,7 +148,7 @@ size_t HTTPClient_curl::ReadCallback(void* contents, size_t size, size_t nmemb, 
 		byteCount = endOffset - startOffset;
 	}
 	
-	memcpy(contents, netRequest->params_bytes.data(), byteCount);
+	memcpy(contents, netRequest->params_bytes.data() + startOffset, byteCount);
 	return byteCount;
 }
 
@@ -197,6 +197,7 @@ void HTTPClient_curl::PerformRequest(
 	{
 		case NetRequest::GET_PROGRESS:
 			curl_easy_setopt(pRequest->easyHandle, CURLOPT_NOPROGRESS, 0L);
+			curl_easy_setopt(pRequest->easyHandle, CURLOPT_XFERINFODATA, pRequest);
 			curl_easy_setopt(pRequest->easyHandle, CURLOPT_XFERINFOFUNCTION, GetProgress);
 		case NetRequest::GET:
 			curl_easy_setopt(pRequest->easyHandle, CURLOPT_HTTPGET, 1L);
@@ -224,6 +225,7 @@ void HTTPClient_curl::PerformRequest(
 		case NetRequest::PUT_OCTETS:
 			curl_easy_setopt(pRequest->easyHandle, CURLOPT_CUSTOMREQUEST, "PUT");
 			curl_easy_setopt(pRequest->easyHandle, CURLOPT_UPLOAD, 1L);
+			curl_easy_setopt(pRequest->easyHandle, CURLOPT_XFERINFODATA, pRequest);
 			curl_easy_setopt(pRequest->easyHandle, CURLOPT_INFILESIZE_LARGE, (curl_off_t) stream_size);
 			break;
 		
