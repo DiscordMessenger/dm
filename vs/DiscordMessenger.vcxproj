@@ -238,7 +238,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
@@ -256,7 +256,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;ASIO_DISABLE_IOCP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
@@ -274,7 +274,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
@@ -292,7 +292,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;FKG_FORCED_USAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
@@ -312,7 +312,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
@@ -333,7 +333,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
@@ -418,7 +418,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>IS_64_BIT;FKG_FORCED_USAGE;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL64)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL64)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>

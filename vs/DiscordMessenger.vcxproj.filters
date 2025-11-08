@@ -515,10 +515,7 @@
     <None Include="..\res\animations\upload_hc.avi">
       <Filter>Resource Files\Resources\Animations</Filter>
     </None>
-    <None Include="..\src\arrow.cur">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="arrow.cur">
+    <None Include="..\res\cursors\cur_clicker.cur">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -772,9 +769,6 @@
     </ClInclude>
     <ClInclude Include="..\src\windows\MissingDefinitions.hpp">
       <Filter>Header Files\Windows\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\discord\Frontend.hpp">
-      <Filter>Header Files\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
