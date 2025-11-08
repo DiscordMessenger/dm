@@ -356,10 +356,6 @@ bool HTTPClient_curl::ProcessMultiEvent()
 	auto func = netRequest->pFunc;
 	func(netRequest);
 
-	// if this is the default handler, then simply transfer ownership
-	if (func == &HTTPClient::DefaultRequestHandler)
-		request->netRequest = nullptr;
-
 	// and then cleanup
 	delete request;
 	return true;
