@@ -509,10 +509,7 @@
     <None Include="..\res\animations\upload_hc.avi">
       <Filter>Resource Files\Resources\Animations</Filter>
     </None>
-    <None Include="..\src\arrow.cur">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="arrow.cur">
+    <None Include="..\res\cursors\cur_clicker.cur">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\res\cacert.pem">
