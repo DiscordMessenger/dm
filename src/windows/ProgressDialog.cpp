@@ -173,7 +173,13 @@ INT_PTR ProgressDialog::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			SetDlgItemText(hWnd, IDC_UPLOADING_XFERRATE, tstr);
 			free(tstr);
 
-			int offs = int(uint64_t(m_offset) * 1000 / m_length);
+			int offs = 0;
+			
+			if (m_length)
+				offs = int(uint64_t(m_offset) * 1000 / m_length);
+			else
+				DbgPrintW("File length is 0??");
+
 			SendMessage(GetDlgItem(hWnd, IDC_UPLOADING_PROGRESS), PBM_SETPOS, (WPARAM) offs, 0);
 			break;
 		}

@@ -28,17 +28,11 @@
     <Filter Include="Source Files\Deps">
       <UniqueIdentifier>{b6c48d61-732c-4089-b993-c5458ed5bc3d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Deps\Asio">
-      <UniqueIdentifier>{8e44d3dc-2050-4d65-846a-3c9b3b0b880a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Deps\Mwas">
       <UniqueIdentifier>{09b7fb78-aa62-416c-ab35-65573760614c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Deps\Md5">
       <UniqueIdentifier>{8baa4f98-a70c-4417-afbc-c45523d2fb51}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Deps\Httplib">
-      <UniqueIdentifier>{552415f8-f70b-4d64-9741-f2722deed194}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource Files\Resources\Bitmaps">
       <UniqueIdentifier>{cc19d2da-c293-4a24-80f2-11ff83b2afd7}</UniqueIdentifier>
@@ -518,6 +512,9 @@
     <None Include="..\res\cursors\cur_clicker.cur">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\res\cacert.pem">
+      <Filter>Resource Files\Resources</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\res\app.manifest">
@@ -533,11 +530,8 @@
     <ClInclude Include="..\src\resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\deps\httplib\httplib.h">
-      <Filter>Source Files\Deps\Httplib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\deps\iprogramsterminate.h">
-      <Filter>Source Files\Deps</Filter>
+    <ClInclude Include="..\src\windows\RoleList.hpp">
+      <Filter>Header Files\Windows</Filter>
     </ClInclude>
     <ClInclude Include="..\deps\mwas\include\ri\recrypt.hpp">
       <Filter>Source Files\Deps\Mwas</Filter>
@@ -610,6 +604,8 @@
     </ClInclude>
     <ClInclude Include="..\src\core\network\HTTPClient.hpp">
       <Filter>Header Files\Core\Network</Filter>
+    <ClInclude Include="..\src\windows\OptionsDialog.hpp">
+      <Filter>Header Files\Windows</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\network\DiscordRequest.hpp">
       <Filter>Header Files\Core\Network</Filter>
@@ -707,6 +703,8 @@
     <ClInclude Include="..\src\windows\AutoComplete.hpp">
       <Filter>Header Files\Windows\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\discord\UpdateChecker.hpp">
+      <Filter>Header Files\Discord</Filter>
     <ClInclude Include="..\src\windows\ImageLoader.hpp">
       <Filter>Header Files\Windows\Utils</Filter>
     </ClInclude>
@@ -770,13 +768,22 @@
     <ClInclude Include="..\src\windows\MissingDefinitions.hpp">
       <Filter>Header Files\Windows\Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\discord\Frontend.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\HTTPClient_curl.h">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\WebsocketClient_curl.h">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\deps\asio\src\asio.cpp">
-      <Filter>Source Files\Deps\Asio</Filter>
+    <ClCompile Include="..\src\windows\ProfileView.cpp">
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="..\deps\asio\src\asio_ssl.cpp">
-      <Filter>Source Files\Deps\Asio</Filter>
+    <ClCompile Include="..\src\windows\RoleList.cpp">
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="..\deps\mwas\src\reimpl.cpp">
       <Filter>Source Files\Deps\Mwas</Filter>
@@ -840,6 +847,8 @@
     </ClCompile>
     <ClCompile Include="..\src\core\state\MessageCache.cpp">
       <Filter>Source Files\Core\State</Filter>
+    <ClCompile Include="..\src\windows\OptionsDialog.cpp">
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="..\src\core\state\NotificationManager.cpp">
       <Filter>Source Files\Core\State</Filter>
@@ -859,10 +868,9 @@
     <ClCompile Include="..\src\windows\OptionsDialog.cpp">
       <Filter>Source Files\Windows\UI\Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\discord\Channel.cpp">
+      <Filter>Source Files\Discord</Filter>
     <ClCompile Include="..\src\windows\ProgressDialog.cpp">
-      <Filter>Source Files\Windows\UI\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\windows\QRCodeDialog.cpp">
       <Filter>Source Files\Windows\UI\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\UploadDialog.cpp">
@@ -880,6 +888,8 @@
     <ClCompile Include="..\src\windows\MessageEditor.cpp">
       <Filter>Source Files\Windows\UI\Views</Filter>
     </ClCompile>
+    <ClCompile Include="..\deps\mwas\src\reimpl.cpp">
+      <Filter>Source Files\Deps\Mwas</Filter>
     <ClCompile Include="..\src\windows\MessageList.cpp">
       <Filter>Source Files\Windows\UI\Views</Filter>
     </ClCompile>
@@ -963,6 +973,12 @@
     </ClCompile>
     <ClCompile Include="..\src\windows\TextToSpeech.cpp">
       <Filter>Source Files\Windows\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\HTTPClient_curl.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\WebsocketClient_curl.cpp">
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

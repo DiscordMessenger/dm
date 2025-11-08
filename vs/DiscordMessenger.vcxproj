@@ -236,17 +236,17 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CURL_STATICLIB;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include;$(MBEDTLS_INSTALL_MSVC)\include;$(CURL_INSTALL_MSVC)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);$(MBEDTLS_INSTALL_MSVC)\lib;$(CURL_INSTALL_MSVC)\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
   </ItemDefinitionGroup>
@@ -254,17 +254,17 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;ASIO_DISABLE_IOCP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CURL_STATICLIB;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;ASIO_DISABLE_IOCP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include;$(MBEDTLS_INSTALL_MSVC)\include;$(CURL_INSTALL_MSVC)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);$(MBEDTLS_INSTALL_MSVC)\lib;$(CURL_INSTALL_MSVC)\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
   </ItemDefinitionGroup>
@@ -272,17 +272,17 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CURL_STATICLIB;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include;$(MBEDTLS_INSTALL_MSVC)\include;$(CURL_INSTALL_MSVC)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);$(MBEDTLS_INSTALL_MSVC)\lib;$(CURL_INSTALL_MSVC)\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
   </ItemDefinitionGroup>
@@ -290,17 +290,17 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;FKG_FORCED_USAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CURL_STATICLIB;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;FKG_FORCED_USAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include;$(MBEDTLS_INSTALL_MSVC)\include;$(CURL_INSTALL_MSVC)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);$(MBEDTLS_INSTALL_MSVC)\lib;$(CURL_INSTALL_MSVC)\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
   </ItemDefinitionGroup>
@@ -310,9 +310,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CURL_STATICLIB;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include;$(MBEDTLS_INSTALL_MSVC)\include;$(CURL_INSTALL_MSVC)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
@@ -321,8 +321,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);$(MBEDTLS_INSTALL_MSVC)\lib;$(CURL_INSTALL_MSVC)\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseAnsi|Win32'">
@@ -331,9 +331,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CURL_STATICLIB;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL)\include;$(MBEDTLS_INSTALL_MSVC)\include;$(CURL_INSTALL_MSVC)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
@@ -342,72 +342,72 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);$(MBEDTLS_INSTALL_MSVC)\lib;$(CURL_INSTALL_MSVC)\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mbedtls.lib;mbedcrypto.lib;mbedx509.lib;libcurl.lib;libwebp.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>IS_64_BIT;FKG_FORCED_USAGE;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CURL_STATICLIB;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;IS_64_BIT;FKG_FORCED_USAGE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL64)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL64)\include;$(MBEDTLS_INSTALL_MSVC64)\include;$(CURL_INSTALL_MSVC64)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs\x64;$(OPENSSL_INSTALL64)\lib\VC\x64\MDd</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs\x64;$(MBEDTLS_INSTALL_MSVC64)\lib;$(CURL_INSTALL_MSVC64)\lib;$(OPENSSL_INSTALL64)\lib\VC\x64\MDd</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugNoIOCP|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>IS_64_BIT;FKG_FORCED_USAGE;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;ASIO_DISABLE_IOCP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CURL_STATICLIB;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;IS_64_BIT;FKG_FORCED_USAGE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;ASIO_DISABLE_IOCP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL64)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL64)\include;$(MBEDTLS_INSTALL_MSVC64)\include;$(CURL_INSTALL_MSVC64)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs\x64;$(OPENSSL_INSTALL64)\lib\VC\x64\MDd</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs\x64;$(MBEDTLS_INSTALL_MSVC64)\lib;$(CURL_INSTALL_MSVC64)\lib;$(OPENSSL_INSTALL64)\lib\VC\x64\MDd</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugAnsi|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>IS_64_BIT;FKG_FORCED_USAGE;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CURL_STATICLIB;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;IS_64_BIT;FKG_FORCED_USAGE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL64)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL64)\include;$(MBEDTLS_INSTALL_MSVC64)\include;$(CURL_INSTALL_MSVC64)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs\x64;$(OPENSSL_INSTALL64)\lib\VC\x64\MDd</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs\x64;$(MBEDTLS_INSTALL_MSVC64)\lib;$(CURL_INSTALL_MSVC64)\lib;$(OPENSSL_INSTALL64)\lib\VC\x64\MDd</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugAsan|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>IS_64_BIT;FKG_FORCED_USAGE;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CURL_STATICLIB;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;IS_64_BIT;FKG_FORCED_USAGE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL64)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL64)\include;$(MBEDTLS_INSTALL_MSVC64)\include;$(CURL_INSTALL_MSVC64)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs\x64;$(OPENSSL_INSTALL64)\lib\VC\x64\MDd</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs\x64;$(MBEDTLS_INSTALL_MSVC64)\lib;$(CURL_INSTALL_MSVC64)\lib;$(OPENSSL_INSTALL64)\lib\VC\x64\MDd</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -416,9 +416,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>IS_64_BIT;FKG_FORCED_USAGE;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CURL_STATICLIB;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;IS_64_BIT;FKG_FORCED_USAGE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL64)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\core;$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL64)\include;$(MBEDTLS_INSTALL_MSVC64)\include;$(CURL_INSTALL_MSVC64)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -427,7 +427,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs\x64;$(OPENSSL_INSTALL64)\lib\VC\x64\MD</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs\x64;$(MBEDTLS_INSTALL_MSVC64)\lib;$(CURL_INSTALL_MSVC64)\lib;$(OPENSSL_INSTALL64)\lib\VC\x64\MD</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseAnsi|x64'">
@@ -436,9 +436,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>IS_64_BIT;FKG_FORCED_USAGE;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CURL_STATICLIB;USE_IPROGS_REIMPL;USE_IPROGRAMS_TERMINATE;ASIO_DISABLE_WINDOWS_OBJECT_HANDLE;IS_64_BIT;FKG_FORCED_USAGE;_WIN32_WINNT=0x0601;NOMINMAX;_CRT_SECURE_NO_WARNINGS;ASIO_SEPARATE_COMPILATION;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_STL_;WIN32;DISCORD_MESSENGER;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL64)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\deps;$(SolutionDir)..\deps\asio;$(SolutionDir)..\deps\mwas\include;$(OPENSSL_INSTALL64)\include;$(MBEDTLS_INSTALL_MSVC64)\include;$(CURL_INSTALL_MSVC64)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -447,7 +447,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs\x64;$(OPENSSL_INSTALL64)\lib\VC\x64\MD</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs\x64;$(MBEDTLS_INSTALL_MSVC64)\lib;$(CURL_INSTALL_MSVC64)\lib;$(OPENSSL_INSTALL64)\lib\VC\x64\MD</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -570,6 +570,7 @@
     <None Include="..\res\animations\download_lc.avi" />
     <None Include="..\res\animations\upload_hc.avi" />
     <None Include="..\res\animations\upload_lc.avi" />
+    <None Include="..\res\cacert.pem" />
     <None Include="..\res\cursors\cur_clicker.cur" />
     <None Include="..\res\cursors\cur_zoomin.cur" />
     <None Include="..\res\cursors\cur_zoomout.cur" />
@@ -578,7 +579,6 @@
     <Manifest Include="..\res\app.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\deps\httplib\httplib.h" />
     <ClInclude Include="..\deps\iprogramsterminate.h" />
     <ClInclude Include="..\deps\mwas\include\ri\recrypt.hpp" />
     <ClInclude Include="..\deps\mwas\include\ri\reimpl.hpp" />
@@ -626,6 +626,7 @@
     <ClInclude Include="..\src\windows\Frontend_Win32.hpp" />
     <ClInclude Include="..\src\windows\GuildHeader.hpp" />
     <ClInclude Include="..\src\windows\GuildLister.hpp" />
+    <ClInclude Include="..\src\windows\HTTPClient_curl.h" />
     <ClInclude Include="..\src\windows\IChannelView.hpp" />
     <ClInclude Include="..\src\windows\ImageLoader.hpp" />
     <ClInclude Include="..\src\windows\ImageViewer.hpp" />
@@ -640,13 +641,11 @@
     <ClInclude Include="..\src\windows\MessageEditor.hpp" />
     <ClInclude Include="..\src\windows\MessageList.hpp" />
     <ClInclude Include="..\src\windows\MissingDefinitions.hpp" />
-    <ClInclude Include="..\src\windows\NetworkerThread.hpp" />
     <ClInclude Include="..\src\windows\NotificationViewer.hpp" />
     <ClInclude Include="..\src\windows\OptionsDialog.hpp" />
     <ClInclude Include="..\src\windows\PinList.hpp" />
     <ClInclude Include="..\src\windows\ProfilePopout.hpp" />
     <ClInclude Include="..\src\windows\ProfileView.hpp" />
-    <ClInclude Include="..\src\windows\QRCodeDialog.hpp" />
     <ClInclude Include="..\src\windows\QuickSwitcher.hpp" />
     <ClInclude Include="..\src\windows\RoleList.hpp" />
     <ClInclude Include="..\src\windows\StatusBar.hpp" />
@@ -656,6 +655,7 @@
     <ClInclude Include="..\src\windows\ShellNotification.hpp" />
     <ClInclude Include="..\src\windows\UploadDialog.hpp" />
     <ClInclude Include="..\src\windows\ProgressDialog.hpp" />
+    <ClInclude Include="..\src\windows\WebsocketClient_curl.h" />
     <ClInclude Include="..\src\windows\WindowMessages.hpp" />
     <ClInclude Include="..\src\windows\WinUtils.hpp" />
   </ItemGroup>
@@ -663,8 +663,6 @@
     <ResourceCompile Include="..\src\resource.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\deps\asio\src\asio.cpp" />
-    <ClCompile Include="..\deps\asio\src\asio_ssl.cpp" />
     <ClCompile Include="..\deps\md5\MD5.cpp" />
     <ClCompile Include="..\deps\mwas\src\reimpl.cpp" />
     <ClCompile Include="..\src\core\config\DiscordClientConfig.cpp" />
@@ -680,7 +678,6 @@
     <ClCompile Include="..\src\core\network\DiscordAPI.cpp" />
     <ClCompile Include="..\src\core\network\HTTPClient.cpp" />
     <ClCompile Include="..\src\core\network\MessagePoll.cpp" />
-    <ClCompile Include="..\src\core\network\WebsocketClient.cpp" />
     <ClCompile Include="..\src\core\state\MessageCache.cpp" />
     <ClCompile Include="..\src\core\state\NotificationManager.cpp" />
     <ClCompile Include="..\src\core\state\ProfileCache.cpp" />
@@ -698,6 +695,7 @@
     <ClCompile Include="..\src\windows\Frontend_Win32.cpp" />
     <ClCompile Include="..\src\windows\GuildHeader.cpp" />
     <ClCompile Include="..\src\windows\GuildLister.cpp" />
+    <ClCompile Include="..\src\windows\HTTPClient_curl.cpp" />
     <ClCompile Include="..\src\windows\IChannelView.cpp" />
     <ClCompile Include="..\src\windows\ImageLoader.cpp" />
     <ClCompile Include="..\src\windows\ImageViewer.cpp" />
@@ -710,14 +708,11 @@
     <ClCompile Include="..\src\windows\MemberListOld.cpp" />
     <ClCompile Include="..\src\windows\MessageEditor.cpp" />
     <ClCompile Include="..\src\windows\MessageList.cpp" />
-    <ClCompile Include="..\src\windows\NetworkerThread.cpp" />
     <ClCompile Include="..\src\windows\NotificationViewer.cpp" />
     <ClCompile Include="..\src\windows\OptionsDialog.cpp" />
     <ClCompile Include="..\src\windows\PinList.cpp" />
     <ClCompile Include="..\src\windows\ProfilePopout.cpp" />
     <ClCompile Include="..\src\windows\ProfileView.cpp" />
-    <ClCompile Include="..\src\windows\ProgressDialog.cpp" />
-    <ClCompile Include="..\src\windows\QRCodeDialog.cpp" />
     <ClCompile Include="..\src\windows\QuickSwitcher.cpp" />
     <ClCompile Include="..\src\windows\RoleList.cpp" />
     <ClCompile Include="..\src\windows\ShellNotification.cpp" />
@@ -726,6 +721,8 @@
     <ClCompile Include="..\src\windows\TextManager.cpp" />
     <ClCompile Include="..\src\windows\TextToSpeech.cpp" />
     <ClCompile Include="..\src\windows\UploadDialog.cpp" />
+    <ClCompile Include="..\src\windows\ProgressDialog.cpp" />
+    <ClCompile Include="..\src\windows\WebsocketClient_curl.cpp" />
     <ClCompile Include="..\src\windows\WinUtils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

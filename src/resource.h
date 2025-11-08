@@ -508,6 +508,7 @@
 #define IDA_SEARCH                      1301
 #define IDA_QUICKSWITCHER               1302
 #define IDA_PASTE                       1303
+#define IDR_CACERT_PEM                  2025
 
 // Next default values for new objects
 // 
