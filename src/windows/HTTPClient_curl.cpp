@@ -137,8 +137,8 @@ size_t HTTPClient_curl::ReadCallback(void* contents, size_t size, size_t nmemb, 
 	NetRequest* netRequest = request->netRequest;
 	
 	size_t byteCount = size * nmemb;
-	size_t startOffset = netRequest->m_offset;
-	size_t endOffset = netRequest->m_offset + byteCount;
+	size_t startOffset = request->m_readOffset;
+	size_t endOffset = request->m_readOffset + byteCount;
 	
 	if (endOffset >= netRequest->params_bytes.size()) {
 		endOffset = netRequest->params_bytes.size();
@@ -148,6 +148,7 @@ size_t HTTPClient_curl::ReadCallback(void* contents, size_t size, size_t nmemb, 
 		byteCount = endOffset - startOffset;
 	}
 	
+	request->m_readOffset = endOffset;
 	memcpy(contents, netRequest->params_bytes.data() + startOffset, byteCount);
 	return byteCount;
 }

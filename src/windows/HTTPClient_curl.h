@@ -77,6 +77,8 @@ private:
 		std::string secChUaPlatform;
 		std::string authorization;
 		
+		size_t m_readOffset = 0;
+		
 		~HTTPRequest()
 		{
 			if (netRequest)
