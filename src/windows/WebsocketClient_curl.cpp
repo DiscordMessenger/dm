@@ -1,8 +1,8 @@
 #include <fcntl.h>
 #include "WebsocketClient_curl.h"
 #include "HTTPClient_curl.h"
-#include "../discord/Frontend.hpp"
-#include "../discord/Util.hpp"
+#include "Frontend.hpp"
+#include "utils/Util.hpp"
 
 WebsocketClient_curl::WebsocketClient_curl()
 {

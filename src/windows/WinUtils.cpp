@@ -24,7 +24,7 @@
 #include "utils/Util.hpp"
 #endif
 
-#include "../discord/HTTPClient.hpp"
+#include "network/HTTPClient.hpp"
 
 constexpr int DEFAULT_DPI  = 96;
 constexpr int NORMAL_SCALE = 1000;

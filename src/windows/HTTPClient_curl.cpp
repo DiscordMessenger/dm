@@ -1,5 +1,5 @@
 #include "HTTPClient_curl.h"
-#include "../discord/Util.hpp"
+#include "utils/Util.hpp"
 
 static curl_blob s_pemDataBlob;
 
@@ -385,7 +385,7 @@ void HTTPClient_curl::WorkerThreadInit(HTTPClient_curl* instance)
 	return instance->WorkerThreadRun();
 }
 
-#include "../discord/Frontend.hpp"
+#include "Frontend.hpp"
 
 curl_blob* HTTPClient_curl::GetCABlob()
 {

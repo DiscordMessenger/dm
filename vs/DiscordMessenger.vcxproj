@@ -678,7 +678,6 @@
     <ClCompile Include="..\src\core\network\DiscordAPI.cpp" />
     <ClCompile Include="..\src\core\network\HTTPClient.cpp" />
     <ClCompile Include="..\src\core\network\MessagePoll.cpp" />
-    <ClCompile Include="..\src\core\network\WebsocketClient.cpp" />
     <ClCompile Include="..\src\core\state\MessageCache.cpp" />
     <ClCompile Include="..\src\core\state\NotificationManager.cpp" />
     <ClCompile Include="..\src\core\state\ProfileCache.cpp" />

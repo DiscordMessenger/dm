@@ -12,9 +12,9 @@
 // why couldn't I just use C++ lists? they didn't fulfill everything I needed
 #include "boronlist.h"
 
-#include "../discord/HTTPClient.hpp"
-#include "../discord/DiscordClientConfig.hpp"
-#include "../discord/LocalSettings.hpp"
+#include "network/HTTPClient.hpp"
+#include "config/DiscordClientConfig.hpp"
+#include "config/LocalSettings.hpp"
 
 #ifdef MINGW_SPECIFIC_HACKS
 #include "iprog/thread.hpp"

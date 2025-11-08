@@ -2,7 +2,7 @@
 
 #include <string>
 #include <map>
-#include "../discord/WebsocketClient.hpp"
+#include "network/WebsocketClient.hpp"
 
 #include <curl/curl.h>
 #include <curl/easy.h>
