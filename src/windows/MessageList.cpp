@@ -496,6 +496,8 @@ void MessageItem::Update(Snowflake guildID)
 	Clear();
 	m_msg->UpdateTimestamp();
 
+	m_bIsBlockedMessage = GetDiscordInstance()->IsUserBlocked(m_msg->m_author_snowflake);
+
 	m_bNeedUpdate = false;
 	m_author = ConvertCppStringToTString(m_msg->m_author);
 	m_date = ConvertCppStringToTString(isCompact ? m_msg->m_dateCompact : m_msg->m_dateFull);
@@ -512,13 +514,16 @@ void MessageItem::Update(Snowflake guildID)
 		m_replyAuth = ConvertCppStringToTString(authorStr);
 	}
 
-	m_bWasMentioned = m_msg->CheckWasMentioned(GetDiscordInstance()->GetUserID(), guildID);
+	m_bWasMentioned = !m_bIsBlockedMessage && m_msg->CheckWasMentioned(GetDiscordInstance()->GetUserID(), guildID);
 
-	size_t sz = m_msg->m_attachments.size();
+	size_t attachmentCount = m_msg->m_attachments.size();
+	if (m_bIsBlockedMessage)
+		attachmentCount = 0;
+
 	m_attachmentData.clear();
-	m_attachmentData.resize(sz);
+	m_attachmentData.resize(attachmentCount);
 
-	for (size_t i = 0; i < sz; i++)
+	for (size_t i = 0; i < attachmentCount; i++)
 	{
 		auto& item = m_attachmentData[i];
 		item.m_pAttachment = &m_msg->m_attachments[i];
@@ -531,9 +536,13 @@ void MessageItem::Update(Snowflake guildID)
 	{
 		if (m_message.Empty())
 		{
-			if (m_msg->m_bIsForward)
+			std::string data = m_msg->m_message;
+			if (m_bIsBlockedMessage)
 			{
-				std::string data = m_msg->m_message;
+				data = "*[Blocked message]*";
+			}
+			else if (m_msg->m_bIsForward)
+			{
 				if (!data.empty())
 					data += "\n\n";
 
@@ -564,13 +573,9 @@ void MessageItem::Update(Snowflake guildID)
 				data += "**Forwarded:**\n" + std::string(1, char(0x1F));
 				data += m_msg->m_pReferencedMessage->m_message + "\n" + std::string(1, char(0x1E));
 				data += "*" + server + date + jumptomessage + "*";
+			}
 
-				m_message.SetMessage(data);
-			}
-			else
-			{
-				m_message.SetMessage(m_msg->m_message);
-			}
+			m_message.SetMessage(data);
 		}
 
 		GetDiscordInstance()->ResolveLinks(&m_message, m_interactableData, guildID);
@@ -584,6 +589,13 @@ void MessageItem::Update(Snowflake guildID)
 		ii.m_wordIndex = 1;
 		m_interactableData.clear();
 		m_interactableData.push_back(ii);
+	}
+
+	if (m_bIsBlockedMessage) {
+		m_embedData.clear();
+		SAFE_DELETE(m_pRepliedMessage);
+		SAFE_DELETE(m_pMessagePollData);
+		return;
 	}
 
 	m_embedData.clear();
@@ -668,8 +680,7 @@ void MessageItem::Update(Snowflake guildID)
 	}
 	else if (m_pRepliedMessage)
 	{
-		delete m_pRepliedMessage;
-		m_pRepliedMessage = nullptr;
+		SAFE_DELETE(m_pRepliedMessage);
 	}
 }
 

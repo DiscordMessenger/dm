@@ -214,6 +214,12 @@ public:
 	void SetUse12HourTime(bool b) {
 		m_bUse12HourTime = b;
 	}
+	bool ShowBlockedMessages() const {
+		return m_bShowBlockedMessages;
+	}
+	void SetShowBlockedMessages(bool b) {
+		m_bShowBlockedMessages = b;
+	}
 
 private:
 	std::string m_token;
@@ -244,6 +250,7 @@ private:
 	bool m_bEnableNotifications = true;
 	bool m_bFlashOnNotification = true;
 	bool m_bUse12HourTime = false;
+	bool m_bShowBlockedMessages = false;
 	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
 	int m_height = 700;

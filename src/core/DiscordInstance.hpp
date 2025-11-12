@@ -5,6 +5,7 @@
 #include <string>
 #include <list>
 #include <set>
+#include <unordered_set>
 #include <nlohmann/json.h>
 #include "network/DiscordAPI.hpp"
 #include "models/Snowflake.hpp"
@@ -201,6 +202,9 @@ public:
 	// Relationships
 	std::list<Relationship> m_relationships;
 
+	// Blocked Users
+	std::unordered_set<Snowflake> m_blockedUsers;
+
 	// User guild settings
 	UserGuildSettings m_userGuildSettings;
 
@@ -374,6 +378,10 @@ public:
 		return m_gatewayConnId >= 0;
 	}
 
+	bool IsUserBlocked(Snowflake sf) const {
+		return m_blockedUsers.find(sf) != m_blockedUsers.end();
+	}
+
 	// Lookup
 	std::string LookupChannelNameGlobally(Snowflake sf);
 	std::string LookupRoleName(Snowflake sf, Snowflake guildID);
@@ -508,6 +516,7 @@ private:
 	void OnUploadAttachmentFirst(NetRequest* pReq);
 	void OnUploadAttachmentSecond(NetRequest* pReq);
 	void SearchSubGuild(std::vector<QuickMatch>& matches, Guild* pGuild, int matchFlags, const char* query);
+	void RefreshRelationships();
 	std::string ResolveTimestamp(const std::string& timestampCode);
 	std::string TransformMention(const std::string& source, Snowflake guild, Snowflake channel);
 

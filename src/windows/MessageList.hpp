@@ -215,6 +215,7 @@ private:
 	bool m_bKeepHeightRecalc = false;
 	bool m_bWasMentioned = false;
 	bool m_bNeedUpdate = true;
+	bool m_bIsBlockedMessage = false;
 
 	// Notes!
 	//

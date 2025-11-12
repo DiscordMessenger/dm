@@ -335,6 +335,17 @@ void DiscordInstance::SearchSubGuild(std::vector<QuickMatch>& matches, Guild* pG
 	}
 }
 
+void DiscordInstance::RefreshRelationships()
+{
+	m_blockedUsers.clear();
+
+	for (auto& relationship : m_relationships)
+	{
+		if (relationship.m_type == REL_BLOCKED)
+			m_blockedUsers.insert(relationship.m_userID);
+	}
+}
+
 std::vector<QuickMatch> DiscordInstance::Search(const std::string& query)
 {
 	std::vector<QuickMatch> matches;
@@ -2481,6 +2492,8 @@ void DiscordInstance::HandleREADY(Json& j)
 			m_relationships.push_back(rel);
 		}
 	}
+
+	RefreshRelationships();
 
 	// ==== load resume_gateway_url
 	// ==== load user_guild_settings

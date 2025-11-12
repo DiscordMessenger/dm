@@ -125,6 +125,9 @@ bool LocalSettings::Load()
 	if (j.contains("Use12HourTime"))
 		m_bUse12HourTime = j["Use12HourTime"];
 
+	if (j.contains("ShowBlockedMessages"))
+		m_bShowBlockedMessages = j["ShowBlockedMessages"];
+
 	if (m_bSaveWindowSize)
 	{
 		if (j.contains("WindowWidth"))
@@ -195,6 +198,7 @@ bool LocalSettings::Save()
 	j["EnableNotifications"] = m_bEnableNotifications;
 	j["FlashOnNotification"] = m_bFlashOnNotification;
 	j["Use12HourTime"] = m_bUse12HourTime;
+	j["ShowBlockedMessages"] = m_bShowBlockedMessages;
 	
 	if (m_bSaveWindowSize) {
 		j["WindowWidth"] = m_width;
@@ -214,5 +218,6 @@ bool LocalSettings::CheckTrustedDomain(const std::string& url)
 
 void LocalSettings::StopUpdateCheckTemporarily()
 {
-	m_remindUpdatesOn = time(NULL) + time_t(72LL * 60 * 60);
+	// Remind again in 3 days
+	m_remindUpdatesOn = time(NULL) + time_t(3LL * 24 * 60 * 60);
 }
