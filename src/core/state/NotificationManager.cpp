@@ -13,6 +13,12 @@ void NotificationManager::OnMessageCreate(Snowflake guildID, Snowflake channelID
 	if (!IsNotificationWorthy(guildID, channelID, msg))
 		return;
 
+	if (GetDiscordInstance()->IsUserBlocked(msg.m_author_snowflake))
+		return;
+
+	if (GetDiscordInstance()->IsChannelMuted(guildID, channelID))
+		return;
+
 	Notification notif;
 	notif.m_author = msg.m_author;
 	notif.m_contents = msg.m_message;

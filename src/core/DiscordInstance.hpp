@@ -382,6 +382,8 @@ public:
 		return m_blockedUsers.find(sf) != m_blockedUsers.end();
 	}
 
+	bool IsChannelMuted(Snowflake guildID, Snowflake channelID) const;
+
 	// Lookup
 	std::string LookupChannelNameGlobally(Snowflake sf);
 	std::string LookupRoleName(Snowflake sf, Snowflake guildID);

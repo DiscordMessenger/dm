@@ -243,6 +243,22 @@ void DiscordInstance::RequestGuildMembers(Snowflake guild, std::string query, bo
 	GetWebsocketClient()->SendMsg(m_gatewayConnId, j.dump());
 }
 
+bool DiscordInstance::IsChannelMuted(Snowflake guildID, Snowflake channelID) const
+{
+	const GuildSettings* guildSettings = m_userGuildSettings.GetSettings(guildID);
+	if (!guildSettings)
+		return false;
+
+	if (guildSettings->IsMuted())
+		return true;
+
+	auto chOverride = guildSettings->GetOverride(channelID);
+	if (!chOverride)
+		return false;
+
+	return chOverride->IsMuted();
+}
+
 std::string DiscordInstance::LookupChannelNameGlobally(Snowflake sf)
 {
 	for (auto& gld : m_guilds)
