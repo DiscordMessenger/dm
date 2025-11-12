@@ -107,6 +107,11 @@ Now that the core compiler is built, you need to build the Mingw-w64 C runtime.
 
 **Make sure you have applied mingw-w64.diff from this directory onto `$START_DIR/mingw-builds/src/mingw-w64` before configuring.**
 
+Add the freshly built compiler to the PATH so that the mingw-w64-crt configure script, as well as the libgcc/libstdc++ makefiles, can see it:
+```
+export PATH=$START_DIR/mingw-builds/install/cross/bin:$PATH
+```
+
 Configure and build Mingw-w64:
 ```
 cd $START_DIR/mingw-builds/build/cross/mingw-w64
