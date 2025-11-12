@@ -58,6 +58,11 @@ patch -p1 -i $DM_PATH/doc/pentium-toolchain/mingw-w64.diff
 
 ### Building the cross-compiler
 
+In order for the build to proceed properly, add the about-to-be-built install's bin directory to your PATH. This allows GCC to see the freshly built binutils, and mingw-w64 to see the freshly-built binutils and gcc.
+```
+export PATH=$START_DIR/mingw-builds/install/cross/bin:$PATH
+```
+
 #### Binutils
 
 First, you will need to compile binutils.  Binutils can be used vanilla, they don't require special patches.
@@ -106,11 +111,6 @@ Note: We are not building the libraries just yet, because we need the Mingw-w64 
 Now that the core compiler is built, you need to build the Mingw-w64 C runtime.
 
 **Make sure you have applied mingw-w64.diff from this directory onto `$START_DIR/mingw-builds/src/mingw-w64` before configuring.**
-
-Add the freshly built compiler to the PATH so that the mingw-w64-crt configure script, as well as the libgcc/libstdc++ makefiles, can see it:
-```
-export PATH=$START_DIR/mingw-builds/install/cross/bin:$PATH
-```
 
 Configure and build Mingw-w64:
 ```
