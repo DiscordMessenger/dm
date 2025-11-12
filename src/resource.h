@@ -427,6 +427,8 @@
 #define IDC_SHOW_EMBEDS                 896
 #define IDC_USE_12HR_TIME               897
 #define IDC_ENABLE_BALLOON_NOTIFS       898
+#define IDC_USE_12HR_TIME2              898
+#define IDC_SHOW_BLOCKED_MESSAGES       898
 #define IDC_FLASH_TASKBAR               899
 #define IDC_USE_DISCORD_SOUND           900
 #define IDC_MUTE_NOTIFICATIONS          901

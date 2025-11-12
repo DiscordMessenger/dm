@@ -497,9 +497,13 @@ void MessageItem::Update(Snowflake guildID)
 	m_msg->UpdateTimestamp();
 
 	m_bIsBlockedMessage = GetDiscordInstance()->IsUserBlocked(m_msg->m_author_snowflake);
+	std::string blockedSuffix = m_bIsBlockedMessage ? " [blocked]" : "";
+
+	if (GetLocalSettings()->ShowBlockedMessages())
+		m_bIsBlockedMessage = false;
 
 	m_bNeedUpdate = false;
-	m_author = ConvertCppStringToTString(m_msg->m_author);
+	m_author = ConvertCppStringToTString(m_msg->m_author + blockedSuffix);
 	m_date = ConvertCppStringToTString(isCompact ? m_msg->m_dateCompact : m_msg->m_dateFull);
 	m_dateEdited = ConvertCppStringToTString(isCompact ? m_msg->m_editedTextCompact : m_msg->m_editedText);
 

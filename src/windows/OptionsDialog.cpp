@@ -235,11 +235,12 @@ void OptionsInitPage(HWND hwndDlg, int pageNum)
 		}
 		case PG_CHAT:
 		{
-			CheckDlgButton(hwndDlg, IDC_DISABLE_FORMATTING,   GetLocalSettings()->DisableFormatting()    ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_USE_12HR_TIME,        GetLocalSettings()->Use12HourTime()        ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_IMAGES_WHEN_UPLOADED, GetLocalSettings()->ShowAttachmentImages() ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_IMAGES_WHEN_EMBEDDED, GetLocalSettings()->ShowEmbedImages()      ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_SHOW_EMBEDS,          GetLocalSettings()->ShowEmbedContent()     ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_DISABLE_FORMATTING,    GetLocalSettings()->DisableFormatting()    ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_USE_12HR_TIME,         GetLocalSettings()->Use12HourTime()        ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_SHOW_BLOCKED_MESSAGES, GetLocalSettings()->ShowBlockedMessages()  ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_IMAGES_WHEN_UPLOADED,  GetLocalSettings()->ShowAttachmentImages() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_IMAGES_WHEN_EMBEDDED,  GetLocalSettings()->ShowEmbedImages()      ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_SHOW_EMBEDS,           GetLocalSettings()->ShowEmbedContent()     ? BST_CHECKED : BST_UNCHECKED);
 			break;
 		}
 		case PG_WINDOW:
@@ -508,6 +509,10 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 					break;
 				case IDC_USE_12HR_TIME:
 					GetLocalSettings()->SetUse12HourTime(IsDlgButtonChecked(hWnd, IDC_USE_12HR_TIME));
+					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
+					break;
+				case IDC_SHOW_BLOCKED_MESSAGES:
+					GetLocalSettings()->SetShowBlockedMessages(IsDlgButtonChecked(hWnd, IDC_SHOW_BLOCKED_MESSAGES));
 					SendMessage(g_Hwnd, WM_RECALCMSGLIST, 0, 0);
 					break;
 				case IDC_IMAGES_WHEN_UPLOADED:

@@ -675,18 +675,20 @@ IDD_DIALOG_CHATSETTINGS DIALOGEX 0, 0, 260, 242
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    GROUPBOX        "Message Options",IDC_STATIC,6,7,248,45
+    GROUPBOX        "Message Options",IDC_STATIC,6,7,248,59
     CONTROL         "Disable markdown formatting (suggested for RTL scripts such as Arabic or in case of performance issues)",IDC_DISABLE_FORMATTING,
                     "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,12,18,236,18
-    GROUPBOX        "Display Images",IDC_STATIC,6,56,248,41
+    GROUPBOX        "Display Images",IDC_STATIC,6,68,248,41
     CONTROL         "When uploaded directly to Discord",IDC_IMAGES_WHEN_UPLOADED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,68,236,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,80,236,10
     CONTROL         "When posted as links in chat",IDC_IMAGES_WHEN_EMBEDDED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,81,236,10
-    GROUPBOX        "Embed Settings",IDC_STATIC,6,103,248,27
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,93,236,10
+    GROUPBOX        "Embed Settings",IDC_STATIC,6,115,248,27
     CONTROL         "Show embeds and preview links in chat",IDC_SHOW_EMBEDS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,114,236,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,126,236,10
     CONTROL         "Use 12-hour time",IDC_USE_12HR_TIME,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,12,38,236,10
+    CONTROL         "Show message contents from blocked users",IDC_SHOW_BLOCKED_MESSAGES,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,12,51,236,10
 END
 
 IDD_DIALOG_WINDOWSETTINGS DIALOGEX 0, 0, 260, 242
