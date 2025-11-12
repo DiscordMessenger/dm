@@ -149,7 +149,7 @@ void ShellNotification::ShowBalloonForNotifications(const std::vector<Notificati
 		return;
 	}
 
-	std::string title = "You have " + std::to_string(pNotifs.size()) + " new notifications!";
+	std::string title = std::to_string(pNotifs.size()) + " new notifications";
 
 	// Include an excerpt from the first ~5
 	std::string content = "";
