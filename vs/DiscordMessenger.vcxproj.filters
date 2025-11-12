@@ -781,9 +781,6 @@
     <ClCompile Include="..\deps\md5\MD5.cpp">
       <Filter>Source Files\Deps\Md5</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\core\DiscordInstance.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\core\config\DiscordClientConfig.cpp">
       <Filter>Source Files\Core\Config</Filter>
     </ClCompile>
@@ -937,9 +934,6 @@
     <ClCompile Include="..\src\windows\ImageLoader.cpp">
       <Filter>Source Files\Windows\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\windows\ImageViewer.cpp">
-      <Filter>Source Files\Windows\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\windows\InstanceMutex.cpp">
       <Filter>Source Files\Windows\Utils</Filter>
     </ClCompile>
@@ -960,6 +954,12 @@
     </ClCompile>
     <ClCompile Include="..\src\windows\TextToSpeech.cpp">
       <Filter>Source Files\Windows\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\DiscordInstance.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\ImageViewer.cpp">
+      <Filter>Source Files\Windows\UI\Dialogs</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

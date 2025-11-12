@@ -477,8 +477,8 @@ void CreateImageViewer(const std::string& proxyURL, const std::string& url, cons
 	int scrollBarHeight = GetSystemMetrics(SM_CYHSCROLL);
 	int wWidth  = width;
 	int wHeight = height;
-	int screenWidth  = GetSystemMetrics(SM_CXSCREEN);
-	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+	int screenWidth  = 1024;//GetSystemMetrics(SM_CXSCREEN);
+	int screenHeight = 768;// GetSystemMetrics(SM_CYSCREEN);
 	int maxWidth  = screenWidth  - 200;
 	int maxHeight = screenHeight - 200 - IBOTTOM_BAR_HEIGHT;
 
@@ -490,20 +490,12 @@ void CreateImageViewer(const std::string& proxyURL, const std::string& url, cons
 	int iWidth  = wWidth;
 	int iHeight = wHeight;
 
-	// Ensure aspect ratio preservation while keeping scale down
-	if (wWidth > maxWidth)
-	{
-		iHeight = iHeight * maxWidth / iWidth;
-		iWidth = maxWidth;
-		wWidth = maxWidth;
-	}
-
-	if (wHeight > maxHeight)
-	{
-		iWidth = iWidth * maxHeight / iHeight;
-		wHeight = maxHeight;
-		iHeight = maxHeight;
-	}
+	// Try to fit the preview inside the max width and height.
+	float ratio = std::min(1.0f * maxWidth / std::max(1, wWidth), 1.0f * maxHeight / std::max(1, wHeight));
+	iWidth = int(iWidth * ratio);
+	iHeight = int(iHeight * ratio);
+	wWidth = std::min(maxWidth, width);
+	wHeight = std::min(maxHeight, height);
 
 	bool addScrollBars = wWidth != width || wHeight != height;
 
