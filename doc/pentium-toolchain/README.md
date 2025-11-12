@@ -89,7 +89,7 @@ To configure GCC, you will need to run the following commands:
 
 ```
 cd $START_DIR/mingw-builds/build/cross/gcc
-../../../src/gcc/configure --prefix=$START_DIR/mingw-builds/install/cross --target=i686-w64-mingw32 --disable-multilib --enable-languages=c,c++ --with-arch=pentium --with-tune=pentium --disable-libgcov --disable-libgomp
+../../../src/gcc/configure --prefix=$START_DIR/mingw-builds/install/cross --target=i686-w64-mingw32 --disable-multilib --enable-languages=c,c++ --with-arch=pentium --with-tune=pentium --disable-libstdcxx-time --disable-libstdcxx-filesystem-ts --disable-libgcov --disable-libgomp
 ```
 
 Build the compiler, which will compile the Mingw-w64 CRT as well as all auxiliary libraries.
