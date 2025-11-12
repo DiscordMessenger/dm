@@ -258,7 +258,7 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 			{
 				case ID_DUMMY_COPYIMAGE:
 				{
-					HBITMAP bitmapCopy = (HBITMAP)ri::CopyImage(g_hBitmapFull->Frames[0].Bitmap, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+					HBITMAP bitmapCopy = (HBITMAP)ri::CopyImage(g_hBitmapFull->Frames[0].Bitmap, IMAGE_BITMAP, 0, 0, 0);
 					if (!bitmapCopy)
 						break;
 
@@ -514,13 +514,18 @@ bool RegisterImageViewerClass()
 	return RegisterClass(&wc2) != 0;
 }
 
+const char* trustedDiscordCdn = "https://cdn.discordapp.com/";
+
 void CreateImageViewer(const std::string& proxyURL, const std::string& url, const std::string& fileName, int width, int height)
 {
 	// Kill it if present:
 	KillImageViewer();
 
-	g_ProxyURL  = proxyURL;
+	// just use the normal URL if it's from cdn.discordapp.com (as opposed to the other
+	// CDN which jpeg-ifies images (I know it's webp but still loses lots of quality))
+	bool useUrlAsProxyUrl = strncmp(url.c_str(), trustedDiscordCdn, strlen(trustedDiscordCdn)) == 0;
 	g_FileName  = fileName;
+	g_ProxyURL  = useUrlAsProxyUrl ? url : proxyURL;
 	g_ActualURL = url;
 
 	LPCTSTR tstr = ConvertCppStringToTString(fileName);

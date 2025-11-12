@@ -226,10 +226,10 @@ BEGIN
     POPUP "Dummy"
     BEGIN
         MENUITEM "Copy Image",                  ID_DUMMY_COPYIMAGE
-        MENUITEM "Save Image",                  ID_DUMMY_SAVEIMAGE
+        MENUITEM "Save Image",                  ID_DUMMY_SAVEIMAGE, INACTIVE
         MENUITEM SEPARATOR
-        MENUITEM "Copy Image Link",             ID_DUMMY_COPYIMAGELINK
-        MENUITEM "Open Image Link",             ID_DUMMY_OPENIMAGELINK
+        MENUITEM "Copy Image Link",             ID_DUMMY_COPYIMAGELINK, INACTIVE
+        MENUITEM "Open Image Link",             ID_DUMMY_OPENIMAGELINK, INACTIVE
     END
 END
 
