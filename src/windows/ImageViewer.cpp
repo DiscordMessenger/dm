@@ -381,7 +381,7 @@ void ImageViewerOnLoad(NetRequest* pRequest)
 	g_hBitmapFull    = imFull;
 	g_hBitmapPreview = imPreview;
 
-	g_bChildZoomedIn = false;
+	g_bChildZoomedIn = !ImageViewerNeedScrollBarsAtAll(g_ivPreviewImageWidth, g_ivPreviewImageHeight);
 	SendMessage(g_ivChildHwnd, WM_UPDATEBITMAP, 0, 0);
 }
 
