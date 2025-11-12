@@ -2493,12 +2493,17 @@ void DiscordInstance::HandleREADY(Json& j)
 	// select the first guild, if possible
 	Snowflake guildsf = 0;
 
+	bool forceRefresh = false;
 	if (firstReadyOnThisUser) {
 		m_CurrentChannel = 0;
 
 		auto list = m_guildItemList.GetItems();
-		if (list->size() > 0)
+		if (list->size() > 0) {
 			guildsf = list->front()->GetID();
+		}
+		else {
+			forceRefresh = true;
+		}
 	}
 	else {
 		guildsf = m_CurrentGuild;
@@ -2506,6 +2511,9 @@ void DiscordInstance::HandleREADY(Json& j)
 
 	GetFrontend()->RepaintGuildList();
 	OnSelectGuild(guildsf);
+
+	if (forceRefresh)
+		GetFrontend()->UpdateSelectedGuild();
 
 	// Doing this because the contents of all channels might be outdated.
 	GetMessageCache()->ClearAllChannels();
