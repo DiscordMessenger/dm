@@ -580,3 +580,80 @@ bool Frontend_Win32::UseGradientByDefault()
 	// Are we using Windows 5.00 at least? (2000)
 	return LOWORD(GetVersion()) >= 5;
 }
+
+static std::string LoadEntireFile(const std::string& fileNameUTF8)
+{
+	LPTSTR fileNameUTF16 = ConvertCppStringToTString(fileNameUTF8);
+	HANDLE handle = CreateFile(fileNameUTF16, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	free(fileNameUTF16);
+
+	if (!handle) {
+		DbgPrintW("Failed to open %s: %d", fileNameUTF8.c_str(), GetLastError());
+		return "";
+	}
+
+	DWORD fileSize = GetFileSize(handle, NULL);
+	if (fileSize > 10000000) {
+		DbgPrintW("Uh oh, file is too big!");
+		CloseHandle(handle);
+		return "";
+	}
+
+	DWORD bytesRead = 0;
+	std::string data;
+	data.resize(fileSize);
+	ReadFile(handle, (void*) data.data(), fileSize, &bytesRead, NULL);
+	CloseHandle(handle);
+
+	if (bytesRead != fileSize) {
+		DbgPrintW("We only read %zu bytes, out of %zu!", (size_t) bytesRead, (size_t) fileSize);
+		return "";
+	}
+
+	return data;
+}
+
+static bool SaveEntireFile(const std::string& fileNameUTF8, const std::string& data)
+{
+	LPTSTR fileNameUTF16 = ConvertCppStringToTString(fileNameUTF8);
+	HANDLE handle = CreateFile(fileNameUTF16, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	free(fileNameUTF16);
+
+	if (!handle) {
+		DbgPrintW("Failed to save %s: %d", fileNameUTF8.c_str(), GetLastError());
+		return false;
+	}
+
+	DWORD bytesWritten = 0;
+	WriteFile(handle, (const void*)data.data(), (DWORD) data.size(), &bytesWritten, NULL);
+	CloseHandle(handle);
+
+	if (bytesWritten != (DWORD) data.size()) {
+		DbgPrintW("We only wrote %zu bytes, out of %zu! Data may have been corrupted!", (size_t) bytesWritten, data.size());
+		return false;
+	}
+
+	return true;
+}
+
+std::string Frontend_Win32::LoadConfig()
+{
+	std::string data = LoadEntireTextFile(GetBasePath() + "/settings.json");
+	if (data.empty()) {
+		// ok, check if settings.jso (8.3) exists at least
+		data = LoadEntireTextFile(GetBasePath() + "/settings.jso");
+
+		if (data.empty())
+			return "";
+	}
+
+	return data;
+}
+
+bool Frontend_Win32::SaveConfig(const std::string& configJson)
+{
+	if (SaveEntireFile(GetBasePath() + "/settings.json", configJson))
+		return true;
+	
+	return SaveEntireFile(GetBasePath() + "/settings.jso", configJson);
+}

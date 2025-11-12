@@ -36,16 +36,11 @@ bool LocalSettings::Load()
 {
 	m_bIsFirstStart = false;
 
-	std::string data = LoadEntireTextFile(GetBasePath() + "/settings.json");
+	std::string data = GetFrontend()->LoadConfig();
 
 	if (data.empty()) {
-		// ok, check if settings.jso (8.3) exists at least
-		data = LoadEntireTextFile(GetBasePath() + "/settings.jso");
-
-		if (data.empty()) {
-			m_bIsFirstStart = true;
-			return false;
-		}
+		m_bIsFirstStart = true;
+		return false;
 	}
 
 	if (GetFrontend()->UseGradientByDefault())
@@ -206,24 +201,7 @@ bool LocalSettings::Save()
 		j["WindowHeight"] = m_height;
 	}
 
-	// save the file
-	std::string fileName = GetBasePath() + "/settings.json";
-	std::ofstream of(fileName.c_str(), std::ios::trunc);
-
-	if (!of.is_open())
-	{
-		// ok, try settings.jso
-		fileName = GetBasePath() + "/settings.jso";
-		of.open(fileName, std::ios::trunc);
-
-		if (!of.is_open())
-			return false;
-	}
-
-	of << j.dump();
-	of.close();
-
-	return true;
+	return GetFrontend()->SaveConfig(j.dump());
 }
 
 bool LocalSettings::CheckTrustedDomain(const std::string& url)

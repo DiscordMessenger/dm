@@ -83,6 +83,8 @@ public:
 	int GetDefaultWidth() override;
 	int GetDefaultHeight() override;
 	bool UseGradientByDefault() override;
+	std::string LoadConfig() override;
+	bool SaveConfig(const std::string& configJson) override;
 
 #ifdef USE_DEBUG_PRINTS
 	void DebugPrint(const char* fmt, va_list vl) override;

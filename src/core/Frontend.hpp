@@ -81,6 +81,10 @@ public:
 	virtual void RegisterAttachment(Snowflake sf, const std::string& avatarlnk) = 0;
 	virtual void RegisterChannelIcon(Snowflake sf, const std::string& avatarlnk) = 0;
 
+	// Config
+	virtual std::string LoadConfig() = 0;
+	virtual bool SaveConfig(const std::string& configJson) = 0;
+
 	// Quit
 	virtual void RequestQuit() = 0;
 	

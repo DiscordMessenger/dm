@@ -19,9 +19,6 @@
     <Filter Include="Header Files\Windows">
       <UniqueIdentifier>{bd66bef8-5b49-4965-8fa0-fde4f0ba3e48}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Discord">
-      <UniqueIdentifier>{5b8e314d-7910-4ba4-8722-58ff5e3ff6dd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Windows">
       <UniqueIdentifier>{6c57dfcb-2940-4d09-96c1-6ed567c4bf04}</UniqueIdentifier>
     </Filter>
