@@ -2589,7 +2589,7 @@ void DiscordInstance::HandleMessageInsertOrUpdate(Json& j, bool bIsUpdate)
 			suppRoles    = pSettings->m_bSuppressRoles;
 		}
 
-		if (msg.CheckWasMentioned(m_mySnowflake, guildId, suppEveryone, suppRoles) && m_CurrentChannel != channelId)
+		if ((guildId == 0 || msg.CheckWasMentioned(m_mySnowflake, guildId, suppEveryone, suppRoles)) && m_CurrentChannel != channelId)
 			pChan->m_mentionCount++;
 	}
 

@@ -62,6 +62,9 @@ void Message::UpdateTimestamp()
 
 bool Message::CheckWasMentioned(Snowflake user, Snowflake guild, bool bSuppressEveryone, bool bSuppressRoles) const
 {
+	if (GetDiscordInstance()->IsUserBlocked(user))
+		return false;
+
 	if (!bSuppressEveryone && m_bMentionedEveryone)
 		return true;
 
