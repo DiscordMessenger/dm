@@ -2589,7 +2589,25 @@ void DiscordInstance::HandleMessageInsertOrUpdate(Json& j, bool bIsUpdate)
 			suppRoles    = pSettings->m_bSuppressRoles;
 		}
 
-		if ((guildId == 0 || msg.CheckWasMentioned(m_mySnowflake, guildId, suppEveryone, suppRoles)) && m_CurrentChannel != channelId)
+		bool isNonMutedDM = false;
+		if (guildId == 0)
+		{
+			if (pSettings && !pSettings->IsMuted())
+			{
+				auto chOverride = pSettings->GetOverride(channelId);
+				if (!chOverride) {
+					isNonMutedDM = true;
+				}
+				else {
+					isNonMutedDM = !chOverride->IsMuted();
+				}
+			}
+
+			if (!pSettings)
+				isNonMutedDM = true;
+		}
+
+		if ((isNonMutedDM || msg.CheckWasMentioned(m_mySnowflake, guildId, suppEveryone, suppRoles)) && m_CurrentChannel != channelId)
 			pChan->m_mentionCount++;
 	}
 

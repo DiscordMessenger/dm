@@ -65,6 +65,7 @@ void GuildSettings::Load(const nlohmann::json& j)
 	m_bSuppressRoles = GetFieldSafeBool(j, "suppress_roles", false);
 	m_muteConfig.Load(j, "mute_config");
 	m_messageNotifications = eMessageNotifications(GetFieldSafeInt(j, "message_notifications"));
+	m_channelOverride.clear();
 
 	auto it = j.find("channel_overrides");
 	if (it != j.end() && it->is_array())
