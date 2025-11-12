@@ -100,6 +100,7 @@
 #define IDI_NOTIFICATION_2K             100
 #define IDI_FOLDER                      101
 #define IDC_CLICKER                     102
+#define IDR_ATTACHMENT_CONTEXT          103
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -427,7 +428,6 @@
 #define IDC_SHOW_EMBEDS                 896
 #define IDC_USE_12HR_TIME               897
 #define IDC_ENABLE_BALLOON_NOTIFS       898
-#define IDC_USE_12HR_TIME2              898
 #define IDC_SHOW_BLOCKED_MESSAGES       898
 #define IDC_FLASH_TASKBAR               899
 #define IDC_USE_DISCORD_SOUND           900
@@ -506,6 +506,10 @@
 #define ID_NOTIFICATION_SHOW            1068
 #define ID_NOTIFICATION_EXIT            1069
 #define ID_FILE_RECONNECTTODISCORD      1079
+#define ID_DUMMY_COPYIMAGELINK          1080
+#define ID_DUMMY_SAVEIMAGE              1081
+#define ID_DUMMY_COPYIMAGE              1082
+#define ID_DUMMY_OPENIMAGELINK          1083
 #define IDR_MAIN_ACCELS                 1201
 #define IDA_SEARCH                      1301
 #define IDA_QUICKSWITCHER               1302
@@ -515,8 +519,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        103
-#define _APS_NEXT_COMMAND_VALUE         1080
+#define _APS_NEXT_RESOURCE_VALUE        104
+#define _APS_NEXT_COMMAND_VALUE         1084
 #define _APS_NEXT_CONTROL_VALUE         917
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif

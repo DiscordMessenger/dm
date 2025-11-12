@@ -229,6 +229,58 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 			WindowScrollXY(hWnd, diffLR, diffUD);
 			break;
 		}
+		case WM_RBUTTONUP:
+		{
+			if (!NT31SimplifiedInterface())
+				break;
+
+			// NT 3.1 doesn't implement WM_CONTEXTMENU, so send it ourselves
+			POINT pt;
+			pt.x = GET_X_LPARAM(lParam);
+			pt.y = GET_Y_LPARAM(lParam);
+			ClientToScreen(hWnd, &pt);
+
+			ImageViewerChildWndProc(hWnd, WM_CONTEXTMENU, (WPARAM)hWnd, MAKELPARAM(pt.x, pt.y));
+			break;
+		}
+		case WM_CONTEXTMENU:
+		{
+			int xPos = GET_X_LPARAM(lParam);
+			int yPos = GET_Y_LPARAM(lParam);
+
+			HMENU menu = GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_ATTACHMENT_CONTEXT)), 0);
+			TrackPopupMenu(menu, TPM_RIGHTBUTTON, xPos, yPos, 0, hWnd, NULL);
+			break;
+		}
+		case WM_COMMAND:
+		{
+			switch (LOWORD(wParam))
+			{
+				case ID_DUMMY_COPYIMAGE:
+				{
+					HBITMAP bitmapCopy = (HBITMAP)ri::CopyImage(g_hBitmapFull->Frames[0].Bitmap, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+					if (!bitmapCopy)
+						break;
+
+					if (!OpenClipboard(hWnd)) {
+						DeleteBitmap(bitmapCopy);
+						break;
+					}
+
+					EmptyClipboard();
+					
+					if (!SetClipboardData(CF_BITMAP, bitmapCopy))
+					{
+						DbgPrintW("Couldn't copy bitmap!");
+						DeleteBitmap(bitmapCopy);
+					}
+
+					CloseClipboard();
+					break;
+				}
+			}
+			break;
+		}
 		case WM_PAINT:
 		{
 			PAINTSTRUCT ps;
@@ -492,8 +544,8 @@ void CreateImageViewer(const std::string& proxyURL, const std::string& url, cons
 
 	// Try to fit the preview inside the max width and height.
 	float ratio = std::min(1.0f * maxWidth / std::max(1, wWidth), 1.0f * maxHeight / std::max(1, wHeight));
-	iWidth = int(iWidth * ratio);
-	iHeight = int(iHeight * ratio);
+	iWidth = std::min(width, int(iWidth * ratio));
+	iHeight = std::min(height, int(iHeight * ratio));
 	wWidth = std::min(maxWidth, width);
 	wHeight = std::min(maxHeight, height);
 
