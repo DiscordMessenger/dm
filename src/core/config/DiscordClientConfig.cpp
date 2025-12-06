@@ -19,17 +19,17 @@ DiscordClientConfig::DiscordClientConfig()
 	m_browser = "Discord Client";
 	m_systemLocale = "en-US";
 	m_timeZone = "Europe/Bucharest"; // TODO: UTC here
-	m_browserVersion = "33.4.0";
+	m_browserVersion = "37.6.0";
 	m_browserVersionSimple = "125";
 	m_webKitVersion = "537.36";
 	m_osVersion = "10.0.22621";
 	m_osSdkVersion = "22621";
 	m_releaseChannel = "canary";
-	m_clientBuildNumber = 370948;
-	m_nativeBuildNumber = 59076;
-	m_clientVersion = "1.0.556";
+	m_clientBuildNumber = 476782;
+	m_nativeBuildNumber = 72830;
+	m_clientVersion = "1.0.777";
 	m_osVersionSimple = "10";
-	m_chromeVersion = "130.0.6723.191";
+	m_chromeVersion = "138.0.7204.251";
 
 	m_browserUserAgent =
 		"Mozilla/5.0 (Windows NT "
