@@ -1868,6 +1868,7 @@ static bool ForceSingleInstance(LPCTSTR pClassName)
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nShowCmd)
 {
 	g_hInstance = hInstance;
+	srand(time(NULL));
 
 	PrepareCutDownFlags(pCmdLine);
 

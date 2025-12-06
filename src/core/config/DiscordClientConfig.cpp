@@ -1,6 +1,17 @@
 #include "DiscordClientConfig.hpp"
 #include <boost/base64/base64.hpp>
 
+static uint64_t RandU64()
+{
+	// look, I know this is horrible, but deal with it
+	return (uint64_t)(
+		rand() * RAND_MAX * RAND_MAX * RAND_MAX +
+		rand() * RAND_MAX * RAND_MAX +
+		rand() * RAND_MAX +
+		rand()
+	);
+}
+
 // TODO: Fetch some of these properties from the system (e.g. system locale)
 
 // This configuration simulates a Microsoft Edge web client on Microsoft Windows 10.
@@ -47,6 +58,8 @@ DiscordClientConfig::DiscordClientConfig()
 
 	m_secChUa = "\"Not?A_Brand\";v=\"99\", \"Chromium\";v=\"130\"";
 
+	GenerateLaunchSignature();
+
 	// Ok, now serialize it
 	nlohmann::json j = Serialize();
 
@@ -79,6 +92,7 @@ nlohmann::json DiscordClientConfig::Serialize() const
 	j["os_version"] = m_osVersion;
 	j["release_channel"] = m_releaseChannel;
 	j["system_locale"] = m_systemLocale;
+	j["launch_signature"] = m_launchSignature;
 	return j;
 }
 
@@ -90,6 +104,26 @@ const std::string& DiscordClientConfig::GetSerializedJsonBlob() const
 const std::string& DiscordClientConfig::GetSerializedBase64Blob() const
 {
 	return m_serializedBase64Blob;
+}
+
+void DiscordClientConfig::GenerateLaunchSignature()
+{
+	m_launchUuidPart1 = RandU64();
+	m_launchUuidPart2 = RandU64();
+
+	// make some bits zero
+	m_launchUuidPart1 &= ~((1ULL << 11) | (1ULL << 24) | (1ULL << 38) | (1ULL << 48) | (1ULL << 55) | (1ULL << 61));
+	m_launchUuidPart2 &= ~((1ULL << 11) | (1ULL << 20) | (1ULL << 27) | (1ULL << 36) | (1ULL << 44) | (1ULL << 55));
+
+	char buffer[36];
+	snprintf(buffer, sizeof buffer, "%016llx%016llx", m_launchUuidPart1, m_launchUuidPart2);
+
+	// turn it into a uid in the most hacky way possible
+	m_launchSignature = std::string(buffer, 8) + "-"
+		+ std::string(buffer + 8, 4) + "-"
+		+ std::string(buffer + 12, 4) + "-"
+		+ std::string(buffer + 16, 4) + "-"
+		+ std::string(buffer + 20, 12);
 }
 
 const std::string& DiscordClientConfig::GetUserAgent() const

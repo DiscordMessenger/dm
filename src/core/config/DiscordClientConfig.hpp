@@ -19,6 +19,9 @@ public:
 	const std::string& GetSerializedBase64Blob() const;
 
 private:
+	void GenerateLaunchSignature();
+
+private:
 	std::string m_os;
 	std::string m_browser;
 	std::string m_systemLocale;
@@ -44,6 +47,9 @@ private:
 	std::string m_timeZone;
 	std::string m_serializedJsonBlob;
 	std::string m_serializedBase64Blob;
+
+	std::string m_launchSignature;
+	uint64_t m_launchUuidPart1, m_launchUuidPart2;
 };
 
 DiscordClientConfig* GetClientConfig();
