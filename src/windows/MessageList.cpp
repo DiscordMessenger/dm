@@ -59,6 +59,15 @@ static const int g_WelcomeTextCount = _countof(g_WelcomeTextIds);
 MessageList::MessageList()
 {
 	m_defaultBackgroundBrush = ri::GetSysColorBrush(COLOR_WINDOW);
+
+	// This ugly hack allows me to calculate the offset between GMT and
+	// local time.  This is used when calculating date gaps.
+	time_t t1 = 10000000;
+	struct tm stm;
+	stm = *gmtime(&t1);
+	time_t t2 = mktime(&stm);
+
+	m_tzOffset = t1 - t2;
 }
 
 MessageList::~MessageList()
@@ -4429,7 +4438,7 @@ void MessageList::AdjustHeightInfo(
 
 bool MessageList::ShouldBeDateGap(time_t oldTime, time_t newTime)
 {
-	return !m_bManagedByOwner && (oldTime / 86400 != newTime / 86400);
+	return !m_bManagedByOwner && ((oldTime + m_tzOffset) / 86400 != (newTime + m_tzOffset) / 86400);
 }
 
 bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, MessageType::eType prevType, const std::string& prevAuthorName, const std::string& prevAuthorAvatar, const MessageItem& item, bool ifChainTooLongToo)

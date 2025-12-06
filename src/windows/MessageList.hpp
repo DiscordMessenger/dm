@@ -400,6 +400,8 @@ private:
 	bool m_bManagedByOwner = false;
 	bool m_bIsTopDown = false;
 
+	int m_tzOffset = 0;
+
 	void Scroll(int amount, RECT* rcClip = NULL, bool shiftAllRects = true);
 	
 	void MessageHeightChanged(int oldHeight, int newHeight, bool toStart = false);
