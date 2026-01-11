@@ -4441,6 +4441,16 @@ bool MessageList::ShouldBeDateGap(time_t oldTime, time_t newTime)
 	return !m_bManagedByOwner && ((oldTime + m_tzOffset) / 86400 != (newTime + m_tzOffset) / 86400);
 }
 
+void MessageList::OnPageUp()
+{
+	SendMessage(m_hwnd, WM_VSCROLL, SB_PAGEUP, 0);
+}
+
+void MessageList::OnPageDown()
+{
+	SendMessage(m_hwnd, WM_VSCROLL, SB_PAGEDOWN, 0);
+}
+
 bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, MessageType::eType prevType, const std::string& prevAuthorName, const std::string& prevAuthorAvatar, const MessageItem& item, bool ifChainTooLongToo)
 {
 	if (m_bManagedByOwner)

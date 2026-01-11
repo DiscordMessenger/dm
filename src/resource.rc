@@ -1411,9 +1411,12 @@ IDC_CLICKER             CURSOR                  "../res/cursors/cur_clicker.cur"
 
 IDR_MAIN_ACCELS ACCELERATORS
 BEGIN
+    "V",            IDA_PASTE,              VIRTKEY, CONTROL, NOINVERT
     "K",            IDA_QUICKSWITCHER,      VIRTKEY, CONTROL, NOINVERT
     "F",            IDA_SEARCH,             VIRTKEY, CONTROL, NOINVERT
-    "V",            IDA_PASTE,              VIRTKEY, CONTROL, NOINVERT
+    VK_PRIOR,       IDA_PAGE_UP,            VIRTKEY, NOINVERT
+    VK_NEXT,        IDA_PAGE_DOWN,          VIRTKEY, NOINVERT
+    "A",            IDA_SELECT_ALL,         VIRTKEY, CONTROL, NOINVERT
 END
 
 

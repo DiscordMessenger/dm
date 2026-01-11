@@ -569,6 +569,12 @@ void MessageEditor::OnLoadedMemberChunk()
 	m_autoComplete.Update();
 }
 
+void MessageEditor::SelectAll()
+{
+	SetFocus(m_edit_hwnd);
+	Edit_SetSel(m_edit_hwnd, 0, -1);
+}
+
 LRESULT MessageEditor::EditWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	MessageEditor* pThis = (MessageEditor*) GetWindowLongPtr(GetParent(hWnd), GWLP_USERDATA);

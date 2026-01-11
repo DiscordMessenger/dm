@@ -519,6 +519,8 @@ public:
 	bool SendToMessage(Snowflake sf, bool addGapIfNeeded = true, bool forceInvalidate = false);
 	void UpdateAllowDrop();
 	bool ShouldBeDateGap(time_t oldTime, time_t newTime);
+	void OnPageUp();
+	void OnPageDown();
 
 	// TODO: Wouldn't it be more sane to have a pointer to the last message item, or something?
 	bool ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, MessageType::eType prevType, const std::string& prevAuthorName, const std::string& prevAuthorAvatar, const MessageItem& item, bool ifChainTooLongToo);

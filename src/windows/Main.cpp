@@ -656,6 +656,21 @@ LRESULT HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (!isClipboardClosed) CloseClipboard();
 			break;
 		}
+		case IDA_PAGE_UP:
+		{
+			g_pMessageList->OnPageUp();
+			break;
+		}
+		case IDA_PAGE_DOWN:
+		{
+			g_pMessageList->OnPageDown();
+			break;
+		}
+		case IDA_SELECT_ALL:
+		{
+			g_pMessageEditor->SelectAll();
+			break;
+		}
 		case ID_NOTIFICATION_SHOW:
 			SendMessage(g_Hwnd, WM_RESTOREAPP, 0, 0);
 			break;
