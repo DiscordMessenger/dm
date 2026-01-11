@@ -429,7 +429,7 @@ void FormattedText::Tokenize(const std::string& newmsg, const std::string& oldms
 					else if (msg[i] == '}') curlyDepth--;
 
 					if (parenDepth < 0 || brackDepth < 0 || curlyDepth < 0 ||
-						msg[i] == ' ' || msg[i] == '\n' || msg[i] == '\r' || msg[i] == '>')
+						(msg[i] >= 0 && msg[i] <= ' ') || msg[i] == '>')
 						break;
 				}
 
@@ -848,7 +848,7 @@ void FormattedText::UseRegex(std::string& str)
 				else if (str[i] == '}') curlyDepth--;
 
 				if (parenDepth < 0 || brackDepth < 0 || curlyDepth < 0 ||
-					str[i] == ' ' || str[i] == '\n' || str[i] == '\r' || str[i] == '>')
+					(str[i] >= 0 && str[i] <= ' ') || str[i] == '>')
 					break;
 			}
 
