@@ -569,9 +569,14 @@ void MessageEditor::OnLoadedMemberChunk()
 	m_autoComplete.Update();
 }
 
-void MessageEditor::SelectAll()
+void MessageEditor::Focus()
 {
 	SetFocus(m_edit_hwnd);
+}
+
+void MessageEditor::SelectAll()
+{
+	Focus();
 	Edit_SetSel(m_edit_hwnd, 0, -1);
 }
 

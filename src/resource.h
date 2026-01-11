@@ -510,20 +510,30 @@
 #define ID_DUMMY_SAVEIMAGE              1081
 #define ID_DUMMY_COPYIMAGE              1082
 #define ID_DUMMY_OPENIMAGELINK          1083
-#define IDA_PAGE_UP                     1084
-#define IDA_PAGE_DOWN                   1085
-#define IDA_SELECT_ALL                  1086
 #define IDR_MAIN_ACCELS                 1201
 #define IDA_SEARCH                      1301
 #define IDA_QUICKSWITCHER               1302
 #define IDA_PASTE                       1303
+#define IDA_PAGE_UP                     1304
+#define IDA_PAGE_DOWN                   1305
+#define IDA_SELECT_ALL                  1306
+#define IDA_GUILD_0                     1307
+#define IDA_GUILD_1                     1308
+#define IDA_GUILD_2                     1309
+#define IDA_GUILD_3                     1310
+#define IDA_GUILD_4                     1311
+#define IDA_GUILD_5                     1312
+#define IDA_GUILD_6                     1313
+#define IDA_GUILD_7                     1314
+#define IDA_GUILD_8                     1315
+#define IDA_GUILD_9                     1316
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        104
-#define _APS_NEXT_COMMAND_VALUE         1087
+#define _APS_NEXT_COMMAND_VALUE         1099
 #define _APS_NEXT_CONTROL_VALUE         917
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif

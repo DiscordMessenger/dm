@@ -1417,6 +1417,16 @@ BEGIN
     VK_PRIOR,       IDA_PAGE_UP,            VIRTKEY, NOINVERT
     VK_NEXT,        IDA_PAGE_DOWN,          VIRTKEY, NOINVERT
     "A",            IDA_SELECT_ALL,         VIRTKEY, CONTROL, NOINVERT
+    "1",            IDA_GUILD_0,            VIRTKEY, CONTROL, NOINVERT
+    "2",            IDA_GUILD_1,            VIRTKEY, CONTROL, NOINVERT
+    "3",            IDA_GUILD_2,            VIRTKEY, CONTROL, NOINVERT
+    "4",            IDA_GUILD_3,            VIRTKEY, CONTROL, NOINVERT
+    "5",            IDA_GUILD_4,            VIRTKEY, CONTROL, NOINVERT
+    "6",            IDA_GUILD_5,            VIRTKEY, CONTROL, NOINVERT
+    "7",            IDA_GUILD_6,            VIRTKEY, CONTROL, NOINVERT
+    "8",            IDA_GUILD_7,            VIRTKEY, CONTROL, NOINVERT
+    "9",            IDA_GUILD_8,            VIRTKEY, CONTROL, NOINVERT
+    "0",            IDA_GUILD_9,            VIRTKEY, CONTROL, NOINVERT
 END
 
 

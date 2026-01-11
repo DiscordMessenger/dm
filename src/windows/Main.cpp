@@ -671,6 +671,29 @@ LRESULT HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pMessageEditor->SelectAll();
 			break;
 		}
+		case IDA_GUILD_0:
+		case IDA_GUILD_1:
+		case IDA_GUILD_2:
+		case IDA_GUILD_3:
+		case IDA_GUILD_4:
+		case IDA_GUILD_5:
+		case IDA_GUILD_6:
+		case IDA_GUILD_7:
+		case IDA_GUILD_8:
+		case IDA_GUILD_9:
+		{
+			int index = LOWORD(wParam) - IDA_GUILD_0;
+
+			std::vector<Snowflake> guildIDs;
+			guildIDs.push_back(0);
+			GetDiscordInstance()->GetGuildIDsOrdered(guildIDs, false);
+			
+			if (index < (int)guildIDs.size()) {
+				GetDiscordInstance()->OnSelectGuild(guildIDs[index]);
+			}
+
+			break;
+		}
 		case ID_NOTIFICATION_SHOW:
 			SendMessage(g_Hwnd, WM_RESTOREAPP, 0, 0);
 			break;
@@ -893,6 +916,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				g_pStatusBar->AddTypingName(tu.second.m_key, tu.second.m_startTimeMS / 1000ULL, tu.second.m_name);
 			}
 
+			g_pMessageEditor->Focus();
 			break;
 		}
 		case WM_UPDATEMEMBERLIST:

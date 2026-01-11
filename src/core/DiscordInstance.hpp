@@ -312,7 +312,8 @@ public:
 
 			if (item->IsFolder())
 			{
-				sf.push_back(BIT_FOLDER | item->GetID());
+				if (bUI)
+					sf.push_back(BIT_FOLDER | item->GetID());
 
 				auto subitems = item->GetItems();
 				for (auto& subitem : *subitems)
@@ -321,7 +322,8 @@ public:
 				}
 
 				// add an empty item to terminate this folder
-				sf.push_back(BIT_FOLDER);
+				if (bUI)
+					sf.push_back(BIT_FOLDER);
 			}
 			else
 			{
