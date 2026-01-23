@@ -49,7 +49,7 @@ private:
 	std::string m_serializedBase64Blob;
 
 	std::string m_launchSignature;
-	uint64_t m_launchUuidPart1, m_launchUuidPart2;
+	std::string m_clientLaunchId;
 };
 
 DiscordClientConfig* GetClientConfig();

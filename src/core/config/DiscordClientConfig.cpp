@@ -5,11 +5,24 @@ static uint64_t RandU64()
 {
 	// look, I know this is horrible, but deal with it
 	return (uint64_t)(
-		rand() * RAND_MAX * RAND_MAX * RAND_MAX +
-		rand() * RAND_MAX * RAND_MAX +
-		rand() * RAND_MAX +
-		rand()
+		((uint64_t)rand() << 48LL) +
+		((uint64_t)rand() << 32LL) +
+		((uint64_t)rand() << 16LL) +
+		((uint64_t)rand())
 	);
+}
+
+static std::string FormatUUID(uint64_t partLeft, uint64_t partRight)
+{
+	char buffer[36];
+	snprintf(buffer, sizeof buffer, "%016llx%016llx", partLeft, partRight);
+
+	// turn it into a uid in the most hacky way possible
+	return std::string(buffer, 8) + "-"
+		 + std::string(buffer + 8, 4) + "-"
+		 + std::string(buffer + 12, 4) + "-"
+		 + std::string(buffer + 16, 4) + "-"
+		 + std::string(buffer + 20, 12);
 }
 
 // TODO: Fetch some of these properties from the system (e.g. system locale)
@@ -36,9 +49,9 @@ DiscordClientConfig::DiscordClientConfig()
 	m_osVersion = "10.0.22621";
 	m_osSdkVersion = "22621";
 	m_releaseChannel = "canary";
-	m_clientBuildNumber = 476782;
-	m_nativeBuildNumber = 72830;
-	m_clientVersion = "1.0.777";
+	m_clientBuildNumber = 488590;
+	m_nativeBuildNumber = 74182;
+	m_clientVersion = "1.0.810";
 	m_osVersionSimple = "10";
 	m_chromeVersion = "138.0.7204.251";
 
@@ -56,7 +69,7 @@ DiscordClientConfig::DiscordClientConfig()
 		+ " Safari/"
 		+ m_webKitVersion;
 
-	m_secChUa = "\"Not?A_Brand\";v=\"99\", \"Chromium\";v=\"130\"";
+	m_secChUa = "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\"";
 
 	GenerateLaunchSignature();
 
@@ -93,6 +106,8 @@ nlohmann::json DiscordClientConfig::Serialize() const
 	j["release_channel"] = m_releaseChannel;
 	j["system_locale"] = m_systemLocale;
 	j["launch_signature"] = m_launchSignature;
+	j["client_launch_id"] = m_clientLaunchId;
+	j["client_app_state"] = "focused";
 	return j;
 }
 
@@ -108,22 +123,15 @@ const std::string& DiscordClientConfig::GetSerializedBase64Blob() const
 
 void DiscordClientConfig::GenerateLaunchSignature()
 {
-	m_launchUuidPart1 = RandU64();
-	m_launchUuidPart2 = RandU64();
+	uint64_t launchUuidPart1 = RandU64(), launchUuidPart2 = RandU64();
 
 	// make some bits zero
-	m_launchUuidPart1 &= ~((1ULL << 11) | (1ULL << 24) | (1ULL << 38) | (1ULL << 48) | (1ULL << 55) | (1ULL << 61));
-	m_launchUuidPart2 &= ~((1ULL << 11) | (1ULL << 20) | (1ULL << 27) | (1ULL << 36) | (1ULL << 44) | (1ULL << 55));
+	launchUuidPart1 &= ~((1ULL << 11) | (1ULL << 24) | (1ULL << 38) | (1ULL << 48) | (1ULL << 55) | (1ULL << 61));
+	launchUuidPart2 &= ~((1ULL << 11) | (1ULL << 20) | (1ULL << 27) | (1ULL << 36) | (1ULL << 44) | (1ULL << 55));
 
-	char buffer[36];
-	snprintf(buffer, sizeof buffer, "%016llx%016llx", m_launchUuidPart1, m_launchUuidPart2);
+	m_launchSignature = FormatUUID(launchUuidPart1, launchUuidPart2);
 
-	// turn it into a uid in the most hacky way possible
-	m_launchSignature = std::string(buffer, 8) + "-"
-		+ std::string(buffer + 8, 4) + "-"
-		+ std::string(buffer + 12, 4) + "-"
-		+ std::string(buffer + 16, 4) + "-"
-		+ std::string(buffer + 20, 12);
+	m_clientLaunchId = FormatUUID(RandU64(), RandU64());
 }
 
 const std::string& DiscordClientConfig::GetUserAgent() const
