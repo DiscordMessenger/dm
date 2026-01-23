@@ -24,8 +24,12 @@ NetRequest::NetRequest(
 	authorization(_authorization),
 	additional_data(_additional_data)
 {
+	assert(_size == 0 || _bytes);
 	params_bytes.resize(_size);
-	memcpy(params_bytes.data(), _bytes, _size);
+
+	if (_size != 0) {
+		memcpy(params_bytes.data(), _bytes, _size);
+	}
 
 	if (!_func)
 		_func = &HTTPClient::DefaultRequestHandler;
