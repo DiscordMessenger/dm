@@ -1904,8 +1904,14 @@ static bool ForceSingleInstance(LPCTSTR pClassName)
 
 #include "MemberListOld.hpp"
 
+// Blackwingcat's Extended Kernel workaround: Apparently, the custom user32.dll it uses tries
+// to write to the class name, which previously was part of .rodata, which is of course read-only.
+TCHAR g_className[64];
+
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nShowCmd)
 {
+	_tcscpy(g_className, TEXT("DiscordMessengerClass"));
+
 	g_hInstance = hInstance;
 	srand(time(NULL));
 
@@ -1919,13 +1925,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 #endif
 
 	ERR_load_crypto_strings();
-	LPCTSTR pClassName = TEXT("DiscordMessengerClass");
 
 	InitializeCOM(); // important because otherwise TTS/shell stuff might not work
 	InitCommonControls(); // actually a dummy but adds the needed reference to comctl32
 	// (see https://devblogs.microsoft.com/oldnewthing/20050718-16/?p=34913 )
 
-	if (!ForceSingleInstance(pClassName))
+	if (!ForceSingleInstance(g_className))
 		return 0;
 
 	CheckIfItsStartup(pCmdLine);
@@ -1973,7 +1978,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 	wc.lpfnWndProc   = WindowProc;
 	wc.hInstance     = hInstance;
-	wc.lpszClassName = pClassName;
+	wc.lpszClassName = g_className;
 	wc.hbrBackground = g_backgroundBrush;
 	wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
 	wc.hIcon         = g_Icon = LoadIcon(hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)));
@@ -2025,7 +2030,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	}
 
 	g_Hwnd = CreateWindow(
-		/* class */      TEXT("DiscordMessengerClass"),
+		/* class */      g_className,
 		/* title */      TmGetTString(IDS_PROGRAM_NAME),
 		/* style */      flags,
 		/* x pos */      CW_USEDEFAULT,
