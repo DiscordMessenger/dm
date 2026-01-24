@@ -2036,7 +2036,8 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 	const int offset3 = isCompact ? iconSize : 0;
 
 	if (isCompact) {
-		HRGN rgn = CreateRectRgn(
+		HRGN rgn = DoubleBufferingHelper::CreateRectRgn(
+			hdc,
 			rcReply.left + iconOffset,
 			rcReply.bottom + ScaleByDPI(5) - iconSize,
 			rcReply.left + iconOffset + offset2 + offset3 - ScaleByDPI(20),

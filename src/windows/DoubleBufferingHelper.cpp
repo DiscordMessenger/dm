@@ -25,6 +25,11 @@ DoubleBufferingHelper::~DoubleBufferingHelper()
 	DeleteBitmap(m_hBitmap);
 }
 
+HRGN DoubleBufferingHelper::CreateRectRgn(HDC hdc, int left, int top, int right, int bottom)
+{
+	return CreateRectRgn(hdc, RECT{ left, top, right, bottom });
+}
+
 HRGN DoubleBufferingHelper::CreateRectRgn(HDC hdc, RECT rect)
 {
 	POINT pt;

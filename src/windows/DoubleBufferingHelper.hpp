@@ -19,6 +19,7 @@ public:
 
 public:
 	// create a rectangle region with the correct viewport offset.
+	static HRGN CreateRectRgn(HDC hdc, int left, int top, int right, int bottom);
 	static HRGN CreateRectRgn(HDC hdc, RECT rect);
 
 private:

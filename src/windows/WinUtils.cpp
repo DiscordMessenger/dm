@@ -19,6 +19,7 @@
 #include "ImageViewer.hpp"
 #include "TextManager.hpp"
 #include "ProgressDialog.hpp"
+#include "DoubleBufferingHelper.hpp"
 
 #ifndef OLD_WINDOWS
 #include <shlwapi.h>
@@ -477,7 +478,13 @@ void DrawBitmap(HDC hdc, HBITMAP bitmap, int x, int y, LPRECT clip, COLORREF tra
 		POINT vpOrg = {};
 		GetViewportOrgEx(hdc, &vpOrg);
 		OffsetRect(&clipCopy, vpOrg.x, vpOrg.y);
-		hrgn = CreateRectRgn(clipCopy.left, clipCopy.top, clipCopy.right, clipCopy.bottom);
+		hrgn = DoubleBufferingHelper::CreateRectRgn(
+			hdc,
+			clipCopy.left,
+			clipCopy.top,
+			clipCopy.right,
+			clipCopy.bottom
+		);
 		SelectClipRgn(hdc, hrgn);
 	}
 
@@ -1244,12 +1251,12 @@ void DrawLoadingBox(HDC hdc, RECT rect)
 {
 	ri::DrawEdge(hdc, &rect, BDR_SUNKEN, BF_RECT);
 
-	HRGN rgn = CreateRectRgnIndirect(&rect);
+	HRGN rgn = DoubleBufferingHelper::CreateRectRgn(hdc, rect);
 	SelectClipRgn(hdc, rgn);
 
 	int smcxicon = GetSystemMetrics(SM_CXICON);
 	int x = rect.left + (rect.right - rect.left - smcxicon) / 2;
-	int y = rect.top  + (rect.bottom - rect.top - smcxicon) / 2;
+	int y = rect.top + (rect.bottom - rect.top - smcxicon) / 2;
 	ri::DrawIconEx(hdc, x, y, g_WaitIcon, smcxicon, smcxicon, 0, NULL, DI_COMPAT | DI_NORMAL);
 
 	SelectClipRgn(hdc, NULL);
@@ -1260,7 +1267,7 @@ void DrawErrorBox(HDC hdc, RECT rect)
 {
 	ri::DrawEdge(hdc, &rect, BDR_SUNKEN, BF_RECT);
 
-	HRGN rgn = CreateRectRgnIndirect(&rect);
+	HRGN rgn = DoubleBufferingHelper::CreateRectRgn(hdc, rect);
 	SelectClipRgn(hdc, rgn);
 
 	int smcxsmicon = GetSystemMetrics(SM_CXSMICON);
