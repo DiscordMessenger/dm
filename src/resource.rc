@@ -427,6 +427,10 @@ IDI_NOTIFICATION_2K     ICON                    "../res/icons/icon_notification_
 
 IDI_FOLDER              ICON                    "../res/icons/icon_folder.ico"
 
+IDI_PROFILE_BORDER_UNREAD ICON                    "../res/icons/icon_profile_border_unread.ico"
+
+IDI_PROFILE_BORDER_UNREAD_2K ICON                    "../res/icons/icon_profile_border_unread_2k.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -440,7 +444,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,97,58,50,14
     CTEXT           "Discord Messenger",IDC_PROGRAM_NAME,1,6,246,8,SS_CENTERIMAGE
-    CTEXT           "Copyright (C) 2023-2025 iProgramInCpp. Licensed under the MIT license.",IDC_STATIC,1,42,246,12,SS_CENTERIMAGE
+    CTEXT           "Copyright (C) 2023-2026 iProgramInCpp. Licensed under the MIT license.",IDC_STATIC,1,42,246,12,SS_CENTERIMAGE
     ICON            IDI_ICON,IDC_STATIC,112,21,20,20
 END
 
@@ -725,7 +729,7 @@ FONT 8, "MS Shell Dlg"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,97,58,50,14
     CTEXT           "Discord Messenger",IDC_PROGRAM_NAME,1,6,246,8,SS_CENTERIMAGE
-    CTEXT           "Copyright (C) 2023-2025 iProgramInCpp. Licensed under the MIT license.",IDC_STATIC,1,42,246,12,SS_CENTERIMAGE
+    CTEXT           "Copyright (C) 2023-2026 iProgramInCpp. Licensed under the MIT license.",IDC_STATIC,1,42,246,12,SS_CENTERIMAGE
     ICON            IDI_ICON,IDC_STATIC,112,21,20,20
 END
 
@@ -1335,12 +1339,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "iProgramInCpp"
             VALUE "FileDescription", "Discord Messenger"
-            VALUE "FileVersion", "1.10"
+            VALUE "FileVersion", "1.11"
             VALUE "InternalName", "DiscordMessenger.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2023-2025 iProgramInCpp - Licensed under the MIT license."
+            VALUE "LegalCopyright", "Copyright (C) 2023-2026 iProgramInCpp - Licensed under the MIT license."
             VALUE "OriginalFilename", "DiscordMessenger.exe"
             VALUE "ProductName", "Discord Messenger"
-            VALUE "ProductVersion", "1.10"
+            VALUE "ProductVersion", "1.11"
         END
     END
     BLOCK "VarFileInfo"

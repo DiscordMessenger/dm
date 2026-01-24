@@ -599,7 +599,7 @@ float CompareFuzzy(const std::string& item, const char* query)
 
 float GetAppVersion()
 {
-	return 1.10f;
+	return 1.11f;
 }
 
 // C/C++ macro memes
@@ -609,9 +609,9 @@ float GetAppVersion()
 const char* GetAppVersionString()
 {
 #ifdef GIT_COMMIT_HASH
-	return "V1.10 [Nightly " STRINGIFY(GIT_COMMIT_HASH) "]";
+	return "V1.11 [Nightly " STRINGIFY(GIT_COMMIT_HASH) "]";
 #else
-	return "V1.10";
+	return "V1.11";
 #endif
 }
 

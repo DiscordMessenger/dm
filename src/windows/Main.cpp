@@ -143,6 +143,7 @@ HICON    g_UploadIcon;
 HICON    g_DownloadIcon;
 HICON    g_ProfileBorderIcon;
 HICON    g_ProfileBorderIconGold;
+HICON    g_ProfileBorderIconUnread;
 HFONT
 	g_MessageTextFont,
 	g_AuthorTextFont,
@@ -1985,9 +1986,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	wc.lpszMenuName  = MAKEINTRESOURCE(IDR_MAINMENU);
 
 	// NOTE: Despite that we pass LR_SHARED, if this "isn't a standard size" (whatever Microsoft means), we must still delete it!!
-	g_DefaultProfilePicture = (HBITMAP)ri::LoadImage(hInstance, MAKEINTRESOURCE(IDB_DEFAULT),                   IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
-	g_ProfileBorderIcon     = (HICON)  ri::LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER)),      IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
-	g_ProfileBorderIconGold = (HICON)  ri::LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER_GOLD)), IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+	g_DefaultProfilePicture   = (HBITMAP)ri::LoadImage(hInstance, MAKEINTRESOURCE(IDB_DEFAULT),                     IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+	g_ProfileBorderIcon       = (HICON)  ri::LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER)),        IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+	g_ProfileBorderIconGold   = (HICON)  ri::LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER_GOLD)),   IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+	g_ProfileBorderIconUnread = (HICON)  ri::LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER_UNREAD)), IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
 
 	g_defaultImage.Frames.resize(1);
 	g_defaultImage.Frames[0].Bitmap = g_DefaultProfilePicture;

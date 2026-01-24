@@ -155,11 +155,11 @@ HImage* AvatarCache::GetImageSpecial(const std::string& resource, bool& hasAlpha
 
 		SAFE_DELETE(himg);
 
-		// just return the default...
-		DbgPrintW("Image %s could not be decoded!", id.c_str());
-#endif
+		DbgPrintW("Image %s could not be decoded!  Falling back to loading it from remote source", id.c_str());
+#else
 		SetImage(id, HIMAGE_ERROR, false);
 		return GetImageSpecial(id, hasAlphaOut);
+#endif
 	}
 
 	// Could not find it in the cache, so request it from discord

@@ -93,3 +93,12 @@ bool Guild::IsFirstChannel(Snowflake channel)
 
 	return lowestId == channel;
 }
+
+bool Guild::IsUnread()
+{
+	for (auto& chan : m_channels) {
+		if (chan.HasUnreadMessages())
+			return true;
+	}
+	return false;
+}

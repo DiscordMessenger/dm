@@ -1137,6 +1137,7 @@ int MapIconToOldIfNeeded(int iconID)
 
 	switch (iconID)
 	{
+		case IDI_PROFILE_BORDER_UNREAD: return IDI_PROFILE_BORDER_UNREAD_2K;
 		case IDI_PROFILE_BORDER_GOLD: return IDI_PROFILE_BORDER_GOLD_2K;
 		case IDI_CHANNEL_MENTIONED: return IDI_CHANNEL_MENTIONED_2K;
 		case IDI_CHANNEL_UNREAD: return IDI_CHANNEL_UNREAD_2K;
@@ -1189,7 +1190,7 @@ int MapDialogToOldIfNeeded(int iid)
 		case IDD_DIALOG_OPTIONS: return IDD_DIALOG_PREFERENCES_ND;
 
 		default: // no mapping
-			DbgPrintW("Warning, no non-dialogex-mapping for dialog id %d", iid);
+			DbgPrintW("Warning, no non-dialogex-mapping for dialog id %d. You might see a broken dialog", iid);
 			return iid;
 	}
 }

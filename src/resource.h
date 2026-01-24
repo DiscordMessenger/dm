@@ -101,6 +101,8 @@
 #define IDI_FOLDER                      101
 #define IDC_CLICKER                     102
 #define IDR_ATTACHMENT_CONTEXT          103
+#define IDI_PROFILE_BORDER_UNREAD       104
+#define IDI_PROFILE_BORDER_UNREAD_2K    105
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202

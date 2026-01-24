@@ -80,6 +80,7 @@ extern HFONT
 
 extern HICON g_ProfileBorderIcon;
 extern HICON g_ProfileBorderIconGold;
+extern HICON g_ProfileBorderIconUnread;
 
 // from shell32
 extern HICON g_folderClosedIcon;

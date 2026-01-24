@@ -106,4 +106,6 @@ struct Guild
 	void AddKnownMember(Snowflake sf) {
 		m_knownMembers.insert(sf);
 	}
+
+	bool IsUnread();
 };

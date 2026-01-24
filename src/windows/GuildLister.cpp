@@ -482,6 +482,11 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 	int pfpSize = GetProfilePictureSize();
 	int pfpBorderSize = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12);
 	bool isCurrent = GetDiscordInstance()->GetCurrentGuildID() == id;
+	bool isUnread = false;
+
+	Guild* guild = GetDiscordInstance()->GetGuild(id);
+	if (guild)
+		isUnread = guild->IsUnread();
 
 	SetRectEmpty(&m_iconRects[id]);
 
@@ -495,6 +500,8 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 		if (!NT31SimplifiedInterface()) {
 			if (isCurrent)
 				hborder = g_ProfileBorderIconGold;
+			else if (isUnread)
+				hborder = g_ProfileBorderIconUnread;
 			else
 				hborder = g_ProfileBorderIcon;
 		}
