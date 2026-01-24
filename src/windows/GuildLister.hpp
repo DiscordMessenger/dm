@@ -40,6 +40,7 @@ public:
 	~GuildLister();
 
 public:
+	static bool ShouldUseDoubleBuffering();
 	void ProperlyResizeSubWindows();
 	void ClearTooltips();
 	void UpdateTooltips();
@@ -58,6 +59,7 @@ public:
 
 private:
 	void DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Snowflake id, const std::string& textOver, bool hasAlpha, Snowflake currentFolder, bool isLastItem);
+	void Paint(HWND hWnd, HDC hdc, RECT& rcPaint);
 	int GetScrollableHeight();
 
 public:

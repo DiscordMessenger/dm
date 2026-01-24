@@ -7,6 +7,7 @@
 #include "ImageViewer.hpp"
 #include "UploadDialog.hpp"
 #include "ImageLoader.hpp"
+#include "DoubleBufferingHelper.hpp"
 #include "config/LocalSettings.hpp"
 
 #define STRAVAILABLE(str) ((str) && (str)[0] != 0)
@@ -3863,36 +3864,8 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (ShouldUseDoubleBuffering())
 			{
-				// Create a DC that we blit to, and then only the finished result goes on screen.
-				RECT rcClient{};
-				GetClientRect(hWnd, &rcClient);
-
-				int prWidth = paintRect.right - paintRect.left, prHeight = paintRect.bottom - paintRect.top;
-				
-				// TODO: Surely there's a better way. Surely there's a way to only create paintRect.width * paintRect.height
-				// sized bitmap, and somehow let Windows know that that's the offset we want. But I don't know of that way,
-				// so this'll do for now.
-				HBITMAP hbm = CreateCompatibleBitmap(hdc, prWidth, prHeight);
-				HDC hdcMem = CreateCompatibleDC(hdc);
-				HGDIOBJ old = SelectObject(hdcMem, hbm);
-
-				POINT oldOrg{};
-				SIZE oldSize{};
-				SetViewportOrgEx(hdcMem, -paintRect.left, -paintRect.top, &oldOrg);
-				//SetViewportExtEx(hdcMem, rcClient.right-rcClient.left,rcClient.bottom-rcClient.top, &oldSize);
-
-				// Paint on this object
-				pThis->Paint(hdcMem, paintRect);
-
-				SetViewportOrgEx(hdcMem, oldOrg.x, oldOrg.y, NULL);
-				//SetViewportExtEx(hdcMem, oldSize.cx, oldSize.cy, NULL);
-
-				// Ok, now flush to the main screen
-				BitBlt(hdc, paintRect.left, paintRect.top, prWidth, prHeight, hdcMem, 0, 0, SRCCOPY);
-
-				// And dispose of the evidence
-				DeleteDC(hdcMem);
-				DeleteBitmap(hbm);
+				DoubleBufferingHelper helper(hdc, paintRect);
+				pThis->Paint(helper.HdcMem(), paintRect);
 			}
 			else
 			{

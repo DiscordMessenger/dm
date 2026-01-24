@@ -767,6 +767,9 @@
     <ClInclude Include="..\src\windows\MissingDefinitions.hpp">
       <Filter>Header Files\Windows\Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\windows\DoubleBufferingHelper.hpp">
+      <Filter>Header Files\Windows\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\deps\asio\src\asio.cpp">
@@ -960,6 +963,9 @@
     </ClCompile>
     <ClCompile Include="..\src\windows\ImageViewer.cpp">
       <Filter>Source Files\Windows\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\DoubleBufferingHelper.cpp">
+      <Filter>Source Files\Windows\Utils</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

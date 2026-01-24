@@ -1,4 +1,5 @@
 #include "GuildLister.hpp"
+#include "DoubleBufferingHelper.hpp"
 #include "config/LocalSettings.hpp"
 
 #define C_GUILD_ICON_WIDTH (PROFILE_PICTURE_SIZE + 4)
@@ -40,6 +41,11 @@ GuildLister::~GuildLister()
 static int GetProfileBorderRenderSize()
 {
 	return ScaleByDPI(Supports32BitIcons() ? (PROFILE_PICTURE_SIZE_DEF + 12) : 64);
+}
+
+bool GuildLister::ShouldUseDoubleBuffering()
+{
+	return GetLocalSettings()->UseDoubleBuffering();
 }
 
 void GuildLister::ProperlyResizeSubWindows()
@@ -178,7 +184,7 @@ void GuildLister::UpdateTooltips()
 
 void GuildLister::Update()
 {
-	InvalidateRect(m_hwnd, NULL, false);
+	InvalidateRect(m_hwnd, NULL, FALSE);
 	UpdateTooltips();
 	UpdateScrollBar(false);
 }
@@ -434,7 +440,7 @@ void GuildLister::AskLeave(Snowflake guild)
 
 void GuildLister::RedrawIconForGuild(Snowflake guild)
 {
-	InvalidateRect(m_hwnd, &m_iconRects[guild], TRUE);
+	InvalidateRect(m_hwnd, &m_iconRects[guild], !ShouldUseDoubleBuffering());
 }
 
 LRESULT CALLBACK GuildLister::ParentWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -520,7 +526,7 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 		FillRect(hdc, &rcProfile, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
 
 		if (currentFolder) {
-			HRGN hrgn = CreateRectRgnIndirect(&rcProfile);
+			HRGN hrgn = DoubleBufferingHelper::CreateRectRgn(hdc, rcProfile);
 			SelectClipRgn(hdc, hrgn);
 			int amount = 0;
 
@@ -663,6 +669,124 @@ std::string MakeIconStringFromName(const std::string& name)
 	}
 
 	return result;
+}
+
+void GuildLister::Paint(HWND hWnd, HDC hdc, RECT& rcPaint)
+{	
+	RECT rect = {};
+	GetClientRect(hWnd, &rect);
+
+	SCROLLINFO si;
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_POS;
+	GetScrollInfo(&si);
+
+	int y = -si.nPos;
+	RECT initialRect = rect;
+	initialRect.bottom = y;
+
+	std::vector<Snowflake> sfs;
+	GetDiscordInstance()->GetGuildIDsOrdered(sfs, true);
+
+	POINT pt;
+	MoveToEx(hdc, 0, 0, &pt);
+
+	Snowflake currentFolder = 0;
+
+	for (size_t i = 0; i < sfs.size(); i++)
+	{
+		Snowflake sf = sfs[i];
+		if (sf == 1)
+		{
+			RECT rc = rect;
+			rc.top += y;
+			rc.bottom = rc.top + C_GUILD_GAP_HEIGHT;
+			FillRect(hdc, &rc, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
+			COLORREF oldPenColor = ri::SetDCPenColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+			HGDIOBJ oldobj = SelectObject(hdc, ri::GetDCPen());
+			POINT pt2;
+			MoveToEx(hdc, rc.left + BORDER_SIZE, rc.top + BORDER_SIZE, &pt2);
+			LineTo(hdc, rc.right - BORDER_SIZE, rc.top + BORDER_SIZE);
+			SelectObject(hdc, oldobj);
+			ri::SetDCPenColor(hdc, oldPenColor);
+			y += C_GUILD_GAP_HEIGHT;
+			continue;
+		}
+
+		HBITMAP hbm;
+		std::string textOver = "", name = "", avatarlnk = "";
+		bool loadedByLoadBitmap = false;
+		bool hasAlpha = false;
+		int mentionCount = 0;
+				
+		if (sf & BIT_FOLDER)
+		{
+			name = "";
+			avatarlnk = "";
+
+			currentFolder = sf & ~BIT_FOLDER;
+
+			if (sf == BIT_FOLDER) {
+				// Skip the folder terminator
+				continue;
+			}
+		}
+		else if (currentFolder && !m_openFolders[currentFolder])
+		{
+			// Skip items in closed folders.
+			continue;
+		}
+
+		bool isLastItem = false;
+		if (i == sfs.size() - 1 || (sfs[i + 1] & BIT_FOLDER))
+			isLastItem = true;
+
+		Guild* pGuild = GetDiscordInstance()->GetGuild(sf);
+		if (pGuild)
+		{
+			for (auto &channel : pGuild->m_channels) {
+				mentionCount += channel.m_mentionCount;
+			}
+
+			name = pGuild->m_name;
+			avatarlnk = pGuild->m_avatarlnk;
+		}
+				
+		if (sf == 0)
+		{
+			int id = NT31SimplifiedInterface() ? IDB_DEFAULT_4BPP : IDB_DEFAULT;
+			loadedByLoadBitmap = true;
+			hbm = LoadBitmap(g_hInstance, MAKEINTRESOURCE(id));
+		}
+		else if (avatarlnk.empty())
+		{
+			int id = NT31SimplifiedInterface() ? IDB_EMPTY_4BPP : IDB_EMPTY;
+			loadedByLoadBitmap = true;
+			hbm = LoadBitmap(g_hInstance, MAKEINTRESOURCE(id));
+			textOver = MakeIconStringFromName(name);
+		}
+		else
+		{
+			hbm = GetAvatarCache()->GetImage(avatarlnk, hasAlpha)->GetFirstFrame();
+		}
+
+		int oldY = y;
+		DrawServerIcon(hdc, hbm, y, rect, sf, textOver, hasAlpha, currentFolder, isLastItem);
+		DrawMentionStatus(hdc, rect.left + BORDER_SIZE + ScaleByDPI(6), rect.top + BORDER_SIZE + ScaleByDPI(4) + oldY, mentionCount);
+
+		if (loadedByLoadBitmap)
+			DeleteObject(hbm);
+	}
+
+	RECT finalRect = rect;
+	finalRect.top = y;
+
+	//if (initialRect.top < initialRect.bottom)
+	//	FillRect(hdc, &initialRect, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
+	//if (finalRect.top < finalRect.bottom)
+	//	FillRect(hdc, &finalRect, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
+
+	MoveToEx(hdc, pt.x, pt.y, NULL);
 }
 
 LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -1045,124 +1169,29 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 			break;
 		}
+		case WM_ERASEBKGND:
+		{
+			if (ShouldUseDoubleBuffering())
+				return 1;
+
+			break;
+		}
 		case WM_PAINT:
 		{
 			PAINTSTRUCT ps = {};
 			HDC hdc = BeginPaint(hWnd, &ps);
+			RECT& paintRect = ps.rcPaint;
 
-			RECT rect = {};
-			GetClientRect(hWnd, &rect);
-
-			si.cbSize = sizeof(si);
-			si.fMask = SIF_POS;
-			pThis->GetScrollInfo(&si);
-
-			int y = -si.nPos;
-			RECT initialRect = rect;
-			initialRect.bottom = y;
-
-			std::vector<Snowflake> sfs;
-			GetDiscordInstance()->GetGuildIDsOrdered(sfs, true);
-
-			POINT pt;
-			MoveToEx(hdc, 0, 0, &pt);
-
-			Snowflake currentFolder = 0;
-
-			for (size_t i = 0; i < sfs.size(); i++)
+			if (ShouldUseDoubleBuffering())
 			{
-				Snowflake sf = sfs[i];
-				if (sf == 1)
-				{
-					RECT rc = rect;
-					rc.top += y;
-					rc.bottom = rc.top + C_GUILD_GAP_HEIGHT;
-					FillRect(hdc, &rc, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
-					COLORREF oldPenColor = ri::SetDCPenColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
-					HGDIOBJ oldobj = SelectObject(hdc, ri::GetDCPen());
-					POINT pt2;
-					MoveToEx(hdc, rc.left + BORDER_SIZE, rc.top + BORDER_SIZE, &pt2);
-					LineTo(hdc, rc.right - BORDER_SIZE, rc.top + BORDER_SIZE);
-					SelectObject(hdc, oldobj);
-					ri::SetDCPenColor(hdc, oldPenColor);
-					y += C_GUILD_GAP_HEIGHT;
-					continue;
-				}
-
-				HBITMAP hbm;
-				std::string textOver = "", name = "", avatarlnk = "";
-				bool loadedByLoadBitmap = false;
-				bool hasAlpha = false;
-				int mentionCount = 0;
-				
-				if (sf & BIT_FOLDER)
-				{
-					name = "";
-					avatarlnk = "";
-
-					currentFolder = sf & ~BIT_FOLDER;
-
-					if (sf == BIT_FOLDER) {
-						// Skip the folder terminator
-						continue;
-					}
-				}
-				else if (currentFolder && !pThis->m_openFolders[currentFolder])
-				{
-					// Skip items in closed folders.
-					continue;
-				}
-
-				bool isLastItem = false;
-				if (i == sfs.size() - 1 || (sfs[i + 1] & BIT_FOLDER))
-					isLastItem = true;
-
-				Guild* pGuild = GetDiscordInstance()->GetGuild(sf);
-				if (pGuild)
-				{
-					for (auto &channel : pGuild->m_channels) {
-						mentionCount += channel.m_mentionCount;
-					}
-
-					name = pGuild->m_name;
-					avatarlnk = pGuild->m_avatarlnk;
-				}
-				
-				if (sf == 0)
-				{
-					int id = NT31SimplifiedInterface() ? IDB_DEFAULT_4BPP : IDB_DEFAULT;
-					loadedByLoadBitmap = true;
-					hbm = LoadBitmap(g_hInstance, MAKEINTRESOURCE(id));
-				}
-				else if (avatarlnk.empty())
-				{
-					int id = NT31SimplifiedInterface() ? IDB_EMPTY_4BPP : IDB_EMPTY;
-					loadedByLoadBitmap = true;
-					hbm = LoadBitmap(g_hInstance, MAKEINTRESOURCE(id));
-					textOver = MakeIconStringFromName(name);
-				}
-				else
-				{
-					hbm = GetAvatarCache()->GetImage(avatarlnk, hasAlpha)->GetFirstFrame();
-				}
-
-				int oldY = y;
-				pThis->DrawServerIcon(hdc, hbm, y, rect, sf, textOver, hasAlpha, currentFolder, isLastItem);
-				DrawMentionStatus(hdc, rect.left + BORDER_SIZE + ScaleByDPI(6), rect.top + BORDER_SIZE + ScaleByDPI(4) + oldY, mentionCount);
-
-				if (loadedByLoadBitmap)
-					DeleteObject(hbm);
+				DoubleBufferingHelper helper(hdc, paintRect);
+				FillRect(helper.HdcMem(), &paintRect, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
+				pThis->Paint(hWnd, helper.HdcMem(), paintRect);
 			}
-
-			RECT finalRect = rect;
-			finalRect.top = y;
-
-			if (initialRect.top < initialRect.bottom)
-				FillRect(hdc, &initialRect, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
-			if (finalRect.top < finalRect.bottom)
-				FillRect(hdc, &finalRect, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
-
-			MoveToEx(hdc, pt.x, pt.y, NULL);
+			else
+			{
+				pThis->Paint(hWnd, hdc, paintRect);
+			}
 
 			EndPaint(hWnd, &ps);
 			break;
