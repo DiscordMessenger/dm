@@ -1,6 +1,7 @@
 #include "TextInterface_Win32.hpp"
 #include "WinUtils.hpp"
 #include "AvatarCache.hpp"
+#include "DoubleBufferingHelper.hpp"
 
 void String::Set(const std::string& text)
 {
@@ -326,7 +327,7 @@ void MdSetClippingRect(DrawingContext* context, const Rect& rect)
 		DeleteRgn(_clippingRectRgn);
 	}
 
-	_clippingRectRgn = CreateRectRgn(W32RECT(rect));
+	_clippingRectRgn = DoubleBufferingHelper::CreateRectRgn(context->m_hdc, W32RECT(rect));
 	SelectClipRgn(context->m_hdc, _clippingRectRgn);
 }
 
