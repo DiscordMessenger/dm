@@ -128,6 +128,9 @@ bool LocalSettings::Load()
 	if (j.contains("ShowBlockedMessages"))
 		m_bShowBlockedMessages = j["ShowBlockedMessages"];
 
+	if (j.contains("UseDoubleBuffering"))
+		m_bUseDoubleBuffering = j["UseDoubleBuffering"];
+
 	if (m_bSaveWindowSize)
 	{
 		if (j.contains("WindowWidth"))
@@ -199,6 +202,7 @@ bool LocalSettings::Save()
 	j["FlashOnNotification"] = m_bFlashOnNotification;
 	j["Use12HourTime"] = m_bUse12HourTime;
 	j["ShowBlockedMessages"] = m_bShowBlockedMessages;
+	j["UseDoubleBuffering"] = m_bUseDoubleBuffering;
 	
 	if (m_bSaveWindowSize) {
 		j["WindowWidth"] = m_width;

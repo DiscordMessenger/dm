@@ -563,6 +563,8 @@ private:
 	void RequestMarkRead();
 	void HandleRightClickMenuCommand(int command);
 
+	static bool ShouldUseDoubleBuffering();
+
 	// [Left] [Author] [pinned] [a message](uid) [ to this channel.
 
 	// DetermineMessageData determines data for an action message.  It is designed to allow for

@@ -220,6 +220,12 @@ public:
 	void SetShowBlockedMessages(bool b) {
 		m_bShowBlockedMessages = b;
 	}
+	bool UseDoubleBuffering() const {
+		return m_bUseDoubleBuffering;
+	}
+	void SetUseDoubleBuffering(bool b) {
+		m_bUseDoubleBuffering = b;
+	}
 
 private:
 	std::string m_token;
@@ -251,6 +257,7 @@ private:
 	bool m_bFlashOnNotification = true;
 	bool m_bUse12HourTime = false;
 	bool m_bShowBlockedMessages = false;
+	bool m_bUseDoubleBuffering = false;
 	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
 	int m_height = 700;

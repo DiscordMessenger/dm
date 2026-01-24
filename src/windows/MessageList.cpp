@@ -1195,7 +1195,7 @@ void MessageList::ProperlyResizeSubWindows()
 
 bool MessageList::MayErase()
 {
-	return GetLocalSettings()->GetMessageStyle() != MS_IMAGE;
+	return !ShouldUseDoubleBuffering();
 }
 
 void MessageList::HitTestReply(POINT pt, BOOL& hit)
@@ -3008,8 +3008,15 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 void MessageList::PaintBackground(HDC hdc, RECT& paintRect, RECT& rcClient)
 {
-	if (GetLocalSettings()->GetMessageStyle() != MS_IMAGE)
+	if (!ShouldUseDoubleBuffering())
 		return;
+
+	if (GetLocalSettings()->GetMessageStyle() != MS_IMAGE)
+	{
+		HBRUSH hbr = (HBRUSH) GetClassLongPtr(m_hwnd, GCLP_HBRBACKGROUND);
+		FillRect(hdc, &paintRect, hbr);
+		return;
+	}
 
 	if (!m_backgroundBrush)
 		return;
@@ -3347,6 +3354,11 @@ void MessageList::HandleRightClickMenuCommand(int command)
 			break;
 		}
 	}
+}
+
+bool MessageList::ShouldUseDoubleBuffering()
+{
+	return GetLocalSettings()->UseDoubleBuffering() || GetLocalSettings()->GetMessageStyle() == MS_IMAGE;
 }
 
 LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -3838,7 +3850,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_ERASEBKGND:
 		{
-			if (GetLocalSettings()->GetMessageStyle() == MS_IMAGE)
+			if (ShouldUseDoubleBuffering())
 				return 1;
 
 			break;
@@ -3849,7 +3861,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			HDC hdc = BeginPaint(hWnd, &ps);
 			RECT &paintRect = ps.rcPaint;
 
-			if (GetLocalSettings()->GetMessageStyle() == MS_IMAGE)
+			if (ShouldUseDoubleBuffering())
 			{
 				// Create a DC that we blit to, and then only the finished result goes on screen.
 				RECT rcClient{};
@@ -4922,7 +4934,7 @@ void MessageList::Scroll(int amount, RECT* rcClip, bool shiftAllRects)
 			msg.ShiftUp(amount);
 	}
 	
-	if (GetLocalSettings()->GetMessageStyle() == MS_IMAGE)
+	if (ShouldUseDoubleBuffering())
 	{
 		// nope, just invalidate
 		InvalidateRect(m_hwnd, NULL, FALSE);
