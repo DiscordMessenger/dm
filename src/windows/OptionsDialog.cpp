@@ -1,6 +1,7 @@
 #include "Config.hpp"
 #include "OptionsDialog.hpp"
 #include "ShellNotification.hpp"
+#include "Main.hpp"
 #include "config/LocalSettings.hpp"
 
 #ifdef NEW_WINDOWS
@@ -158,6 +159,12 @@ void OptionsInitPage(HWND hwndDlg, int pageNum)
 				IDC_APPEARANCE_COMPACT,
 				GetSettingsManager()->GetMessageCompact() ? IDC_APPEARANCE_COMPACT : IDC_APPEARANCE_COZY
 			);
+
+			CheckDlgButton(hwndDlg, IDC_DOUBLE_BUFFERING, GetLocalSettings()->UseDoubleBuffering() ? BST_CHECKED : BST_UNCHECKED);
+
+			if (ShouldBlockDoubleBuffering()) {
+				EnableWindow(GetDlgItem(hwndDlg, IDC_DOUBLE_BUFFERING), false);
+			}
 
 			CheckDlgButton(hwndDlg, IDC_COMPACT_MEMBER_LIST, GetLocalSettings()->GetCompactMemberList() ? BST_CHECKED : BST_UNCHECKED);
 
@@ -482,6 +489,9 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 				case IDC_COMPACT_MEMBER_LIST:
 					GetLocalSettings()->SetCompactMemberList(IsDlgButtonChecked(hWnd, IDC_COMPACT_MEMBER_LIST));
 					SendMessage(g_Hwnd, WM_RECREATEMEMBERLIST, 0, 0);
+					break;
+				case IDC_DOUBLE_BUFFERING:
+					GetLocalSettings()->SetUseDoubleBuffering(IsDlgButtonChecked(hWnd, IDC_DOUBLE_BUFFERING));
 					break;
 			}
 			break;

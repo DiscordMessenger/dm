@@ -27,6 +27,7 @@
 #include "ShellNotification.hpp"
 #include "InstanceMutex.hpp"
 #include "CrashDebugger.hpp"
+#include "MemberListOld.hpp"
 #include "config/LocalSettings.hpp"
 #include "network/WebsocketClient.hpp"
 #include "utils/UpdateChecker.hpp"
@@ -57,6 +58,29 @@ IMemberList* g_pMemberList;
 IChannelView* g_pChannelView;
 MessageEditor* g_pMessageEditor;
 LoadingMessage* g_pLoadingMessage;
+
+bool g_bBlockDoubleBufferingForThisInstance = false;
+
+constexpr int MIN_MEMORY_TO_BLOCK_DOUBLE_BUFFERING = 128 * 1024 * 1024;
+
+bool ShouldBlockDoubleBuffering()
+{
+	return true;
+	static bool initialized = false;
+	if (initialized) {
+		return g_bBlockDoubleBufferingForThisInstance;
+	}
+
+	MEMORYSTATUS memoryStatus;
+	memoryStatus.dwLength = sizeof(memoryStatus);
+
+	GlobalMemoryStatus(&memoryStatus);
+
+	initialized = true;
+
+	// ARBITRARY: 128 MB limit.
+	g_bBlockDoubleBufferingForThisInstance = memoryStatus.dwAvailPhys < MIN_MEMORY_TO_BLOCK_DOUBLE_BUFFERING;
+}
 
 int GetProfilePictureSize()
 {
@@ -1903,8 +1927,6 @@ static bool ForceSingleInstance(LPCTSTR pClassName)
 	return false;
 }
 
-#include "MemberListOld.hpp"
-
 // Blackwingcat's Extended Kernel workaround: Apparently, the custom user32.dll it uses tries
 // to write to the class name, which previously was part of .rodata, which is of course read-only.
 TCHAR g_className[64];
@@ -1965,6 +1987,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 		// taskbar because there is no taskbar to minimize
 		// yourself to.
 		pSettings->SetMinimizeToNotif(false);
+	}
+
+	if (ShouldBlockDoubleBuffering())
+	{
+		// If the system has too little memory we probably don't
+		// want to risk it.
+		pSettings->SetUseDoubleBuffering(false);
 	}
 
 	SetUserScale(GetLocalSettings()->GetUserScale());

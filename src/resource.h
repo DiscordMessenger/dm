@@ -438,6 +438,7 @@
 #define IDC_START_MINIMIZED             903
 #define IDC_MINIMIZE_TO_NOTIF           904
 #define IDC_HOW_GET_TOKEN               905
+#define IDC_DOUBLE_BUFFERING            917
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
 #define ID_FILE_EXIT                    1003
@@ -536,7 +537,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        104
 #define _APS_NEXT_COMMAND_VALUE         1099
-#define _APS_NEXT_CONTROL_VALUE         917
+#define _APS_NEXT_CONTROL_VALUE         918
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif
 #endif

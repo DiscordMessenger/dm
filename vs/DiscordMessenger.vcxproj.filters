@@ -492,6 +492,12 @@
     <Image Include="..\res\bitmaps\bmp_empty_4bpp.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\res\icons\icon_profile_border_unread.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\icons\icon_profile_border_unread_2k.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\res\cursors\cur_zoomout.cur">

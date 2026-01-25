@@ -535,6 +535,8 @@
     <Image Include="..\res\icons\icon_profile_border_2k.ico" />
     <Image Include="..\res\icons\icon_profile_border_sel.ico" />
     <Image Include="..\res\icons\icon_profile_border_sel_2k.ico" />
+    <Image Include="..\res\icons\icon_profile_border_unread.ico" />
+    <Image Include="..\res\icons\icon_profile_border_unread_2k.ico" />
     <Image Include="..\res\icons\icon_reply_line.ico" />
     <Image Include="..\res\icons\icon_reply_line_2k.ico" />
     <Image Include="..\res\icons\icon_scroll.ico" />
