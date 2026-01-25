@@ -1257,7 +1257,7 @@ void MessageList::HitTestAttachments(POINT pt, BOOL& hit)
 					if (x.m_bHighlighted) {
 						x.m_bHighlighted = false;
 
-						if (!x.m_pAttachment->IsImage())
+						if (!x.m_pAttachment->IsImageOrVideo())
 							InvalidateRect(m_hwnd, &x.m_textRect, FALSE);
 					}
 				}
@@ -1296,7 +1296,7 @@ void MessageList::HitTestAttachments(POINT pt, BOOL& hit)
 	m_highlightedAttachmentMessage = msg->m_msg->m_snowflake;
 	pAttach->m_bHighlighted = true;
 
-	if (!pAttach->m_pAttachment->IsImage())
+	if (!pAttach->m_pAttachment->IsImageOrVideo())
 	{
 		if (inText)
 			InvalidateRect(m_hwnd, &pAttach->m_textRect, FALSE);
@@ -1522,6 +1522,46 @@ void MessageList::DrawImageAttachment(HDC hdc, RECT& paintRect, AttachmentItem& 
 		url += "width=" + std::to_string(pAttach->m_previewWidth);
 		url += "&height=" + std::to_string(pAttach->m_previewHeight);
 	}
+
+	GetAvatarCache()->AddImagePlace(attachItem.m_resourceID, eImagePlace::ATTACHMENTS, url, pAttach->m_id);
+
+	bool hasAlpha = false;
+	HImage* him = GetAvatarCache()->GetImageSpecial(attachItem.m_resourceID, hasAlpha);
+	DrawImageSpecial(hdc, him, childAttachRect, hasAlpha);
+}
+
+void MessageList::DrawVideoAttachment(HDC hdc, RECT& paintRect, AttachmentItem& attachItem, RECT& attachRect)
+{
+	Attachment* pAttach = attachItem.m_pAttachment;
+	std::string url = pAttach->m_proxyUrl;
+
+	RECT childAttachRect = attachRect;
+	childAttachRect.right  = childAttachRect.left + pAttach->m_previewWidth;
+	childAttachRect.bottom = childAttachRect.top + pAttach->m_previewHeight;
+
+	attachItem.m_boxRect = childAttachRect;
+	attachItem.m_textRect = childAttachRect;
+
+	attachRect.bottom = attachRect.top = childAttachRect.bottom + ATTACHMENT_GAP;
+
+	RECT intersRect;
+	if (!IntersectRect(&intersRect, &paintRect, &childAttachRect))
+		return;
+
+	bool hasQMark = false;
+	for (auto ch : url) {
+		if (ch == '?') {
+			hasQMark = true;
+			break;
+		}
+	}
+
+	if (url.empty() || url[url.size() - 1] != '&' || url[url.size() - 1] != '?')
+		url += hasQMark ? "&" : "?";
+
+	url += "width=" + std::to_string(pAttach->m_previewWidth);
+	url += "&height=" + std::to_string(pAttach->m_previewHeight);
+	url += "&format=webp";
 
 	GetAvatarCache()->AddImagePlace(attachItem.m_resourceID, eImagePlace::ATTACHMENTS, url, pAttach->m_id);
 
@@ -2936,6 +2976,15 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 		auto& attachItem = attachItemVec[i];
 		switch (attach.m_contentType)
 		{
+			case ContentType::MP4:
+			{
+				if (GetLocalSettings()->ShowAttachmentImages())
+				{
+					DrawVideoAttachment(hdc, paintRect, attachItem, attachRect);
+					break;
+				}
+				goto drawDefault;
+			}
 			case ContentType::PNG:
 			case ContentType::GIF:
 			case ContentType::JPEG:
@@ -2950,6 +2999,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			}
 			default:
 			{
+			drawDefault:
 				DrawDefaultAttachment(hdc, paintRect, attachItem, attachRect);
 				break;
 			}
@@ -4381,7 +4431,7 @@ void MessageList::AdjustHeightInfo(
 	{
 		// XXX improve?
 		int inc = 0;
-		if (!GetLocalSettings()->ShowAttachmentImages() || !att.IsImage())
+		if (!GetLocalSettings()->ShowAttachmentImages() || !att.IsImageOrVideo())
 			inc = ATTACHMENT_HEIGHT + ATTACHMENT_GAP;
 		else
 			inc = att.m_previewHeight + ATTACHMENT_GAP;

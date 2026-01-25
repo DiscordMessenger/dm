@@ -21,6 +21,8 @@ namespace ContentType
 		if (str == "image/gif")  return GIF;
 		if (str == "image/webp") return WEBP;
 
+		if (str == "video/mp4") return MP4;
+
 		return BLOB;
 	}
 }

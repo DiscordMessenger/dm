@@ -55,4 +55,15 @@ public:
 			m_contentType == ContentType::JPEG ||
 			m_contentType == ContentType::WEBP;
 	}
+	
+	bool IsVideo() const
+	{
+		return
+			m_contentType == ContentType::MP4;
+	}
+
+	bool IsImageOrVideo() const
+	{
+		return IsImage() || IsVideo();
+	}
 };

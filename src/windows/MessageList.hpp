@@ -551,6 +551,7 @@ private:
 
 	void DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem& attachItem, RECT& attachRect);
 	void DrawImageAttachment(HDC hdc, RECT& paintRect, AttachmentItem& attachItem, RECT& attachRect);
+	void DrawVideoAttachment(HDC hdc, RECT& paintRect, AttachmentItem& attachItem, RECT& attachRect);
 
 	void DetermineMessageMeasurements(MessageItem& mi, HDC hdc = NULL, const LPRECT rect = NULL);
 
