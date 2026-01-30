@@ -3288,6 +3288,13 @@ void MessageList::HandleRightClickMenuCommand(int command)
 		}
 		case ID_DUMMYPOPUP_EDITMESSAGE:
 		{
+			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			if (!pChan)
+				break;
+
+			if (!pChan->HasPermission(PERM_SEND_MESSAGES))
+				break;
+
 			SendMessage(g_Hwnd, WM_STARTEDITING, 0, (LPARAM) &rightClickedMessage);
 			break;
 		}
@@ -3336,7 +3343,7 @@ void MessageList::HandleRightClickMenuCommand(int command)
 			if (!pChan)
 				break;
 
-			if (!pChan->HasPermission(PERM_SEND_MESSAGES))
+			if (!pChan->HasPermission(PERM_MANAGE_MESSAGES))
 				break;
 
 			static char buffer[8192];
@@ -3685,9 +3692,10 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			bool maySendMessages = pChan->HasPermission(PERM_SEND_MESSAGES);
 			bool isActionMessage = IsActionMessage(pRCMsg->m_msg->m_type) || IsClientSideMessage(pRCMsg->m_msg->m_type);
 			bool isForward = pRCMsg->m_msg->m_bIsForward;
+			bool isDM = pChan->IsDM();
 
 			bool mayCopy   = !isForward && !isActionMessage;
-			bool mayDelete = isThisMyMessage || mayManageMessages;
+			bool mayDelete = isThisMyMessage || (mayManageMessages && !isDM);
 			bool mayEdit   = isThisMyMessage && !isForward && !isActionMessage && maySendMessages;
 			bool mayPin    = mayManageMessages;
 			bool maySpeak  = !isActionMessage && !pRCMsg->m_msg->m_message.empty();
