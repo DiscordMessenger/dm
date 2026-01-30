@@ -1550,7 +1550,7 @@ void DiscordInstance::RequestPinMessage(Snowflake chan, Snowflake msg)
 		NetRequest::PUT,
 		url,
 		0,
-		DiscordRequest::SET_PINNED,
+		DiscordRequest::PIN_MESSAGE,
 		"",
 		m_token
 	);
@@ -1565,7 +1565,7 @@ void DiscordInstance::RequestUnpinMessage(Snowflake chan, Snowflake msg)
 		NetRequest::DELETE_,
 		url,
 		0,
-		DiscordRequest::SET_PINNED,
+		DiscordRequest::UNPIN_MESSAGE,
 		"",
 		m_token
 	);
