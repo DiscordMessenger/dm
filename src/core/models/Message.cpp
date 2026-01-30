@@ -288,6 +288,9 @@ void Message::Load(Json& data, Snowflake guild)
 		m_avatar = pf->m_avatarlnk;
 	}
 
+	if (data["pinned"].is_boolean())
+		m_bIsPinned = data["pinned"];
+
 	if (data["attachments"].is_array())
 	{
 		m_attachments.clear();

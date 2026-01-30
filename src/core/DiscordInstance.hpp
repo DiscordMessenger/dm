@@ -462,6 +462,12 @@ public:
 	// Request a message deletion.
 	void RequestDeleteMessage(Snowflake chan, Snowflake msg);
 
+	// Request a message to be pinned.
+	void RequestPinMessage(Snowflake chan, Snowflake msg);
+
+	// Request a message to be unpinned.
+	void RequestUnpinMessage(Snowflake chan, Snowflake msg);
+
 	// Request to leave a guild.
 	void RequestLeaveGuild(Snowflake guild);
 

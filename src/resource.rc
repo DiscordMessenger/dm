@@ -133,6 +133,7 @@ BEGIN
         END
         MENUITEM "Edit Message",                ID_DUMMYPOPUP_EDITMESSAGE
         MENUITEM "Pin Message",                 ID_DUMMYPOPUP_PINMESSAGE
+        MENUITEM "Unpin Message",               ID_DUMMYPOPUP_UNPINMESSAGE
         MENUITEM "Reply",                       ID_DUMMYPOPUP_REPLY
         MENUITEM "Copy Text",                   ID_DUMMYPOPUP_COPYTEXT
         MENUITEM "Mark Unread",                 ID_DUMMYPOPUP_MARKUNREAD
@@ -1687,6 +1688,8 @@ BEGIN
     IDS_SAVED_STRING_EXE    "Your downloaded file was saved at the following path: %s\n\nWARNING: This file might be malicious.  Make sure you trust the sender/author of this file.\nWould you like to open it?"
     IDS_GET_TOKEN_TUTORIAL  "Here are a few steps you can use to get your Discord token:\n\no  Open a web browser, then navigate to discord.com\n\no  Log in using your Discord account.\n\no  Navigate to any channel.\n\no  Press Ctrl+Shift+I while focused on that channel.\n\no  Navigate to the Network tab, and then send a message.\n\no  Check the ""messages"" request, and in the Request Headers, find the ""Authorization"" string.\n\no  That's your token! Make sure to copy it without any quote marks, then paste it here.\n\nEnjoy!"
     IDS_CANT_LAUNCH_URL_UNS "The specified link %s couldn't be opened, because Windows returned ""%s"". Most likely, your Windows version does not support directly opening URLs."
+    IDS_CONFIRM_UNPIN       "Are you sure you want to unpin this message?\n\n%s (%s)\n\n%s"
+    IDS_CONFIRM_UNPIN_TITLE "Discord Messenger - Unpin Message"
 END
 
 #endif    // English (United States) resources

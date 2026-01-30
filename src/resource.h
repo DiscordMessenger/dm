@@ -333,6 +333,8 @@
 #define IDS_SAVED_STRING_EXE            773
 #define IDS_GET_TOKEN_TUTORIAL          774
 #define IDS_CANT_LAUNCH_URL_UNS         775
+#define IDS_CONFIRM_UNPIN               776
+#define IDS_CONFIRM_UNPIN_TITLE         777
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803
@@ -513,6 +515,7 @@
 #define ID_DUMMY_SAVEIMAGE              1081
 #define ID_DUMMY_COPYIMAGE              1082
 #define ID_DUMMY_OPENIMAGELINK          1083
+#define ID_DUMMYPOPUP_UNPINMESSAGE      1099
 #define IDR_MAIN_ACCELS                 1201
 #define IDA_SEARCH                      1301
 #define IDA_QUICKSWITCHER               1302
@@ -536,7 +539,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        104
-#define _APS_NEXT_COMMAND_VALUE         1099
+#define _APS_NEXT_COMMAND_VALUE         1100
 #define _APS_NEXT_CONTROL_VALUE         918
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif

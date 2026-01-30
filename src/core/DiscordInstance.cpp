@@ -1541,6 +1541,36 @@ void DiscordInstance::RequestDeleteMessage(Snowflake chan, Snowflake msg)
 	);
 }
 
+void DiscordInstance::RequestPinMessage(Snowflake chan, Snowflake msg)
+{
+	std::string url = GetDiscordAPI() + "channels/" + std::to_string(chan) + "/messages/pins/" + std::to_string(msg);
+
+	GetHTTPClient()->PerformRequest(
+		true,
+		NetRequest::PUT,
+		url,
+		0,
+		DiscordRequest::SET_PINNED,
+		"",
+		m_token
+	);
+}
+
+void DiscordInstance::RequestUnpinMessage(Snowflake chan, Snowflake msg)
+{
+	std::string url = GetDiscordAPI() + "channels/" + std::to_string(chan) + "/messages/pins/" + std::to_string(msg);
+
+	GetHTTPClient()->PerformRequest(
+		true,
+		NetRequest::DELETE_,
+		url,
+		0,
+		DiscordRequest::SET_PINNED,
+		"",
+		m_token
+	);
+}
+
 void DiscordInstance::UpdateSubscriptions(Snowflake guildId, Snowflake channelId, bool typing, bool activities, bool threads, int rangeMembers)
 {
 	Json j, data;
