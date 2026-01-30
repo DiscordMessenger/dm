@@ -3336,6 +3336,9 @@ void MessageList::HandleRightClickMenuCommand(int command)
 			if (!pChan)
 				break;
 
+			if (!pChan->HasPermission(PERM_SEND_MESSAGES))
+				break;
+
 			static char buffer[8192];
 			snprintf(buffer, sizeof buffer, TmGetString(IDS_CONFIRM_PIN).c_str(), pChan->m_name.c_str(), pMsg->m_msg->m_author.c_str(), pMsg->m_msg->m_dateFull.c_str(), pMsg->m_msg->m_message.c_str());
 
@@ -3685,7 +3688,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			bool mayCopy   = !isForward && !isActionMessage;
 			bool mayDelete = isThisMyMessage || mayManageMessages;
-			bool mayEdit   = isThisMyMessage && !isForward && !isActionMessage;
+			bool mayEdit   = isThisMyMessage && !isForward && !isActionMessage && maySendMessages;
 			bool mayPin    = mayManageMessages;
 			bool maySpeak  = !isActionMessage && !pRCMsg->m_msg->m_message.empty();
 			bool mayReply  = (!isActionMessage || IsReplyableActionMessage(pRCMsg->m_msg->m_type)) && maySendMessages;
