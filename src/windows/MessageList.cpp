@@ -3317,6 +3317,13 @@ void MessageList::HandleRightClickMenuCommand(int command)
 		}
 		case ID_DUMMYPOPUP_REPLY:
 		{
+			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			if (!pChan)
+				break;
+
+			if (!pChan->HasPermission(PERM_SEND_MESSAGES))
+				break;
+
 			Snowflake sf[2];
 			sf[0] = pMsg->m_msg->m_snowflake;
 			sf[1] = pMsg->m_msg->m_author_snowflake;
@@ -3672,6 +3679,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			bool isThisMyMessage   = pRCMsg->m_msg->m_author_snowflake == ourPf->m_snowflake;
 			bool mayManageMessages = pChan->HasPermission(PERM_MANAGE_MESSAGES);
+			bool maySendMessages = pChan->HasPermission(PERM_SEND_MESSAGES);
 			bool isActionMessage = IsActionMessage(pRCMsg->m_msg->m_type) || IsClientSideMessage(pRCMsg->m_msg->m_type);
 			bool isForward = pRCMsg->m_msg->m_bIsForward;
 
@@ -3680,7 +3688,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			bool mayEdit   = isThisMyMessage && !isForward && !isActionMessage;
 			bool mayPin    = mayManageMessages;
 			bool maySpeak  = !isActionMessage && !pRCMsg->m_msg->m_message.empty();
-			bool mayReply  = !isActionMessage || IsReplyableActionMessage(pRCMsg->m_msg->m_type);
+			bool mayReply  = (!isActionMessage || IsReplyableActionMessage(pRCMsg->m_msg->m_type)) && maySendMessages;
 
 #ifdef OLD_WINDOWS
 			EnableMenuItem(menu, ID_DUMMYPOPUP_DELETEMESSAGE, mayDelete ? MF_ENABLED : MF_GRAYED);
