@@ -3721,7 +3721,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			bool mayDelete = isThisMyMessage || (mayManageMessages && !isDM);
 			bool mayEdit   = isThisMyMessage && !isForward && !isActionMessage && maySendMessages;
 			bool mayPin    = mayManageMessages && !isPinned;
-			bool mayUnpin = mayManageMessages && isPinned;
+			bool mayUnpin  = mayManageMessages && isPinned;
 			bool maySpeak  = !isActionMessage && !pRCMsg->m_msg->m_message.empty();
 			bool mayReply  = (!isActionMessage || IsReplyableActionMessage(pRCMsg->m_msg->m_type)) && maySendMessages;
 
@@ -3729,6 +3729,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			EnableMenuItem(menu, ID_DUMMYPOPUP_DELETEMESSAGE, mayDelete ? MF_ENABLED : MF_GRAYED);
 			EnableMenuItem(menu, ID_DUMMYPOPUP_EDITMESSAGE,   mayEdit   ? MF_ENABLED : MF_GRAYED);
 			EnableMenuItem(menu, ID_DUMMYPOPUP_PINMESSAGE,    mayPin    ? MF_ENABLED : MF_GRAYED);
+			EnableMenuItem(menu, ID_DUMMYPOPUP_UNPINMESSAGE,  mayUnpin  ? MF_ENABLED : MF_GRAYED);
 			EnableMenuItem(menu, ID_DUMMYPOPUP_SPEAKMESSAGE,  maySpeak  ? MF_ENABLED : MF_GRAYED);
 			EnableMenuItem(menu, ID_DUMMYPOPUP_COPYTEXT,      mayCopy   ? MF_ENABLED : MF_GRAYED);
 			EnableMenuItem(menu, ID_DUMMYPOPUP_REPLY,         mayReply  ? MF_ENABLED : MF_GRAYED);
