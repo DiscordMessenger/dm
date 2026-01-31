@@ -3345,6 +3345,9 @@ void MessageList::HandleRightClickMenuCommand(int command)
 
 			if (!pChan->HasPermission(PERM_MANAGE_MESSAGES))
 				break;
+			
+			if (IsActionMessage(pMsg->m_msg->m_type))
+				break;
 
 			static char buffer[8192];
 			snprintf(buffer, sizeof buffer, TmGetString(IDS_CONFIRM_PIN).c_str(), pChan->m_name.c_str(), pMsg->m_msg->m_author.c_str(), pMsg->m_msg->m_dateFull.c_str(), pMsg->m_msg->m_message.c_str());
@@ -3366,6 +3369,9 @@ void MessageList::HandleRightClickMenuCommand(int command)
 				break;
 
 			if (!pChan->HasPermission(PERM_MANAGE_MESSAGES))
+				break;
+			
+			if (IsActionMessage(pMsg->m_msg->m_type))
 				break;
 
 			static char buffer[8192];
@@ -3720,8 +3726,8 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			bool mayCopy   = !isForward && !isActionMessage;
 			bool mayDelete = isThisMyMessage || (mayManageMessages && !isDM);
 			bool mayEdit   = isThisMyMessage && !isForward && !isActionMessage && maySendMessages;
-			bool mayPin    = mayManageMessages && !isPinned;
-			bool mayUnpin  = mayManageMessages && isPinned;
+			bool mayPin    = mayManageMessages && !isPinned && !isActionMessage;
+			bool mayUnpin  = mayManageMessages && isPinned && !isActionMessage;
 			bool maySpeak  = !isActionMessage && !pRCMsg->m_msg->m_message.empty();
 			bool mayReply  = (!isActionMessage || IsReplyableActionMessage(pRCMsg->m_msg->m_type)) && maySendMessages;
 
