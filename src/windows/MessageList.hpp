@@ -524,6 +524,7 @@ public:
 	bool ShouldBeDateGap(time_t oldTime, time_t newTime);
 	void OnPageUp();
 	void OnPageDown();
+	void EditLastMessage();
 
 	// TODO: Wouldn't it be more sane to have a pointer to the last message item, or something?
 	bool ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, MessageType::eType prevType, const std::string& prevAuthorName, const std::string& prevAuthorAvatar, const MessageItem& item, bool ifChainTooLongToo);
@@ -567,6 +568,8 @@ private:
 	void HandleRightClickMenuCommand(int command);
 	void HandleRightClickMenuCommandMessage(int command, MessageItem* pMsg);
 	void HandleRightClickMenuCommandInteractable(int command, MessageItem* pMsg);
+
+	bool IsMessageVisible(Snowflake sf);
 
 	HMENU GetMenuForMessage(MessageItem* pRCMsg);
 	HMENU GetMenuForInteractable(MessageItem* pRCMsg, size_t index);

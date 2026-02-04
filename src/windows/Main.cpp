@@ -696,6 +696,11 @@ LRESULT HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pMessageEditor->SelectAll();
 			break;
 		}
+		case IDA_EDIT_LAST_MESSAGE:
+		{
+			g_pMessageList->EditLastMessage();
+			break;
+		}
 		case IDA_GUILD_0:
 		case IDA_GUILD_1:
 		case IDA_GUILD_2:

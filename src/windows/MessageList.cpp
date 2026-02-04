@@ -3059,6 +3059,47 @@ void MessageList::PaintBackground(HDC hdc, RECT& paintRect, RECT& rcClient)
 	}
 }
 
+bool MessageList::IsMessageVisible(Snowflake sf)
+{
+	// TODO: deduplicate this.  Part of this is also in Paint()
+	RECT rect = {};
+	GetClientRect(m_hwnd, &rect);
+	int windowHeight = rect.bottom - rect.top;
+	int ScrollHeight = 0;
+	SCROLLINFO si;
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_POS | SIF_RANGE;
+	ri::GetScrollInfo(m_hwnd, SB_VERT, &si);
+	ScrollHeight = si.nPos;
+
+	RECT msgRect = rect;
+	msgRect.top -= ScrollHeight;
+
+	if (m_total_height < windowHeight && !m_bIsTopDown) {
+		msgRect.top += windowHeight - m_total_height;
+	}
+
+	msgRect.bottom = msgRect.top;
+
+	for (std::list<MessageItem>::iterator iter = m_messages.begin();
+		iter != m_messages.end();
+		++iter)
+	{
+		bool isActionMessage = IsActionMessage(iter->m_msg->m_type);
+		bool needUpdate = false;
+
+		msgRect.bottom = msgRect.top + iter->m_height;
+		iter->m_rect = msgRect;
+
+		bool bDraw = msgRect.top <= rect.bottom && msgRect.bottom > rect.top;
+
+		if (iter->m_msg->m_snowflake == sf)
+			return bDraw;
+	}
+
+	return false;
+}
+
 void MessageList::Paint(HDC hdc, RECT& paintRect)
 {
 	RECT rect = {};
@@ -4648,6 +4689,31 @@ void MessageList::OnPageUp()
 void MessageList::OnPageDown()
 {
 	SendMessage(m_hwnd, WM_VSCROLL, SB_PAGEDOWN, 0);
+}
+
+void MessageList::EditLastMessage()
+{
+	Profile* profile = GetDiscordInstance()->GetProfile();
+	Snowflake sf = 0;
+
+	for (auto iter = m_messages.rbegin(); iter != m_messages.rend(); ++iter)
+	{
+		if (iter->m_msg->m_author_snowflake != profile->m_snowflake)
+			continue;
+
+		sf = iter->m_msg->m_snowflake;
+		break;
+	}
+
+	if (!sf) {
+		DbgPrintW("Your last message isn't loaded!");
+		return;
+	}
+
+	if (!IsMessageVisible(sf))
+		SendToMessage(sf, false, false);
+
+	SendMessage(g_Hwnd, WM_STARTEDITING, 0, (LPARAM) &sf);
 }
 
 bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, MessageType::eType prevType, const std::string& prevAuthorName, const std::string& prevAuthorAvatar, const MessageItem& item, bool ifChainTooLongToo)
