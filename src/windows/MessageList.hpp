@@ -376,6 +376,8 @@ private:
 	size_t    m_highlightedInteractable = SIZE_MAX;
 	Snowflake m_highlightedInteractableMessage = 0;
 
+	size_t    m_rightClickedInteractableIndex = SIZE_MAX;
+
 	Snowflake m_messageSentTo = 0;
 	Snowflake m_emphasizedMessage = 0; // flashed message
 	Snowflake m_firstShownMessage = 0;
@@ -562,6 +564,11 @@ private:
 
 	void RequestMarkRead();
 	void HandleRightClickMenuCommand(int command);
+	void HandleRightClickMenuCommandMessage(int command, MessageItem* pMsg);
+	void HandleRightClickMenuCommandInteractable(int command, MessageItem* pMsg);
+
+	HMENU GetMenuForMessage(MessageItem* pRCMsg);
+	HMENU GetMenuForInteractable(MessageItem* pRCMsg, size_t index);
 
 	static bool ShouldUseDoubleBuffering();
 

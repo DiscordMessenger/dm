@@ -102,7 +102,9 @@
 #define IDC_CLICKER                     102
 #define IDR_ATTACHMENT_CONTEXT          103
 #define IDI_PROFILE_BORDER_UNREAD       104
+#define IDR_LINK_CONTEXT                104
 #define IDI_PROFILE_BORDER_UNREAD_2K    105
+#define IDR_IMAGE_CONTEXT               105
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -516,6 +518,16 @@
 #define ID_DUMMY_COPYIMAGE              1082
 #define ID_DUMMY_OPENIMAGELINK          1083
 #define ID_DUMMYPOPUP_UNPINMESSAGE      1099
+#define ID_DUMMYPOPUP_COPYLINK          1100
+#define ID_DUMMYPOPUP_COPYIMAGE         1101
+#define ID_DUMMYPOPUP_SAVEIMAGE         1102
+#define ID_DUMMYPOPUP_COPYLINK1103      1103
+#define ID_DUMMYPOPUP_OPENLINK          1104
+#define ID_DUMMYPOPUP_OPENLINK1105      1105
+#define ID_DUMMYPOPUP_COPYPROXYLINK     1106
+#define ID_DUMMYPOPUP_OPENPROXYLINK     1107
+#define ID_DUMMYPOPUP_COPYPROXYLINK1108 1108
+#define ID_DUMMYPOPUP_OPENPROXYLINK1109 1109
 #define IDR_MAIN_ACCELS                 1201
 #define IDA_SEARCH                      1301
 #define IDA_QUICKSWITCHER               1302
@@ -538,8 +550,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        104
-#define _APS_NEXT_COMMAND_VALUE         1100
+#define _APS_NEXT_RESOURCE_VALUE        106
+#define _APS_NEXT_COMMAND_VALUE         1110
 #define _APS_NEXT_CONTROL_VALUE         918
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif

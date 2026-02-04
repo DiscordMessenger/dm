@@ -234,6 +234,33 @@ BEGIN
     END
 END
 
+IDR_LINK_CONTEXT MENU
+BEGIN
+    POPUP "Dummy Popup"
+    BEGIN
+        MENUITEM "Copy Link",                   ID_DUMMYPOPUP_COPYLINK
+        MENUITEM "Open Link",                   ID_DUMMYPOPUP_OPENLINK1105
+        MENUITEM SEPARATOR
+        MENUITEM "Copy Proxy Link",             ID_DUMMYPOPUP_COPYPROXYLINK
+        MENUITEM "Open Proxy Link",             ID_DUMMYPOPUP_OPENPROXYLINK
+    END
+END
+
+IDR_IMAGE_CONTEXT MENU
+BEGIN
+    POPUP "Dummy Popup"
+    BEGIN
+        MENUITEM "Copy Image",                  ID_DUMMYPOPUP_COPYIMAGE
+        MENUITEM "Save Image",                  ID_DUMMYPOPUP_SAVEIMAGE
+        MENUITEM SEPARATOR
+        MENUITEM "Copy Link",                   ID_DUMMYPOPUP_COPYLINK
+        MENUITEM "Open Link",                   ID_DUMMYPOPUP_OPENLINK
+        MENUITEM SEPARATOR
+        MENUITEM "Copy Proxy Link",             ID_DUMMYPOPUP_COPYPROXYLINK
+        MENUITEM "Open Proxy Link",             ID_DUMMYPOPUP_OPENPROXYLINK
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

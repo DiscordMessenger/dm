@@ -269,6 +269,10 @@ public:
 			return m_placeInEmbed == EMBED_IN_TITLE;
 		return true;
 	}
+	bool ShouldHandleRightClick() const {
+		return m_type == LINK || m_type == EMBED_LINK || m_type == EMBED_IMAGE;
+	}
+
 	int m_type = NONE;
 	Rect m_rect{};
 	std::string m_text;

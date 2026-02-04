@@ -3242,24 +3242,48 @@ void MessageList::HandleRightClickMenuCommand(int command)
 	// of other things.
 	MessageItem* pMsg = NULL;
 	Snowflake rightClickedMessage = m_rightClickedMessage;
+	m_rightClickedMessage = 0;
+
+	for (auto iter = m_messages.rbegin(); iter != m_messages.rend() && !pMsg; ++iter)
+	{
+		if (iter->m_msg->m_snowflake == rightClickedMessage)
+			pMsg = &(*iter);
+	}
+
+	if (!pMsg) return;
+
+	switch (command)
+	{
+		default:
+			HandleRightClickMenuCommandMessage(command, pMsg);
+			break;
+
+		case ID_DUMMYPOPUP_COPYLINK:
+		case ID_DUMMYPOPUP_COPYPROXYLINK:
+		case ID_DUMMYPOPUP_OPENLINK:
+		case ID_DUMMYPOPUP_OPENPROXYLINK:
+		case ID_DUMMYPOPUP_COPYIMAGE:
+		case ID_DUMMYPOPUP_SAVEIMAGE:
+			HandleRightClickMenuCommandInteractable(command, pMsg);
+			break;
+	}
+}
+
+void MessageList::HandleRightClickMenuCommandMessage(int command, MessageItem* pMsg)
+{
 	Snowflake messageBeforeRightClickedMessage = 0;
+	Snowflake rightClickedMessage = pMsg->m_msg->m_snowflake;
 
 	for (auto iter = m_messages.rbegin(); iter != m_messages.rend(); ++iter)
 	{
-		if (iter->m_msg->m_snowflake == m_rightClickedMessage)
+		if (iter->m_msg->m_snowflake == pMsg->m_msg->m_snowflake)
 		{
-			pMsg = &(*iter);
-
 			++iter;
 			if (iter != m_messages.rend())
 				messageBeforeRightClickedMessage = iter->m_msg->m_snowflake;
 			break;
 		}
 	}
-
-	m_rightClickedMessage = 0;
-
-	if (!pMsg) return;
 
 	switch (command)
 	{
@@ -3305,7 +3329,7 @@ void MessageList::HandleRightClickMenuCommand(int command)
 		}
 		case ID_DUMMYPOPUP_COPYID:
 		{
-			std::string msgID = std::to_string(rightClickedMessage);
+			std::string msgID = std::to_string(pMsg->m_msg->m_snowflake);
 			CopyStringToClipboard(msgID);
 			break;
 		}
@@ -3316,7 +3340,7 @@ void MessageList::HandleRightClickMenuCommand(int command)
 			LPCTSTR xstr = ConvertCppStringToTString(buffer);
 			if (MessageBox(g_Hwnd, xstr, TmGetTString(IDS_CONFIRM_DELETE_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES)
 			{
-				GetDiscordInstance()->RequestDeleteMessage(m_channelID, rightClickedMessage);
+				GetDiscordInstance()->RequestDeleteMessage(m_channelID, pMsg->m_msg->m_snowflake);
 			}
 
 			free((void*)xstr);
@@ -3403,9 +3427,117 @@ void MessageList::HandleRightClickMenuCommand(int command)
 	}
 }
 
+void MessageList::HandleRightClickMenuCommandInteractable(int command, MessageItem* pMsg)
+{
+	if (m_rightClickedInteractableIndex == SIZE_MAX)
+		return;
+
+	auto& interactable = pMsg->m_interactableData[m_rightClickedInteractableIndex];
+
+	switch (command)
+	{
+		case ID_DUMMYPOPUP_COPYLINK:
+		{
+			CopyStringToClipboard(interactable.m_destination);
+			break;
+		}
+		case ID_DUMMYPOPUP_COPYPROXYLINK:
+		{
+			CopyStringToClipboard(interactable.m_proxyDest);
+			break;
+		}
+		case ID_DUMMYPOPUP_OPENLINK:
+		{
+			ConfirmOpenLink(interactable.m_destination);
+			break;
+		}
+		case ID_DUMMYPOPUP_OPENPROXYLINK:
+		{
+			ConfirmOpenLink(interactable.m_proxyDest);
+			break;
+		}
+		case ID_DUMMYPOPUP_COPYIMAGE:
+		{
+			// TODO
+			break;
+		}
+		case ID_DUMMYPOPUP_SAVEIMAGE:
+		{
+			// TODO
+			break;
+		}
+	}
+}
+
 bool MessageList::ShouldUseDoubleBuffering()
 {
 	return GetLocalSettings()->UseDoubleBuffering() || GetLocalSettings()->GetMessageStyle() == MS_IMAGE;
+}
+
+HMENU MessageList::GetMenuForInteractable(MessageItem* pRCMsg, size_t index)
+{
+	auto& interactable = pRCMsg->m_interactableData[index];
+	HMENU menu = NULL;
+
+	switch (interactable.m_type)
+	{
+		case InteractableItem::LINK:
+		case InteractableItem::EMBED_LINK:
+			menu = GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_LINK_CONTEXT)), 0);
+			break;
+		case InteractableItem::EMBED_IMAGE:
+			menu = GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_IMAGE_CONTEXT)), 0);
+			break;
+	}
+
+	return menu;
+}
+
+HMENU MessageList::GetMenuForMessage(MessageItem* pRCMsg)
+{
+	HMENU menu = GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_MESSAGE_CONTEXT)), 0);
+
+	// disable the Delete button if we're not the user
+	Profile* ourPf = GetDiscordInstance()->GetProfile();
+	Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+
+	if (!pChan) return NULL;
+
+	bool isThisMyMessage   = pRCMsg->m_msg->m_author_snowflake == ourPf->m_snowflake;
+	bool mayManageMessages = pChan->HasPermission(PERM_MANAGE_MESSAGES);
+	bool maySendMessages = pChan->HasPermission(PERM_SEND_MESSAGES);
+	bool isActionMessage = IsActionMessage(pRCMsg->m_msg->m_type) || IsClientSideMessage(pRCMsg->m_msg->m_type);
+	bool isForward = pRCMsg->m_msg->m_bIsForward;
+	bool isPinned = pRCMsg->m_msg->m_bIsPinned;
+	bool isDM = pChan->IsDM();
+
+	bool mayCopy   = !isForward && !isActionMessage;
+	bool mayDelete = isThisMyMessage || (mayManageMessages && !isDM);
+	bool mayEdit   = isThisMyMessage && !isForward && !isActionMessage && maySendMessages;
+	bool mayPin    = mayManageMessages && !isPinned && !isActionMessage;
+	bool mayUnpin  = mayManageMessages && isPinned && !isActionMessage;
+	bool maySpeak  = !isActionMessage && !pRCMsg->m_msg->m_message.empty();
+	bool mayReply  = (!isActionMessage || IsReplyableActionMessage(pRCMsg->m_msg->m_type)) && maySendMessages;
+
+#ifdef OLD_WINDOWS
+	EnableMenuItem(menu, ID_DUMMYPOPUP_DELETEMESSAGE, mayDelete ? MF_ENABLED : MF_GRAYED);
+	EnableMenuItem(menu, ID_DUMMYPOPUP_EDITMESSAGE,   mayEdit   ? MF_ENABLED : MF_GRAYED);
+	EnableMenuItem(menu, ID_DUMMYPOPUP_PINMESSAGE,    mayPin    ? MF_ENABLED : MF_GRAYED);
+	EnableMenuItem(menu, ID_DUMMYPOPUP_UNPINMESSAGE,  mayUnpin  ? MF_ENABLED : MF_GRAYED);
+	EnableMenuItem(menu, ID_DUMMYPOPUP_SPEAKMESSAGE,  maySpeak  ? MF_ENABLED : MF_GRAYED);
+	EnableMenuItem(menu, ID_DUMMYPOPUP_COPYTEXT,      mayCopy   ? MF_ENABLED : MF_GRAYED);
+	EnableMenuItem(menu, ID_DUMMYPOPUP_REPLY,         mayReply  ? MF_ENABLED : MF_GRAYED);
+#else
+	if (!mayDelete) RemoveMenu(menu, ID_DUMMYPOPUP_DELETEMESSAGE, MF_BYCOMMAND);
+	if (!mayEdit)   RemoveMenu(menu, ID_DUMMYPOPUP_EDITMESSAGE,   MF_BYCOMMAND);
+	if (!mayPin)    RemoveMenu(menu, ID_DUMMYPOPUP_PINMESSAGE,    MF_BYCOMMAND);
+	if (!mayUnpin)  RemoveMenu(menu, ID_DUMMYPOPUP_UNPINMESSAGE,  MF_BYCOMMAND);
+	if (!maySpeak)  RemoveMenu(menu, ID_DUMMYPOPUP_SPEAKMESSAGE,  MF_BYCOMMAND);
+	if (!mayCopy)   RemoveMenu(menu, ID_DUMMYPOPUP_COPYTEXT,      MF_BYCOMMAND);
+	if (!mayReply)  RemoveMenu(menu, ID_DUMMYPOPUP_REPLY,         MF_BYCOMMAND);
+#endif
+
+	return menu;
 }
 
 LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -3705,51 +3837,34 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (IsClientSideMessage(pRCMsg->m_msg->m_type)) break;
 
-			HMENU menu = GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_MESSAGE_CONTEXT)), 0);
-
 			pThis->m_rightClickedMessage = pRCMsg->m_msg->m_snowflake;
+			pThis->m_rightClickedInteractableIndex = SIZE_MAX;
 
-			// disable the Delete button if we're not the user
-			Profile* ourPf = GetDiscordInstance()->GetProfile();
-			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			HMENU hMenu = NULL;
 
-			if (!pChan) break;
+			// check if we're right clicking any interactables
+			for (size_t i = 0; i < pRCMsg->m_interactableData.size(); i++)
+			{
+				auto& interactable = pRCMsg->m_interactableData[i];
 
-			bool isThisMyMessage   = pRCMsg->m_msg->m_author_snowflake == ourPf->m_snowflake;
-			bool mayManageMessages = pChan->HasPermission(PERM_MANAGE_MESSAGES);
-			bool maySendMessages = pChan->HasPermission(PERM_SEND_MESSAGES);
-			bool isActionMessage = IsActionMessage(pRCMsg->m_msg->m_type) || IsClientSideMessage(pRCMsg->m_msg->m_type);
-			bool isForward = pRCMsg->m_msg->m_bIsForward;
-			bool isPinned = pRCMsg->m_msg->m_bIsPinned;
-			bool isDM = pChan->IsDM();
+				if (!interactable.ShouldHandleRightClick())
+					continue;
 
-			bool mayCopy   = !isForward && !isActionMessage;
-			bool mayDelete = isThisMyMessage || (mayManageMessages && !isDM);
-			bool mayEdit   = isThisMyMessage && !isForward && !isActionMessage && maySendMessages;
-			bool mayPin    = mayManageMessages && !isPinned && !isActionMessage;
-			bool mayUnpin  = mayManageMessages && isPinned && !isActionMessage;
-			bool maySpeak  = !isActionMessage && !pRCMsg->m_msg->m_message.empty();
-			bool mayReply  = (!isActionMessage || IsReplyableActionMessage(pRCMsg->m_msg->m_type)) && maySendMessages;
+				RECT rect = { W32RECT(interactable.m_rect) };
+				if (!PtInRect(&rect, pt))
+					continue;
 
-#ifdef OLD_WINDOWS
-			EnableMenuItem(menu, ID_DUMMYPOPUP_DELETEMESSAGE, mayDelete ? MF_ENABLED : MF_GRAYED);
-			EnableMenuItem(menu, ID_DUMMYPOPUP_EDITMESSAGE,   mayEdit   ? MF_ENABLED : MF_GRAYED);
-			EnableMenuItem(menu, ID_DUMMYPOPUP_PINMESSAGE,    mayPin    ? MF_ENABLED : MF_GRAYED);
-			EnableMenuItem(menu, ID_DUMMYPOPUP_UNPINMESSAGE,  mayUnpin  ? MF_ENABLED : MF_GRAYED);
-			EnableMenuItem(menu, ID_DUMMYPOPUP_SPEAKMESSAGE,  maySpeak  ? MF_ENABLED : MF_GRAYED);
-			EnableMenuItem(menu, ID_DUMMYPOPUP_COPYTEXT,      mayCopy   ? MF_ENABLED : MF_GRAYED);
-			EnableMenuItem(menu, ID_DUMMYPOPUP_REPLY,         mayReply  ? MF_ENABLED : MF_GRAYED);
-#else
-			if (!mayDelete) RemoveMenu(menu, ID_DUMMYPOPUP_DELETEMESSAGE, MF_BYCOMMAND);
-			if (!mayEdit)   RemoveMenu(menu, ID_DUMMYPOPUP_EDITMESSAGE,   MF_BYCOMMAND);
-			if (!mayPin)    RemoveMenu(menu, ID_DUMMYPOPUP_PINMESSAGE,    MF_BYCOMMAND);
-			if (!mayUnpin)  RemoveMenu(menu, ID_DUMMYPOPUP_UNPINMESSAGE,  MF_BYCOMMAND);
-			if (!maySpeak)  RemoveMenu(menu, ID_DUMMYPOPUP_SPEAKMESSAGE,  MF_BYCOMMAND);
-			if (!mayCopy)   RemoveMenu(menu, ID_DUMMYPOPUP_COPYTEXT,      MF_BYCOMMAND);
-			if (!mayReply)  RemoveMenu(menu, ID_DUMMYPOPUP_REPLY,         MF_BYCOMMAND);
-#endif
+				pThis->m_rightClickedInteractableIndex = i;
+				hMenu = pThis->GetMenuForInteractable(pRCMsg, i);
+				break;
+			}
 
-			TrackPopupMenu(menu, TPM_RIGHTBUTTON, xPos, yPos, 0, hWnd, NULL);
+			if (hMenu == NULL)
+				hMenu = pThis->GetMenuForMessage(pRCMsg);
+
+			if (hMenu)
+				TrackPopupMenu(hMenu, TPM_RIGHTBUTTON, xPos, yPos, 0, hWnd, NULL);
+			
 			break;
 		}
 		case WM_COMMAND:
