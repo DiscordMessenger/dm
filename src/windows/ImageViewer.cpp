@@ -2,6 +2,7 @@
 #include "ImageLoader.hpp"
 #include "Main.hpp"
 #include "NetworkerThread.hpp"
+#include "../core/config/LocalSettings.hpp"
 
 #define DM_IMAGE_VIEWER_CLASS       TEXT("DMImageViewerClass")
 #define DM_IMAGE_VIEWER_CHILD_CLASS TEXT("DMImageViewerChildClass")
@@ -387,7 +388,7 @@ void ImageViewerOnLoad(NetRequest* pRequest)
 
 void ImageViewerRequestSave()
 {
-	DownloadFileDialog(g_ivHwnd, g_ActualURL, g_FileName);
+	DownloadFileDialog(g_ivHwnd, g_ProxyURL, g_FileName);
 }
 
 void ImageViewerOnLoadNT(NetRequest* pRequest)
@@ -518,12 +519,18 @@ const char* trustedDiscordCdn = "https://cdn.discordapp.com/";
 
 void CreateImageViewer(const std::string& proxyURL, const std::string& url, const std::string& fileName, int width, int height)
 {
+	DbgPrintW("Image viewer:");
+	DbgPrintW("Orig. URL: %s", url.c_str());
+	DbgPrintW("Proxy URL: %s", proxyURL.c_str());
+
 	// Kill it if present:
 	KillImageViewer();
 
 	// just use the normal URL if it's from cdn.discordapp.com (as opposed to the other
 	// CDN which jpeg-ifies images (I know it's webp but still loses lots of quality))
-	bool useUrlAsProxyUrl = strncmp(url.c_str(), trustedDiscordCdn, strlen(trustedDiscordCdn)) == 0;
+	std::string trustedDiscordCdn = GetLocalSettings()->GetDiscordCDN();
+	const char* trustedDiscordCdnChr = trustedDiscordCdn.c_str();
+	bool useUrlAsProxyUrl = strncmp(url.c_str(), trustedDiscordCdnChr, strlen(trustedDiscordCdnChr)) == 0;
 	g_FileName  = fileName;
 	g_ProxyURL  = useUrlAsProxyUrl ? url : proxyURL;
 	g_ActualURL = url;

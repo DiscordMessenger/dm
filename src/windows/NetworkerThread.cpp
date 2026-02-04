@@ -187,6 +187,7 @@ private:
 void NetworkerThread::FulfillRequest(NetRequest& req)
 {
 	std::string& url = req.url;
+	DbgPrintF("Accessing URL: %s", url.c_str());
 
 	// split the URL into its host name and path
 	std::string hostName = "", path = "";
@@ -229,6 +230,10 @@ void NetworkerThread::FulfillRequest(NetRequest& req)
 
 	if (req.authorization.size())
 	{
+		assert(req.url.find("images") == std::string::npos);
+		assert(req.url.find("cdn") == std::string::npos);
+		assert(req.url.find("discord") != std::string::npos);
+
 		headers.insert(std::make_pair("Authorization", req.authorization));
 	}
 
