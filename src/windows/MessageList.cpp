@@ -3288,6 +3288,13 @@ void MessageList::HandleRightClickMenuCommand(int command)
 		}
 		case ID_DUMMYPOPUP_EDITMESSAGE:
 		{
+			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			if (!pChan)
+				break;
+
+			if (!pChan->HasPermission(PERM_SEND_MESSAGES))
+				break;
+
 			SendMessage(g_Hwnd, WM_STARTEDITING, 0, (LPARAM) &rightClickedMessage);
 			break;
 		}
@@ -3336,7 +3343,10 @@ void MessageList::HandleRightClickMenuCommand(int command)
 			if (!pChan)
 				break;
 
-			if (!pChan->HasPermission(PERM_SEND_MESSAGES))
+			if (!pChan->HasPermission(PERM_MANAGE_MESSAGES))
+				break;
+			
+			if (IsActionMessage(pMsg->m_msg->m_type))
 				break;
 
 			static char buffer[8192];
@@ -3346,7 +3356,32 @@ void MessageList::HandleRightClickMenuCommand(int command)
 
 			if (MessageBox(g_Hwnd, xstr, TmGetTString(IDS_CONFIRM_PIN_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES)
 			{
-				// TODO
+				GetDiscordInstance()->RequestPinMessage(m_channelID, rightClickedMessage);
+			}
+
+			free((void*)xstr);
+			break;
+		}
+		case ID_DUMMYPOPUP_UNPINMESSAGE:
+		{
+			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			if (!pChan)
+				break;
+
+			if (!pChan->HasPermission(PERM_MANAGE_MESSAGES))
+				break;
+			
+			if (IsActionMessage(pMsg->m_msg->m_type))
+				break;
+
+			static char buffer[8192];
+			snprintf(buffer, sizeof buffer, TmGetString(IDS_CONFIRM_UNPIN).c_str(), pMsg->m_msg->m_author.c_str(), pMsg->m_msg->m_dateFull.c_str(), pMsg->m_msg->m_message.c_str());
+
+			LPCTSTR xstr = ConvertCppStringToTString(buffer);
+
+			if (MessageBox(g_Hwnd, xstr, TmGetTString(IDS_CONFIRM_UNPIN_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES)
+			{
+				GetDiscordInstance()->RequestUnpinMessage(m_channelID, rightClickedMessage);
 			}
 
 			free((void*)xstr);
@@ -3685,11 +3720,14 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			bool maySendMessages = pChan->HasPermission(PERM_SEND_MESSAGES);
 			bool isActionMessage = IsActionMessage(pRCMsg->m_msg->m_type) || IsClientSideMessage(pRCMsg->m_msg->m_type);
 			bool isForward = pRCMsg->m_msg->m_bIsForward;
+			bool isPinned = pRCMsg->m_msg->m_bIsPinned;
+			bool isDM = pChan->IsDM();
 
 			bool mayCopy   = !isForward && !isActionMessage;
-			bool mayDelete = isThisMyMessage || mayManageMessages;
+			bool mayDelete = isThisMyMessage || (mayManageMessages && !isDM);
 			bool mayEdit   = isThisMyMessage && !isForward && !isActionMessage && maySendMessages;
-			bool mayPin    = mayManageMessages;
+			bool mayPin    = mayManageMessages && !isPinned && !isActionMessage;
+			bool mayUnpin  = mayManageMessages && isPinned && !isActionMessage;
 			bool maySpeak  = !isActionMessage && !pRCMsg->m_msg->m_message.empty();
 			bool mayReply  = (!isActionMessage || IsReplyableActionMessage(pRCMsg->m_msg->m_type)) && maySendMessages;
 
@@ -3697,6 +3735,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			EnableMenuItem(menu, ID_DUMMYPOPUP_DELETEMESSAGE, mayDelete ? MF_ENABLED : MF_GRAYED);
 			EnableMenuItem(menu, ID_DUMMYPOPUP_EDITMESSAGE,   mayEdit   ? MF_ENABLED : MF_GRAYED);
 			EnableMenuItem(menu, ID_DUMMYPOPUP_PINMESSAGE,    mayPin    ? MF_ENABLED : MF_GRAYED);
+			EnableMenuItem(menu, ID_DUMMYPOPUP_UNPINMESSAGE,  mayUnpin  ? MF_ENABLED : MF_GRAYED);
 			EnableMenuItem(menu, ID_DUMMYPOPUP_SPEAKMESSAGE,  maySpeak  ? MF_ENABLED : MF_GRAYED);
 			EnableMenuItem(menu, ID_DUMMYPOPUP_COPYTEXT,      mayCopy   ? MF_ENABLED : MF_GRAYED);
 			EnableMenuItem(menu, ID_DUMMYPOPUP_REPLY,         mayReply  ? MF_ENABLED : MF_GRAYED);
@@ -3704,6 +3743,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (!mayDelete) RemoveMenu(menu, ID_DUMMYPOPUP_DELETEMESSAGE, MF_BYCOMMAND);
 			if (!mayEdit)   RemoveMenu(menu, ID_DUMMYPOPUP_EDITMESSAGE,   MF_BYCOMMAND);
 			if (!mayPin)    RemoveMenu(menu, ID_DUMMYPOPUP_PINMESSAGE,    MF_BYCOMMAND);
+			if (!mayUnpin)  RemoveMenu(menu, ID_DUMMYPOPUP_UNPINMESSAGE,  MF_BYCOMMAND);
 			if (!maySpeak)  RemoveMenu(menu, ID_DUMMYPOPUP_SPEAKMESSAGE,  MF_BYCOMMAND);
 			if (!mayCopy)   RemoveMenu(menu, ID_DUMMYPOPUP_COPYTEXT,      MF_BYCOMMAND);
 			if (!mayReply)  RemoveMenu(menu, ID_DUMMYPOPUP_REPLY,         MF_BYCOMMAND);

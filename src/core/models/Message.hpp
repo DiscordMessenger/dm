@@ -111,6 +111,7 @@ public:
 	std::set<Snowflake> m_roleMentions;
 	bool m_bMentionedEveryone = false;
 	bool m_bIsAuthorBot = false;
+	bool m_bIsPinned = false;
 	bool m_bRead = false; // valid only for the notification viewer messages
 	bool m_bIsForward = false;
 	Snowflake m_refMessageGuild = 0;
