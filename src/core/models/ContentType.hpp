@@ -11,6 +11,9 @@ namespace ContentType
 		GIF,
 		WEBP,
 		MP4,
+		AVI,
+		MOV,
+		WMV,
 		//...
 	};
 
@@ -22,6 +25,9 @@ namespace ContentType
 		if (str == "image/webp") return WEBP;
 
 		if (str == "video/mp4") return MP4;
+		if (str == "video/x-msvideo") return AVI;
+		if (str == "video/quicktime") return MOV;
+		if (str == "video/x-ms-wmv") return WMV;
 
 		return BLOB;
 	}

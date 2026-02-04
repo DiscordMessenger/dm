@@ -59,7 +59,10 @@ public:
 	bool IsVideo() const
 	{
 		return
-			m_contentType == ContentType::MP4;
+			m_contentType == ContentType::MP4 ||
+			m_contentType == ContentType::AVI ||
+			m_contentType == ContentType::MOV ||
+			m_contentType == ContentType::WMV;
 	}
 
 	bool IsImageOrVideo() const

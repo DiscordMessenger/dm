@@ -19,6 +19,9 @@
 #define DATE_GAP_HEIGHT   (ScaleByDPI(20))
 #define PROFILE_PICTURE_GAP (PROFILE_PICTURE_SIZE + 8);
 
+// TODO: hardcoding this one for now..
+#define ONE_LINE_HEIGHT (ScaleByDPI(17))
+
 static int GetProfileBorderRenderSize()
 {
 	return ScaleByDPI(Supports32BitIcons() ? (PROFILE_PICTURE_SIZE_DEF + 12) : 64);
@@ -1532,10 +1535,111 @@ void MessageList::DrawImageAttachment(HDC hdc, RECT& paintRect, AttachmentItem& 
 
 void MessageList::DrawVideoAttachment(HDC hdc, RECT& paintRect, AttachmentItem& attachItem, RECT& attachRect)
 {
+	RECT childAttachRect = attachRect;
+	childAttachRect.bottom = childAttachRect.top + ATTACHMENT_HEIGHT;
+
+	RECT intersRect;
+	bool inView = IntersectRect(&intersRect, &paintRect, &childAttachRect);
+
+	int iconSize = ScaleByDPI(32);
+	int rectHeight = childAttachRect.bottom - childAttachRect.top;
+
+	COLORREF old = CLR_NONE;
+	if (attachItem.m_bHighlighted && inView)
+		old = SetTextColor(hdc, RGB(0, 0, 255));
+	else
+		old = SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+
+	LPCTSTR name = attachItem.m_nameText;
+	RECT rcMeasure;
+	SetRectEmpty(&rcMeasure);
+	SelectObject(hdc, attachItem.m_bHighlighted ? g_AuthorTextUnderlinedFont : g_AuthorTextFont);
+	DrawText(hdc, name, -1, &rcMeasure, DT_CALCRECT | DT_NOPREFIX);
+	int width = rcMeasure.right - rcMeasure.left;
+
+	RECT textRect = childAttachRect;
+	textRect.left += iconSize + ScaleByDPI(8);
+	textRect.top += (ATTACHMENT_HEIGHT - rcMeasure.bottom * 2) / 2;
+	textRect.bottom = textRect.top + rcMeasure.bottom;
+	textRect.left += ScaleByDPI(5);
+	textRect.right = textRect.left + rcMeasure.right;
+
+	childAttachRect.right = childAttachRect.left + iconSize + iconSize + width + ScaleByDPI(20);
+	attachRect.bottom = attachRect.top = childAttachRect.bottom + ATTACHMENT_GAP;
+
+	if (inView)
+	{
+		ri::DrawEdge(hdc, &childAttachRect, BDR_RAISEDINNER | BDR_RAISEDOUTER, BF_RECT | BF_MIDDLE);
+		DrawText(hdc, name, -1, &textRect, DT_NOPREFIX | DT_NOCLIP);
+		ri::DrawIconEx(
+			hdc,
+			childAttachRect.left + 4,
+			childAttachRect.top + rectHeight / 2 - iconSize / 2,
+			LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_FILE)),
+			iconSize,
+			iconSize,
+			0,
+			NULL,
+			DI_COMPAT | DI_NORMAL
+		);
+	}
+
+	attachItem.m_textRect = textRect;
+
+	uint32_t oc = SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+	if (old == CLR_NONE)
+		old = oc;
+
+	LPCTSTR sizeStr = attachItem.m_sizeText;
+	textRect.top += rcMeasure.bottom;
+	textRect.bottom += rcMeasure.bottom;
+
+	if (inView)
+	{
+		SelectObject(hdc, g_DateTextFont);
+		DrawText(hdc, sizeStr, -1, &textRect, DT_NOPREFIX | DT_NOCLIP);
+	}
+
+	if (old != CLR_NONE)
+		SetTextColor(hdc, old);
+
+	int dlIconSize = iconSize / 2;
+
+	int dlIconX = childAttachRect.right - 4 - iconSize + (iconSize - dlIconSize) / 2;
+	int dlIconY = childAttachRect.top + rectHeight / 2 - dlIconSize / 2;
+	attachItem.m_addRect = { dlIconX, dlIconY, dlIconX + dlIconSize, dlIconY + dlIconSize };
+
+	if (inView)
+	{
+		ri::DrawIconEx(hdc,
+			dlIconX,
+			dlIconY,
+			(HICON)g_DownloadIcon,
+			dlIconSize,
+			dlIconSize,
+			0,
+			NULL,
+			DI_NORMAL | DI_COMPAT
+		);
+	}
+
+	attachItem.m_boxRect = childAttachRect;
+}
+#if 0
+void MessageList::DrawVideoAttachment(HDC hdc, RECT& paintRect, AttachmentItem& attachItem, RECT& attachRect)
+{
 	Attachment* pAttach = attachItem.m_pAttachment;
 	std::string url = pAttach->m_proxyUrl;
+	
+	RECT rcText = attachRect;
+	COLORREF cr = SetTextColor(hdc, GetSysColor(COLOR_BTNTEXT));
+	HGDIOBJ oldFont = SelectObject(hdc, attachItem.m_bHighlighted ? g_AuthorTextUnderlinedFont : g_AuthorTextFont);
+	DrawText(hdc, attachItem.m_nameText, -1, &rcText, DT_NOPREFIX | DT_NOCLIP | ri::GetWordEllipsisFlag());
+	SelectObject(hdc, oldFont);
+	SetTextColor(hdc, cr);
 
 	RECT childAttachRect = attachRect;
+	childAttachRect.top += ONE_LINE_HEIGHT;
 	childAttachRect.right  = childAttachRect.left + pAttach->m_previewWidth;
 	childAttachRect.bottom = childAttachRect.top + pAttach->m_previewHeight;
 
@@ -1569,7 +1673,7 @@ void MessageList::DrawVideoAttachment(HDC hdc, RECT& paintRect, AttachmentItem& 
 	HImage* him = GetAvatarCache()->GetImageSpecial(attachItem.m_resourceID, hasAlpha);
 	DrawImageSpecial(hdc, him, childAttachRect, hasAlpha);
 }
-
+#endif
 void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem& attachItem, RECT& attachRect)
 {
 	RECT childAttachRect = attachRect;
@@ -2974,35 +3078,23 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	{
 		auto& attach = attachVec[i];
 		auto& attachItem = attachItemVec[i];
-		switch (attach.m_contentType)
+
+		if (!GetLocalSettings()->ShowAttachmentImages())
 		{
-			case ContentType::MP4:
-			{
-				if (GetLocalSettings()->ShowAttachmentImages())
-				{
-					DrawVideoAttachment(hdc, paintRect, attachItem, attachRect);
-					break;
-				}
-				goto drawDefault;
-			}
-			case ContentType::PNG:
-			case ContentType::GIF:
-			case ContentType::JPEG:
-			case ContentType::WEBP:
-			{
-				if (GetLocalSettings()->ShowAttachmentImages())
-				{
-					DrawImageAttachment(hdc, paintRect, attachItem, attachRect);
-					break;
-				}
-				// FALLTHROUGH
-			}
-			default:
-			{
-			drawDefault:
-				DrawDefaultAttachment(hdc, paintRect, attachItem, attachRect);
-				break;
-			}
+		defaultHandling:
+			DrawImageAttachment(hdc, paintRect, attachItem, attachRect);
+		}
+		else if (attach.IsImage())
+		{
+			DrawImageAttachment(hdc, paintRect, attachItem, attachRect);
+		}
+		else if (attach.IsVideo())
+		{
+			DrawVideoAttachment(hdc, paintRect, attachItem, attachRect);
+		}
+		else
+		{
+			goto defaultHandling;
 		}
 	}
 
@@ -4431,10 +4523,18 @@ void MessageList::AdjustHeightInfo(
 	{
 		// XXX improve?
 		int inc = 0;
-		if (!GetLocalSettings()->ShowAttachmentImages() || !att.IsImageOrVideo())
-			inc = ATTACHMENT_HEIGHT + ATTACHMENT_GAP;
+
+		if (att.IsImageOrVideo() && GetLocalSettings()->ShowAttachmentImages())
+		{
+			if (att.IsImage())
+				inc = att.m_previewHeight + ATTACHMENT_GAP;
+			else
+				inc = att.m_previewHeight + ONE_LINE_HEIGHT + ATTACHMENT_GAP;
+		}
 		else
-			inc = att.m_previewHeight + ATTACHMENT_GAP;
+		{
+			inc = ATTACHMENT_HEIGHT + ATTACHMENT_GAP;
+		}
 
 		height += inc;
 		attachheight += inc;
