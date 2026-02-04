@@ -1301,8 +1301,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					false,
 					NetRequest::GET,
 					GetDiscordAPI() + "gateway",
-					DiscordRequest::GATEWAY,
-					0, "", GetDiscordToken()
+					DiscordRequest::GATEWAY
 				);
 			}
 
