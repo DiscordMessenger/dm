@@ -241,6 +241,28 @@ void CopyStringToClipboard(const std::string& str)
 	}
 }
 
+void CopyImageToClipboard(HBITMAP hBitmap)
+{
+	HBITMAP bitmapCopy = (HBITMAP)ri::CopyImage(hBitmap, IMAGE_BITMAP, 0, 0, 0);
+	if (!bitmapCopy)
+		return;
+
+	if (!OpenClipboard(g_Hwnd)) {
+		DeleteBitmap(bitmapCopy);
+		return;
+	}
+
+	EmptyClipboard();
+
+	if (!SetClipboardData(CF_BITMAP, bitmapCopy))
+	{
+		DbgPrintW("Couldn't copy bitmap!");
+		DeleteBitmap(bitmapCopy);
+	}
+
+	CloseClipboard();
+}
+
 // Borrowed from NanoShellOS: https://github.com/iProgramMC/NanoShellOS/blob/master/src/utf8.c
 #define REPLACEMENT_CHAR 0xFFFD
 int Utf8DecodeCharacter(const char* pByteSeq, int* pSizeOut)
@@ -1682,4 +1704,24 @@ HCURSOR GetHandCursor()
 		loaded = LoadCursor(g_hInstance, MAKEINTRESOURCE(IDC_CLICKER));
 
 	return loaded;
+}
+
+std::string ExtractFileNameFromURL(const std::string& url)
+{
+	std::string fileName = url;
+	for (size_t i = fileName.size(); i != 0; i--) {
+		if (fileName[i] == '/') {
+			fileName = fileName.substr(i + 1);
+			break;
+		}
+	}
+
+	for (size_t i = 0; i < fileName.size(); i++) {
+		if (fileName[i] == '?' || fileName[i] == '&') {
+			fileName = fileName.substr(0, i);
+			break;
+		}
+	}
+
+	return fileName;
 }

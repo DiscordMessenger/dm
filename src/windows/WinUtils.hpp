@@ -77,6 +77,7 @@ std::string MakeStringFromUnicodeString(LPCWSTR wstr);
 
 // Clipboard utils
 void CopyStringToClipboard(const std::string& str);
+void CopyImageToClipboard(HBITMAP hBitmap);
 
 // Error codes
 std::string GetStringFromHResult(HRESULT hr);
@@ -159,6 +160,7 @@ COLORREF GetNameColor(Profile* pf, Snowflake guild);
 
 // URL utils
 void LaunchURL(const std::string& link);
+std::string ExtractFileNameFromURL(const std::string& url);
 
 // COM utils
 void InitializeCOM(); // used by TTS and shell stuff

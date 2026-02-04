@@ -278,6 +278,7 @@ public:
 	std::string m_text;
 	std::string m_destination;
 	std::string m_proxyDest;
+	std::string m_resourceID;
 	bool m_bHighlighted = false;
 	size_t m_wordIndex = 0;
 	Snowflake m_affected = 0;

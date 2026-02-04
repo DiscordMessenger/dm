@@ -377,6 +377,7 @@ private:
 	Snowflake m_highlightedInteractableMessage = 0;
 
 	size_t    m_rightClickedInteractableIndex = SIZE_MAX;
+	size_t    m_rightClickedAttachmentIndex = SIZE_MAX;
 
 	Snowflake m_messageSentTo = 0;
 	Snowflake m_emphasizedMessage = 0; // flashed message
@@ -569,6 +570,7 @@ private:
 
 	HMENU GetMenuForMessage(MessageItem* pRCMsg);
 	HMENU GetMenuForInteractable(MessageItem* pRCMsg, size_t index);
+	HMENU GetMenuForAttachment(MessageItem* pRCMsg, size_t index);
 
 	static bool ShouldUseDoubleBuffering();
 

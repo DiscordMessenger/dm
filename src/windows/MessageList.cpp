@@ -631,18 +631,16 @@ void MessageItem::Update(Snowflake guildID)
 			if (item.m_pEmbed->m_bHasThumbnail) {
 				ii.m_imageWidth  = item.m_pEmbed->m_thumbnailWidth;
 				ii.m_imageHeight = item.m_pEmbed->m_thumbnailHeight;
+				ii.m_destination = item.m_pEmbed->m_thumbnailUrl;
+				ii.m_proxyDest   = item.m_pEmbed->m_thumbnailProxiedUrl;
+				ii.m_resourceID  = GetAvatarCache()->MakeIdentifier(item.m_pEmbed->m_thumbnailUrl);
 			}
 			else {
 				ii.m_imageWidth  = item.m_pEmbed->m_imageWidth;
 				ii.m_imageHeight = item.m_pEmbed->m_imageHeight;
-			}
-			if (item.m_pEmbed->m_bHasImage) {
 				ii.m_destination = item.m_pEmbed->m_imageUrl;
 				ii.m_proxyDest   = item.m_pEmbed->m_imageProxiedUrl;
-			}
-			else {
-				ii.m_destination = item.m_pEmbed->m_thumbnailUrl;
-				ii.m_proxyDest   = item.m_pEmbed->m_thumbnailProxiedUrl;
+				ii.m_resourceID  = GetAvatarCache()->MakeIdentifier(item.m_pEmbed->m_imageUrl);
 			}
 			ii.m_wordIndex = i + (size_t)InteractableItem::EMBED_OFFSET;
 			m_interactableData.push_back(ii);
@@ -1426,13 +1424,7 @@ void MessageList::OpenInteractable(InteractableItem* pItem, MessageItem* pMsg)
 		case InteractableItem::EMBED_IMAGE: {
 			std::string url = pItem->m_destination;
 			std::string proxyUrl = pItem->m_proxyDest;
-			std::string fileName = url;
-			for (size_t i = fileName.size(); i != 0; i--) {
-				if (fileName[i] == '/') {
-					fileName = fileName.substr(i + 1);
-					break;
-				}
-			}
+			std::string fileName = ExtractFileNameFromURL(url);
 			CreateImageViewer(
 				proxyUrl,
 				url,
@@ -3267,6 +3259,9 @@ void MessageList::HandleRightClickMenuCommand(int command)
 			HandleRightClickMenuCommandInteractable(command, pMsg);
 			break;
 	}
+
+	m_rightClickedInteractableIndex = SIZE_MAX;
+	m_rightClickedAttachmentIndex = SIZE_MAX;
 }
 
 void MessageList::HandleRightClickMenuCommandMessage(int command, MessageItem* pMsg)
@@ -3429,41 +3424,66 @@ void MessageList::HandleRightClickMenuCommandMessage(int command, MessageItem* p
 
 void MessageList::HandleRightClickMenuCommandInteractable(int command, MessageItem* pMsg)
 {
-	if (m_rightClickedInteractableIndex == SIZE_MAX)
+	std::string destination, proxyDest, resourceID;
+	if (m_rightClickedInteractableIndex != SIZE_MAX) {
+		auto& interactable = pMsg->m_interactableData[m_rightClickedInteractableIndex];
+		destination = interactable.m_destination;
+		proxyDest   = interactable.m_proxyDest;
+		resourceID  = interactable.m_resourceID;
+	}
+	else if (m_rightClickedAttachmentIndex != SIZE_MAX) {
+		auto& attachment = pMsg->m_attachmentData[m_rightClickedAttachmentIndex];
+		destination = attachment.m_pAttachment->m_actualUrl;
+		proxyDest   = attachment.m_pAttachment->m_proxyUrl;
+		resourceID  = attachment.m_resourceID;
+	}
+	else {
 		return;
-
-	auto& interactable = pMsg->m_interactableData[m_rightClickedInteractableIndex];
+	}
 
 	switch (command)
 	{
 		case ID_DUMMYPOPUP_COPYLINK:
 		{
-			CopyStringToClipboard(interactable.m_destination);
+			CopyStringToClipboard(destination);
 			break;
 		}
 		case ID_DUMMYPOPUP_COPYPROXYLINK:
 		{
-			CopyStringToClipboard(interactable.m_proxyDest);
+			CopyStringToClipboard(proxyDest);
 			break;
 		}
 		case ID_DUMMYPOPUP_OPENLINK:
 		{
-			ConfirmOpenLink(interactable.m_destination);
+			ConfirmOpenLink(destination);
 			break;
 		}
 		case ID_DUMMYPOPUP_OPENPROXYLINK:
 		{
-			ConfirmOpenLink(interactable.m_proxyDest);
+			ConfirmOpenLink(proxyDest);
 			break;
 		}
 		case ID_DUMMYPOPUP_COPYIMAGE:
 		{
-			// TODO
+			bool hasAlpha = false;
+			if (resourceID.empty()) {
+				DbgPrintW("Copy Image: Resource ID empty!");
+				break;
+			}
+
+			HImage* him = GetAvatarCache()->GetImageNullable(resourceID, hasAlpha);
+
+			if (!him) {
+				DbgPrintW("Copy Image: No image loaded!");
+				break;
+			}
+
+			CopyImageToClipboard(him->Frames[0].Bitmap);
 			break;
 		}
 		case ID_DUMMYPOPUP_SAVEIMAGE:
 		{
-			// TODO
+			DownloadFileDialog(GetParent(m_hwnd), proxyDest, ExtractFileNameFromURL(destination));
 			break;
 		}
 	}
@@ -3472,6 +3492,15 @@ void MessageList::HandleRightClickMenuCommandInteractable(int command, MessageIt
 bool MessageList::ShouldUseDoubleBuffering()
 {
 	return GetLocalSettings()->UseDoubleBuffering() || GetLocalSettings()->GetMessageStyle() == MS_IMAGE;
+}
+
+HMENU MessageList::GetMenuForAttachment(MessageItem* pRCMsg, size_t index)
+{
+	auto& attachment = pRCMsg->m_attachmentData[index];
+	if (attachment.m_pAttachment->IsImage())
+		return GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_IMAGE_CONTEXT)), 0);
+	else
+		return GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_LINK_CONTEXT)), 0);
 }
 
 HMENU MessageList::GetMenuForInteractable(MessageItem* pRCMsg, size_t index)
@@ -3839,10 +3868,11 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			pThis->m_rightClickedMessage = pRCMsg->m_msg->m_snowflake;
 			pThis->m_rightClickedInteractableIndex = SIZE_MAX;
+			pThis->m_rightClickedAttachmentIndex = SIZE_MAX;
 
 			HMENU hMenu = NULL;
 
-			// check if we're right clicking any interactables
+			// check if we're right clicking any interactables...
 			for (size_t i = 0; i < pRCMsg->m_interactableData.size(); i++)
 			{
 				auto& interactable = pRCMsg->m_interactableData[i];
@@ -3857,6 +3887,23 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				pThis->m_rightClickedInteractableIndex = i;
 				hMenu = pThis->GetMenuForInteractable(pRCMsg, i);
 				break;
+			}
+
+			// ... or attachments
+			if (hMenu == NULL)
+			{
+				for (size_t i = 0; i < pRCMsg->m_attachmentData.size(); i++)
+				{
+					auto& attachment = pRCMsg->m_attachmentData[i];
+
+					RECT rect = { W32RECT(attachment.m_textRect) };
+					if (!PtInRect(&rect, pt))
+						continue;
+
+					pThis->m_rightClickedAttachmentIndex = i;
+					hMenu = pThis->GetMenuForAttachment(pRCMsg, i);
+					break;
+				}
 			}
 
 			if (hMenu == NULL)

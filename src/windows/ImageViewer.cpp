@@ -78,6 +78,11 @@ static bool ImageViewerNeedScrollBars(int winWidth, int winHeight)
 	return g_bChildZoomedIn && (g_ivWidth != winWidth || g_ivHeight != winHeight);
 }
 
+void ImageViewerRequestSave()
+{
+	DownloadFileDialog(g_ivHwnd, g_ProxyURL, g_FileName);
+}
+
 LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	SCROLLINFO si{};
@@ -259,24 +264,17 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 			{
 				case ID_DUMMY_COPYIMAGE:
 				{
-					HBITMAP bitmapCopy = (HBITMAP)ri::CopyImage(g_hBitmapFull->Frames[0].Bitmap, IMAGE_BITMAP, 0, 0, 0);
-					if (!bitmapCopy)
-						break;
-
-					if (!OpenClipboard(hWnd)) {
-						DeleteBitmap(bitmapCopy);
-						break;
-					}
-
-					EmptyClipboard();
-					
-					if (!SetClipboardData(CF_BITMAP, bitmapCopy))
-					{
-						DbgPrintW("Couldn't copy bitmap!");
-						DeleteBitmap(bitmapCopy);
-					}
-
-					CloseClipboard();
+					CopyImageToClipboard(g_hBitmapFull->Frames[0].Bitmap);
+					break;
+				}
+				case ID_DUMMY_SAVEIMAGE:
+				{
+					ImageViewerRequestSave();
+					break;
+				}
+				case ID_DUMMY_COPYIMAGELINK:
+				{
+					CopyStringToClipboard(g_ActualURL);
 					break;
 				}
 			}
@@ -384,11 +382,6 @@ void ImageViewerOnLoad(NetRequest* pRequest)
 
 	g_bChildZoomedIn = !ImageViewerNeedScrollBarsAtAll(g_ivPreviewImageWidth, g_ivPreviewImageHeight);
 	SendMessage(g_ivChildHwnd, WM_UPDATEBITMAP, 0, 0);
-}
-
-void ImageViewerRequestSave()
-{
-	DownloadFileDialog(g_ivHwnd, g_ProxyURL, g_FileName);
 }
 
 void ImageViewerOnLoadNT(NetRequest* pRequest)
