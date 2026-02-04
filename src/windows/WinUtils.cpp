@@ -217,7 +217,7 @@ void CopyStringToClipboard(const std::string& str)
 
 		LPCTSTR ctstr = ConvertCppStringToTString(str2);
 
-		size_t stringSize = (str.length() + 1) * sizeof(TCHAR);
+		size_t stringSize = (str2.length() + 1) * sizeof(TCHAR);
 
 		// create a global buffer and fill its text in
 		HGLOBAL clipbuffer;
