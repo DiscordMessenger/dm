@@ -93,7 +93,7 @@ If you want Pentium 1 support and/or native Windows 95/NT 3.x support, see: [Pen
 sudo apt install mingw-w64 gcc-mingw-w64-x86-64-posix g++-mingw-w64-x86-64-posix
 ```
 
-2. Check out Discord Messenger's fork of [https://github.com/DiscordMessenger/openssl](OpenSSL).
+2. Check out Discord Messenger's fork of [OpenSSL](https://github.com/DiscordMessenger/openssl).
 
 3. Build it: `./buildit` or `TOOLCHAIN_PATH=[custom toolchain path] ./buildit`
 (if you're using the Pentium toolchain you should specify the TOOLCHAIN_PATH)
@@ -102,7 +102,7 @@ sudo apt install mingw-w64 gcc-mingw-w64-x86-64-posix g++-mingw-w64-x86-64-posix
 to remember the path, edit the Makefile to use it as your default(but make sure to not check in your
 change when sending a PR!), or `export` it.
 
-5. Check out Discord Messenger's fork of [https://github.com/DiscordMessenger/libwebp](LibWebP).
+5. Check out Discord Messenger's fork of [LibWebP](https://github.com/DiscordMessenger/libwebp).
 
 You can skip this step and steps #6 and #7.
 
