@@ -207,12 +207,22 @@ bool EndsWithCaseInsens(const std::string& what, const std::string& with)
 bool IsPotentiallyDangerousDownload(const std::string& filename)
 {
 	return
-		EndsWithCaseInsens(filename, ".exe") ||
+		EndsWithCaseInsens(filename, ".7z") ||
 		EndsWithCaseInsens(filename, ".bat") ||
-		EndsWithCaseInsens(filename, ".com") ||
-		EndsWithCaseInsens(filename, ".vbs") ||
 		EndsWithCaseInsens(filename, ".cmd") ||
-		EndsWithCaseInsens(filename, ".scr");
+		EndsWithCaseInsens(filename, ".com") ||
+		EndsWithCaseInsens(filename, ".exe") ||
+		EndsWithCaseInsens(filename, ".js") ||
+		EndsWithCaseInsens(filename, ".jse") ||
+		EndsWithCaseInsens(filename, ".hta") ||
+		EndsWithCaseInsens(filename, ".lnk") ||
+		EndsWithCaseInsens(filename, ".pif") ||
+		EndsWithCaseInsens(filename, ".rar") ||
+		EndsWithCaseInsens(filename, ".reg") ||
+		EndsWithCaseInsens(filename, ".scr") ||
+		EndsWithCaseInsens(filename, ".vbe") ||
+		EndsWithCaseInsens(filename, ".vbs") ||
+		EndsWithCaseInsens(filename, ".zip");
 }
 
 int64_t ExtractTimestamp(Snowflake sf)
