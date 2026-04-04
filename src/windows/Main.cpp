@@ -1638,18 +1638,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_IMAGESAVED:
 		{
 			LPCTSTR file = (LPCTSTR) lParam;
-			size_t sl = _tcslen(file);
-			bool isExe = false;
-
-			if (sl > 4 && (
-				_tcscmp(file + sl - 4, TEXT(".exe")) == 0 ||
-				_tcscmp(file + sl - 4, TEXT(".scr")) == 0 ||
-				_tcscmp(file + sl - 4, TEXT(".lnk")) == 0 ||
-				_tcscmp(file + sl - 4, TEXT(".zip")) == 0 ||
-				_tcscmp(file + sl - 4, TEXT(".rar")) == 0 ||
-				_tcscmp(file + sl - 4, TEXT(".7z"))  == 0)) {
-				isExe = true;
-			}
+			bool isExe = IsPotentiallyDangerousDownload(MakeStringFromTString(file));
 
 			TCHAR buff[4096];
 			WAsnprintf(
