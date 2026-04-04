@@ -162,6 +162,9 @@ COLORREF GetNameColor(Profile* pf, Snowflake guild);
 void LaunchURL(const std::string& link);
 std::string ExtractFileNameFromURL(const std::string& url);
 
+// More utils
+std::string FilterToken(const std::string& ogToken);
+
 // COM utils
 void InitializeCOM(); // used by TTS and shell stuff
 

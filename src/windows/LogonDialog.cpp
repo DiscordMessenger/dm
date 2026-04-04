@@ -1,5 +1,6 @@
 #include "Main.hpp"
 #include "LogonDialog.hpp"
+#include "WinUtils.hpp"
 #include "config/LocalSettings.hpp"
 
 BOOL LogonDialogOnCommand(HWND hWnd, WPARAM wParam)
@@ -12,15 +13,31 @@ BOOL LogonDialogOnCommand(HWND hWnd, WPARAM wParam)
 			TCHAR buff[256];
 			int len = GetDlgItemText(hWnd, IDC_EDIT_TOKEN, buff, _countof(buff) - 1);
 
-			if (len == 0 || len >= _countof(buff) - 1) {
+			if (len >= _countof(buff) - 1) {
+			TokenTooLong:
 				MessageBox(hWnd, TmGetTString(IDS_TOKEN_TOO_LONG), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
+				return 0;
+			}
+
+			if (len < 70) {
+			TokenTooShort:
+				MessageBox(hWnd, TmGetTString(IDS_TOKEN_TOO_SHORT), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
 				return 0;
 			}
 
 			buff[_countof(buff) - 1] = 0;
 			buff[len] = 0;
 
-			GetLocalSettings()->SetToken(MakeStringFromTString(buff));
+			std::string token = MakeStringFromTString(buff);
+
+			// filter out characters
+			token = FilterToken(token);
+			if (token.size() > 75)
+				goto TokenTooLong;
+			if (token.size() < 70)
+				goto TokenTooShort;
+
+			GetLocalSettings()->SetToken(token);
 			if (GetDiscordInstance())
 				GetDiscordInstance()->ResetGatewayURL();
 			EndDialog(hWnd, IDOK);

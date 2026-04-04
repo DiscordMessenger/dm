@@ -1725,3 +1725,18 @@ std::string ExtractFileNameFromURL(const std::string& url)
 
 	return fileName;
 }
+
+std::string FilterToken(const std::string& ogToken)
+{
+	std::string newToken;
+	newToken.reserve(ogToken.size());
+
+	for (size_t i = 0; i < ogToken.size(); i++)
+	{
+		char chr = ogToken[i];
+		if ((chr >= '0' && chr <= '9') || (chr >= 'A' && chr <= 'Z') || (chr >= 'a' && chr <= 'z') || chr == '.' || chr == '_' || chr == '-')
+			newToken += chr;
+	}
+
+	return newToken;
+}
