@@ -2135,6 +2135,19 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 						SetFocus(msg.hwnd);
 					}
 					break;
+
+				case WM_KEYDOWN:
+					// Emulate a message for editing the last message to avoid
+					// a real accelerator capturing all up arrow input.
+					if (msg.wParam == VK_UP && msg.hwnd == g_pMessageEditor->m_edit_hwnd
+						&& GetWindowTextLength(g_pMessageEditor->m_edit_hwnd) == 0)
+					{
+						msg.hwnd = g_Hwnd;
+						msg.message = WM_COMMAND;
+						msg.lParam = 1;
+						msg.wParam = IDA_EDIT_LAST_MESSAGE;
+					}
+					break;
 			}
 
 			if (IsWindow(ProfilePopout::GetHWND()) && IsDialogMessage(ProfilePopout::GetHWND(), &msg))
