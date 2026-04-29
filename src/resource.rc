@@ -1716,6 +1716,7 @@ BEGIN
     IDS_CANT_LAUNCH_URL_UNS "The specified link %s couldn't be opened, because Windows returned ""%s"". Most likely, your Windows version does not support directly opening URLs."
     IDS_CONFIRM_UNPIN       "You sure you want to remove this pinned message?\n\n%s (%s)\n\n%s"
     IDS_CONFIRM_UNPIN_TITLE "Discord Messenger - Unpin Message"
+    IDS_ETA_STRING_DOWNLOADED "(%s (%s downloaded)"
 END
 
 #endif    // English (United States) resources

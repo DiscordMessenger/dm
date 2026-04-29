@@ -158,7 +158,7 @@ INT_PTR ProgressDialog::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			std::string etaStr;
 			if (bytesPerSec) {
 				uint64_t eta = bytesPerSec ? (uint64_t(m_length - m_offset) / bytesPerSec) : 0;
-				etaStr = Format(TmGetString(IDS_ETA_STRING).c_str(), FormatDuration((int) eta).c_str(), strProgress.c_str());
+				etaStr = Format(TmGetString(m_bDirection ? IDS_ETA_STRING : IDS_ETA_STRING_DOWNLOADED).c_str(), FormatDuration((int) eta).c_str(), strProgress.c_str());
 			}
 			else {
 				etaStr = TmGetString(IDS_CALCULATING);
