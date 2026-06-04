@@ -1738,6 +1738,7 @@ BEGIN
     IDS_APPLY_LANG           "In order to apply the language, you need to restart Discord Messenger.\nDo you wish to restart now?"
     IDS_RESTART_REQUIRED     "Restart Required - Discord Messenger"
     IDS_LANG_DEFAULTS        "Default Settings have been loaded. They will take affect after a restart."
+    IDS_LANGUAGE             "Language"
 END
 
 #endif    // English (United States) resources

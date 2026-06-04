@@ -782,7 +782,7 @@ HRESULT OnPreferenceDialogInit(HWND hWnd)
 	AddTab(hwndTab, tie, PG_CHAT,                (LPTSTR)TmGetTString(IDS_CHAT));
 	AddTab(hwndTab, tie, PG_WINDOW,              (LPTSTR)TmGetTString(IDS_WINDOW));
 	AddTab(hwndTab, tie, PG_CONNECTION,          (LPTSTR)TmGetTString(IDS_CONNECTION));
-	AddTab(hwndTab, tie, PG_LANGUAGE,          TEXT("Language"));
+	AddTab(hwndTab, tie, PG_LANGUAGE,			 (LPTSTR)TmGetTString(IDS_LANGUAGE));
 
 	// Lock the resources for the child dialog boxes.
 	pHeader->apRes[PG_ACCOUNT_AND_PRIVACY] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_MY_ACCOUNT));
