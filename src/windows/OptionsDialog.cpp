@@ -39,6 +39,7 @@ enum ePage
 	PG_CHAT,
 	PG_WINDOW,
 	PG_CONNECTION,
+	PG_LANGUAGE,
 	PG_PAGE_COUNT,
 	PG_FIRST = PG_ACCOUNT_AND_PRIVACY
 };
@@ -288,6 +289,18 @@ void OptionsInitPage(HWND hwndDlg, int pageNum)
 			free(tstrAPI);
 			free(tstrCDN);
 
+			break;
+		}
+		case PG_LANGUAGE:
+		{	
+			//hardcoded for now.
+			HWND hList = GetDlgItem(hwndDlg, IDC_LANGUAGE_LIST);
+
+			ListBox_AddString(hList, TEXT("English (US)"));
+			ListBox_AddString(hList, TEXT("Deutsch"));
+			ListBox_AddString(hList, TEXT("Espa\xf1ol"));
+			ListBox_AddString(hList, TEXT("Polski"));
+			ListBox_SetCurSel(hList, 1);
 			break;
 		}
 	}
@@ -648,6 +661,23 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 			}
 			break;
 		}
+		case PG_LANGUAGE:
+		{	
+			switch (LOWORD(wParam)) {
+
+				case IDC_LANGUAGE_APPLY:
+				{
+					MessageBox(hWnd, TEXT("TODO: add apply thing here"), TEXT("TODO for Jakkret"), MB_OK);
+					break;
+				}
+
+				case IDC_LANGUAGE_DEFAULTS:
+				{
+					MessageBox(hWnd, TEXT("TODO: add functionality to the button.\n imagine it did something"), TEXT("title perhaps?"), MB_OK);
+					break;
+				}
+			}
+		}
 	}
 
 	return 0;
@@ -743,6 +773,7 @@ HRESULT OnPreferenceDialogInit(HWND hWnd)
 	AddTab(hwndTab, tie, PG_CHAT,                (LPTSTR)TmGetTString(IDS_CHAT));
 	AddTab(hwndTab, tie, PG_WINDOW,              (LPTSTR)TmGetTString(IDS_WINDOW));
 	AddTab(hwndTab, tie, PG_CONNECTION,          (LPTSTR)TmGetTString(IDS_CONNECTION));
+	AddTab(hwndTab, tie, PG_LANGUAGE,          TEXT("Language"));
 
 	// Lock the resources for the child dialog boxes.
 	pHeader->apRes[PG_ACCOUNT_AND_PRIVACY] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_MY_ACCOUNT));
@@ -751,6 +782,8 @@ HRESULT OnPreferenceDialogInit(HWND hWnd)
 	pHeader->apRes[        PG_CHAT       ] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_CHATSETTINGS));
 	pHeader->apRes[       PG_WINDOW      ] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_WINDOWSETTINGS));
 	pHeader->apRes[     PG_CONNECTION    ] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_CONNECTION));
+	pHeader->apRes[      PG_LANGUAGE     ] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_LANGUAGE_ND));
+
 
 	RECT rcTab;
 	SetRectEmpty(&rcTab);

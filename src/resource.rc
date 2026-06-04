@@ -913,6 +913,20 @@ BEGIN
 END
 
 
+IDD_DIALOG_LANGUAGE_ND DIALOG 0, 0, 264, 240
+STYLE WS_CHILD | DS_CONTROL
+FONT 8, "MS Shell Dlg"
+BEGIN
+    GROUPBOX        "Language Options", IDC_MDISPLAY_BOX, 6, 7, 248, 150
+    LTEXT           "Choose the language you want Discord Messenger to display", IDC_STATIC, 12, 18, 236, 8
+    LISTBOX         IDC_LANGUAGE_LIST, 12, 30, 236, 70, LBS_STANDARD | WS_VSCROLL | WS_TABSTOP
+    AUTOCHECKBOX    "Detect and use my systems language by default", IDC_LANGUAGE_SYSTEM, 12, 94, 170, 10
+    LTEXT           "System Language: NOT_IMPLEMENTED", IDC_STATIC, 12, 106, 236, 8
+    PUSHBUTTON      "Apply Language", IDC_LANGUAGE_APPLY, 184, 120, 60, 14
+    PUSHBUTTON      "Revert to Defaults", IDC_LANGUAGE_DEFAULTS, 12, 120, 70, 14
+    
+END
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // DESIGNINFO
