@@ -339,6 +339,9 @@
 #define IDS_CONFIRM_UNPIN               776
 #define IDS_CONFIRM_UNPIN_TITLE         777
 #define IDS_LANGUAGE					778
+#define IDS_APPLY_LANG					779
+#define IDS_RESTART_REQUIRED			780
+#define IDS_LANG_DEFAULTS				781
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803

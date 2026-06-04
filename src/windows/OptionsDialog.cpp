@@ -293,7 +293,10 @@ void OptionsInitPage(HWND hwndDlg, int pageNum)
 		}
 		case PG_LANGUAGE:
 		{	
-			//hardcoded for now.
+			// hardcoded for now.
+
+			// TODO: Make a function that reads off available langs off resource file
+			// and adds them as listbox options
 			HWND hList = GetDlgItem(hwndDlg, IDC_LANGUAGE_LIST);
 
 			ListBox_AddString(hList, TEXT("English (US)"));
@@ -667,13 +670,19 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 
 				case IDC_LANGUAGE_APPLY:
 				{
-					MessageBox(hWnd, TEXT("TODO: add apply thing here"), TEXT("TODO for Jakkret"), MB_OK);
+					MessageBox(hWnd, TmGetTString(IDS_APPLY_LANG), TmGetTString(IDS_RESTART_REQUIRED), MB_YESNO | MB_ICONEXCLAMATION);
 					break;
 				}
 
 				case IDC_LANGUAGE_DEFAULTS:
 				{
-					MessageBox(hWnd, TEXT("TODO: add functionality to the button.\n imagine it did something"), TEXT("title perhaps?"), MB_OK);
+					MessageBox(hWnd, TmGetTString(IDS_LANG_DEFAULTS), TmGetTString(IDS_RESTART_REQUIRED), MB_OK);
+					break;
+				}
+
+				case IDC_LANGUAGE_SYSTEM:
+				{
+					MessageBox(hWnd, TmGetTString(IDS_APPLY_LANG), TmGetTString(IDS_RESTART_REQUIRED), MB_YESNO | MB_ICONEXCLAMATION);
 					break;
 				}
 			}
