@@ -313,7 +313,6 @@ void OptionsInitPage(HWND hwndDlg, int pageNum)
 			ListBox_AddString(hList, TEXT("Deutsch"));
 			ListBox_AddString(hList, TEXT("Espa\xf1ol"));
 			ListBox_AddString(hList, TEXT("Polski"));
-			ListBox_SetCurSel(hList, 1);
 
 			TCHAR szSysLang[128];
 			TCHAR szResText[256];
@@ -323,9 +322,6 @@ void OptionsInitPage(HWND hwndDlg, int pageNum)
 
 			if (GetUserDefaultUILanguage() == pSettings->GetLanguage()) {
 				SendMessage(GetDlgItem(hwndDlg, IDC_LANGUAGE_SYSTEM), BM_SETCHECK, BST_CHECKED, 0);
-			}
-			else {
-				SendMessage(GetDlgItem(hwndDlg, IDC_LANGUAGE_SYSTEM), BM_SETCHECK, BST_UNCHECKED, 0);
 			}
 
 			// Get Systems Language and display that
@@ -704,11 +700,9 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 				{
 					// NOTE: this must be in order as the ListBox
 					// temporary, once i'll figure out other ways
+
 					LANGID langIds[] = {
-						MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
-						MAKELANGID(LANG_GERMAN, SUBLANG_DEFAULT),
-						MAKELANGID(LANG_SPANISH, SUBLANG_DEFAULT),
-						MAKELANGID(LANG_POLISH, SUBLANG_DEFAULT)
+						MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US)
 					};
 
 					int sel = ListBox_GetCurSel(GetDlgItem(hWnd, IDC_LANGUAGE_LIST));
@@ -736,7 +730,7 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 					ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART), SW_SHOW);
 					ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART_TEXT), SW_SHOW);
 
-					// the default language set is English (US)
+					// the default langID for English US
 					GetLocalSettings()->SetLanguage(1033);
 					GetLocalSettings()->Save();
 
@@ -745,11 +739,10 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 
 				case IDC_LANGUAGE_SYSTEM:
 				{
+					GetLocalSettings()->SetLanguage(GetUserDefaultUILanguage());
+					GetLocalSettings()->Save();
+
 					if (MessageBox(hWnd, TmGetTString(IDS_APPLY_LANG), TmGetTString(IDS_RESTART_REQUIRED), MB_YESNO | MB_ICONEXCLAMATION) == IDYES) {
-
-						GetLocalSettings()->SetLanguage(GetUserDefaultUILanguage());
-						GetLocalSettings()->Save();
-
 						RestartInstance();
 					}
 					else {
@@ -758,6 +751,7 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 						ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART), SW_SHOW);
 						ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART_TEXT), SW_SHOW);
 					}
+
 					break;
 				}
 			}
