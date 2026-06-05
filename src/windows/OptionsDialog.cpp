@@ -320,12 +320,12 @@ void OptionsInitPage(HWND hwndDlg, int pageNum)
 			// Check if currently loaded language is the name as the system.
 			LocalSettings* pSettings = GetLocalSettings();
 
-			if (GetUserDefaultUILanguage() == pSettings->GetLanguage()) {
+			if (GetSystemDefaultLangID() == pSettings->GetLanguage()) {
 				SendMessage(GetDlgItem(hwndDlg, IDC_LANGUAGE_SYSTEM), BM_SETCHECK, BST_CHECKED, 0);
 			}
 
 			// Get Systems Language and display that
-			GetLocaleInfo(MAKELCID(GetUserDefaultUILanguage(), SORT_DEFAULT), LOCALE_SLANGUAGE, szSysLang, 128);
+			GetLocaleInfo(MAKELCID(GetSystemDefaultLangID(), SORT_DEFAULT), LOCALE_SLANGUAGE, szSysLang, 128);
 
 			_stprintf(szResText, (LPCTSTR)TmGetTString(IDS_SYSTEM_LANGUAGE), szSysLang);
 			SetDlgItemText(hwndDlg, IDS_SYSTEM_LANGUAGE, szResText);
@@ -739,7 +739,7 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 
 				case IDC_LANGUAGE_SYSTEM:
 				{
-					GetLocalSettings()->SetLanguage(GetUserDefaultUILanguage());
+					GetLocalSettings()->SetLanguage(GetSystemDefaultLangID());
 					GetLocalSettings()->Save();
 
 					if (MessageBox(hWnd, TmGetTString(IDS_APPLY_LANG), TmGetTString(IDS_RESTART_REQUIRED), MB_YESNO | MB_ICONEXCLAMATION) == IDYES) {

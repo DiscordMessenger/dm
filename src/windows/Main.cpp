@@ -59,6 +59,8 @@ IChannelView* g_pChannelView;
 MessageEditor* g_pMessageEditor;
 LoadingMessage* g_pLoadingMessage;
 
+pSetThreadUILanguage g_fnSetThreadUILanguage = nullptr;
+
 bool g_bBlockDoubleBufferingForThisInstance = false;
 
 constexpr int MIN_MEMORY_TO_BLOCK_DOUBLE_BUFFERING = 128 * 1024 * 1024;
@@ -1992,9 +1994,18 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	// actually bad to leave on on NT 3.x or NT 4
 	pSettings->Load();
 	
-	// without the SetThreadUILanguage, it won't refresh on the newer versions
-	SetThreadUILanguage((LANGID)pSettings->GetLanguage());							// NT 10.0 and higher
-	SetThreadLocale(MAKELCID((LANGID)pSettings->GetLanguage(), SORT_DEFAULT));		// Older versions
+	// compatibility checking
+	HMODULE h = GetModuleHandle(TEXT("kernel32.dll"));
+	pSetThreadUILanguage fnSetUILanguage = (pSetThreadUILanguage)GetProcAddress(h, "SetThreadUILanguage");
+
+	LANGID langid = pSettings->GetLanguage();
+
+	if (fnSetUILanguage) {
+		fnSetUILanguage(langid);
+	}
+	else {
+		SetThreadLocale(MAKELCID(langid, SORT_DEFAULT));
+	}
 
 	if (LOBYTE(version) < 5 && pSettings->GetMessageStyle() == MS_GRADIENT)
 	{
