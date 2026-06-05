@@ -342,6 +342,7 @@
 #define IDS_APPLY_LANG					779
 #define IDS_RESTART_REQUIRED			780
 #define IDS_LANG_DEFAULTS				781
+#define IDS_SYSTEM_LANGUAGE				782
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803
@@ -452,6 +453,8 @@
 #define IDC_LANGUAGE_SYSTEM				919
 #define IDC_LANGUAGE_APPLY				920
 #define IDC_LANGUAGE_DEFAULTS			921
+#define IDC_PENDING_RESTART				922
+#define IDC_PENDING_RESTART_TEXT		923
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
 #define ID_FILE_EXIT                    1003

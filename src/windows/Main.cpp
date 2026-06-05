@@ -1921,6 +1921,31 @@ static bool ForceSingleInstance(LPCTSTR pClassName)
 	return false;
 }
 
+// Restarts the instance - for languages to apply
+void RestartInstance()
+{
+	g_instanceMutex.Release();	// Close();
+
+	TCHAR szPath[MAX_PATH];
+	GetModuleFileName(NULL, szPath, MAX_PATH);
+	
+	STARTUPINFO si = { 0 };
+	si.cb = sizeof(si);
+	PROCESS_INFORMATION pi = { 0 };
+
+	if (!CreateProcess(szPath, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+		
+		g_instanceMutex.Init();
+		return;
+	}
+
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+
+	ExitProcess(0);
+
+}
+
 // Blackwingcat's Extended Kernel workaround: Apparently, the custom user32.dll it uses tries
 // to write to the class name, which previously was part of .rodata, which is of course read-only.
 TCHAR g_className[64];
@@ -1966,6 +1991,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	// Load the settings, and fix up some settings that are
 	// actually bad to leave on on NT 3.x or NT 4
 	pSettings->Load();
+	
+
+	SetThreadUILanguage((LANGID)pSettings->GetLanguage());	// for anyone using the new versions.
+	SetThreadLocale(MAKELCID((LANGID)pSettings->GetLanguage(), SORT_DEFAULT)); // older versions
 
 	if (LOBYTE(version) < 5 && pSettings->GetMessageStyle() == MS_GRADIENT)
 	{

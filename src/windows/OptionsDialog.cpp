@@ -9,6 +9,8 @@
 #endif
 #include <commdlg.h>
 
+static bool g_bPendingRestart = false;
+
 const eMessageStyle g_indexToMessageStyle[] = {
 	MS_3DFACE,
 	MS_GRADIENT,
@@ -293,10 +295,17 @@ void OptionsInitPage(HWND hwndDlg, int pageNum)
 		}
 		case PG_LANGUAGE:
 		{	
-			// hardcoded for now.
+			if (g_bPendingRestart) {
+				ShowWindow(GetDlgItem(hwndDlg, IDC_PENDING_RESTART), SW_SHOW);
+				ShowWindow(GetDlgItem(hwndDlg, IDC_PENDING_RESTART_TEXT), SW_SHOW);
+			}
+			else {
+				ShowWindow(GetDlgItem(hwndDlg, IDC_PENDING_RESTART), SW_HIDE);
+				ShowWindow(GetDlgItem(hwndDlg, IDC_PENDING_RESTART_TEXT), SW_HIDE);
+			}
 
-			// TODO: Make a function that reads off available langs off resource file
-			// and adds them as listbox options
+			// TODO: Make a function that reads off available languages
+			// off resource file and adds them as listbox options
 			HWND hList = GetDlgItem(hwndDlg, IDC_LANGUAGE_LIST);
 
 			ListBox_AddString(hList, TEXT("English (US)"));
@@ -304,6 +313,16 @@ void OptionsInitPage(HWND hwndDlg, int pageNum)
 			ListBox_AddString(hList, TEXT("Espa\xf1ol"));
 			ListBox_AddString(hList, TEXT("Polski"));
 			ListBox_SetCurSel(hList, 1);
+
+			TCHAR szSysLang[128];
+			TCHAR szResText[256];
+
+			// Get Systems Language, and display its name in English
+			GetLocaleInfo(MAKELCID(GetUserDefaultUILanguage(), SORT_DEFAULT), LOCALE_SLANGUAGE, szSysLang, 128);
+
+			_stprintf(szResText, (LPCTSTR)TmGetTString(IDS_SYSTEM_LANGUAGE), szSysLang);
+			SetDlgItemText(hwndDlg, IDS_SYSTEM_LANGUAGE, szResText);
+
 			break;
 		}
 	}
@@ -332,6 +351,7 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 
 INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+
 	if (LOWORD(wParam) == IDOK)
 		return EndDialog(hWnd, IDOK);
 	
@@ -666,23 +686,59 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 		}
 		case PG_LANGUAGE:
 		{	
+
 			switch (LOWORD(wParam)) {
 
 				case IDC_LANGUAGE_APPLY:
 				{
-					MessageBox(hWnd, TmGetTString(IDS_APPLY_LANG), TmGetTString(IDS_RESTART_REQUIRED), MB_YESNO | MB_ICONEXCLAMATION);
+					// NOTE: this must be in order as the ListBox, i will change this soon
+					LANGID langIds[] = {
+						MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
+						MAKELANGID(LANG_GERMAN, SUBLANG_DEFAULT),
+						MAKELANGID(LANG_SPANISH, SUBLANG_DEFAULT),
+						MAKELANGID(LANG_POLISH, SUBLANG_DEFAULT)
+					};
+
+					int sel = ListBox_GetCurSel(GetDlgItem(hWnd, IDC_LANGUAGE_LIST));
+
+					GetLocalSettings()->SetLanguage(langIds[sel]);
+					GetLocalSettings()->Save();
+
+					if (MessageBox(hWnd, TmGetTString(IDS_APPLY_LANG), TmGetTString(IDS_RESTART_REQUIRED), MB_YESNO | MB_ICONEXCLAMATION) == IDYES) {
+						RestartInstance();
+					}
+					else {
+						g_bPendingRestart = true;
+						ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART), SW_SHOW);
+						ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART_TEXT), SW_SHOW);
+					}
 					break;
 				}
 
 				case IDC_LANGUAGE_DEFAULTS:
 				{
 					MessageBox(hWnd, TmGetTString(IDS_LANG_DEFAULTS), TmGetTString(IDS_RESTART_REQUIRED), MB_OK);
+					g_bPendingRestart = true;
+
+					ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART), SW_SHOW);
+					ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART_TEXT), SW_SHOW);
+
+					GetLocalSettings()->SetLanguage(1033);
+					GetLocalSettings()->Save();
+
 					break;
 				}
 
 				case IDC_LANGUAGE_SYSTEM:
 				{
-					MessageBox(hWnd, TmGetTString(IDS_APPLY_LANG), TmGetTString(IDS_RESTART_REQUIRED), MB_YESNO | MB_ICONEXCLAMATION);
+					if (MessageBox(hWnd, TmGetTString(IDS_APPLY_LANG), TmGetTString(IDS_RESTART_REQUIRED), MB_YESNO | MB_ICONEXCLAMATION) == IDYES) {
+						RestartInstance();
+					}
+					else {
+						g_bPendingRestart = true;
+						ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART), SW_SHOW);
+						ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART_TEXT), SW_SHOW);
+					}
 					break;
 				}
 			}

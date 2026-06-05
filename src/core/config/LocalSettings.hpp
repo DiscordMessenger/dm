@@ -226,6 +226,8 @@ public:
 	void SetUseDoubleBuffering(bool b) {
 		m_bUseDoubleBuffering = b;
 	}
+	int GetLanguage() const { return m_language; }
+	void SetLanguage(int lang) { m_language = lang; }
 
 private:
 	std::string m_token;
@@ -262,6 +264,7 @@ private:
 	int m_width = 1000;
 	int m_height = 700;
 	int m_userScale = 1000;
+	int m_language = 0;
 };
 
 LocalSettings* GetLocalSettings();

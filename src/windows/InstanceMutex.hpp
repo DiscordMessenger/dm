@@ -12,4 +12,5 @@ private:
 public:
 	HRESULT Init();
 	~InstanceMutex();
+	void Release() { Close(); }
 };
