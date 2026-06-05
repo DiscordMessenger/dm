@@ -145,6 +145,8 @@ struct SendMessageAuxParams
 	Snowflake m_snowflake;
 };
 
+typedef LANGID(WINAPI* pSetThreadUILanguage)(LANGID);
+
 std::string FormatDiscrim(int discrim);
 std::string GetStringFromHResult(HRESULT hr);
 std::string GetDiscordToken();
@@ -155,3 +157,4 @@ void SetHeartbeatInterval(int timeMs);
 int GetProfilePictureSize();
 HBITMAP GetDefaultBitmap();
 bool ShouldBlockDoubleBuffering();
+void RestartInstance();

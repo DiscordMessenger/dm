@@ -261,6 +261,7 @@ BEGIN
 END
 
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Icon
@@ -912,6 +913,23 @@ BEGIN
     CONTROL         "Use 12-hour time",IDC_USE_12HR_TIME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,186,205,10
 END
 
+
+IDD_DIALOG_LANGUAGE_ND DIALOG 0, 0, 264, 240
+STYLE WS_CHILD | DS_CONTROL
+FONT 8, "MS Shell Dlg"
+BEGIN
+    GROUPBOX        "Language Options", IDC_MDISPLAY_BOX, 6, 7, 248, 132
+    LTEXT           "Choose the language you want Discord Messenger to display", IDC_STATIC, 12, 18, 236, 8
+    LISTBOX         IDC_LANGUAGE_LIST, 12, 30, 236, 60, LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    AUTOCHECKBOX    "Detect and use my systems language by default", IDC_LANGUAGE_SYSTEM, 12, 93, 170, 10
+    LTEXT           "System Language: ", IDS_SYSTEM_LANGUAGE, 12, 106, 236, 8
+    PUSHBUTTON      "Apply Language", IDC_LANGUAGE_APPLY, 180, 120, 70, 14
+    PUSHBUTTON      "Revert to Defaults", IDC_LANGUAGE_DEFAULTS, 12, 120, 70, 14
+    
+    ICON            IDI_WARNING_IC,IDC_PENDING_RESTART,12,225,136,20,SS_REALSIZEIMAGE
+    LTEXT           "Pending Restart. Some changes will not take effect until after a restart.", IDC_PENDING_RESTART_TEXT, 28, 226, 236, 8
+    
+END
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1718,9 +1736,17 @@ BEGIN
     IDS_CONFIRM_UNPIN_TITLE "Discord Messenger - Unpin Message"
 END
 
+STRINGTABLE
+BEGIN
+    IDS_APPLY_LANG           "In order to apply the language, you need to restart Discord Messenger.\nDo you wish to restart now?"
+    IDS_RESTART_REQUIRED     "Restart Required - Discord Messenger"
+    IDS_LANG_DEFAULTS        "Default Settings have been loaded. They will take affect after a restart."
+    IDS_LANGUAGE             "Language"
+    IDS_SYSTEM_LANGUAGE      "System Language: %s"
+END
+
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
-
 
 
 #ifndef APSTUDIO_INVOKED
@@ -1732,4 +1758,7 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
+
+
 
