@@ -308,6 +308,7 @@ void OptionsInitPage(HWND hwndDlg, int pageNum)
 			// off resource file and adds them as listbox options
 			HWND hList = GetDlgItem(hwndDlg, IDC_LANGUAGE_LIST);
 
+			// NOTE: must be in order!!
 			ListBox_AddString(hList, TEXT("English (US)"));
 			ListBox_AddString(hList, TEXT("Deutsch"));
 			ListBox_AddString(hList, TEXT("Espa\xf1ol"));
@@ -317,7 +318,17 @@ void OptionsInitPage(HWND hwndDlg, int pageNum)
 			TCHAR szSysLang[128];
 			TCHAR szResText[256];
 
-			// Get Systems Language, and display its name in English
+			// Check if currently loaded language is the name as the system.
+			LocalSettings* pSettings = GetLocalSettings();
+
+			if (GetUserDefaultUILanguage() == pSettings->GetLanguage()) {
+				SendMessage(GetDlgItem(hwndDlg, IDC_LANGUAGE_SYSTEM), BM_SETCHECK, BST_CHECKED, 0);
+			}
+			else {
+				SendMessage(GetDlgItem(hwndDlg, IDC_LANGUAGE_SYSTEM), BM_SETCHECK, BST_UNCHECKED, 0);
+			}
+
+			// Get Systems Language and display that
 			GetLocaleInfo(MAKELCID(GetUserDefaultUILanguage(), SORT_DEFAULT), LOCALE_SLANGUAGE, szSysLang, 128);
 
 			_stprintf(szResText, (LPCTSTR)TmGetTString(IDS_SYSTEM_LANGUAGE), szSysLang);
@@ -691,7 +702,8 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 
 				case IDC_LANGUAGE_APPLY:
 				{
-					// NOTE: this must be in order as the ListBox, i will change this soon
+					// NOTE: this must be in order as the ListBox
+					// temporary, once i'll figure out other ways
 					LANGID langIds[] = {
 						MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
 						MAKELANGID(LANG_GERMAN, SUBLANG_DEFAULT),
@@ -709,6 +721,7 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 					}
 					else {
 						g_bPendingRestart = true;
+
 						ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART), SW_SHOW);
 						ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART_TEXT), SW_SHOW);
 					}
@@ -723,6 +736,7 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 					ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART), SW_SHOW);
 					ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART_TEXT), SW_SHOW);
 
+					// the default language set is English (US)
 					GetLocalSettings()->SetLanguage(1033);
 					GetLocalSettings()->Save();
 
@@ -732,10 +746,15 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 				case IDC_LANGUAGE_SYSTEM:
 				{
 					if (MessageBox(hWnd, TmGetTString(IDS_APPLY_LANG), TmGetTString(IDS_RESTART_REQUIRED), MB_YESNO | MB_ICONEXCLAMATION) == IDYES) {
+
+						GetLocalSettings()->SetLanguage(GetUserDefaultUILanguage());
+						GetLocalSettings()->Save();
+
 						RestartInstance();
 					}
 					else {
 						g_bPendingRestart = true;
+
 						ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART), SW_SHOW);
 						ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART_TEXT), SW_SHOW);
 					}

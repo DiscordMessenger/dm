@@ -1992,9 +1992,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	// actually bad to leave on on NT 3.x or NT 4
 	pSettings->Load();
 	
-
-	SetThreadUILanguage((LANGID)pSettings->GetLanguage());	// for anyone using the new versions.
-	SetThreadLocale(MAKELCID((LANGID)pSettings->GetLanguage(), SORT_DEFAULT)); // older versions
+	// without the SetThreadUILanguage, it won't load on the newer versions
+	SetThreadUILanguage((LANGID)pSettings->GetLanguage());							// NT 10.0 and higher
+	SetThreadLocale(MAKELCID((LANGID)pSettings->GetLanguage(), SORT_DEFAULT));		// Older versions
 
 	if (LOBYTE(version) < 5 && pSettings->GetMessageStyle() == MS_GRADIENT)
 	{
