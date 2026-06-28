@@ -417,6 +417,11 @@ bool Frontend_Win32::IsWindowMinimized()
 	return IsIconic(g_Hwnd);
 }
 
+bool Frontend_Win32::IsWindowFocused()
+{
+	return GetForegroundWindow() == g_Hwnd;
+}
+
 #ifdef USE_DEBUG_PRINTS
 
 void DbgPrintWV(const char* fmt, va_list vl)
