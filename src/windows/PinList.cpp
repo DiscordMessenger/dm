@@ -10,10 +10,16 @@ PinnedMap PinList::m_map;
 POINT PinList::m_appearXY;
 bool PinList::m_bRightJustify;
 bool PinList::m_bActive;
+HWND PinList::m_hwnd;
 
 bool PinList::IsActive()
 {
 	return m_bActive;
+}
+
+bool PinList::IsFocused()
+{
+	return GetForegroundWindow() == m_hwnd && !IsIconic(m_hwnd);
 }
 
 void PinList::AddMessage(Snowflake channelID, MessagePtr msg)
@@ -78,6 +84,7 @@ void PinList::Initialize(HWND hWnd)
 		m_pMessageList->AddMessage(msg);
 
 	m_bActive = true;
+	m_hwnd = hWnd;
 }
 
 void PinList::OnLoadedPins(Snowflake channelID, const std::string& data)
@@ -162,6 +169,7 @@ INT_PTR CALLBACK PinList::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		case WM_DESTROY:
 			SAFE_DELETE(m_pMessageList);
 			m_bActive = false;
+			m_hwnd = NULL;
 			m_map.clear();
 			break;
 	}

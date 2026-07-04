@@ -21,6 +21,7 @@ public:
 	static void OnUpdateAvatar(Snowflake key);
 	static void OnUpdateEmoji(Snowflake key);
 	static bool IsActive();
+	static bool IsFocused();
 	static void Show(Snowflake channelID, Snowflake guildID, int x, int y, bool rightJustify = false);
 
 protected:
@@ -37,4 +38,5 @@ private:
 	static PinnedMap m_map;
 	static POINT m_appearXY;
 	static bool m_bActive, m_bRightJustify;
+	static HWND m_hwnd;
 };

@@ -66,8 +66,8 @@ bool NotificationManager::IsNotificationWorthy(Snowflake guildID, Snowflake chan
 		}
 	}
 
-	// If we are focused on this very channel and the window is not minimized, return
-	if (channelID == m_pDiscord->GetCurrentChannelID() && !GetFrontend()->IsWindowMinimized())
+	// If we are focused on this very channel and the window is focused, return
+	if (channelID == m_pDiscord->GetCurrentChannelID() && GetFrontend()->IsWindowFocused())
 		return false;
 
 	auto pSettings = m_pDiscord->m_userGuildSettings.GetSettings(guildID);

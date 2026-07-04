@@ -20,6 +20,7 @@ public:
 	static void Dismiss();
 	static void Update();
 	static Snowflake GetUser();
+	static bool IsFocused();
 
 	// only Main.cpp should use these!
 	static HWND GetHWND();

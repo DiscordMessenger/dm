@@ -7,6 +7,8 @@
 #include "PinList.hpp"
 #include "ProgressDialog.hpp"
 #include "ShellNotification.hpp"
+#include "ImageViewer.hpp"
+#include "NotificationViewer.hpp"
 #include "utils/UpdateChecker.hpp"
 #include "config/LocalSettings.hpp"
 
@@ -415,6 +417,26 @@ void Frontend_Win32::MaximizeWindow()
 bool Frontend_Win32::IsWindowMinimized()
 {
 	return IsIconic(g_Hwnd);
+}
+
+bool Frontend_Win32::IsWindowFocused()
+{
+	if (GetForegroundWindow() == g_Hwnd && !IsIconic(g_Hwnd))
+		return true;
+
+	if (IsImageViewerFocused())
+		return true;
+
+	if (ProfilePopout::IsFocused())
+		return true;
+
+	if (NotificationViewer::IsFocused())
+		return true;
+
+	if (PinList::IsFocused())
+		return true;
+
+	return false;
 }
 
 #ifdef USE_DEBUG_PRINTS

@@ -6,10 +6,16 @@ MessageList* NotificationViewer::m_pMessageList;
 POINT NotificationViewer::m_appearXY;
 bool NotificationViewer::m_bRightJustify;
 bool NotificationViewer::m_bActive;
+HWND NotificationViewer::m_hwnd;
 
 bool NotificationViewer::IsActive()
 {
 	return m_bActive;
+}
+
+bool NotificationViewer::IsFocused()
+{
+	return GetForegroundWindow() == m_hwnd && !IsIconic(m_hwnd);
 }
 
 void NotificationViewer::Show(int x, int y, bool rightJustify)
@@ -108,7 +114,8 @@ void NotificationViewer::Initialize(HWND hWnd)
 		m_pMessageList->AddMessage(msg);
 	}
 
-	m_bActive = false;
+	m_bActive = true;
+	m_hwnd = hWnd;
 }
 
 void NotificationViewer::OnResize(HWND hWnd, int newWidth, int newHeight)
@@ -224,6 +231,7 @@ INT_PTR NotificationViewer::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 		case WM_DESTROY:
 			SAFE_DELETE(m_pMessageList);
 			m_bActive = false;
+			m_hwnd = NULL;
 			break;
 	}
 
