@@ -951,7 +951,11 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_UPDATEMEMBERLIST:
 		{
-			g_pMemberList->SetGuild(GetDiscordInstance()->GetCurrentGuild()->m_snowflake);
+			Guild* pGuild = GetDiscordInstance()->GetCurrentGuild();
+			if (!pGuild)
+				break;
+
+			g_pMemberList->SetGuild(pGuild->m_snowflake);
 			g_pMemberList->Update();
 			break;
 		}
