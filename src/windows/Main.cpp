@@ -1262,6 +1262,24 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pMessageEditor = MessageEditor::Create(hWnd, &rect);
 			g_pLoadingMessage = LoadingMessage::Create(hWnd, &rcLoading);
 
+			if (!g_pStatusBar || !g_pMessageList || !g_pProfileView || !g_pGuildHeader || !g_pMemberList || !g_pChannelView || !g_pMessageEditor || !g_pLoadingMessage)
+			{
+				char buffer[256];
+				GetWindowTextA(hWnd, buffer, sizeof buffer);
+				buffer[sizeof buffer - 1] = 0;
+
+				MessageBoxA(
+					hWnd,
+					"Discord Messenger could not create one or more GUI controls necessary for its operation.\r\n\r\n"
+					"This could be because you ran out of memory, or have too many windows open. Close some programs and try again.\r\n\r\n"
+					"Your computer might need to take a breather, too.",
+					buffer,
+					MB_ICONERROR | MB_OK
+				);
+				PostQuitMessage(0);
+				break;
+			}
+
 			SendMessage(hWnd, WM_LOGINAGAIN, 0, 0);
 			PostMessage(hWnd, WM_POSTINIT, 0, 0);
 			break;
