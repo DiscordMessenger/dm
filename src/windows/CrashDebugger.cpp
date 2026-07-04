@@ -13,6 +13,16 @@
 #else
 #define ActiveCharset "ANSI"
 #endif
+#ifdef _DEBUG
+#define ActiveProfile "Debug"
+#else
+#define ActiveProfile "Release"
+#endif
+#ifdef _WIN64
+#define ActiveArch "x64"
+#else
+#define ActiveArch "x86"
+#endif
 
 #ifdef _MSC_VER
 
@@ -219,19 +229,6 @@ NORETURN void AbortMessage(const char* message, ...)
 	);
 	strcat(stackTraceBuffer, smallerBuffer);
 
-	// there's gotta be a better way ...
-#ifdef _DEBUG
-	const char* debugOrRelease = "Debug";
-#else
-	const char* debugOrRelease = "Release";
-#endif
-
-#ifdef _WIN64
-	const char* x64Orx86 = "x64";
-#else
-	const char* x64Orx86 = "x86";
-#endif
-	
 	snprintf(
 		smallerBuffer,
 		sizeof smallerBuffer,
@@ -239,8 +236,8 @@ NORETURN void AbortMessage(const char* message, ...)
 		GetAppVersionString(),
 		UsedCompiler,
 		ActiveCharset,
-		debugOrRelease,
-		x64Orx86
+		ActiveProfile,
+		ActiveArch
 	);
 
 	strcat(stackTraceBuffer, smallerBuffer);
@@ -272,7 +269,7 @@ NORETURN void AbortMessage(const char* message, ...)
 			break;
 
 		auto pr = ResolveName((uintptr_t) ip);
-		snprintf(smallerBuffer, sizeof smallerBuffer, "* [F:%p] %p [%s(%p)+%p]\n", sf, sf->ip, pr.first, (void*) pr.second, (void*) ((uintptr_t)sf->ip - pr.second));
+		snprintf(smallerBuffer, sizeof smallerBuffer, "* At %p [%s(%p)+%p]\n", sf->ip, pr.first, (void*) pr.second, (void*) ((uintptr_t)sf->ip - pr.second));
 		strcat(stackTraceBuffer, smallerBuffer);
 		
 		if (sf == sf->next) {
@@ -608,7 +605,7 @@ extern "C" void Terminate(const char* message, ...)
 
 	AbortMessage(
 		"A fatal error has occurred within Discord Messenger. Please report it to iProgramInCpp!\r\n"
-		"You are using the " UsedCompiler "-" ActiveCharset " version.\r\n\r\n"
+		"You are using the " UsedCompiler "-" ActiveCharset "-" ActiveProfile "-" ActiveArch " version.\r\n\r\n"
 		"Details about the error:\r\n\r\n"
 		"%s\r\n\r\n"
 		"Discord Messenger will now close.",
