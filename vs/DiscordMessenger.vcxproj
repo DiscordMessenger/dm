@@ -552,6 +552,8 @@
     <Image Include="..\res\icons\icon_status_idle.ico" />
     <Image Include="..\res\icons\icon_status_offline.ico" />
     <Image Include="..\res\icons\icon_status_online.ico" />
+    <Image Include="..\res\icons\icon_threads.ico" />
+    <Image Include="..\res\icons\icon_threads_2k.ico" />
     <Image Include="..\res\icons\icon_typing_f1.ico" />
     <Image Include="..\res\icons\icon_typing_f1_2k.ico" />
     <Image Include="..\res\icons\icon_typing_f2.ico" />
@@ -657,6 +659,7 @@
     <ClInclude Include="..\src\windows\TextManager.hpp" />
     <ClInclude Include="..\src\windows\TextToSpeech.hpp" />
     <ClInclude Include="..\src\windows\ShellNotification.hpp" />
+    <ClInclude Include="..\src\windows\ThreadList.hpp" />
     <ClInclude Include="..\src\windows\UploadDialog.hpp" />
     <ClInclude Include="..\src\windows\ProgressDialog.hpp" />
     <ClInclude Include="..\src\windows\WindowMessages.hpp" />
@@ -729,6 +732,7 @@
     <ClCompile Include="..\src\windows\TextInterface_Win32.cpp" />
     <ClCompile Include="..\src\windows\TextManager.cpp" />
     <ClCompile Include="..\src\windows\TextToSpeech.cpp" />
+    <ClCompile Include="..\src\windows\ThreadList.cpp" />
     <ClCompile Include="..\src\windows\UploadDialog.cpp" />
     <ClCompile Include="..\src\windows\WinUtils.cpp" />
   </ItemGroup>

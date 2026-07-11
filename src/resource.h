@@ -155,6 +155,8 @@
 #define IDD_DIALOG_UPLOADING_ND         426
 #define IDD_DIALOG_GUILD_CHOOSER_ND     427
 #define IDD_DIALOG_PREFERENCES_ND       428
+#define IDD_DIALOG_THREADLIST           429
+#define IDD_DIALOG_THREADLIST_ND        430
 #define IDR_MAINMENU                    501
 #define IDR_MESSAGE_CONTEXT             502
 #define IDR_GUILD_CONTEXT               503

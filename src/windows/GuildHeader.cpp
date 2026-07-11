@@ -10,6 +10,7 @@
 #define IDTB_PINS     (1001) // Show pinned messages
 #define IDTB_CHANNELS (1002) // Hide channel list
 #define IDTB_NOTIFS   (1003) // Show notifications
+#define IDTB_THREADS  (1004) // Search for threads
 
 WNDCLASS GuildHeader::g_GuildHeaderClass;
 
@@ -39,6 +40,7 @@ GuildHeader::GuildHeader()
 	m_buttons.push_back(Button(IDTB_MEMBERS,  DMIC(IDI_MEMBERS),      BUTTON_RIGHT));
 	m_buttons.push_back(Button(IDTB_PINS,     DMIC(IDI_PIN),          BUTTON_RIGHT));
 	m_buttons.push_back(Button(IDTB_NOTIFS,   DMIC(IDI_NOTIFICATION), BUTTON_RIGHT));
+	m_buttons.push_back(Button(IDTB_THREADS,  DMIC(IDI_THREADS),      BUTTON_RIGHT));
 	m_buttons.push_back(Button(IDTB_CHANNELS, DMIC(IDI_SHIFT_LEFT),   BUTTON_GUILD_RIGHT));
 }
 
@@ -568,6 +570,19 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					};
 					ClientToScreen(hWnd, &pt);
 					PinList::Show(pChan->m_snowflake, pGuild->m_snowflake, pt.x, pt.y, true);
+					break;
+				}
+				case IDTB_THREADS: {
+					Guild* pGuild = GetDiscordInstance()->GetCurrentGuild();
+					Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+					if (!pGuild || !pChan) break;
+
+					POINT pt = {
+						pThis->m_buttons[lParam].m_rect.right,
+						pThis->m_buttons[lParam].m_rect.bottom
+					};
+					ClientToScreen(hWnd, &pt);
+					ThreadList::Show(pChan->m_snowflake, pGuild->m_snowflake, pt.x, pt.y, true);
 					break;
 				}
 				case IDTB_NOTIFS: {
