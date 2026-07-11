@@ -105,6 +105,8 @@
 #define IDR_LINK_CONTEXT                104
 #define IDI_PROFILE_BORDER_UNREAD_2K    105
 #define IDR_IMAGE_CONTEXT               105
+#define IDI_THREADS                     106
+#define IDI_THREADS_2K                  107
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -552,7 +554,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        106
+#define _APS_NEXT_RESOURCE_VALUE        107
 #define _APS_NEXT_COMMAND_VALUE         1112
 #define _APS_NEXT_CONTROL_VALUE         918
 #define _APS_NEXT_SYMED_VALUE           40000

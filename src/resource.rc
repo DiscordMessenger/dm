@@ -458,6 +458,10 @@ IDI_PROFILE_BORDER_UNREAD ICON                    "../res/icons/icon_profile_bor
 
 IDI_PROFILE_BORDER_UNREAD_2K ICON                    "../res/icons/icon_profile_border_unread_2k.ico"
 
+IDI_THREADS            ICON                    "../res/icons/icon_threads.ico"
+
+IDI_THREADS_2K         ICON                    "../res/icons/icon_threads_2k.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
