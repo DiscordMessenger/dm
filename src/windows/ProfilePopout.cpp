@@ -465,7 +465,11 @@ void ProfilePopout::Paint(HWND hWnd, HDC hdc)
 	RECT rect = {};
 	GetClientRect(hWnd, &rect);
 
-	ri::DrawEdge(hdc, &rect, EDGE_RAISED, BF_RECT | BF_MIDDLE);
+	int edgeFlags = BF_RECT | BF_MIDDLE;
+	if (IsDarkModeEnabled())
+		edgeFlags &= ~BF_MIDDLE;
+
+	ri::DrawEdge(hdc, &rect, EDGE_RAISED, edgeFlags);
 }
 
 void ProfilePopout::FlushNote()
@@ -513,6 +517,14 @@ INT_PTR CALLBACK ProfilePopout::Proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 
 		case WM_INITDIALOG:
 		case WM_UPDATEPROFILEPOPOUT: {
+			if (IsDarkModeEnabled()) {
+				ri::SetWindowTheme(GetDlgItem(hWnd, IDC_MEMBERSINCEGROUP), L" ", L" ");
+				ri::SetWindowTheme(GetDlgItem(hWnd, IDC_ROLE_GROUP), L" ", L" ");
+				ri::SetWindowTheme(GetDlgItem(hWnd, IDC_NOTE_GROUP), L" ", L" ");
+				ri::SetWindowTheme(GetDlgItem(hWnd, IDC_MESSAGE_GROUP), L" ", L" ");
+				ri::SetWindowTheme(GetDlgItem(hWnd, IDC_ABOUTME_GROUP), L" ", L" ");
+			}
+
 			m_size = {};
 			BOOL res = Layout(hWnd, m_size);
 			if (!res) {
@@ -547,8 +559,14 @@ INT_PTR CALLBACK ProfilePopout::Proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 
 		case WM_CTLCOLOREDIT: // Windows NT 3.1 seems to send this intead of WM_CTLCOLORSTATIC for my disabled text boxes
 			// If the window is disabled, set the background color below
-			if (IsWindowEnabled((HWND)lParam))
+			if (IsWindowEnabled((HWND)lParam)) {
+				if (IsDarkModeEnabled()) {
+					SetTextColor((HDC)wParam, GetSysColorV2(COLOR_WINDOWTEXT));
+					SetBkColor((HDC)wParam, GetSysColorV2(COLOR_WINDOW));
+					return (INT_PTR)GetSysColorBrushV2(COLOR_WINDOW);
+				}
 				break;
+			}
 
 			// fall through
 		case WM_CTLCOLOR:
@@ -556,6 +574,7 @@ INT_PTR CALLBACK ProfilePopout::Proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 		case WM_CTLCOLORSTATIC:
 		case WM_CTLCOLORBTN: // Windows NT 3.1 seems to send this instead of WM_CTLCOLORSTATIC for my group boxes
 		{
+			SetTextColor((HDC) wParam, GetSysColorV2(COLOR_WINDOWTEXT));
 			SetBkColor((HDC) wParam, GetSysColorV2(COLOR_3DFACE));
 			return (INT_PTR)GetSysColorBrushV2(COLOR_3DFACE);
 		}

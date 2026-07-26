@@ -41,6 +41,10 @@ StatusBar* StatusBar::Create(HWND hParent)
 
 	SetWindowFont(pBar->m_hwnd, g_MessageTextFont, TRUE);
 	SetWindowLongPtr(pBar->m_hwnd, GWLP_USERDATA, (LONG_PTR) pBar);
+
+	if (IsDarkModeEnabled())
+		SendMessage(pBar->m_hwnd, SB_SETBKCOLOR, 0, GetSysColorV2(COLOR_3DFACE));
+
 	return pBar;
 }
 
