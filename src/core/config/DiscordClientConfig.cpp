@@ -49,8 +49,8 @@ DiscordClientConfig::DiscordClientConfig()
 	m_osVersion = "10.0.22621";
 	m_osSdkVersion = "22621";
 	m_releaseChannel = "canary";
-	m_clientBuildNumber = 488590;
-	m_nativeBuildNumber = 74182;
+	m_clientBuildNumber = 584141;
+	m_nativeBuildNumber = 87203;
 	m_clientVersion = "1.0.1070";
 	m_osVersionSimple = "10";
 	m_chromeVersion = "148.0.7778.280";
