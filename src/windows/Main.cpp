@@ -2020,6 +2020,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 	SetUserScale(GetLocalSettings()->GetUserScale());
 
+	// Create a background brush.
+	g_backgroundBrush = GetSysColorBrushV2(COLOR_3DFACE);
+
 	int wndWidth = 0, wndHeight = 0;
 	bool startMaximized = false;
 	GetLocalSettings()->GetWindowSize(wndWidth, wndHeight);
@@ -2214,4 +2217,9 @@ void SetHeartbeatInterval(int timeMs)
 	{
 		g_HeartbeatTimer = SetTimer(g_Hwnd, 0, timeMs, OnHeartbeatTimer);
 	}
+}
+
+bool IsDarkModeEnabled()
+{
+	return GetLocalSettings()->EnableDarkMode();
 }

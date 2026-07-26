@@ -338,6 +338,9 @@
 #define IDS_CONFIRM_UNPIN               776
 #define IDS_CONFIRM_UNPIN_TITLE         777
 #define IDS_ETA_STRING_DOWNLOADED       778
+#define IDS_FAILED_TO_LOAD_CONFIG_1     779
+#define IDS_FAILED_TO_LOAD_CONFIG_2     780
+#define IDS_FAILED_TO_LOAD_CONFIG_RECOVERED_TOKEN 781
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803
@@ -436,6 +439,7 @@
 #define IDC_USE_12HR_TIME               897
 #define IDC_ENABLE_BALLOON_NOTIFS       898
 #define IDC_SHOW_BLOCKED_MESSAGES       898
+#define IDC_DARK_MODE                   898
 #define IDC_FLASH_TASKBAR               899
 #define IDC_USE_DISCORD_SOUND           900
 #define IDC_MUTE_NOTIFICATIONS          901

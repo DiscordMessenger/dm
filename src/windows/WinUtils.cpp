@@ -20,6 +20,7 @@
 #include "TextManager.hpp"
 #include "ProgressDialog.hpp"
 #include "DoubleBufferingHelper.hpp"
+#include "config/LocalSettings.hpp"
 
 #ifndef OLD_WINDOWS
 #include <shlwapi.h>
@@ -1746,7 +1747,7 @@ std::string FilterToken(const std::string& ogToken)
 
 bool IsDarkModeEnabled()
 {
-	return true;// TODO: load from LocalSettings.
+	return GetLocalSettings()->EnableDarkMode();
 }
 
 const COLORREF s_DarkModeColors[] = {
