@@ -871,7 +871,7 @@ LRESULT MessageEditor::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			if ((HWND) lParam == pThis->m_mentionName_hwnd)
 				SetTextColor((HDC) wParam, pThis->m_userNameColor);
 			else
-				SetTextColor((HDC) wParam, GetSysColor(COLOR_WINDOWTEXT));
+				SetTextColor((HDC) wParam, GetSysColorV2(COLOR_WINDOWTEXT));
 
 			SetBkColor((HDC) wParam, GetSysColorV2(COLOR_3DFACE));
 			return (LRESULT)GetSysColorBrushV2(COLOR_3DFACE);
