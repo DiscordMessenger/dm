@@ -150,6 +150,8 @@ COLORREF LerpColor(COLORREF a, COLORREF b, int progMul, int progDiv);
 bool IsColorDark(COLORREF cr);
 bool IsTextColorDark();
 bool IsIconMostlyBlack(HICON hic);
+COLORREF GetSysColorV2(int nIndex);
+HBRUSH GetSysColorBrushV2(int nIndex);
 
 #define IsColorLight(cr)   (!IsColorDark(cr))
 #define IsTextColorLight() (!IsTextColorDark())

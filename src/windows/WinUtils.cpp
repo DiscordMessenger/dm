@@ -1743,3 +1743,68 @@ std::string FilterToken(const std::string& ogToken)
 
 	return newToken;
 }
+
+bool IsDarkModeEnabled()
+{
+	return true;// TODO: load from LocalSettings.
+}
+
+const COLORREF s_DarkModeColors[] = {
+	RGB(20,20,20), // COLOR_SCROLLBAR
+	RGB(40,40,40), // COLOR_BACKGROUND
+	RGB(0,0,0), // COLOR_ACTIVECAPTION
+	RGB(0,0,0), // COLOR_INACTIVECAPTION
+	RGB(40,40,40), // COLOR_MENU
+	RGB(0,0,0), // COLOR_WINDOW
+	RGB(80,80,80), // COLOR_WINDOWFRAME
+	RGB(255,255,255), // COLOR_MENUTEXT
+	RGB(255,255,255), // COLOR_WINDOWTEXT
+	RGB(255,255,255), // COLOR_CAPTIONTEXT
+	RGB(255,255,255), // COLOR_ACTIVEBORDER
+	RGB(255,255,255), // COLOR_INACTIVEBORDER
+	RGB(40,40,40), // COLOR_APPWORKSPACE
+	RGB(40,40,128), // COLOR_HIGHLIGHT
+	RGB(255,255,255), // COLOR_HIGHLIGHTTEXT
+	RGB(60,60,60), // COLOR_BTNFACE
+	RGB(20,20,20), // COLOR_BTNSHADOW
+	RGB(64,64,64), // COLOR_GRAYTEXT
+	RGB(255,255,255), // COLOR_BTNTEXT
+	RGB(128,128,128), // COLOR_INACTIVECAPTIONTEXT
+	RGB(80,80,80), // COLOR_BTNHIGHLIGHT
+	RGB(0,0,0), // COLOR_3DDKSHADOW
+	RGB(100,100,100), // COLOR_3DLIGHT
+	RGB(255,255,255), // COLOR_INFOTEXT
+	RGB(80,80,80), // COLOR_INFOBK
+	RGB(0,0,0), // missing #25
+	RGB(255,0,255), // COLOR_HOTLIGHT
+	RGB(0,0,0), // COLOR_GRADIENTACTIVECAPTION
+	RGB(0,0,0), // COLOR_GRADIENTINACTIVECAPTION
+	RGB(40,40,128), // COLOR_MENUHILIGHT
+	RGB(30,30,30), // COLOR_MENUBAR
+};
+
+COLORREF GetSysColorV2(int nIndex)
+{
+	if (!IsDarkModeEnabled() || nIndex < 0 || nIndex >= 31)
+		return GetSysColor(nIndex);
+
+	return s_DarkModeColors[nIndex];
+}
+
+HBRUSH GetSysColorBrushV2(int nIndex)
+{
+	if (!IsDarkModeEnabled())
+		return GetSysColorBrush(nIndex);
+
+	if (nIndex < 0 || nIndex >= 31) {
+		// fallback, but this usage is WRONG!
+		DbgPrintW("bad index %d used in GetSysColorBrushV2", nIndex);
+		return GetSysColorBrush(nIndex);
+	}
+
+	static HBRUSH brushes[31];
+	if (!brushes[nIndex])
+		brushes[nIndex] = CreateSolidBrush(GetSysColorV2(nIndex));
+	
+	return brushes[nIndex];
+}
