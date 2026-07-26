@@ -1037,5 +1037,12 @@ MessageEditor* MessageEditor::Create(HWND hwnd, LPRECT pRect)
 	newThis->m_autoComplete.SetLookup(&_AutoCompleteLookup);
 	newThis->m_autoComplete.SetLookupContext(newThis);
 
+	if (IsDarkModeEnabled()) {
+		ri::SetWindowTheme(newThis->m_send_hwnd, L" ", L" ");
+		ri::SetWindowTheme(newThis->m_btnUpload_hwnd, L" ", L" ");
+		ri::SetWindowTheme(newThis->m_mentionJump_hwnd, L" ", L" ");
+		ri::SetWindowTheme(newThis->m_mentionCancel_hwnd, L" ", L" ");
+	}
+
 	return newThis;
 }

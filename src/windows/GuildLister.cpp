@@ -1451,6 +1451,11 @@ GuildLister* GuildLister::Create(HWND hwnd, LPRECT pRect)
 	}
 
 	SetWindowPos(newThis->m_tooltip_hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+
+	if (IsDarkModeEnabled()) {
+		ri::SetWindowTheme(newThis->m_more_btn_hwnd, L" ", L" ");
+		ri::SetWindowTheme(newThis->m_bar_btn_hwnd, L" ", L" ");
+	}
 	
 	return newThis;
 }
