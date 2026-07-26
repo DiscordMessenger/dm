@@ -143,6 +143,8 @@ void DbgPrintW(const char* fmt, ...);
 
 // File utils
 bool FileExists(const std::string& path);
+std::string LoadEntireFile(const std::string& fileNameUTF8);
+bool SaveEntireFile(const std::string& fileNameUTF8, const std::string& data);
 
 bool XSetProcessDPIAware();
 

@@ -1943,6 +1943,95 @@ static bool ForceSingleInstance(LPCTSTR pClassName)
 	return false;
 }
 
+static bool IsMaybeValidDiscordToken(const std::string& token)
+{
+	if (token.size() < 70)
+		return false;
+
+	if (token.size() > 75)
+		return false;
+
+	int periodCount = 0;
+	for (auto ch : token)
+	{
+		if (ch == '.') {
+			periodCount++;
+		}
+
+		if (!((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_' || ch == '\'' || ch == '.')) {
+			return false;
+		}
+	}
+
+	return periodCount == 2;
+}
+
+static std::string PerformSettingsRecoveryOperations(bool& recoveredToken)
+{
+	recoveredToken = false;
+
+	std::string settingsData = GetFrontend()->LoadConfig();
+
+	auto pos = settingsData.find("\"Token\":\"");
+	if (pos != std::string::npos) {
+		// Find the ending part
+		auto pos2 = settingsData.find("\"", pos + 9);
+		if (pos2 == std::string::npos) {
+			pos2 = settingsData.size();
+		}
+
+		std::string tokenExtracted = settingsData.substr(pos + 9, pos2 - pos - 9);
+		if (IsMaybeValidDiscordToken(tokenExtracted)) {
+			GetLocalSettings()->SetToken(tokenExtracted);
+			recoveredToken = true;
+		}
+	}
+
+	std::string fn = GetBasePath() + "/bad_settings_" + std::to_string(time(NULL)) + ".json";
+	if (SaveEntireFile(fn, settingsData))
+		return fn;
+
+	fn = GetBasePath() + "bs" + std::to_string(time(NULL) % 1000000) + ".jso";
+	if (SaveEntireFile(fn, settingsData))
+		return fn;
+
+	return "";
+}
+
+static void LoadSettingsIfPossible()
+{
+	std::string technicalDetails;
+
+	try
+	{
+		GetLocalSettings()->Load();
+		return;
+	}
+	catch (nlohmann::json::exception ex)
+	{
+		technicalDetails = "JSON exception: " + std::string(ex.what());
+	}
+	catch (std::exception ex)
+	{
+		technicalDetails = "Unknown exception: " + std::string(ex.what());
+	}
+
+	bool recoveredToken = false;
+	std::string oldPath = PerformSettingsRecoveryOperations(recoveredToken);
+
+	std::string message = TmGetString(recoveredToken ? IDS_FAILED_TO_LOAD_CONFIG_RECOVERED_TOKEN : IDS_FAILED_TO_LOAD_CONFIG_1);
+	message += technicalDetails;
+
+	if (!oldPath.empty()) {
+		message += TmGetString(IDS_FAILED_TO_LOAD_CONFIG_2);
+		message += oldPath;
+	}
+
+	LPTSTR tstr = ConvertToTStringAddCR(message);
+	MessageBox(NULL, tstr, TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
+	free(tstr);
+}
+
 // Blackwingcat's Extended Kernel workaround: Apparently, the custom user32.dll it uses tries
 // to write to the class name, which previously was part of .rodata, which is of course read-only.
 TCHAR g_className[64];
@@ -1977,9 +2066,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	g_pFrontEnd = new Frontend_Win32;
 	g_pHTTPClient = new NetworkerThreadManager;
 
-	// Create a background brush.
-	g_backgroundBrush = GetSysColorBrushV2(COLOR_3DFACE);
-
 	SetupCachePathIfNeeded();
 
 	LocalSettings* pSettings = GetLocalSettings();
@@ -1987,7 +2073,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 	// Load the settings, and fix up some settings that are
 	// actually bad to leave on on NT 3.x or NT 4
-	pSettings->Load();
+	LoadSettingsIfPossible();
 
 	if (LOBYTE(version) < 5 && pSettings->GetMessageStyle() == MS_GRADIENT)
 	{
@@ -2217,9 +2303,4 @@ void SetHeartbeatInterval(int timeMs)
 	{
 		g_HeartbeatTimer = SetTimer(g_Hwnd, 0, timeMs, OnHeartbeatTimer);
 	}
-}
-
-bool IsDarkModeEnabled()
-{
-	return GetLocalSettings()->EnableDarkMode();
 }
