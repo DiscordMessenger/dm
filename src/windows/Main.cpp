@@ -28,6 +28,8 @@
 #include "InstanceMutex.hpp"
 #include "CrashDebugger.hpp"
 #include "MemberListOld.hpp"
+#include "ThreadView.hpp"
+#include "ThreadViewOld.hpp"
 #include "config/LocalSettings.hpp"
 #include "network/WebsocketClient.hpp"
 #include "utils/UpdateChecker.hpp"
@@ -56,6 +58,7 @@ GuildHeader* g_pGuildHeader;
 GuildLister* g_pGuildLister;
 IMemberList* g_pMemberList;
 IChannelView* g_pChannelView;
+IThreadView* g_pThreadView;
 MessageEditor* g_pMessageEditor;
 LoadingMessage* g_pLoadingMessage;
 
@@ -267,6 +270,7 @@ void ProperlySizeControls(HWND hWnd)
 	HWND hWndMel = g_pMemberList->m_mainHwnd;
 	HWND hWndTin = g_pMessageEditor->m_hwnd;
 	HWND hWndStb = g_pStatusBar->m_hwnd;
+	HWND hWndThv = g_pThreadView->GetHWND();
 
 	int statusBarHeight = 0;
 	GetChildRect(hWnd, hWndStb, &rcSBar);
@@ -283,7 +287,7 @@ void ProperlySizeControls(HWND hWnd)
 	g_SendButtonHeight     = ScaleByDPI(SEND_BUTTON_HEIGHT);
 	g_GuildHeaderHeight    = ScaleByDPI(GUILD_HEADER_HEIGHT);
 	g_GuildListerWidth     = ScaleByDPI(PROFILE_PICTURE_SIZE_DEF + 12) + GUILD_LISTER_BORDER_SIZE * 4;
-	g_MemberListWidth      = ScaleByDPI(MEMBER_LIST_WIDTH);
+	g_MemberListWidth      = ScaleByDPI(400);//MEMBER_LIST_WIDTH);
 	g_MessageEditorHeight  = ScaleByDPI(MESSAGE_EDITOR_HEIGHT);
 
 	if (g_pMessageEditor)
@@ -335,7 +339,12 @@ void ProperlySizeControls(HWND hWnd)
 	if (!g_bMemberListVisible) rect.left -= g_MemberListWidth;
 	rect.right = rect.left + g_MemberListWidth;
 	rect.bottom = rect2.bottom;
+	RECT rcb = rect; // TEMP
+	rect.bottom = rect.top + ScaleByDPI(150); // TEMP
+	rcb.top = rect.bottom; // TEMP
 	MoveWindow(hWndMel, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint);
+	rect = rcb; // TEMP
+	MoveWindow(hWndThv, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, bRepaint); // TEMP
 	rect = rect2;
 
 	rect.left += guildListerWidth + scaled10;
@@ -1234,6 +1243,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			AutoComplete::InitializeClass();
 			IMemberList::InitializeClasses();
 			IChannelView::InitializeClasses();
+			IThreadView::InitializeClasses();
 			MessageEditor::InitializeClass();
 			LoadingMessage::InitializeClass();
 
@@ -1259,10 +1269,13 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pGuildLister = GuildLister::Create(hWnd, &rect);
 			g_pMemberList  = IMemberList::CreateMemberList(hWnd, &rect);
 			g_pChannelView = IChannelView::CreateChannelView(hWnd, &rect);
+			g_pThreadView = IThreadView::CreateThreadView(hWnd, &rect);
 			g_pMessageEditor = MessageEditor::Create(hWnd, &rect);
 			g_pLoadingMessage = LoadingMessage::Create(hWnd, &rcLoading);
 
-			if (!g_pStatusBar || !g_pMessageList || !g_pProfileView || !g_pGuildHeader || !g_pMemberList || !g_pChannelView || !g_pMessageEditor || !g_pLoadingMessage)
+			if (!g_pStatusBar || !g_pMessageList || !g_pProfileView || !g_pGuildHeader
+				|| !g_pMemberList || !g_pChannelView || !g_pThreadView || !g_pMessageEditor
+				|| !g_pLoadingMessage)
 			{
 				char buffer[256];
 				GetWindowTextA(hWnd, buffer, sizeof buffer);
@@ -1279,6 +1292,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				PostQuitMessage(0);
 				break;
 			}
+
+			g_pThreadView->PopulateWithDummyData();
 
 			SendMessage(hWnd, WM_LOGINAGAIN, 0, 0);
 			PostMessage(hWnd, WM_POSTINIT, 0, 0);
@@ -1320,6 +1335,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_LOGINAGAIN:
 		{
+			break;
 			if (GetDiscordInstance()->HasGatewayURL()) {
 				GetDiscordInstance()->StartGatewaySession();
 			}

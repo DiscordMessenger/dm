@@ -19,7 +19,6 @@ public:
 	Snowflake m_guild = 0;
 	int m_nextItem = 0;
 	int m_nextGroup = 0;
-	std::map<HBITMAP, int> m_imageIDs;
 	std::vector<Snowflake> m_items;
 	std::vector<Snowflake> m_groups;
 	std::map<Snowflake, int> m_grpToGrpIdx;

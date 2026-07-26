@@ -695,9 +695,6 @@
     <ClInclude Include="..\src\windows\MemberList.hpp">
       <Filter>Header Files\Windows\UI\Lists</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\windows\PinList.hpp">
-      <Filter>Header Files\Windows\UI\Lists</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\windows\RoleList.hpp">
       <Filter>Header Files\Windows\UI\Lists</Filter>
     </ClInclude>
@@ -782,8 +779,20 @@
     <ClInclude Include="..\src\windows\DoubleBufferingHelper.hpp">
       <Filter>Header Files\Windows\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\windows\ThreadView.hpp">
+      <Filter>Header Files\Windows\UI\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\PinList.hpp">
+      <Filter>Header Files\Windows\UI\Dialogs</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\windows\ThreadList.hpp">
-      <Filter>Header Files\Windows\UI\Lists</Filter>
+      <Filter>Header Files\Windows\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\ThreadViewOld.hpp">
+      <Filter>Header Files\Windows\UI\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\IThreadView.hpp">
+      <Filter>Header Files\Windows\Interfaces</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -919,9 +928,6 @@
     <ClCompile Include="..\src\windows\MemberListOld.cpp">
       <Filter>Source Files\Windows\UI\Lists</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\windows\PinList.cpp">
-      <Filter>Source Files\Windows\UI\Lists</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\windows\RoleList.cpp">
       <Filter>Source Files\Windows\UI\Lists</Filter>
     </ClCompile>
@@ -983,7 +989,19 @@
       <Filter>Source Files\Windows\Utils</Filter>
     </ClCompile>
     <ClCompile Include="..\src\windows\ThreadList.cpp">
-      <Filter>Source Files\Windows\UI\Lists</Filter>
+      <Filter>Source Files\Windows\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\PinList.cpp">
+      <Filter>Source Files\Windows\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\ThreadView.cpp">
+      <Filter>Source Files\Windows\UI\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\ThreadViewOld.cpp">
+      <Filter>Source Files\Windows\UI\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\IThreadView.cpp">
+      <Filter>Source Files\Windows\Interfaces</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

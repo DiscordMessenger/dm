@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include "Snowflake.hpp"
 #include "Permissions.hpp"
 
@@ -34,6 +35,7 @@ struct Channel
 	Snowflake m_lastViewedMsg = 0; // The last message that was read in this channel.
 	Snowflake m_parentCateg = 0;
 	Snowflake m_parentGuild = 0;
+	Snowflake m_ownerUser = 0;
 	std::vector<Snowflake> m_recipients; // valid only for DM and group DM channels
 	std::string m_name = "";
 	std::string m_topic = "";
@@ -79,6 +81,7 @@ struct Channel
 
 	Channel() {}
 	Channel(uint64_t sf, const std::string& st, eChannelType ct) :m_channelType(ct), m_snowflake(sf), m_name(st) {}
+	virtual ~Channel() {}
 
 	uint64_t ComputePermissionOverwrites(Snowflake Member, uint64_t BasePermissions) const;
 

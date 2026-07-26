@@ -636,6 +636,7 @@
     <ClInclude Include="..\src\windows\ImageViewer.hpp" />
     <ClInclude Include="..\src\windows\IMemberList.hpp" />
     <ClInclude Include="..\src\windows\InstanceMutex.hpp" />
+    <ClInclude Include="..\src\windows\IThreadView.hpp" />
     <ClInclude Include="..\src\windows\LoadingMessage.hpp" />
     <ClInclude Include="..\src\windows\LogonDialog.hpp" />
     <ClInclude Include="..\src\windows\Main.hpp" />
@@ -660,6 +661,8 @@
     <ClInclude Include="..\src\windows\TextToSpeech.hpp" />
     <ClInclude Include="..\src\windows\ShellNotification.hpp" />
     <ClInclude Include="..\src\windows\ThreadList.hpp" />
+    <ClInclude Include="..\src\windows\ThreadView.hpp" />
+    <ClInclude Include="..\src\windows\ThreadViewOld.hpp" />
     <ClInclude Include="..\src\windows\UploadDialog.hpp" />
     <ClInclude Include="..\src\windows\ProgressDialog.hpp" />
     <ClInclude Include="..\src\windows\WindowMessages.hpp" />
@@ -710,6 +713,7 @@
     <ClCompile Include="..\src\windows\ImageViewer.cpp" />
     <ClCompile Include="..\src\windows\IMemberList.cpp" />
     <ClCompile Include="..\src\windows\InstanceMutex.cpp" />
+    <ClCompile Include="..\src\windows\IThreadView.cpp" />
     <ClCompile Include="..\src\windows\LoadingMessage.cpp" />
     <ClCompile Include="..\src\windows\LogonDialog.cpp" />
     <ClCompile Include="..\src\windows\Main.cpp" />
@@ -733,6 +737,8 @@
     <ClCompile Include="..\src\windows\TextManager.cpp" />
     <ClCompile Include="..\src\windows\TextToSpeech.cpp" />
     <ClCompile Include="..\src\windows\ThreadList.cpp" />
+    <ClCompile Include="..\src\windows\ThreadView.cpp" />
+    <ClCompile Include="..\src\windows\ThreadViewOld.cpp" />
     <ClCompile Include="..\src\windows\UploadDialog.cpp" />
     <ClCompile Include="..\src\windows\WinUtils.cpp" />
   </ItemGroup>

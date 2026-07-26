@@ -51,7 +51,6 @@ void MemberList::ClearMembers()
 	m_groups.clear();
 	m_usrToUsrIdx.clear();
 	m_grpToGrpIdx.clear();
-	m_imageIDs.clear();
 	ListView_DeleteAllItems(m_listHwnd);
 	ListView_RemoveAllGroups(m_listHwnd);
 #ifdef UNICODE

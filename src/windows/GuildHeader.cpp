@@ -582,7 +582,7 @@ LRESULT CALLBACK GuildHeader::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						pThis->m_buttons[lParam].m_rect.bottom
 					};
 					ClientToScreen(hWnd, &pt);
-					ThreadList::Show(pChan->m_snowflake, pGuild->m_snowflake, pt.x, pt.y, true);
+					//ThreadList::Show(pChan->m_snowflake, pGuild->m_snowflake, pt.x, pt.y, true);
 					break;
 				}
 				case IDTB_NOTIFS: {
