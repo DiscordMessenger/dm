@@ -874,6 +874,15 @@ LRESULT MessageEditor::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			SetBkColor((HDC) wParam, GetSysColorV2(COLOR_3DFACE));
 			return (LRESULT)GetSysColorBrushV2(COLOR_3DFACE);
 		}
+		case WM_CTLCOLOREDIT:
+		{
+			HDC hdc = (HDC)wParam;
+
+			SetTextColor(hdc, GetSysColorV2(COLOR_WINDOWTEXT));
+			SetBkColor(hdc, GetSysColorV2(COLOR_WINDOW));
+
+			return (LRESULT) GetSysColorBrushV2(COLOR_WINDOW);
+		}
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);

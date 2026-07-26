@@ -270,6 +270,11 @@ void MemberList::Initialize()
 	ListView_InsertColumn(m_listHwnd, 0, &col);
 
 	SetWindowFont(m_listHwnd, g_MessageTextFont, TRUE);
+
+	if (IsDarkModeEnabled()) {
+		ListView_SetBkColor(m_listHwnd, GetSysColorV2(COLOR_WINDOW));
+		ListView_SetTextColor(m_listHwnd, GetSysColorV2(COLOR_WINDOWTEXT));
+	}
 }
 
 LRESULT MemberList::ListWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
