@@ -122,10 +122,10 @@ void RoleList::DrawRole(HDC hdc, RoleItem* role)
 			ri::DrawEdge(hdc, &rect, BDR_RAISEDINNER, BF_RECT | BF_MIDDLE | BF_ADJUST);
 		case MS_FLAT:
 		case MS_IMAGE:
-			oldBkColor = SetBkColor(hdc, GetSysColor(COLOR_3DFACE));
+			oldBkColor = SetBkColor(hdc, GetSysColorV2(COLOR_3DFACE));
 			break;
 		case MS_FLATBR:
-			oldBkColor = SetBkColor(hdc, GetSysColor(COLOR_WINDOW));
+			oldBkColor = SetBkColor(hdc, GetSysColorV2(COLOR_WINDOW));
 			break;
 		case MS_GRADIENT:
 			oldBkMode = SetBkMode(hdc, TRANSPARENT);
@@ -150,7 +150,7 @@ void RoleList::DrawRole(HDC hdc, RoleItem* role)
 
 	DrawShinyRoleColor(hdc, &rcColor, cref);
 
-	COLORREF col2 = SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+	COLORREF col2 = SetTextColor(hdc, GetSysColorV2(COLOR_WINDOWTEXT));
 	DrawText(hdc, role->GetText(), -1, &rcText, DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE | DT_CENTER);
 	SetTextColor(hdc, col2);
 	SelectObject(hdc, obj);
@@ -235,10 +235,10 @@ LRESULT CALLBACK RoleList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			eMessageStyle style = GetLocalSettings()->GetMessageStyle();
 			switch (style) {
 				default:
-					SetClassLongPtr(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)ri::GetSysColorBrush(COLOR_3DFACE));
+					SetClassLongPtr(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)GetSysColorBrushV2(COLOR_3DFACE));
 					break;
 				case MS_FLATBR:
-					SetClassLongPtr(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)ri::GetSysColorBrush(COLOR_WINDOW));
+					SetClassLongPtr(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)GetSysColorBrushV2(COLOR_WINDOW));
 					break;
 			}
 			break;
@@ -378,7 +378,7 @@ void RoleList::InitializeClass()
 		return;
 
 	wc.lpszClassName = T_ROLE_LIST_CLASS;
-	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = GetSysColorBrushV2(COLOR_3DFACE);
 	wc.style = 0;
 	wc.hCursor = LoadCursor(0, IDC_ARROW);
 	wc.lpfnWndProc = RoleList::WndProc;

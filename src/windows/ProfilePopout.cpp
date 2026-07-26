@@ -329,7 +329,7 @@ bool ProfilePopout::Layout(HWND hWnd, SIZE& fullSize)
 				HBITMAP hnewbm = ResizeWithBackgroundColor(
 					hdc,
 					hbm,
-					ri::GetSysColorBrush(COLOR_3DFACE),
+					GetSysColorBrushV2(COLOR_3DFACE),
 					hasAlpha,
 					joinedAtIconSize,
 					joinedAtIconSize,
@@ -556,8 +556,8 @@ INT_PTR CALLBACK ProfilePopout::Proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 		case WM_CTLCOLORSTATIC:
 		case WM_CTLCOLORBTN: // Windows NT 3.1 seems to send this instead of WM_CTLCOLORSTATIC for my group boxes
 		{
-			SetBkColor((HDC) wParam, GetSysColor(COLOR_3DFACE));
-			return (INT_PTR)ri::GetSysColorBrush(COLOR_3DFACE);
+			SetBkColor((HDC) wParam, GetSysColorV2(COLOR_3DFACE));
+			return (INT_PTR)GetSysColorBrushV2(COLOR_3DFACE);
 		}
 	}
 

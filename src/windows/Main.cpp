@@ -1978,7 +1978,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	g_pHTTPClient = new NetworkerThreadManager;
 
 	// Create a background brush.
-	g_backgroundBrush = ri::GetSysColorBrush(COLOR_3DFACE);
+	g_backgroundBrush = GetSysColorBrushV2(COLOR_3DFACE);
 
 	SetupCachePathIfNeeded();
 

@@ -523,7 +523,7 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 
 		int pfpBorderSize2 = GetProfileBorderRenderSize();
 
-		FillRect(hdc, &rcProfile, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
+		FillRect(hdc, &rcProfile, GetSysColorBrushV2(GUILD_LISTER_COLOR));
 
 		if (currentFolder) {
 			HRGN hrgn = DoubleBufferingHelper::CreateRectRgn(hdc, rcProfile);
@@ -535,7 +535,7 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 			}
 
 			HGDIOBJ oldBrush, oldPen;
-			oldBrush = SelectObject(hdc, ri::GetSysColorBrush(COLOR_BTNSHADOW));
+			oldBrush = SelectObject(hdc, GetSysColorBrushV2(COLOR_BTNSHADOW));
 			oldPen = SelectObject(hdc, GetStockObject(BLACK_PEN));
 
 			if (currentFolder == (id & ~BIT_FOLDER)) {
@@ -701,8 +701,8 @@ void GuildLister::Paint(HWND hWnd, HDC hdc, RECT& rcPaint)
 			RECT rc = rect;
 			rc.top += y;
 			rc.bottom = rc.top + C_GUILD_GAP_HEIGHT;
-			FillRect(hdc, &rc, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
-			COLORREF oldPenColor = ri::SetDCPenColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+			FillRect(hdc, &rc, GetSysColorBrushV2(GUILD_LISTER_COLOR));
+			COLORREF oldPenColor = ri::SetDCPenColor(hdc, GetSysColorV2(COLOR_WINDOWTEXT));
 			HGDIOBJ oldobj = SelectObject(hdc, ri::GetDCPen());
 			POINT pt2;
 			MoveToEx(hdc, rc.left + BORDER_SIZE, rc.top + BORDER_SIZE, &pt2);
@@ -782,9 +782,9 @@ void GuildLister::Paint(HWND hWnd, HDC hdc, RECT& rcPaint)
 	finalRect.top = y;
 
 	//if (initialRect.top < initialRect.bottom)
-	//	FillRect(hdc, &initialRect, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
+	//	FillRect(hdc, &initialRect, GetSysColorBrushV2(GUILD_LISTER_COLOR));
 	//if (finalRect.top < finalRect.bottom)
-	//	FillRect(hdc, &finalRect, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
+	//	FillRect(hdc, &finalRect, GetSysColorBrushV2(GUILD_LISTER_COLOR));
 
 	MoveToEx(hdc, pt.x, pt.y, NULL);
 }
@@ -1185,7 +1185,7 @@ LRESULT CALLBACK GuildLister::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (ShouldUseDoubleBuffering())
 			{
 				DoubleBufferingHelper helper(hdc, paintRect);
-				FillRect(helper.HdcMem(), &paintRect, ri::GetSysColorBrush(GUILD_LISTER_COLOR));
+				FillRect(helper.HdcMem(), &paintRect, GetSysColorBrushV2(GUILD_LISTER_COLOR));
 				pThis->Paint(hWnd, helper.HdcMem(), paintRect);
 			}
 			else
@@ -1382,7 +1382,7 @@ void GuildLister::InitializeClass()
 	WNDCLASS& wc = g_GuildListerClass;
 
 	wc.lpszClassName = T_GUILD_LISTER_CLASS;
-	wc.hbrBackground = ri::GetSysColorBrush(GUILD_LISTER_COLOR);
+	wc.hbrBackground = GetSysColorBrushV2(GUILD_LISTER_COLOR);
 	wc.style         = 0;
 	wc.hCursor       = LoadCursor(0, IDC_ARROW);
 	wc.lpfnWndProc   = GuildLister::WndProc;

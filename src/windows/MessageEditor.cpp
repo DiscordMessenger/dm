@@ -289,7 +289,7 @@ void MessageEditor::StartReply(Snowflake messageID, Snowflake authorID)
 		}
 
 		if (clr == CLR_NONE)
-			clr = GetSysColor(COLOR_WINDOWTEXT);
+			clr = GetSysColorV2(COLOR_WINDOWTEXT);
 
 		m_userNameColor = clr;
 	}
@@ -871,8 +871,8 @@ LRESULT MessageEditor::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			if ((HWND) lParam == pThis->m_mentionName_hwnd)
 				SetTextColor((HDC) wParam, pThis->m_userNameColor);
 
-			SetBkColor((HDC) wParam, GetSysColor(COLOR_3DFACE));
-			return (LRESULT)ri::GetSysColorBrush(COLOR_3DFACE);
+			SetBkColor((HDC) wParam, GetSysColorV2(COLOR_3DFACE));
+			return (LRESULT)GetSysColorBrushV2(COLOR_3DFACE);
 		}
 	}
 
@@ -884,7 +884,7 @@ void MessageEditor::InitializeClass()
 	WNDCLASS wc;
 	ZeroMemory(&wc, sizeof wc);
 	wc.lpszClassName = T_MESSAGE_EDITOR_CLASS;
-	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = GetSysColorBrushV2(COLOR_3DFACE);
 	wc.style         = 0;
 	wc.hCursor       = LoadCursor (0, IDC_ARROW);
 	wc.lpfnWndProc   = MessageEditor::WndProc;

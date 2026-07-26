@@ -239,7 +239,7 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 		setColorBG = true;
 	}
 	if (styleFlags & (WORD_CODE | WORD_MLCODE)) {
-		oldColorBG = SetBkColor(context->m_hdc, context->InvertIfNeeded(GetSysColor(COLOR_WINDOW)));
+		oldColorBG = SetBkColor(context->m_hdc, context->InvertIfNeeded(GetSysColorV2(COLOR_WINDOW)));
 		setColorBG = true;
 		flags |= DT_WORDBREAK | DT_EDITCONTROL;
 	}
@@ -254,7 +254,7 @@ void MdDrawString(DrawingContext* context, const Rect& rect, const String& str, 
 		RECT rc2 = rc;
 		rc2.left -= ScaleByDPI(SIZE_QUOTE_INDENT);
 		rc2.right = rc2.left + ScaleByDPI(3);
-		FillRect(hdc, &rc2, ri::GetSysColorBrush(COLOR_SCROLLBAR));
+		FillRect(hdc, &rc2, GetSysColorBrushV2(COLOR_SCROLLBAR));
 	}
 
 	// prevent italics that overflow the rect from being clipped
@@ -285,12 +285,12 @@ void MdDrawCodeBackground(DrawingContext* context, const Rect& rect)
 	RECT rc = RectToNative(rect);
 
 	if (context->m_bInvertTextColor) {
-		COLORREF old = ri::SetDCBrushColor(context->m_hdc, context->InvertIfNeeded(GetSysColor(COLOR_WINDOW)));
+		COLORREF old = ri::SetDCBrushColor(context->m_hdc, context->InvertIfNeeded(GetSysColorV2(COLOR_WINDOW)));
 		FillRect(context->m_hdc, &rc, ri::GetDCBrush());
 		ri::SetDCBrushColor(context->m_hdc, old);
 	}
 	else {
-		FillRect(context->m_hdc, &rc, ri::GetSysColorBrush(COLOR_WINDOW));
+		FillRect(context->m_hdc, &rc, GetSysColorBrushV2(COLOR_WINDOW));
 	}
 
 	ri::DrawEdge(context->m_hdc, &rc, BDR_SUNKEN, BF_RECT);
@@ -304,12 +304,12 @@ void MdDrawForwardBackground(DrawingContext* context, const Rect& rect)
 	rc.left = rc.right - ScaleByDPI(3);
 
 	if (context->m_bInvertTextColor) {
-		COLORREF old = ri::SetDCBrushColor(context->m_hdc, context->InvertIfNeeded(GetSysColor(COLOR_GRAYTEXT)));
+		COLORREF old = ri::SetDCBrushColor(context->m_hdc, context->InvertIfNeeded(GetSysColorV2(COLOR_GRAYTEXT)));
 		FillRect(context->m_hdc, &rc, ri::GetDCBrush());
 		ri::SetDCBrushColor(context->m_hdc, old);
 	}
 	else {
-		FillRect(context->m_hdc, &rc, ri::GetSysColorBrush(COLOR_GRAYTEXT));
+		FillRect(context->m_hdc, &rc, GetSysColorBrushV2(COLOR_GRAYTEXT));
 	}
 }
 

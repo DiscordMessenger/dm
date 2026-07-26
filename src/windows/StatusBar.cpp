@@ -221,7 +221,7 @@ void StatusBar::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 
 	int mode = SetBkMode(hdc, TRANSPARENT);
 	HGDIOBJ gdiObjOld = SelectObject(hdc, g_TypingBoldFont);
-	COLORREF textOld = SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+	COLORREF textOld = SetTextColor(hdc, GetSysColorV2(COLOR_WINDOWTEXT));
 
 	m_typing_status_rect = rc;
 

@@ -509,7 +509,7 @@ void ChannelView::InitializeClass()
 	WNDCLASS& wc = g_ChannelViewClass;
 
 	wc.lpszClassName = T_CHANNEL_VIEW_CONTAINER_CLASS;
-	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = GetSysColorBrushV2(COLOR_3DFACE);
 	wc.style = 0;
 	wc.hCursor = LoadCursor(0, IDC_ARROW);
 	wc.lpfnWndProc = &ChannelView::WndProc;
@@ -691,27 +691,27 @@ LRESULT ChannelView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			ChannelMember* pMember = &pView->m_channels[lpdis->itemID];
 			Channel* pChan = GetDiscordInstance()->GetChannel(pMember->m_snowflake);
 
-			COLORREF nameTextColor = GetSysColor(COLOR_WINDOWTEXT);
-			COLORREF statusTextColor = GetSysColor(COLOR_GRAYTEXT);
-			COLORREF backgdColor = GetSysColor(COLOR_WINDOW);
+			COLORREF nameTextColor = GetSysColorV2(COLOR_WINDOWTEXT);
+			COLORREF statusTextColor = GetSysColorV2(COLOR_GRAYTEXT);
+			COLORREF backgdColor = GetSysColorV2(COLOR_WINDOW);
 			
 			if (pView->m_hotItem == lpdis->itemID)
 			{
-				FillRect(lpdis->hDC, &lpdis->rcItem, ri::GetSysColorBrush(COLOR_MENUBAR));
-				backgdColor = GetSysColor(COLOR_MENUBAR);
+				FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrushV2(COLOR_MENUBAR));
+				backgdColor = GetSysColorV2(COLOR_MENUBAR);
 			}
 			else
 			{
 				// Windows 2000 doesn't do automatic clearing
-				FillRect(lpdis->hDC, &lpdis->rcItem, ri::GetSysColorBrush(COLOR_WINDOW));
+				FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrushV2(COLOR_WINDOW));
 			}
 			
 			if (lpdis->itemState & ODS_SELECTED)
 			{
-				FillRect(lpdis->hDC, &lpdis->rcItem, ri::GetSysColorBrush(COLOR_HIGHLIGHT));
-				backgdColor     = GetSysColor(COLOR_HIGHLIGHT);
-				nameTextColor   = GetSysColor(COLOR_HIGHLIGHTTEXT);
-				statusTextColor = GetSysColor(COLOR_HIGHLIGHTTEXT);
+				FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrushV2(COLOR_HIGHLIGHT));
+				backgdColor     = GetSysColorV2(COLOR_HIGHLIGHT);
+				nameTextColor   = GetSysColorV2(COLOR_HIGHLIGHTTEXT);
+				statusTextColor = GetSysColorV2(COLOR_HIGHLIGHTTEXT);
 			}
 
 			// draw profile picture frame

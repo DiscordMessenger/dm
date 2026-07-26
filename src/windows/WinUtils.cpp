@@ -604,12 +604,12 @@ void FillGradient(HDC hdc, const LPRECT lpRect, int sci1, int sci2, bool vertica
 			sci1 = COLOR_INACTIVECAPTION;
 	}
 	if (ri::HaveMsImg()) {
-		COLORREF c1 = GetSysColor(sci1);
-		COLORREF c2 = GetSysColor(sci2);
+		COLORREF c1 = GetSysColorV2(sci1);
+		COLORREF c2 = GetSysColorV2(sci2);
 		FillGradientColors(hdc, lpRect, c1, c2, vertical);
 	}
 	else {
-		HBRUSH hbr = ri::GetSysColorBrush(sci1);
+		HBRUSH hbr = GetSysColorBrushV2(sci1);
 		FillRect(hdc, lpRect, hbr);
 	}
 }
@@ -1521,7 +1521,7 @@ bool IsColorDark(COLORREF cr)
 
 bool IsTextColorDark()
 {
-	return IsColorDark(GetSysColor(COLOR_CAPTIONTEXT));
+	return IsColorDark(GetSysColorV2(COLOR_CAPTIONTEXT));
 }
 
 std::map<HICON, bool> m_bMostlyBlack;
@@ -1767,7 +1767,7 @@ const COLORREF s_DarkModeColors[] = {
 	RGB(255,255,255), // COLOR_HIGHLIGHTTEXT
 	RGB(60,60,60), // COLOR_BTNFACE
 	RGB(20,20,20), // COLOR_BTNSHADOW
-	RGB(64,64,64), // COLOR_GRAYTEXT
+	RGB(96,96,96), // COLOR_GRAYTEXT
 	RGB(255,255,255), // COLOR_BTNTEXT
 	RGB(128,128,128), // COLOR_INACTIVECAPTIONTEXT
 	RGB(80,80,80), // COLOR_BTNHIGHLIGHT
@@ -1794,12 +1794,12 @@ COLORREF GetSysColorV2(int nIndex)
 HBRUSH GetSysColorBrushV2(int nIndex)
 {
 	if (!IsDarkModeEnabled())
-		return GetSysColorBrush(nIndex);
+		return ri::GetSysColorBrush(nIndex);
 
 	if (nIndex < 0 || nIndex >= 31) {
 		// fallback, but this usage is WRONG!
 		DbgPrintW("bad index %d used in GetSysColorBrushV2", nIndex);
-		return GetSysColorBrush(nIndex);
+		return ri::GetSysColorBrush(nIndex);
 	}
 
 	static HBRUSH brushes[31];

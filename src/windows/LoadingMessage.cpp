@@ -130,8 +130,8 @@ LRESULT CALLBACK LoadingMessage::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 			RECT textRect = rect;
 			textRect.top += MulDiv(textRect.bottom - textRect.top, 3, 4);
 			HGDIOBJ old = SelectObject(hdc, g_AuthorTextFont);
-			COLORREF oldClr = SetBkColor(hdc, GetSysColor(COLOR_3DFACE));
-			COLORREF oldTClr = SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+			COLORREF oldClr = SetBkColor(hdc, GetSysColorV2(COLOR_3DFACE));
+			COLORREF oldTClr = SetTextColor(hdc, GetSysColorV2(COLOR_WINDOWTEXT));
 
 			DrawText(hdc, TEXT("Please wait, connecting to Discord..."), -1, &textRect, DT_CENTER);
 
@@ -161,7 +161,7 @@ void LoadingMessage::InitializeClass()
 		return;
 
 	wc.lpszClassName = T_LOADING_MESSAGE_CLASS;
-	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = GetSysColorBrushV2(COLOR_3DFACE);
 	wc.style = CS_HREDRAW;
 	wc.hCursor = LoadCursor(0, IDC_WAIT);
 	wc.lpfnWndProc = LoadingMessage::WndProc;
