@@ -536,7 +536,7 @@ void GuildLister::DrawServerIcon(HDC hdc, HBITMAP hicon, int& y, RECT& rect, Sno
 
 			HGDIOBJ oldBrush, oldPen;
 			oldBrush = SelectObject(hdc, GetSysColorBrushV2(COLOR_BTNSHADOW));
-			oldPen = SelectObject(hdc, GetStockObject(BLACK_PEN));
+			oldPen = SelectObject(hdc, IsDarkModeEnabled() ? GetStockObject(WHITE_PEN) : GetStockObject(BLACK_PEN));
 
 			if (currentFolder == (id & ~BIT_FOLDER)) {
 				RoundRect(hdc, rcProfile.left + 1, rcProfile.top + 1,  rcProfile.right - 1, rcProfile.top - 1 + pfpBorderSize + amount, 10, 10);

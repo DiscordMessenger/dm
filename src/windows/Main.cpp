@@ -2012,6 +2012,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 		pSettings->SetUseDoubleBuffering(false);
 	}
 
+	if (IsDarkModeEnabled())
+	{
+		// disable theming, as classic controls are easier to theme
+		//ri::SetThemeAppProperties(ri_STAP_ALLOW_NONCLIENT);
+	}
+
 	SetUserScale(GetLocalSettings()->GetUserScale());
 
 	int wndWidth = 0, wndHeight = 0;

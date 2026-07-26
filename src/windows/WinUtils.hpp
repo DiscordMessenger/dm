@@ -20,9 +20,10 @@
 #define DMCDF_WS2_32   0x0040
 #define DMCDF_OLE32    0x0080
 #define DMCDF_COMCTL32 0x0100
-#define DMCDF_ALL      0x01FF
-#define DMCDF_NODLGEX  0x0200
-#define DMCDF_NODRIEX  0x0400
+#define DMCDF_UXTHEME  0x0200
+#define DMCDF_ALL      0x03FF
+#define DMCDF_NODLGEX  0x0400
+#define DMCDF_NODRIEX  0x0800
 
 #ifdef UNICODE
 #define WAsnprintf _snwprintf
@@ -150,6 +151,7 @@ COLORREF LerpColor(COLORREF a, COLORREF b, int progMul, int progDiv);
 bool IsColorDark(COLORREF cr);
 bool IsTextColorDark();
 bool IsIconMostlyBlack(HICON hic);
+bool IsDarkModeEnabled();
 COLORREF GetSysColorV2(int nIndex);
 HBRUSH GetSysColorBrushV2(int nIndex);
 

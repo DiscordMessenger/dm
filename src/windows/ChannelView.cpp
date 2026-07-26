@@ -85,6 +85,11 @@ bool ChannelView::InitTreeView()
 
 	SetWindowFont(hwndTV, g_MessageTextFont, TRUE);
 
+	if (IsDarkModeEnabled()) {
+		TreeView_SetBkColor(m_treeHwnd, GetSysColorV2(COLOR_WINDOW));
+		TreeView_SetTextColor(m_treeHwnd, GetSysColorV2(COLOR_WINDOWTEXT));
+	}
+
 	return TRUE;
 }
 
@@ -108,6 +113,11 @@ bool ChannelView::InitListView()
 	ListView_InsertColumn(m_listHwnd, 0, &col);
 
 	SetWindowFont(m_listHwnd, g_MessageTextFont, TRUE);
+
+	if (IsDarkModeEnabled()) {
+		TreeView_SetBkColor(m_listHwnd, GetSysColorV2(COLOR_WINDOW));
+		TreeView_SetTextColor(m_listHwnd, GetSysColorV2(COLOR_WINDOWTEXT));
+	}
 
 	return TRUE;
 }
@@ -494,6 +504,8 @@ ChannelView* ChannelView::Create(HWND hwnd, LPRECT rect)
 		view = NULL;
 	}
 
+	view->SetMode(false);
+
 	return view;
 }
 
@@ -806,20 +818,20 @@ LRESULT ChannelView::ListWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 	switch (uMsg)
 	{
-	case WM_DESTROY:
-	{
-		SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)NULL);
-		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)pView->m_origListWndProc);
-		pView->m_listHwnd = NULL;
-		break;
-	}
-	case WM_MOUSELEAVE:
-	{
-		int oldItem = pView->m_hotItem;
-		pView->m_hotItem = -1;
-		ListView_RedrawItems(hWnd, oldItem, oldItem);
-		break;
-	}
+		case WM_DESTROY:
+		{
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)NULL);
+			SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)pView->m_origListWndProc);
+			pView->m_listHwnd = NULL;
+			break;
+		}
+		case WM_MOUSELEAVE:
+		{
+			int oldItem = pView->m_hotItem;
+			pView->m_hotItem = -1;
+			ListView_RedrawItems(hWnd, oldItem, oldItem);
+			break;
+		}
 	}
 
 	return CallWindowProc(pView->m_origListWndProc, hWnd, uMsg, wParam, lParam);

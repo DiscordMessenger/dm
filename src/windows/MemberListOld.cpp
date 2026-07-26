@@ -198,6 +198,15 @@ LRESULT MemberListOld::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			MoveWindow(pList->m_listHwnd, 0, 0, wWidth, wHeight, TRUE);
 			break;
 		}
+
+		case WM_CTLCOLORLISTBOX: {
+			HDC hdc = (HDC)wParam;
+
+			SetBkColor(hdc, GetSysColorV2(COLOR_WINDOW));
+			SetTextColor(hdc, GetSysColorV2(COLOR_WINDOWTEXT));
+
+			return (LRESULT)GetSysColorBrushV2(COLOR_WINDOW);
+		}
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
