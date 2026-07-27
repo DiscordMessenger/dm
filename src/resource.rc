@@ -458,6 +458,30 @@ IDI_PROFILE_BORDER_UNREAD ICON                    "../res/icons/icon_profile_bor
 
 IDI_PROFILE_BORDER_UNREAD_2K ICON                    "../res/icons/icon_profile_border_unread_2k.ico"
 
+IDI_CHANNEL_DARK        ICON                    "../res/icons/icon_channel_dark.ico"
+
+IDI_DM_DARK             ICON                    "../res/icons/icon_dm_dark.ico"
+
+IDI_GROUPDM_DARK        ICON                    "../res/icons/icon_groupdm_dark.ico"
+
+IDI_VOICE_DARK          ICON                    "../res/icons/icon_voice_dark.ico"
+
+IDI_CHANNEL_MENTIONED_DARK ICON                    "../res/icons/icon_channel_mentioned_dark.ico"
+
+IDI_CHANNEL_UNREAD_DARK ICON                    "../res/icons/icon_channel_unread_dark.ico"
+
+IDI_CHANNEL_DARK_2K     ICON                    "../res/icons/icon_channel_dark_2k.ico"
+
+IDI_DM_DARK_2K          ICON                    "../res/icons/icon_dm_dark_2k.ico"
+
+IDI_GROUPDM_DARK_2K     ICON                    "../res/icons/icon_groupdm_dark_2k.ico"
+
+IDI_VOICE_DARK_2K       ICON                    "../res/icons/icon_voice_dark_2k.ico"
+
+IDI_CHANNEL_MENTIONED_DARK_2K ICON                    "../res/icons/icon_channel_mentioned_dark_2k.ico"
+
+IDI_CHANNEL_UNREAD_DARK_2K ICON                    "../res/icons/icon_channel_unread_dark_2k.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

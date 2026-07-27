@@ -63,13 +63,13 @@ bool ChannelView::InitTreeView()
 	// Add the open file, closed file, and document bitmaps.
 	m_nCategoryExpandIcon   = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CATEGORY_EXPAND))));
 	m_nCategoryCollapseIcon = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CATEGORY_COLLAPSE))));
-	m_nChannelIcon    = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL))));
-	m_nForumIcon      = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM))));
-	m_nVoiceIcon      = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_VOICE))));
-	m_nDmIcon         = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_DM))));
-	m_nGroupDmIcon    = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM))));
-	m_nChannelDotIcon = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL_UNREAD))));
-	m_nChannelRedIcon = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL_MENTIONED))));
+	m_nChannelIcon    = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(DMV(IDI_CHANNEL)))));
+	m_nForumIcon      = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(DMV(IDI_GROUPDM)))));
+	m_nVoiceIcon      = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(DMV(IDI_VOICE)))));
+	m_nDmIcon         = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(DMV(IDI_DM)))));
+	m_nGroupDmIcon    = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(DMV(IDI_GROUPDM)))));
+	m_nChannelDotIcon = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(DMV(IDI_CHANNEL_UNREAD)))));
+	m_nChannelRedIcon = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(DMV(IDI_CHANNEL_MENTIONED)))));
 
 	// Fail if not all of the images were added.
 	int ic = ri::ImageList_GetImageCount(himl);

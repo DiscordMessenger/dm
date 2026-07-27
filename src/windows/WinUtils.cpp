@@ -1166,7 +1166,9 @@ int MapIconToOldIfNeeded(int iconID)
 
 	switch (iconID)
 	{
+		case IDI_CHANNEL_MENTIONED_DARK: return IDI_CHANNEL_MENTIONED_DARK_2K;
 		case IDI_PROFILE_BORDER_UNREAD: return IDI_PROFILE_BORDER_UNREAD_2K;
+		case IDI_CHANNEL_UNREAD_DARK: return IDI_CHANNEL_UNREAD_DARK_2K;
 		case IDI_PROFILE_BORDER_GOLD: return IDI_PROFILE_BORDER_GOLD_2K;
 		case IDI_CHANNEL_MENTIONED: return IDI_CHANNEL_MENTIONED_2K;
 		case IDI_CHANNEL_UNREAD: return IDI_CHANNEL_UNREAD_2K;
@@ -1174,15 +1176,19 @@ int MapIconToOldIfNeeded(int iconID)
 		case IDI_TYPING_FRAME1: return IDI_TYPING_FRAME1_2K;
 		case IDI_TYPING_FRAME2: return IDI_TYPING_FRAME2_2K;
 		case IDI_TYPING_FRAME3: return IDI_TYPING_FRAME3_2K;
+		case IDI_CHANNEL_DARK: return IDI_CHANNEL_DARK_2K;
+		case IDI_GROUPDM_DARK: return IDI_GROUPDM_DARK_2K;
 		case IDI_NOTIFICATION: return IDI_NOTIFICATION_2K;
 		case IDI_REPLY_PIECE: return IDI_REPLY_PIECE_2K;
 		case IDI_SHIFT_RIGHT: return IDI_SHIFT_RIGHT_2K;
 		case IDI_NEW_INLINE: return IDI_NEW_INLINE_2K;
 		case IDI_SHIFT_LEFT: return IDI_SHIFT_LEFT_2K;
+		case IDI_VOICE_DARK: return IDI_VOICE_DARK_2K;
 		case IDI_CATEGORY: return IDI_CATEGORY_2K;
 		case IDI_CHANNEL: return IDI_CHANNEL_2K;
 		case IDI_MEMBERS: return IDI_MEMBERS_2K;
 		case IDI_GROUPDM: return IDI_GROUPDM_2K;
+		case IDI_DM_DARK: return IDI_DM_DARK_2K;
 		case IDI_SERVER: return IDI_SERVER_2K;
 		case IDI_BOOST: return IDI_BOOST_2K;
 		case IDI_VOICE: return IDI_VOICE_2K;
@@ -1196,6 +1202,42 @@ int MapIconToOldIfNeeded(int iconID)
 		case IDI_DM: return IDI_DM_2K;
 
 		default: // No mapping
+			return iconID;
+	}
+}
+
+int MapIconToDarkModeIfNeeded(int iconID)
+{
+	if (!IsDarkModeEnabled())
+		return iconID;
+
+	switch (iconID)
+	{
+		case IDI_CHANNEL:
+			return IDI_CHANNEL_DARK;
+		case IDI_VOICE:
+			return IDI_VOICE_DARK;
+		case IDI_DM:
+			return IDI_DM_DARK;
+		case IDI_GROUPDM:
+			return IDI_GROUPDM_DARK;
+		case IDI_CHANNEL_MENTIONED:
+			return IDI_CHANNEL_MENTIONED_DARK;
+		case IDI_CHANNEL_UNREAD:
+			return IDI_CHANNEL_UNREAD_DARK;
+		case IDI_CHANNEL_2K:
+			return IDI_CHANNEL_DARK_2K;
+		case IDI_VOICE_2K:
+			return IDI_VOICE_DARK_2K;
+		case IDI_DM_2K:
+			return IDI_DM_DARK_2K;
+		case IDI_GROUPDM_2K:
+			return IDI_GROUPDM_DARK_2K;
+		case IDI_CHANNEL_MENTIONED_2K:
+			return IDI_CHANNEL_MENTIONED_DARK_2K;
+		case IDI_CHANNEL_UNREAD_2K:
+			return IDI_CHANNEL_UNREAD_DARK_2K;
+		default:
 			return iconID;
 	}
 }
