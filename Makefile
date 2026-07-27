@@ -7,7 +7,6 @@ DEBUG               ?= yes   # yes = build debug with symbols, no = release
 UNICODE             ?= yes   # yes = build Unicode, no = ANSI
 IS_MINGW_ON_WINDOWS ?= no    # yes if compiling on native Windows with MinGW
 
-
 # Optional environment overrides
 USER_INC_DIRS ?=
 USER_DEFINES  ?=
@@ -60,6 +59,8 @@ endif
 $(info Discord Messenger makefile)
 $(info Debug: $(DEBUG))
 $(info Unicode: $(UNICODE))
+$(info OpenSSL Include Path: $(OPENSSL_INC_DIR))
+$(info OpenSSL Library Path: $(OPENSSL_LIB_DIR))
 
 # -----------------------------
 # Include and library paths
@@ -74,7 +75,7 @@ endif
 
 INC_DIRS = \
 	$(USER_INC_DIRS)             \
-	-I$(OPENSSL_INC_DIR)         \
+	-I"$(OPENSSL_INC_DIR)"       \
 	-I$(SRC_DIR)                 \
 	-I$(SRC_DIR)/core            \
 	-Ideps                       \
@@ -83,7 +84,7 @@ INC_DIRS = \
 	-Ideps/mwas/include
 
 LIB_DIRS = \
-	-L$(OPENSSL_LIB_DIR)
+	-L"$(OPENSSL_LIB_DIR)"
 
 DEFINES = \
 	-DWINVER=$(WINVER)            \
