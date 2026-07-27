@@ -1558,7 +1558,7 @@ void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem
 
 	if (inView)
 	{
-		ri::DrawEdge(hdc, &childAttachRect, BDR_RAISEDINNER | BDR_RAISEDOUTER, BF_RECT | BF_MIDDLE);
+		DrawEdgeV2(hdc, &childAttachRect, BDR_RAISEDINNER | BDR_RAISEDOUTER, BF_RECT | BF_MIDDLE);
 		DrawText(hdc, name, -1, &textRect, DT_NOPREFIX | DT_NOCLIP);
 		ri::DrawIconEx(
 			hdc,
@@ -2342,7 +2342,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 				bkgdColor = GetSysColorV2(COLOR_3DFACE);
 
 			if (item.m_msg->m_type != MessageType::CHANNEL_HEADER) {
-				ri::DrawEdge(hdc, &rect2, BDR_RAISED, edgeFlags);
+				DrawEdgeV2(hdc, &rect2, BDR_RAISED, edgeFlags);
 			}
 			else if (edgeFlags & BF_MIDDLE) {
 				FillRect(hdc, &rect2, GetSysColorBrushV2(COLOR_3DFACE));
@@ -5372,7 +5372,7 @@ void MessagePollData::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 	rcPoll.right = rcPoll.left + m_width;
 	rcPoll.bottom = rcPoll.top + m_height;
 	rcPoll2 = rcPoll;
-	ri::DrawEdge(hdc, &rcPoll2, EDGE_RAISED, BF_RECT);
+	DrawEdgeV2(hdc, &rcPoll2, EDGE_RAISED, BF_RECT);
 
 	rcPoll.left += borderSize;
 	rcPoll.top += borderSize;

@@ -464,12 +464,7 @@ void ProfilePopout::Paint(HWND hWnd, HDC hdc)
 {
 	RECT rect = {};
 	GetClientRect(hWnd, &rect);
-
-	int edgeFlags = BF_RECT | BF_MIDDLE;
-	if (IsDarkModeEnabled())
-		edgeFlags &= ~BF_MIDDLE;
-
-	ri::DrawEdge(hdc, &rect, EDGE_RAISED, edgeFlags);
+	DrawEdgeV2(hdc, &rect, EDGE_RAISED, BF_RECT | BF_MIDDLE);
 }
 
 void ProfilePopout::FlushNote()

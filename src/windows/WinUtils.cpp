@@ -1313,7 +1313,7 @@ void DrawActivityStatus(HDC hdc, int x, int y, eActiveStatus status)
 
 void DrawLoadingBox(HDC hdc, RECT rect)
 {
-	ri::DrawEdge(hdc, &rect, BDR_SUNKEN, BF_RECT);
+	DrawEdgeV2(hdc, &rect, BDR_SUNKEN, BF_RECT);
 
 	HRGN rgn = DoubleBufferingHelper::CreateRectRgn(hdc, rect);
 	SelectClipRgn(hdc, rgn);
@@ -1329,7 +1329,7 @@ void DrawLoadingBox(HDC hdc, RECT rect)
 
 void DrawErrorBox(HDC hdc, RECT rect)
 {
-	ri::DrawEdge(hdc, &rect, BDR_SUNKEN, BF_RECT);
+	DrawEdgeV2(hdc, &rect, BDR_SUNKEN, BF_RECT);
 
 	HRGN rgn = DoubleBufferingHelper::CreateRectRgn(hdc, rect);
 	SelectClipRgn(hdc, rgn);
@@ -1905,4 +1905,17 @@ HBRUSH GetSysColorBrushV2(int nIndex)
 		brushes[nIndex] = CreateSolidBrush(GetSysColorV2(nIndex));
 	
 	return brushes[nIndex];
+}
+
+BOOL DrawEdgeV2(HDC hdc, LPRECT lprect, UINT style, UINT grfFlags)
+{
+	if (!IsDarkModeEnabled())
+		return ri::DrawEdge(hdc, lprect, style, grfFlags);
+
+	if (grfFlags & BF_MIDDLE) {
+		grfFlags &= ~BF_MIDDLE;
+		FillRect(hdc, lprect, GetSysColorBrushV2(COLOR_3DFACE));
+	}
+
+	return ri::DrawEdge(hdc, lprect, style, grfFlags);
 }

@@ -119,7 +119,7 @@ void RoleList::DrawRole(HDC hdc, RoleItem* role)
 	COLORREF oldBkColor = CLR_NONE;
 	switch (style) {
 		case MS_3DFACE:
-			ri::DrawEdge(hdc, &rect, BDR_RAISEDINNER, BF_RECT | BF_MIDDLE | BF_ADJUST);
+			DrawEdgeV2(hdc, &rect, BDR_RAISEDINNER, BF_RECT | BF_MIDDLE | BF_ADJUST);
 		case MS_FLAT:
 		case MS_IMAGE:
 			oldBkColor = SetBkColor(hdc, GetSysColorV2(COLOR_3DFACE));

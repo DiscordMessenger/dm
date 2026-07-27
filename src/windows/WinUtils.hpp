@@ -158,6 +158,7 @@ bool IsIconMostlyBlack(HICON hic);
 bool IsDarkModeEnabled();
 COLORREF GetSysColorV2(int nIndex);
 HBRUSH GetSysColorBrushV2(int nIndex);
+BOOL DrawEdgeV2(HDC hdc, LPRECT lprect, UINT style, UINT grfFlags);
 
 #define IsColorLight(cr)   (!IsColorDark(cr))
 #define IsTextColorLight() (!IsTextColorDark())

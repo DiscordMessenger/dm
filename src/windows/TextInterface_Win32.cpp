@@ -293,7 +293,7 @@ void MdDrawCodeBackground(DrawingContext* context, const Rect& rect)
 		FillRect(context->m_hdc, &rc, GetSysColorBrushV2(COLOR_WINDOW));
 	}
 
-	ri::DrawEdge(context->m_hdc, &rc, BDR_SUNKEN, BF_RECT);
+	DrawEdgeV2(context->m_hdc, &rc, BDR_SUNKEN, BF_RECT);
 }
 
 void MdDrawForwardBackground(DrawingContext* context, const Rect& rect)
