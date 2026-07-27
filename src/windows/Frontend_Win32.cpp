@@ -7,8 +7,10 @@
 #include "PinList.hpp"
 #include "ProgressDialog.hpp"
 #include "ShellNotification.hpp"
-#include "../discord/UpdateChecker.hpp"
-#include "../discord/LocalSettings.hpp"
+#include "ImageViewer.hpp"
+#include "NotificationViewer.hpp"
+#include "utils/UpdateChecker.hpp"
+#include "config/LocalSettings.hpp"
 
 void Frontend_Win32::OnLoginAgain()
 {
@@ -215,6 +217,10 @@ void Frontend_Win32::OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_
 			delete himg;
 		}
 	}
+	else
+	{
+		DbgPrintW("Failed to load convert image to bitmap! Unrecognized format?");
+	}
 
 	// store the cached data..
 	std::string final_path = GetCachePath() + "\\" + additData;
@@ -413,6 +419,26 @@ bool Frontend_Win32::IsWindowMinimized()
 	return IsIconic(g_Hwnd);
 }
 
+bool Frontend_Win32::IsWindowFocused()
+{
+	if (GetForegroundWindow() == g_Hwnd && !IsIconic(g_Hwnd))
+		return true;
+
+	if (IsImageViewerFocused())
+		return true;
+
+	if (ProfilePopout::IsFocused())
+		return true;
+
+	if (NotificationViewer::IsFocused())
+		return true;
+
+	if (PinList::IsFocused())
+		return true;
+
+	return false;
+}
+
 #ifdef USE_DEBUG_PRINTS
 
 void DbgPrintWV(const char* fmt, va_list vl)
@@ -486,12 +512,12 @@ std::string Frontend_Win32::GetMonthName(int mon)
 
 std::string Frontend_Win32::GetTodayAtText()
 {
-	return TmGetString(IDS_TODAY_AT);
+	return TmGetString(IDS_TODAY_AT) + GetFormatTimestampTimeShort();
 }
 
 std::string Frontend_Win32::GetYesterdayAtText()
 {
-	return TmGetString(IDS_YESTERDAY_AT);
+	return TmGetString(IDS_YESTERDAY_AT) + GetFormatTimestampTimeShort();
 }
 
 std::string Frontend_Win32::GetFormatDateOnlyText()
@@ -501,17 +527,54 @@ std::string Frontend_Win32::GetFormatDateOnlyText()
 
 std::string Frontend_Win32::GetFormatTimeLongText()
 {
-	return TmGetString(IDS_LONG_DATE_FMT);
+	return TmGetString(IDS_LONG_DATE_FMT) + GetFormatTimestampTimeShort();
 }
 
 std::string Frontend_Win32::GetFormatTimeShortText()
 {
-	return TmGetString(IDS_SHORT_DATE_FMT);
+	return TmGetString(IDS_SHORT_DATE_FMT) + GetFormatTimestampTimeShort();
 }
 
 std::string Frontend_Win32::GetFormatTimeShorterText()
 {
-	return TmGetString(IDS_SHORT_TIME_FMT);
+	return GetFormatTimestampTimeShort();
+}
+
+std::string Frontend_Win32::GetFormatTimestampTimeShort()
+{
+	if (GetLocalSettings()->Use12HourTime())
+		return "%I:%M %p";
+	else
+		return "%H:%M";
+}
+
+std::string Frontend_Win32::GetFormatTimestampTimeLong()
+{
+	return "%H:%M:%S";
+}
+
+std::string Frontend_Win32::GetFormatTimestampDateShort()
+{
+	return "%d/%m/%Y";
+}
+
+std::string Frontend_Win32::GetFormatTimestampDateLong()
+{
+#ifdef MINGW_SPECIFIC_HACKS
+	return "%d %B %Y";
+#else
+	return "%e %B %Y";
+#endif
+}
+
+std::string Frontend_Win32::GetFormatTimestampDateLongTimeShort()
+{
+	return GetFormatTimestampDateLong() + " " + GetFormatTimestampTimeShort();
+}
+
+std::string Frontend_Win32::GetFormatTimestampDateLongTimeLong()
+{
+	return "%A, " + GetFormatTimestampDateLong() + " " + GetFormatTimestampTimeShort();
 }
 
 int Frontend_Win32::GetMinimumWidth()
@@ -538,4 +601,81 @@ bool Frontend_Win32::UseGradientByDefault()
 {
 	// Are we using Windows 5.00 at least? (2000)
 	return LOWORD(GetVersion()) >= 5;
+}
+
+static std::string LoadEntireFile(const std::string& fileNameUTF8)
+{
+	LPTSTR fileNameUTF16 = ConvertCppStringToTString(fileNameUTF8);
+	HANDLE handle = CreateFile(fileNameUTF16, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	free(fileNameUTF16);
+
+	if (!handle) {
+		DbgPrintW("Failed to open %s: %d", fileNameUTF8.c_str(), GetLastError());
+		return "";
+	}
+
+	DWORD fileSize = GetFileSize(handle, NULL);
+	if (fileSize > 10000000) {
+		DbgPrintW("Uh oh, file is too big!");
+		CloseHandle(handle);
+		return "";
+	}
+
+	DWORD bytesRead = 0;
+	std::string data;
+	data.resize(fileSize);
+	ReadFile(handle, (void*) data.data(), fileSize, &bytesRead, NULL);
+	CloseHandle(handle);
+
+	if (bytesRead != fileSize) {
+		DbgPrintW("We only read %zu bytes, out of %zu!", (size_t) bytesRead, (size_t) fileSize);
+		return "";
+	}
+
+	return data;
+}
+
+static bool SaveEntireFile(const std::string& fileNameUTF8, const std::string& data)
+{
+	LPTSTR fileNameUTF16 = ConvertCppStringToTString(fileNameUTF8);
+	HANDLE handle = CreateFile(fileNameUTF16, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	free(fileNameUTF16);
+
+	if (!handle) {
+		DbgPrintW("Failed to save %s: %d", fileNameUTF8.c_str(), GetLastError());
+		return false;
+	}
+
+	DWORD bytesWritten = 0;
+	WriteFile(handle, (const void*)data.data(), (DWORD) data.size(), &bytesWritten, NULL);
+	CloseHandle(handle);
+
+	if (bytesWritten != (DWORD) data.size()) {
+		DbgPrintW("We only wrote %zu bytes, out of %zu! Data may have been corrupted!", (size_t) bytesWritten, data.size());
+		return false;
+	}
+
+	return true;
+}
+
+std::string Frontend_Win32::LoadConfig()
+{
+	std::string data = LoadEntireTextFile(GetBasePath() + "/settings.json");
+	if (data.empty()) {
+		// ok, check if settings.jso (8.3) exists at least
+		data = LoadEntireTextFile(GetBasePath() + "/settings.jso");
+
+		if (data.empty())
+			return "";
+	}
+
+	return data;
+}
+
+bool Frontend_Win32::SaveConfig(const std::string& configJson)
+{
+	if (SaveEntireFile(GetBasePath() + "/settings.json", configJson))
+		return true;
+	
+	return SaveEntireFile(GetBasePath() + "/settings.jso", configJson);
 }

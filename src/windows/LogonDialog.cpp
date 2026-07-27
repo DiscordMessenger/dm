@@ -1,6 +1,7 @@
 #include "Main.hpp"
 #include "LogonDialog.hpp"
-#include "../discord/LocalSettings.hpp"
+#include "WinUtils.hpp"
+#include "config/LocalSettings.hpp"
 
 BOOL LogonDialogOnCommand(HWND hWnd, WPARAM wParam)
 {
@@ -8,34 +9,44 @@ BOOL LogonDialogOnCommand(HWND hWnd, WPARAM wParam)
 	{
 		case IDOK:
 		{
-			// Log In
-			if (IsDlgButtonChecked(hWnd, IDC_RADIO_EMAILPASS))
-			{
-				DbgPrintW("TODO: Log In Using E-mail And Password");
-				EndDialog(hWnd, IDCANCEL);
-				return TRUE;
-			}
-			else
-			{
-				// Log In Using Token
-				TCHAR buff[256];
-				int len = GetDlgItemText(hWnd, IDC_EDIT_TOKEN, buff, _countof(buff) - 1);
+			// Log In Using Token
+			TCHAR buff[256];
+			int len = GetDlgItemText(hWnd, IDC_EDIT_TOKEN, buff, _countof(buff) - 1);
 
-				if (len == 0 || len >= _countof(buff) - 1) {
-					MessageBox(hWnd, TmGetTString(IDS_TOKEN_TOO_LONG), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
-					return 0;
-				}
-
-				buff[_countof(buff) - 1] = 0;
-				buff[len] = 0;
-
-				GetLocalSettings()->SetToken(MakeStringFromTString(buff));
-				if (GetDiscordInstance())
-					GetDiscordInstance()->ResetGatewayURL();
-				EndDialog(hWnd, IDOK);
-				return TRUE;
+			if (len >= _countof(buff) - 1) {
+			TokenTooLong:
+				MessageBox(hWnd, TmGetTString(IDS_TOKEN_TOO_LONG), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
+				return 0;
 			}
 
+			if (len < 70) {
+			TokenTooShort:
+				MessageBox(hWnd, TmGetTString(IDS_TOKEN_TOO_SHORT), TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
+				return 0;
+			}
+
+			buff[_countof(buff) - 1] = 0;
+			buff[len] = 0;
+
+			std::string token = MakeStringFromTString(buff);
+
+			// filter out characters
+			token = FilterToken(token);
+			if (token.size() > 75)
+				goto TokenTooLong;
+			if (token.size() < 70)
+				goto TokenTooShort;
+
+			GetLocalSettings()->SetToken(token);
+			if (GetDiscordInstance())
+				GetDiscordInstance()->ResetGatewayURL();
+			EndDialog(hWnd, IDOK);
+			return TRUE;
+		}
+
+		case IDC_HOW_GET_TOKEN:
+		{
+			MessageBox(hWnd, TmGetTString(IDS_GET_TOKEN_TUTORIAL), TmGetTString(IDS_PROGRAM_NAME), MB_OK);
 			break;
 		}
 

@@ -99,6 +99,12 @@
 #define IDI_NOTIFICATION                99
 #define IDI_NOTIFICATION_2K             100
 #define IDI_FOLDER                      101
+#define IDC_CLICKER                     102
+#define IDR_ATTACHMENT_CONTEXT          103
+#define IDI_PROFILE_BORDER_UNREAD       104
+#define IDR_LINK_CONTEXT                104
+#define IDI_PROFILE_BORDER_UNREAD_2K    105
+#define IDR_IMAGE_CONTEXT               105
 #define IDB_TARGET                      200
 #define IDB_CHANNEL                     201
 #define IDB_CATEGORY                    202
@@ -327,6 +333,11 @@
 #define IDS_CONNECT_ERROR_TITLE         772
 #define IDS_STRING773                   773
 #define IDS_SAVED_STRING_EXE            773
+#define IDS_GET_TOKEN_TUTORIAL          774
+#define IDS_CANT_LAUNCH_URL_UNS         775
+#define IDS_CONFIRM_UNPIN               776
+#define IDS_CONFIRM_UNPIN_TITLE         777
+#define IDS_ETA_STRING_DOWNLOADED       778
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803
@@ -422,13 +433,17 @@
 #define IDC_IMAGES_WHEN_UPLOADED        894
 #define IDC_IMAGES_WHEN_EMBEDDED        895
 #define IDC_SHOW_EMBEDS                 896
+#define IDC_USE_12HR_TIME               897
 #define IDC_ENABLE_BALLOON_NOTIFS       898
+#define IDC_SHOW_BLOCKED_MESSAGES       898
 #define IDC_FLASH_TASKBAR               899
 #define IDC_USE_DISCORD_SOUND           900
 #define IDC_MUTE_NOTIFICATIONS          901
 #define IDC_OPEN_ON_STARTUP             902
 #define IDC_START_MINIMIZED             903
 #define IDC_MINIMIZE_TO_NOTIF           904
+#define IDC_HOW_GET_TOKEN               905
+#define IDC_DOUBLE_BUFFERING            917
 #define ID_FILE_PREFERENCES             1001
 #define ID_FILE_STOPALLSPEECH           1002
 #define ID_FILE_EXIT                    1003
@@ -499,18 +514,47 @@
 #define ID_NOTIFICATION_SHOW            1068
 #define ID_NOTIFICATION_EXIT            1069
 #define ID_FILE_RECONNECTTODISCORD      1079
+#define ID_DUMMY_COPYIMAGELINK          1080
+#define ID_DUMMY_SAVEIMAGE              1081
+#define ID_DUMMY_COPYIMAGE              1082
+#define ID_DUMMY_OPENIMAGELINK          1083
+#define ID_DUMMYPOPUP_UNPINMESSAGE      1099
+#define ID_DUMMYPOPUP_COPYLINK          1100
+#define ID_DUMMYPOPUP_COPYIMAGE         1101
+#define ID_DUMMYPOPUP_SAVEIMAGE         1102
+#define ID_DUMMYPOPUP_COPYLINK1103      1103
+#define ID_DUMMYPOPUP_OPENLINK          1104
+#define ID_DUMMYPOPUP_OPENLINK1105      1105
+#define ID_DUMMYPOPUP_COPYPROXYLINK     1106
+#define ID_DUMMYPOPUP_OPENPROXYLINK     1107
+#define ID_DUMMYPOPUP_COPYPROXYLINK1108 1108
+#define ID_DUMMYPOPUP_OPENPROXYLINK1109 1109
+#define IDA_EDIT_LAST_MESSAGE           1110
 #define IDR_MAIN_ACCELS                 1201
 #define IDA_SEARCH                      1301
 #define IDA_QUICKSWITCHER               1302
 #define IDA_PASTE                       1303
+#define IDA_PAGE_UP                     1304
+#define IDA_PAGE_DOWN                   1305
+#define IDA_SELECT_ALL                  1306
+#define IDA_GUILD_0                     1307
+#define IDA_GUILD_1                     1308
+#define IDA_GUILD_2                     1309
+#define IDA_GUILD_3                     1310
+#define IDA_GUILD_4                     1311
+#define IDA_GUILD_5                     1312
+#define IDA_GUILD_6                     1313
+#define IDA_GUILD_7                     1314
+#define IDA_GUILD_8                     1315
+#define IDA_GUILD_9                     1316
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        104
-#define _APS_NEXT_COMMAND_VALUE         1080
-#define _APS_NEXT_CONTROL_VALUE         916
+#define _APS_NEXT_RESOURCE_VALUE        106
+#define _APS_NEXT_COMMAND_VALUE         1112
+#define _APS_NEXT_CONTROL_VALUE         918
 #define _APS_NEXT_SYMED_VALUE           40000
 #endif
 #endif

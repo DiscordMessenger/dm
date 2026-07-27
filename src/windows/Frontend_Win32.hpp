@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../discord/Frontend.hpp"
+#include "Frontend.hpp"
 
 class Frontend_Win32 : public Frontend
 {
@@ -63,6 +63,7 @@ public:
 	void RestoreWindow() override;
 	void MaximizeWindow() override;
 	bool IsWindowMinimized() override;
+	bool IsWindowFocused() override;
 	std::string GetDirectMessagesText() override;
 	std::string GetPleaseWaitText() override;
 	std::string GetMonthName(int index) override;
@@ -72,11 +73,19 @@ public:
 	std::string GetFormatTimeLongText() override;
 	std::string GetFormatTimeShortText() override;
 	std::string GetFormatTimeShorterText() override;
+	std::string GetFormatTimestampTimeShort() override;
+	std::string GetFormatTimestampTimeLong() override;
+	std::string GetFormatTimestampDateShort() override;
+	std::string GetFormatTimestampDateLong() override;
+	std::string GetFormatTimestampDateLongTimeShort() override;
+	std::string GetFormatTimestampDateLongTimeLong() override;
 	int GetMinimumWidth() override;
 	int GetMinimumHeight() override;
 	int GetDefaultWidth() override;
 	int GetDefaultHeight() override;
 	bool UseGradientByDefault() override;
+	std::string LoadConfig() override;
+	bool SaveConfig(const std::string& configJson) override;
 
 #ifdef USE_DEBUG_PRINTS
 	void DebugPrint(const char* fmt, va_list vl) override;

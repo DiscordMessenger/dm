@@ -19,10 +19,11 @@
 #include "ImageViewer.hpp"
 #include "TextManager.hpp"
 #include "ProgressDialog.hpp"
+#include "DoubleBufferingHelper.hpp"
 
 #ifndef OLD_WINDOWS
 #include <shlwapi.h>
-#include "../discord/Util.hpp"
+#include "utils/Util.hpp"
 #endif
 
 constexpr int DEFAULT_DPI  = 96;
@@ -216,7 +217,7 @@ void CopyStringToClipboard(const std::string& str)
 
 		LPCTSTR ctstr = ConvertCppStringToTString(str2);
 
-		size_t stringSize = (str.length() + 1) * sizeof(TCHAR);
+		size_t stringSize = (str2.length() + 1) * sizeof(TCHAR);
 
 		// create a global buffer and fill its text in
 		HGLOBAL clipbuffer;
@@ -227,13 +228,39 @@ void CopyStringToClipboard(const std::string& str)
 		GlobalUnlock(clipbuffer);
 
 		// set the clipboard data
+#if UNICODE
 		SetClipboardData(CF_UNICODETEXT, clipbuffer);
+#else
+		SetClipboardData(CF_TEXT, clipbuffer);
+#endif
 
 		// release everything we have
 		CloseClipboard();
 
 		free((void*)ctstr);
 	}
+}
+
+void CopyImageToClipboard(HBITMAP hBitmap)
+{
+	HBITMAP bitmapCopy = (HBITMAP)ri::CopyImage(hBitmap, IMAGE_BITMAP, 0, 0, 0);
+	if (!bitmapCopy)
+		return;
+
+	if (!OpenClipboard(g_Hwnd)) {
+		DeleteBitmap(bitmapCopy);
+		return;
+	}
+
+	EmptyClipboard();
+
+	if (!SetClipboardData(CF_BITMAP, bitmapCopy))
+	{
+		DbgPrintW("Couldn't copy bitmap!");
+		DeleteBitmap(bitmapCopy);
+	}
+
+	CloseClipboard();
 }
 
 // Borrowed from NanoShellOS: https://github.com/iProgramMC/NanoShellOS/blob/master/src/utf8.c
@@ -426,22 +453,25 @@ std::string MakeStringFromUnicodeString(LPCWSTR wstr)
 	size_t sl = lstrlenW(wstr);
 	// generate the size of the UTF-8 string
 	size_t slmax = (sl + 1) * 4; // whatever
-	char* chr = (char*)malloc(slmax);
+	char* chr = new char[slmax];
 	//_wcstombs_s_l(&sz, chr, slmax, wstr, slmax, CP_UTF8);
 	WideCharToMultiByte(CP_UTF8, 0, wstr, -1, chr, (int) slmax, NULL, NULL);
 
 	chr[slmax - 1] = 0; // ensure the null terminator is there
 	std::string final_str(chr);
-	free(chr);
+	delete[] chr;
 	return final_str;
 }
 
 std::string MakeStringFromEditData(LPCTSTR tstr)
 {
 	std::vector<TCHAR> tch2;
+	tch2.reserve(_tcslen(tstr) + 1);
 	const TCHAR* tcString = tstr;
 	for (; *tcString; tcString++) {
-		if (*tcString != '\r')
+		if (*tcString < 0 || *tcString > 127)
+			tch2.push_back('?');
+		else if (*tcString != '\r')
 			tch2.push_back(*tcString);
 	}
 	tch2.push_back(0);
@@ -469,11 +499,13 @@ void DrawBitmap(HDC hdc, HBITMAP bitmap, int x, int y, LPRECT clip, COLORREF tra
 {
 	HRGN hrgn = NULL;
 	if (clip) {
-		RECT clipCopy = *clip;
-		POINT vpOrg = {};
-		GetViewportOrgEx(hdc, &vpOrg);
-		OffsetRect(&clipCopy, vpOrg.x, vpOrg.y);
-		hrgn = CreateRectRgn(clipCopy.left, clipCopy.top, clipCopy.right, clipCopy.bottom);
+		hrgn = DoubleBufferingHelper::CreateRectRgn(
+			hdc,
+			clip->left,
+			clip->top,
+			clip->right,
+			clip->bottom
+		);
 		SelectClipRgn(hdc, hrgn);
 	}
 
@@ -749,7 +781,7 @@ COLORREF LerpColor(COLORREF a, COLORREF b, int progMul, int progDiv)
 	return RGB(r1, g1, b1);
 }
 
-#include "../discord/DiscordInstance.hpp"
+#include "DiscordInstance.hpp"
 
 COLORREF GetNameColor(Profile* pf, Snowflake guild)
 {
@@ -785,17 +817,32 @@ void LaunchURL(const std::string& link)
 		return; // was fine
 	}
 
+	LPCTSTR errorCode = NULL;
 	TCHAR buff[4096];
 	switch (res)
 	{
 		case 0:
-			WAsnprintf(buff, _countof(buff), TmGetTString(IDS_CANT_LAUNCH_URL_MEM), tstr);
+		case SE_ERR_OOM:
+			errorCode = TEXT("Out of memory");
 			break;
 
-		default:
-			WAsnprintf(buff, _countof(buff), TmGetTString(IDS_CANT_LAUNCH_URL_ERR), tstr, res, res);
+		case SE_ERR_FNF:
+			errorCode = TEXT("File not found");
+			break;
+
+		case SE_ERR_PNF:
+			errorCode = TEXT("Path not found");
+			break;
+
+		case SE_ERR_ACCESSDENIED:
+			errorCode = TEXT("Access denied");
 			break;
 	}
+
+	if (errorCode)
+		WAsnprintf(buff, _countof(buff), TmGetTString(IDS_CANT_LAUNCH_URL_UNS), tstr, errorCode);
+	else
+		WAsnprintf(buff, _countof(buff), TmGetTString(IDS_CANT_LAUNCH_URL_ERR), tstr, res, res);
 
 	free(tstr);
 	MessageBox(g_Hwnd, buff, TmGetTString(IDS_PROGRAM_NAME), MB_ICONERROR | MB_OK);
@@ -1118,6 +1165,7 @@ int MapIconToOldIfNeeded(int iconID)
 
 	switch (iconID)
 	{
+		case IDI_PROFILE_BORDER_UNREAD: return IDI_PROFILE_BORDER_UNREAD_2K;
 		case IDI_PROFILE_BORDER_GOLD: return IDI_PROFILE_BORDER_GOLD_2K;
 		case IDI_CHANNEL_MENTIONED: return IDI_CHANNEL_MENTIONED_2K;
 		case IDI_CHANNEL_UNREAD: return IDI_CHANNEL_UNREAD_2K;
@@ -1170,7 +1218,7 @@ int MapDialogToOldIfNeeded(int iid)
 		case IDD_DIALOG_OPTIONS: return IDD_DIALOG_PREFERENCES_ND;
 
 		default: // no mapping
-			DbgPrintW("Warning, no non-dialogex-mapping for dialog id %d", iid);
+			DbgPrintW("Warning, no non-dialogex-mapping for dialog id %d. You might see a broken dialog", iid);
 			return iid;
 	}
 }
@@ -1224,12 +1272,12 @@ void DrawLoadingBox(HDC hdc, RECT rect)
 {
 	ri::DrawEdge(hdc, &rect, BDR_SUNKEN, BF_RECT);
 
-	HRGN rgn = CreateRectRgnIndirect(&rect);
+	HRGN rgn = DoubleBufferingHelper::CreateRectRgn(hdc, rect);
 	SelectClipRgn(hdc, rgn);
 
 	int smcxicon = GetSystemMetrics(SM_CXICON);
 	int x = rect.left + (rect.right - rect.left - smcxicon) / 2;
-	int y = rect.top  + (rect.bottom - rect.top - smcxicon) / 2;
+	int y = rect.top + (rect.bottom - rect.top - smcxicon) / 2;
 	ri::DrawIconEx(hdc, x, y, g_WaitIcon, smcxicon, smcxicon, 0, NULL, DI_COMPAT | DI_NORMAL);
 
 	SelectClipRgn(hdc, NULL);
@@ -1240,7 +1288,7 @@ void DrawErrorBox(HDC hdc, RECT rect)
 {
 	ri::DrawEdge(hdc, &rect, BDR_SUNKEN, BF_RECT);
 
-	HRGN rgn = CreateRectRgnIndirect(&rect);
+	HRGN rgn = DoubleBufferingHelper::CreateRectRgn(hdc, rect);
 	SelectClipRgn(hdc, rgn);
 
 	int smcxsmicon = GetSystemMetrics(SM_CXSMICON);
@@ -1641,4 +1689,57 @@ time_t MakeGMTime(const tm* ptime)
 		return 0;
 
 	return FileTimeToTimeT(&ft);
+}
+
+// N.B. WINVER<=0x0500 doesn't define it. We'll force it
+#ifndef IDC_HAND
+#define IDC_HAND            MAKEINTRESOURCE(32649)
+#endif//IDC_HAND
+
+HCURSOR GetHandCursor()
+{
+	static HCURSOR loaded = NULL;
+	if (loaded)
+		return loaded;
+
+	loaded = LoadCursor(NULL, IDC_HAND);
+	if (!loaded)
+		loaded = LoadCursor(g_hInstance, MAKEINTRESOURCE(IDC_CLICKER));
+
+	return loaded;
+}
+
+std::string ExtractFileNameFromURL(const std::string& url)
+{
+	std::string fileName = url;
+	for (size_t i = fileName.size(); i != 0; i--) {
+		if (fileName[i] == '/') {
+			fileName = fileName.substr(i + 1);
+			break;
+		}
+	}
+
+	for (size_t i = 0; i < fileName.size(); i++) {
+		if (fileName[i] == '?' || fileName[i] == '&') {
+			fileName = fileName.substr(0, i);
+			break;
+		}
+	}
+
+	return fileName;
+}
+
+std::string FilterToken(const std::string& ogToken)
+{
+	std::string newToken;
+	newToken.reserve(ogToken.size());
+
+	for (size_t i = 0; i < ogToken.size(); i++)
+	{
+		char chr = ogToken[i];
+		if ((chr >= '0' && chr <= '9') || (chr >= 'A' && chr <= 'Z') || (chr >= 'a' && chr <= 'z') || chr == '.' || chr == '_' || chr == '-')
+			newToken += chr;
+	}
+
+	return newToken;
 }

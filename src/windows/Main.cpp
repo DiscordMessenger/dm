@@ -27,9 +27,10 @@
 #include "ShellNotification.hpp"
 #include "InstanceMutex.hpp"
 #include "CrashDebugger.hpp"
-#include "../discord/LocalSettings.hpp"
-#include "../discord/WebsocketClient.hpp"
-#include "../discord/UpdateChecker.hpp"
+#include "MemberListOld.hpp"
+#include "config/LocalSettings.hpp"
+#include "network/WebsocketClient.hpp"
+#include "utils/UpdateChecker.hpp"
 
 #include <system_error>
 #include <shellapi.h>
@@ -57,6 +58,29 @@ IMemberList* g_pMemberList;
 IChannelView* g_pChannelView;
 MessageEditor* g_pMessageEditor;
 LoadingMessage* g_pLoadingMessage;
+
+bool g_bBlockDoubleBufferingForThisInstance = false;
+
+constexpr int MIN_MEMORY_TO_BLOCK_DOUBLE_BUFFERING = 128 * 1024 * 1024;
+
+bool ShouldBlockDoubleBuffering()
+{
+	return true;
+	static bool initialized = false;
+	if (initialized) {
+		return g_bBlockDoubleBufferingForThisInstance;
+	}
+
+	MEMORYSTATUS memoryStatus;
+	memoryStatus.dwLength = sizeof(memoryStatus);
+
+	GlobalMemoryStatus(&memoryStatus);
+
+	initialized = true;
+
+	// ARBITRARY: 128 MB limit.
+	g_bBlockDoubleBufferingForThisInstance = memoryStatus.dwAvailPhys < MIN_MEMORY_TO_BLOCK_DOUBLE_BUFFERING;
+}
 
 int GetProfilePictureSize()
 {
@@ -143,6 +167,7 @@ HICON    g_UploadIcon;
 HICON    g_DownloadIcon;
 HICON    g_ProfileBorderIcon;
 HICON    g_ProfileBorderIconGold;
+HICON    g_ProfileBorderIconUnread;
 HFONT
 	g_MessageTextFont,
 	g_AuthorTextFont,
@@ -656,6 +681,49 @@ LRESULT HandleCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (!isClipboardClosed) CloseClipboard();
 			break;
 		}
+		case IDA_PAGE_UP:
+		{
+			g_pMessageList->OnPageUp();
+			break;
+		}
+		case IDA_PAGE_DOWN:
+		{
+			g_pMessageList->OnPageDown();
+			break;
+		}
+		case IDA_SELECT_ALL:
+		{
+			g_pMessageEditor->SelectAll();
+			break;
+		}
+		case IDA_EDIT_LAST_MESSAGE:
+		{
+			g_pMessageList->EditLastMessage();
+			break;
+		}
+		case IDA_GUILD_0:
+		case IDA_GUILD_1:
+		case IDA_GUILD_2:
+		case IDA_GUILD_3:
+		case IDA_GUILD_4:
+		case IDA_GUILD_5:
+		case IDA_GUILD_6:
+		case IDA_GUILD_7:
+		case IDA_GUILD_8:
+		case IDA_GUILD_9:
+		{
+			int index = LOWORD(wParam) - IDA_GUILD_0;
+
+			std::vector<Snowflake> guildIDs;
+			guildIDs.push_back(0);
+			GetDiscordInstance()->GetGuildIDsOrdered(guildIDs, false);
+			
+			if (index < (int)guildIDs.size()) {
+				GetDiscordInstance()->OnSelectGuild(guildIDs[index]);
+			}
+
+			break;
+		}
 		case ID_NOTIFICATION_SHOW:
 			SendMessage(g_Hwnd, WM_RESTOREAPP, 0, 0);
 			break;
@@ -738,6 +806,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			Snowflake sf = *(Snowflake*) lParam;
 			g_pMessageList->OnUpdateEmoji(sf);
+			g_pGuildHeader->OnUpdateEmoji(sf);
 			PinList::OnUpdateEmoji(sf);
 			break;
 		}
@@ -829,6 +898,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_UPDATESELECTEDCHANNEL:
 		{
 			g_pMessageEditor->StopReply();
+			g_pMessageEditor->StopEdit();
+			g_pMessageEditor->StopBrowsingPast();
 			g_pMessageEditor->Layout();
 
 			Snowflake guildID = GetDiscordInstance()->GetCurrentGuildID();
@@ -875,11 +946,16 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				g_pStatusBar->AddTypingName(tu.second.m_key, tu.second.m_startTimeMS / 1000ULL, tu.second.m_name);
 			}
 
+			g_pMessageEditor->Focus();
 			break;
 		}
 		case WM_UPDATEMEMBERLIST:
 		{
-			g_pMemberList->SetGuild(GetDiscordInstance()->GetCurrentGuild()->m_snowflake);
+			Guild* pGuild = GetDiscordInstance()->GetCurrentGuild();
+			if (!pGuild)
+				break;
+
+			g_pMemberList->SetGuild(pGuild->m_snowflake);
 			g_pMemberList->Update();
 			break;
 		}
@@ -1063,6 +1139,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (GetQRCodeDialog()->GetGatewayID() == pParm->m_gatewayId)
 				GetQRCodeDialog()->HandleGatewayMessage(pParm->m_payload);
 
+			delete pParm;
 			break;
 		}
 		case WM_REFRESHMEMBERS:
@@ -1185,6 +1262,24 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pMessageEditor = MessageEditor::Create(hWnd, &rect);
 			g_pLoadingMessage = LoadingMessage::Create(hWnd, &rcLoading);
 
+			if (!g_pStatusBar || !g_pMessageList || !g_pProfileView || !g_pGuildHeader || !g_pMemberList || !g_pChannelView || !g_pMessageEditor || !g_pLoadingMessage)
+			{
+				char buffer[256];
+				GetWindowTextA(hWnd, buffer, sizeof buffer);
+				buffer[sizeof buffer - 1] = 0;
+
+				MessageBoxA(
+					hWnd,
+					"Discord Messenger could not create one or more GUI controls necessary for its operation.\r\n\r\n"
+					"This could be because you ran out of memory, or have too many windows open. Close some programs and try again.\r\n\r\n"
+					"Your computer might need to take a breather, too.",
+					buffer,
+					MB_ICONERROR | MB_OK
+				);
+				PostQuitMessage(0);
+				break;
+			}
+
 			SendMessage(hWnd, WM_LOGINAGAIN, 0, 0);
 			PostMessage(hWnd, WM_POSTINIT, 0, 0);
 			break;
@@ -1234,7 +1329,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					NetRequest::GET,
 					GetDiscordAPI() + "gateway",
 					DiscordRequest::GATEWAY,
-					0, "", GetDiscordToken()
+					0
 				);
 			}
 
@@ -1257,7 +1352,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_CLOSE:
 			CloseCleanup(hWnd);
 
-			if (GetLocalSettings()->GetMinimizeToNotif())
+			if (GetLocalSettings()->GetMinimizeToNotif() && LOBYTE(GetVersion()) >= 4)
 			{
 				GetFrontend()->HideWindow();
 				return 1;
@@ -1298,6 +1393,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_COMMAND:
 			return HandleCommand(hWnd, uMsg, wParam, lParam);
+
+		case WM_KILLFOCUS:
+			GetLocalSettings()->Save();
+			break;
 
 		case WM_DESTROY:
 		{
@@ -1561,18 +1660,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_IMAGESAVED:
 		{
 			LPCTSTR file = (LPCTSTR) lParam;
-			size_t sl = _tcslen(file);
-			bool isExe = false;
-
-			if (sl > 4 && (
-				_tcscmp(file + sl - 4, TEXT(".exe")) == 0 ||
-				_tcscmp(file + sl - 4, TEXT(".scr")) == 0 ||
-				_tcscmp(file + sl - 4, TEXT(".lnk")) == 0 ||
-				_tcscmp(file + sl - 4, TEXT(".zip")) == 0 ||
-				_tcscmp(file + sl - 4, TEXT(".rar")) == 0 ||
-				_tcscmp(file + sl - 4, TEXT(".7z"))  == 0)) {
-				isExe = true;
-			}
+			bool isExe = IsPotentiallyDangerousDownload(MakeStringFromTString(file));
 
 			TCHAR buff[4096];
 			WAsnprintf(
@@ -1604,7 +1692,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			auto& version = msg[1];
 			
 			TCHAR buff[2048];
-			LPTSTR tstr1 = ConvertCppStringToTString(GetAppVersionString());
+			LPTSTR tstr1 = ConvertCppStringToTString(std::string(GetAppVersionString()));
 			LPTSTR tstr2 = ConvertCppStringToTString(version);
 			WAsnprintf(buff, _countof(buff), TmGetTString(IDS_NEW_VERSION_AVAILABLE), tstr1, tstr2);
 			free(tstr1);
@@ -1673,6 +1761,7 @@ HFONT* g_FntMdStyleArray[FONT_TYPE_COUNT] = {
 	&g_FntMdHdrI, // 10
 	&g_FntMdHdr2, // 11
 	&g_FntMdHdrI2,// 12
+	&g_ReplyTextFont, // 13
 };
 
 void InitializeFonts()
@@ -1698,6 +1787,12 @@ void InitializeFonts()
 	if (haveFont) {
 		int h1 = -MulDiv(lf.lfHeight, 8, 3);
 		int h2 = MulDiv(h1, 4, 5);
+
+		if (LOBYTE(GetVersion()) <= 0x4)
+		{
+			h1 = MulDiv(lf.lfHeight, 6, 4);
+			h2 = MulDiv(lf.lfHeight, 5, 4);
+		}
 
 		// BOLD
 		lf.lfWeight = 700;
@@ -1827,7 +1922,6 @@ InstanceMutex g_instanceMutex;
 
 static bool ForceSingleInstance(LPCTSTR pClassName)
 {
-	return true;
 	HRESULT hResult = g_instanceMutex.Init();
 
 	if (hResult != ERROR_ALREADY_EXISTS)
@@ -1849,11 +1943,16 @@ static bool ForceSingleInstance(LPCTSTR pClassName)
 	return false;
 }
 
-#include "MemberListOld.hpp"
+// Blackwingcat's Extended Kernel workaround: Apparently, the custom user32.dll it uses tries
+// to write to the class name, which previously was part of .rodata, which is of course read-only.
+TCHAR g_className[64];
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nShowCmd)
 {
+	_tcscpy(g_className, TEXT("DiscordMessengerClass"));
+
 	g_hInstance = hInstance;
+	srand(time(NULL));
 
 	PrepareCutDownFlags(pCmdLine);
 
@@ -1865,13 +1964,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 #endif
 
 	ERR_load_crypto_strings();
-	LPCTSTR pClassName = TEXT("DiscordMessengerClass");
 
 	InitializeCOM(); // important because otherwise TTS/shell stuff might not work
 	InitCommonControls(); // actually a dummy but adds the needed reference to comctl32
 	// (see https://devblogs.microsoft.com/oldnewthing/20050718-16/?p=34913 )
 
-	if (!ForceSingleInstance(pClassName))
+	if (!ForceSingleInstance(g_className))
 		return 0;
 
 	CheckIfItsStartup(pCmdLine);
@@ -1907,6 +2005,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 		pSettings->SetMinimizeToNotif(false);
 	}
 
+	if (ShouldBlockDoubleBuffering())
+	{
+		// If the system has too little memory we probably don't
+		// want to risk it.
+		pSettings->SetUseDoubleBuffering(false);
+	}
+
 	SetUserScale(GetLocalSettings()->GetUserScale());
 
 	int wndWidth = 0, wndHeight = 0;
@@ -1919,16 +2024,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 	wc.lpfnWndProc   = WindowProc;
 	wc.hInstance     = hInstance;
-	wc.lpszClassName = pClassName;
+	wc.lpszClassName = g_className;
 	wc.hbrBackground = g_backgroundBrush;
 	wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
 	wc.hIcon         = g_Icon = LoadIcon(hInstance, MAKEINTRESOURCE(DMIC(IDI_ICON)));
 	wc.lpszMenuName  = MAKEINTRESOURCE(IDR_MAINMENU);
 
 	// NOTE: Despite that we pass LR_SHARED, if this "isn't a standard size" (whatever Microsoft means), we must still delete it!!
-	g_DefaultProfilePicture = (HBITMAP)ri::LoadImage(hInstance, MAKEINTRESOURCE(IDB_DEFAULT),                   IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
-	g_ProfileBorderIcon     = (HICON)  ri::LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER)),      IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
-	g_ProfileBorderIconGold = (HICON)  ri::LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER_GOLD)), IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+	g_DefaultProfilePicture   = (HBITMAP)ri::LoadImage(hInstance, MAKEINTRESOURCE(IDB_DEFAULT),                     IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+	g_ProfileBorderIcon       = (HICON)  ri::LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER)),        IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+	g_ProfileBorderIconGold   = (HICON)  ri::LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER_GOLD)),   IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
+	g_ProfileBorderIconUnread = (HICON)  ri::LoadImage(hInstance, MAKEINTRESOURCE(DMIC(IDI_PROFILE_BORDER_UNREAD)), IMAGE_ICON,   0, 0, LR_CREATEDIBSECTION | LR_SHARED);
 
 	g_defaultImage.Frames.resize(1);
 	g_defaultImage.Frames[0].Bitmap = g_DefaultProfilePicture;
@@ -1971,7 +2077,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	}
 
 	g_Hwnd = CreateWindow(
-		/* class */      TEXT("DiscordMessengerClass"),
+		/* class */      g_className,
 		/* title */      TmGetTString(IDS_PROGRAM_NAME),
 		/* style */      flags,
 		/* x pos */      CW_USEDEFAULT,
@@ -2038,6 +2144,19 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 					{
 						msg.hwnd = g_pMessageEditor->m_edit_hwnd;
 						SetFocus(msg.hwnd);
+					}
+					break;
+
+				case WM_KEYDOWN:
+					// Emulate a message for editing the last message to avoid
+					// a real accelerator capturing all up arrow input.
+					if (msg.wParam == VK_UP && msg.hwnd == g_pMessageEditor->m_edit_hwnd
+						&& GetWindowTextLength(g_pMessageEditor->m_edit_hwnd) == 0)
+					{
+						msg.hwnd = g_Hwnd;
+						msg.message = WM_COMMAND;
+						msg.lParam = 1;
+						msg.wParam = IDA_EDIT_LAST_MESSAGE;
 					}
 					break;
 			}

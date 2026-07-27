@@ -19,7 +19,7 @@
 #include <mutex>
 #endif
 
-#include "../discord/HTTPClient.hpp"
+#include "network/HTTPClient.hpp"
 
 struct NetworkResponse
 {

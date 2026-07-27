@@ -6,6 +6,7 @@
 #include <string>
 #include <cstring>
 #include <cassert>
+#include <cstdint>
 
 #ifndef _countof
 #define _countof(x) (sizeof(x) / sizeof(*(x)))

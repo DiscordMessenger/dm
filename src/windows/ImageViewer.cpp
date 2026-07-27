@@ -2,6 +2,7 @@
 #include "ImageLoader.hpp"
 #include "Main.hpp"
 #include "NetworkerThread.hpp"
+#include "../core/config/LocalSettings.hpp"
 
 #define DM_IMAGE_VIEWER_CLASS       TEXT("DMImageViewerClass")
 #define DM_IMAGE_VIEWER_CHILD_CLASS TEXT("DMImageViewerChildClass")
@@ -75,6 +76,11 @@ static bool ImageViewerNeedScrollBarsAtAll(int winWidth, int winHeight)
 static bool ImageViewerNeedScrollBars(int winWidth, int winHeight)
 {
 	return g_bChildZoomedIn && (g_ivWidth != winWidth || g_ivHeight != winHeight);
+}
+
+void ImageViewerRequestSave()
+{
+	DownloadFileDialog(g_ivHwnd, g_ProxyURL, g_FileName);
 }
 
 LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -229,6 +235,51 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 			WindowScrollXY(hWnd, diffLR, diffUD);
 			break;
 		}
+		case WM_RBUTTONUP:
+		{
+			if (!NT31SimplifiedInterface())
+				break;
+
+			// NT 3.1 doesn't implement WM_CONTEXTMENU, so send it ourselves
+			POINT pt;
+			pt.x = GET_X_LPARAM(lParam);
+			pt.y = GET_Y_LPARAM(lParam);
+			ClientToScreen(hWnd, &pt);
+
+			ImageViewerChildWndProc(hWnd, WM_CONTEXTMENU, (WPARAM)hWnd, MAKELPARAM(pt.x, pt.y));
+			break;
+		}
+		case WM_CONTEXTMENU:
+		{
+			int xPos = GET_X_LPARAM(lParam);
+			int yPos = GET_Y_LPARAM(lParam);
+
+			HMENU menu = GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_ATTACHMENT_CONTEXT)), 0);
+			TrackPopupMenu(menu, TPM_RIGHTBUTTON, xPos, yPos, 0, hWnd, NULL);
+			break;
+		}
+		case WM_COMMAND:
+		{
+			switch (LOWORD(wParam))
+			{
+				case ID_DUMMY_COPYIMAGE:
+				{
+					CopyImageToClipboard(g_hBitmapFull->Frames[0].Bitmap);
+					break;
+				}
+				case ID_DUMMY_SAVEIMAGE:
+				{
+					ImageViewerRequestSave();
+					break;
+				}
+				case ID_DUMMY_COPYIMAGELINK:
+				{
+					CopyStringToClipboard(g_ActualURL);
+					break;
+				}
+			}
+			break;
+		}
 		case WM_PAINT:
 		{
 			PAINTSTRUCT ps;
@@ -329,13 +380,8 @@ void ImageViewerOnLoad(NetRequest* pRequest)
 	g_hBitmapFull    = imFull;
 	g_hBitmapPreview = imPreview;
 
-	g_bChildZoomedIn = false;
+	g_bChildZoomedIn = !ImageViewerNeedScrollBarsAtAll(g_ivPreviewImageWidth, g_ivPreviewImageHeight);
 	SendMessage(g_ivChildHwnd, WM_UPDATEBITMAP, 0, 0);
-}
-
-void ImageViewerRequestSave()
-{
-	DownloadFileDialog(g_ivHwnd, g_ActualURL, g_FileName);
 }
 
 void ImageViewerOnLoadNT(NetRequest* pRequest)
@@ -462,13 +508,24 @@ bool RegisterImageViewerClass()
 	return RegisterClass(&wc2) != 0;
 }
 
+const char* trustedDiscordCdn = "https://cdn.discordapp.com/";
+
 void CreateImageViewer(const std::string& proxyURL, const std::string& url, const std::string& fileName, int width, int height)
 {
+	DbgPrintW("Image viewer:");
+	DbgPrintW("Orig. URL: %s", url.c_str());
+	DbgPrintW("Proxy URL: %s", proxyURL.c_str());
+
 	// Kill it if present:
 	KillImageViewer();
 
-	g_ProxyURL  = proxyURL;
+	// just use the normal URL if it's from cdn.discordapp.com (as opposed to the other
+	// CDN which jpeg-ifies images (I know it's webp but still loses lots of quality))
+	std::string trustedDiscordCdn = GetLocalSettings()->GetDiscordCDN();
+	const char* trustedDiscordCdnChr = trustedDiscordCdn.c_str();
+	bool useUrlAsProxyUrl = strncmp(url.c_str(), trustedDiscordCdnChr, strlen(trustedDiscordCdnChr)) == 0;
 	g_FileName  = fileName;
+	g_ProxyURL  = useUrlAsProxyUrl ? url : proxyURL;
 	g_ActualURL = url;
 
 	LPCTSTR tstr = ConvertCppStringToTString(fileName);
@@ -477,8 +534,8 @@ void CreateImageViewer(const std::string& proxyURL, const std::string& url, cons
 	int scrollBarHeight = GetSystemMetrics(SM_CYHSCROLL);
 	int wWidth  = width;
 	int wHeight = height;
-	int screenWidth  = GetSystemMetrics(SM_CXSCREEN);
-	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+	int screenWidth  = 1024;//GetSystemMetrics(SM_CXSCREEN);
+	int screenHeight = 768;// GetSystemMetrics(SM_CYSCREEN);
 	int maxWidth  = screenWidth  - 200;
 	int maxHeight = screenHeight - 200 - IBOTTOM_BAR_HEIGHT;
 
@@ -490,20 +547,12 @@ void CreateImageViewer(const std::string& proxyURL, const std::string& url, cons
 	int iWidth  = wWidth;
 	int iHeight = wHeight;
 
-	// Ensure aspect ratio preservation while keeping scale down
-	if (wWidth > maxWidth)
-	{
-		iHeight = iHeight * maxWidth / iWidth;
-		iWidth = maxWidth;
-		wWidth = maxWidth;
-	}
-
-	if (wHeight > maxHeight)
-	{
-		iWidth = iWidth * maxHeight / iHeight;
-		wHeight = maxHeight;
-		iHeight = maxHeight;
-	}
+	// Try to fit the preview inside the max width and height.
+	float ratio = std::min(1.0f * maxWidth / std::max(1, wWidth), 1.0f * maxHeight / std::max(1, wHeight));
+	iWidth = std::min(width, int(iWidth * ratio));
+	iHeight = std::min(height, int(iHeight * ratio));
+	wWidth = std::min(maxWidth, width);
+	wHeight = std::min(maxHeight, height);
 
 	bool addScrollBars = wWidth != width || wHeight != height;
 
@@ -614,4 +663,9 @@ void CreateImageViewer(const std::string& proxyURL, const std::string& url, cons
 
 	ShowWindow(g_ivHwnd, SW_SHOW);
 	UpdateWindow(g_ivHwnd);
+}
+
+bool IsImageViewerFocused()
+{
+	return GetForegroundWindow() == g_ivHwnd && !IsIconic(g_ivHwnd);
 }

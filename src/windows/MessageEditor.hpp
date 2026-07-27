@@ -66,6 +66,8 @@ public:
 	void StopBrowsingPast();
 	void Layout();
 	void OnLoadedMemberChunk();
+	void Focus();
+	void SelectAll();
 
 	Snowflake ReplyingTo() const {
 		return m_replyMessage;

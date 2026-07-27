@@ -7,14 +7,10 @@
 #include "ImageViewer.hpp"
 #include "UploadDialog.hpp"
 #include "ImageLoader.hpp"
-#include "../discord/LocalSettings.hpp"
+#include "DoubleBufferingHelper.hpp"
+#include "config/LocalSettings.hpp"
 
 #define STRAVAILABLE(str) ((str) && (str)[0] != 0)
-
-// N.B. WINVER<=0x0500 doesn't define it. We'll force it
-#ifndef IDC_HAND
-#define IDC_HAND            MAKEINTRESOURCE(32649)
-#endif//IDC_HAND
 
 #define NEW_MARKER_COLOR RGB(255,0,0)
 
@@ -64,6 +60,15 @@ static const int g_WelcomeTextCount = _countof(g_WelcomeTextIds);
 MessageList::MessageList()
 {
 	m_defaultBackgroundBrush = ri::GetSysColorBrush(COLOR_WINDOW);
+
+	// This ugly hack allows me to calculate the offset between GMT and
+	// local time.  This is used when calculating date gaps.
+	time_t t1 = 10000000;
+	struct tm stm;
+	stm = *gmtime(&t1);
+	time_t t2 = mktime(&stm);
+
+	m_tzOffset = t1 - t2;
 }
 
 MessageList::~MessageList()
@@ -499,8 +504,16 @@ void MessageItem::Update(Snowflake guildID)
 	bool isAction = MessageList::IsActionMessage(m_msg->m_type);
 
 	Clear();
+	m_msg->UpdateTimestamp();
+
+	m_bIsBlockedMessage = GetDiscordInstance()->IsUserBlocked(m_msg->m_author_snowflake);
+	std::string blockedSuffix = m_bIsBlockedMessage ? " [blocked]" : "";
+
+	if (GetLocalSettings()->ShowBlockedMessages())
+		m_bIsBlockedMessage = false;
+
 	m_bNeedUpdate = false;
-	m_author = ConvertCppStringToTString(m_msg->m_author);
+	m_author = ConvertCppStringToTString(m_msg->m_author + blockedSuffix);
 	m_date = ConvertCppStringToTString(isCompact ? m_msg->m_dateCompact : m_msg->m_dateFull);
 	m_dateEdited = ConvertCppStringToTString(isCompact ? m_msg->m_editedTextCompact : m_msg->m_editedText);
 
@@ -515,13 +528,16 @@ void MessageItem::Update(Snowflake guildID)
 		m_replyAuth = ConvertCppStringToTString(authorStr);
 	}
 
-	m_bWasMentioned = m_msg->CheckWasMentioned(GetDiscordInstance()->GetUserID(), guildID);
+	m_bWasMentioned = !m_bIsBlockedMessage && m_msg->CheckWasMentioned(GetDiscordInstance()->GetUserID(), guildID);
 
-	size_t sz = m_msg->m_attachments.size();
+	size_t attachmentCount = m_msg->m_attachments.size();
+	if (m_bIsBlockedMessage)
+		attachmentCount = 0;
+
 	m_attachmentData.clear();
-	m_attachmentData.resize(sz);
+	m_attachmentData.resize(attachmentCount);
 
-	for (size_t i = 0; i < sz; i++)
+	for (size_t i = 0; i < attachmentCount; i++)
 	{
 		auto& item = m_attachmentData[i];
 		item.m_pAttachment = &m_msg->m_attachments[i];
@@ -534,9 +550,13 @@ void MessageItem::Update(Snowflake guildID)
 	{
 		if (m_message.Empty())
 		{
-			if (m_msg->m_bIsForward)
+			std::string data = m_msg->m_message;
+			if (m_bIsBlockedMessage)
 			{
-				std::string data = m_msg->m_message;
+				data = "*[Blocked message]*";
+			}
+			else if (m_msg->m_bIsForward)
+			{
 				if (!data.empty())
 					data += "\n\n";
 
@@ -567,77 +587,12 @@ void MessageItem::Update(Snowflake guildID)
 				data += "**Forwarded:**\n" + std::string(1, char(0x1F));
 				data += m_msg->m_pReferencedMessage->m_message + "\n" + std::string(1, char(0x1E));
 				data += "*" + server + date + jumptomessage + "*";
+			}
 
-				m_message.SetMessage(data);
-			}
-			else
-			{
-				m_message.SetMessage(m_msg->m_message);
-			}
+			m_message.SetMessage(data);
 		}
 
-		auto& words = m_message.GetWords();
-		for (size_t i = 0; i < words.size(); i++) {
-			Word& word = words[i];
-			bool isLink = word.m_flags & WORD_LINK;
-			bool isMent = word.m_flags & WORD_MENTION;
-			bool isTime = word.m_flags & WORD_TIMESTAMP;
-
-			InteractableItem item;
-			/**/ if (isLink) item.m_type = InteractableItem::LINK;
-			else if (isMent) item.m_type = InteractableItem::MENTION;
-			else if (isTime) item.m_type = InteractableItem::TIMESTAMP;
-
-			if (item.m_type == InteractableItem::NONE)
-				continue;
-
-			item.m_wordIndex = i;
-			item.m_text = word.GetContentOverride();
-			item.m_destination = word.m_content;
-
-			bool changed = false;
-			if (isMent && !word.m_content.empty())
-			{
-				char mentType = word.m_content[0];
-
-				if (mentType == '#')
-				{
-					std::string mentDest = word.m_content.substr(1);
-					Snowflake sf = (Snowflake)GetIntFromString(mentDest);
-					item.m_text = "#" + GetDiscordInstance()->LookupChannelNameGlobally(sf);
-					item.m_affected = sf;
-					changed = true;
-				}
-				else
-				{
-					bool isRole = false;
-					bool hasExclam = false;
-					if (word.m_content.size() > 2) {
-						if (word.m_content[1] == '&')
-							isRole = true;
-
-						// not totally sure what this does. I only know that certain things use it
-						if (word.m_content[1] == '!')
-							hasExclam = true;
-					}
-
-					std::string mentDest = word.m_content.substr((isRole || hasExclam) ? 2 : 1);
-					Snowflake sf = (Snowflake)GetIntFromString(mentDest);
-					item.m_affected = sf;
-
-					if (isRole)
-						item.m_text = "@" + GetDiscordInstance()->LookupRoleName(sf, guildID);
-					else
-						item.m_text = "@" + GetDiscordInstance()->LookupUserNameGlobally(sf, guildID);
-					changed = true;
-				}
-			}
-
-			if (changed)
-				word.SetContentOverride(item.m_text);
-
-			m_interactableData.push_back(item);
-		}
+		GetDiscordInstance()->ResolveLinks(&m_message, m_interactableData, guildID);
 	}
 	else
 	{
@@ -648,6 +603,13 @@ void MessageItem::Update(Snowflake guildID)
 		ii.m_wordIndex = 1;
 		m_interactableData.clear();
 		m_interactableData.push_back(ii);
+	}
+
+	if (m_bIsBlockedMessage) {
+		m_embedData.clear();
+		SAFE_DELETE(m_pRepliedMessage);
+		SAFE_DELETE(m_pMessagePollData);
+		return;
 	}
 
 	m_embedData.clear();
@@ -669,18 +631,16 @@ void MessageItem::Update(Snowflake guildID)
 			if (item.m_pEmbed->m_bHasThumbnail) {
 				ii.m_imageWidth  = item.m_pEmbed->m_thumbnailWidth;
 				ii.m_imageHeight = item.m_pEmbed->m_thumbnailHeight;
+				ii.m_destination = item.m_pEmbed->m_thumbnailUrl;
+				ii.m_proxyDest   = item.m_pEmbed->m_thumbnailProxiedUrl;
+				ii.m_resourceID  = GetAvatarCache()->MakeIdentifier(item.m_pEmbed->m_thumbnailUrl);
 			}
 			else {
 				ii.m_imageWidth  = item.m_pEmbed->m_imageWidth;
 				ii.m_imageHeight = item.m_pEmbed->m_imageHeight;
-			}
-			if (item.m_pEmbed->m_bHasImage) {
 				ii.m_destination = item.m_pEmbed->m_imageUrl;
 				ii.m_proxyDest   = item.m_pEmbed->m_imageProxiedUrl;
-			}
-			else {
-				ii.m_destination = item.m_pEmbed->m_thumbnailUrl;
-				ii.m_proxyDest   = item.m_pEmbed->m_thumbnailProxiedUrl;
+				ii.m_resourceID  = GetAvatarCache()->MakeIdentifier(item.m_pEmbed->m_imageUrl);
 			}
 			ii.m_wordIndex = i + (size_t)InteractableItem::EMBED_OFFSET;
 			m_interactableData.push_back(ii);
@@ -715,6 +675,24 @@ void MessageItem::Update(Snowflake guildID)
 
 		m_pMessagePollData = new MessagePollData(m_msg->m_pMessagePoll);
 		m_pMessagePollData->Update();
+	}
+
+	if (m_msg->IsReply() && !MessageList::IsActionMessage(m_msg->m_type))
+	{
+		if (!m_pRepliedMessage)
+			m_pRepliedMessage = new	FormattedText();
+
+		m_pRepliedMessage->Clear();
+		m_pRepliedMessage->SetDefaultStyle(WORD_ITALIC | WORD_SMALLER);
+		m_pRepliedMessage->SetAllowBiggerText(false);
+		m_pRepliedMessage->SetMessage(m_msg->m_pReferencedMessage->m_message);
+
+		std::vector<InteractableItem> interactables;
+		GetDiscordInstance()->ResolveLinks(m_pRepliedMessage, interactables);
+	}
+	else if (m_pRepliedMessage)
+	{
+		SAFE_DELETE(m_pRepliedMessage);
 	}
 }
 
@@ -753,7 +731,7 @@ void MessageItem::ShiftUp(int amount)
 	}
 
 	for (auto& itd : m_interactableData) {
-		ShiftUpRect(itd.m_rect, amount);
+		ShiftUpDRect(itd.m_rect, amount);
 	}
 
 	for (auto& emb : m_embedData) {
@@ -1216,7 +1194,7 @@ void MessageList::ProperlyResizeSubWindows()
 
 bool MessageList::MayErase()
 {
-	return GetLocalSettings()->GetMessageStyle() != MS_IMAGE;
+	return !ShouldUseDoubleBuffering();
 }
 
 void MessageList::HitTestReply(POINT pt, BOOL& hit)
@@ -1339,8 +1317,10 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 				for (auto& x : msg2->m_interactableData) {
 					if (x.m_bHighlighted) {
 						x.m_bHighlighted = false;
-						if (x.ShouldInvalidateOnHover())
-							InvalidateRect(m_hwnd, &x.m_rect, FALSE);
+						if (x.ShouldInvalidateOnHover()) {
+							RECT rc = RectToNative(x.m_rect);
+							InvalidateRect(m_hwnd, &rc, FALSE);
+						}
 					}
 				}
 			}
@@ -1356,7 +1336,8 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 	{
 		InteractableItem* pData = &msg->m_interactableData[i];
 
-		if (PtInRect(&pData->m_rect, pt)) {
+		RECT rect = RectToNative(pData->m_rect);
+		if (PtInRect(&rect, pt)) {
 			pItem = pData;
 			break;
 		}
@@ -1376,8 +1357,10 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 		InteractableItem* pData = &msg->m_interactableData[i];
 		if (pData->m_wordIndex == m_highlightedInteractable) {
 			pData->m_bHighlighted = false;
-			if (pData->ShouldInvalidateOnHover())
-				InvalidateRect(m_hwnd, &pData->m_rect, FALSE);
+			if (pData->ShouldInvalidateOnHover()) {
+				RECT rect = RectToNative(pData->m_rect);
+				InvalidateRect(m_hwnd, &rect, FALSE);
+			}
 			break;
 		}
 	}
@@ -1385,8 +1368,10 @@ void MessageList::HitTestInteractables(POINT pt, BOOL& hit)
 	m_highlightedInteractable = pItem->m_wordIndex;
 	m_highlightedInteractableMessage = msg->m_msg->m_snowflake;
 	pItem->m_bHighlighted = true;
-	if (pItem->ShouldInvalidateOnHover())
-		InvalidateRect(m_hwnd, &pItem->m_rect, FALSE);
+	if (pItem->ShouldInvalidateOnHover()) {
+		RECT rect = RectToNative(pItem->m_rect);
+		InvalidateRect(m_hwnd, &rect, FALSE);
+	}
 
 	DbgPrintW("Hand!  Interactable IDX: %zu   Message ID: %lld", pItem->m_wordIndex, msg->m_msg->m_snowflake);
 }
@@ -1439,13 +1424,7 @@ void MessageList::OpenInteractable(InteractableItem* pItem, MessageItem* pMsg)
 		case InteractableItem::EMBED_IMAGE: {
 			std::string url = pItem->m_destination;
 			std::string proxyUrl = pItem->m_proxyDest;
-			std::string fileName = url;
-			for (size_t i = fileName.size(); i != 0; i--) {
-				if (fileName[i] == '/') {
-					fileName = fileName.substr(i + 1);
-					break;
-				}
-			}
+			std::string fileName = ExtractFileNameFromURL(url);
 			CreateImageViewer(
 				proxyUrl,
 				url,
@@ -2049,7 +2028,8 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 	const int offset3 = isCompact ? iconSize : 0;
 
 	if (isCompact) {
-		HRGN rgn = CreateRectRgn(
+		HRGN rgn = DoubleBufferingHelper::CreateRectRgn(
+			hdc,
 			rcReply.left + iconOffset,
 			rcReply.bottom + ScaleByDPI(5) - iconSize,
 			rcReply.left + iconOffset + offset2 + offset3 - ScaleByDPI(20),
@@ -2115,7 +2095,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 		nameClr = InvertIfNeeded(GetSysColor(COLOR_WINDOWTEXT));
 
 	LPCTSTR strPart1 = TEXT("");
-	LPCTSTR strPart2 = item.m_replyMsg;
+	LPCTSTR strPart2 = NULL;
 	LPCTSTR strPart3 = NULL;
 	LPCTSTR strClick = NULL;
 	LPTSTR  strFreed = NULL;
@@ -2202,6 +2182,23 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 		DrawText(hdc, strPart3, -1, &rcMeasure, DT_NOPREFIX | DT_SINGLELINE | ri::GetWordEllipsisFlag() | DT_CALCRECT);
 		DrawText(hdc, strPart3, -1, &rcReply,   DT_NOPREFIX | DT_SINGLELINE | ri::GetWordEllipsisFlag());
 		rcReply.left += rcMeasure.right - rcMeasure.left;
+	}
+
+	if (!isActionMessage && item.m_pRepliedMessage)
+	{
+		if (item.m_pRepliedMessage->GetRawMessage() != item.m_msg->m_pReferencedMessage->m_message) {
+			item.m_pRepliedMessage->Clear();
+			item.m_pRepliedMessage->SetDefaultStyle(WORD_ITALIC | WORD_SMALLER);
+			item.m_pRepliedMessage->SetAllowBiggerText(false);
+			item.m_pRepliedMessage->SetMessage(item.m_msg->m_pReferencedMessage->m_message);
+
+			std::vector<InteractableItem> interactables;
+			GetDiscordInstance()->ResolveLinks(item.m_pRepliedMessage, interactables);
+		}
+
+		DrawingContext dc(hdc);
+		item.m_pRepliedMessage->Layout(&dc, Rect(W32RECT(rcReply)));
+		item.m_pRepliedMessage->DrawConfined(&dc, Rect(W32RECT(rcReply)));
 	}
 						
 	SetTextColor(hdc, old);
@@ -2680,13 +2677,13 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			}
 			else {
 				iitem.m_type = InteractableItem::NONE;
-				SetRectEmpty(&iitem.m_rect);
+				iitem.m_rect.SetEmpty();
 			}
 
 			RECT rcClickable = rca;
 			rcClickable.right = rcClickable.left + sizeClick;
 			rca.left += sizeClick;
-			iitem.m_rect = rcClickable;
+			iitem.m_rect = Rect(W32RECT(rcClickable));
 
 			if (inView) {
 				HGDIOBJ objold = SelectObject(hdc, g_AuthorTextFont);
@@ -2745,7 +2742,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			if (!iitem.TypeUpdatedFromWords())
 				continue;
 			const Word& word = words[iitem.m_wordIndex];
-			iitem.m_rect = RectToNative(word.m_rect);
+			iitem.m_rect = word.m_rect;
 			iitem.m_rect.top += offsetY;
 			iitem.m_rect.bottom += offsetY;
 		}
@@ -2878,16 +2875,16 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 				continue;
 			if (ii.m_type == InteractableItem::EMBED_LINK) {
 				switch (ii.m_placeInEmbed) {
-					case EMBED_IN_TITLE:    ii.m_rect = eitem.m_titleRect;    break;
-					case EMBED_IN_AUTHOR:   ii.m_rect = eitem.m_authorRect;   break;
-					case EMBED_IN_PROVIDER: ii.m_rect = eitem.m_providerRect; break;
+					case EMBED_IN_TITLE:    ii.m_rect = Rect(W32RECT(eitem.m_titleRect));    break;
+					case EMBED_IN_AUTHOR:   ii.m_rect = Rect(W32RECT(eitem.m_authorRect));   break;
+					case EMBED_IN_PROVIDER: ii.m_rect = Rect(W32RECT(eitem.m_providerRect)); break;
 				}
 			}
 			if ((eitem.m_pEmbed->m_bHasImage || eitem.m_pEmbed->m_bHasThumbnail) && ii.m_type == InteractableItem::EMBED_IMAGE) {
 				if (eitem.m_pEmbed->m_bHasImage)
-					ii.m_rect = eitem.m_imageRect;
+					ii.m_rect = Rect(W32RECT(eitem.m_imageRect));
 				else
-					ii.m_rect = eitem.m_thumbnailRect;
+					ii.m_rect = Rect(W32RECT(eitem.m_thumbnailRect));
 			}
 		}
 
@@ -3005,8 +3002,15 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 void MessageList::PaintBackground(HDC hdc, RECT& paintRect, RECT& rcClient)
 {
-	if (GetLocalSettings()->GetMessageStyle() != MS_IMAGE)
+	if (!ShouldUseDoubleBuffering())
 		return;
+
+	if (GetLocalSettings()->GetMessageStyle() != MS_IMAGE)
+	{
+		HBRUSH hbr = (HBRUSH) GetClassLongPtr(m_hwnd, GCLP_HBRBACKGROUND);
+		FillRect(hdc, &paintRect, hbr);
+		return;
+	}
 
 	if (!m_backgroundBrush)
 		return;
@@ -3053,6 +3057,47 @@ void MessageList::PaintBackground(HDC hdc, RECT& paintRect, RECT& rcClient)
 
 		DrawBitmap(hdc, m_backgroundImage, x, y, NULL, CLR_NONE, 0, 0, m_bBackgroundHasAlpha);
 	}
+}
+
+bool MessageList::IsMessageVisible(Snowflake sf)
+{
+	// TODO: deduplicate this.  Part of this is also in Paint()
+	RECT rect = {};
+	GetClientRect(m_hwnd, &rect);
+	int windowHeight = rect.bottom - rect.top;
+	int ScrollHeight = 0;
+	SCROLLINFO si;
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_POS | SIF_RANGE;
+	ri::GetScrollInfo(m_hwnd, SB_VERT, &si);
+	ScrollHeight = si.nPos;
+
+	RECT msgRect = rect;
+	msgRect.top -= ScrollHeight;
+
+	if (m_total_height < windowHeight && !m_bIsTopDown) {
+		msgRect.top += windowHeight - m_total_height;
+	}
+
+	msgRect.bottom = msgRect.top;
+
+	for (std::list<MessageItem>::iterator iter = m_messages.begin();
+		iter != m_messages.end();
+		++iter)
+	{
+		bool isActionMessage = IsActionMessage(iter->m_msg->m_type);
+		bool needUpdate = false;
+
+		msgRect.bottom = msgRect.top + iter->m_height;
+		iter->m_rect = msgRect;
+
+		bool bDraw = msgRect.top <= rect.bottom && msgRect.bottom > rect.top;
+
+		if (iter->m_msg->m_snowflake == sf)
+			return bDraw;
+	}
+
+	return false;
 }
 
 void MessageList::Paint(HDC hdc, RECT& paintRect)
@@ -3198,7 +3243,7 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 			}
 
 			for (auto& inter : iter->m_interactableData)
-				SetRectEmpty(&inter.m_rect);
+				inter.m_rect.SetEmpty();
 		}
 
 		msgRect.top = msgRect.bottom;
@@ -3230,24 +3275,51 @@ void MessageList::HandleRightClickMenuCommand(int command)
 	// of other things.
 	MessageItem* pMsg = NULL;
 	Snowflake rightClickedMessage = m_rightClickedMessage;
+	m_rightClickedMessage = 0;
+
+	for (auto iter = m_messages.rbegin(); iter != m_messages.rend() && !pMsg; ++iter)
+	{
+		if (iter->m_msg->m_snowflake == rightClickedMessage)
+			pMsg = &(*iter);
+	}
+
+	if (!pMsg) return;
+
+	switch (command)
+	{
+		default:
+			HandleRightClickMenuCommandMessage(command, pMsg);
+			break;
+
+		case ID_DUMMYPOPUP_COPYLINK:
+		case ID_DUMMYPOPUP_COPYPROXYLINK:
+		case ID_DUMMYPOPUP_OPENLINK:
+		case ID_DUMMYPOPUP_OPENPROXYLINK:
+		case ID_DUMMYPOPUP_COPYIMAGE:
+		case ID_DUMMYPOPUP_SAVEIMAGE:
+			HandleRightClickMenuCommandInteractable(command, pMsg);
+			break;
+	}
+
+	m_rightClickedInteractableIndex = SIZE_MAX;
+	m_rightClickedAttachmentIndex = SIZE_MAX;
+}
+
+void MessageList::HandleRightClickMenuCommandMessage(int command, MessageItem* pMsg)
+{
 	Snowflake messageBeforeRightClickedMessage = 0;
+	Snowflake rightClickedMessage = pMsg->m_msg->m_snowflake;
 
 	for (auto iter = m_messages.rbegin(); iter != m_messages.rend(); ++iter)
 	{
-		if (iter->m_msg->m_snowflake == m_rightClickedMessage)
+		if (iter->m_msg->m_snowflake == pMsg->m_msg->m_snowflake)
 		{
-			pMsg = &(*iter);
-
 			++iter;
 			if (iter != m_messages.rend())
 				messageBeforeRightClickedMessage = iter->m_msg->m_snowflake;
 			break;
 		}
 	}
-
-	m_rightClickedMessage = 0;
-
-	if (!pMsg) return;
 
 	switch (command)
 	{
@@ -3276,6 +3348,13 @@ void MessageList::HandleRightClickMenuCommand(int command)
 		}
 		case ID_DUMMYPOPUP_EDITMESSAGE:
 		{
+			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			if (!pChan)
+				break;
+
+			if (!pChan->HasPermission(PERM_SEND_MESSAGES))
+				break;
+
 			SendMessage(g_Hwnd, WM_STARTEDITING, 0, (LPARAM) &rightClickedMessage);
 			break;
 		}
@@ -3286,7 +3365,7 @@ void MessageList::HandleRightClickMenuCommand(int command)
 		}
 		case ID_DUMMYPOPUP_COPYID:
 		{
-			std::string msgID = std::to_string(rightClickedMessage);
+			std::string msgID = std::to_string(pMsg->m_msg->m_snowflake);
 			CopyStringToClipboard(msgID);
 			break;
 		}
@@ -3297,7 +3376,7 @@ void MessageList::HandleRightClickMenuCommand(int command)
 			LPCTSTR xstr = ConvertCppStringToTString(buffer);
 			if (MessageBox(g_Hwnd, xstr, TmGetTString(IDS_CONFIRM_DELETE_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES)
 			{
-				GetDiscordInstance()->RequestDeleteMessage(m_channelID, rightClickedMessage);
+				GetDiscordInstance()->RequestDeleteMessage(m_channelID, pMsg->m_msg->m_snowflake);
 			}
 
 			free((void*)xstr);
@@ -3305,6 +3384,13 @@ void MessageList::HandleRightClickMenuCommand(int command)
 		}
 		case ID_DUMMYPOPUP_REPLY:
 		{
+			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			if (!pChan)
+				break;
+
+			if (!pChan->HasPermission(PERM_SEND_MESSAGES))
+				break;
+
 			Snowflake sf[2];
 			sf[0] = pMsg->m_msg->m_snowflake;
 			sf[1] = pMsg->m_msg->m_author_snowflake;
@@ -3317,6 +3403,12 @@ void MessageList::HandleRightClickMenuCommand(int command)
 			if (!pChan)
 				break;
 
+			if (!pChan->HasPermission(PERM_MANAGE_MESSAGES))
+				break;
+			
+			if (IsActionMessage(pMsg->m_msg->m_type))
+				break;
+
 			static char buffer[8192];
 			snprintf(buffer, sizeof buffer, TmGetString(IDS_CONFIRM_PIN).c_str(), pChan->m_name.c_str(), pMsg->m_msg->m_author.c_str(), pMsg->m_msg->m_dateFull.c_str(), pMsg->m_msg->m_message.c_str());
 
@@ -3324,7 +3416,32 @@ void MessageList::HandleRightClickMenuCommand(int command)
 
 			if (MessageBox(g_Hwnd, xstr, TmGetTString(IDS_CONFIRM_PIN_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES)
 			{
-				// TODO
+				GetDiscordInstance()->RequestPinMessage(m_channelID, rightClickedMessage);
+			}
+
+			free((void*)xstr);
+			break;
+		}
+		case ID_DUMMYPOPUP_UNPINMESSAGE:
+		{
+			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			if (!pChan)
+				break;
+
+			if (!pChan->HasPermission(PERM_MANAGE_MESSAGES))
+				break;
+			
+			if (IsActionMessage(pMsg->m_msg->m_type))
+				break;
+
+			static char buffer[8192];
+			snprintf(buffer, sizeof buffer, TmGetString(IDS_CONFIRM_UNPIN).c_str(), pMsg->m_msg->m_author.c_str(), pMsg->m_msg->m_dateFull.c_str(), pMsg->m_msg->m_message.c_str());
+
+			LPCTSTR xstr = ConvertCppStringToTString(buffer);
+
+			if (MessageBox(g_Hwnd, xstr, TmGetTString(IDS_CONFIRM_UNPIN_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES)
+			{
+				GetDiscordInstance()->RequestUnpinMessage(m_channelID, rightClickedMessage);
 			}
 
 			free((void*)xstr);
@@ -3344,6 +3461,153 @@ void MessageList::HandleRightClickMenuCommand(int command)
 			break;
 		}
 	}
+}
+
+void MessageList::HandleRightClickMenuCommandInteractable(int command, MessageItem* pMsg)
+{
+	std::string destination, proxyDest, resourceID;
+	if (m_rightClickedInteractableIndex != SIZE_MAX) {
+		auto& interactable = pMsg->m_interactableData[m_rightClickedInteractableIndex];
+		destination = interactable.m_destination;
+		proxyDest   = interactable.m_proxyDest;
+		resourceID  = interactable.m_resourceID;
+	}
+	else if (m_rightClickedAttachmentIndex != SIZE_MAX) {
+		auto& attachment = pMsg->m_attachmentData[m_rightClickedAttachmentIndex];
+		destination = attachment.m_pAttachment->m_actualUrl;
+		proxyDest   = attachment.m_pAttachment->m_proxyUrl;
+		resourceID  = attachment.m_resourceID;
+	}
+	else {
+		return;
+	}
+
+	switch (command)
+	{
+		case ID_DUMMYPOPUP_COPYLINK:
+		{
+			CopyStringToClipboard(destination);
+			break;
+		}
+		case ID_DUMMYPOPUP_COPYPROXYLINK:
+		{
+			CopyStringToClipboard(proxyDest);
+			break;
+		}
+		case ID_DUMMYPOPUP_OPENLINK:
+		{
+			ConfirmOpenLink(destination);
+			break;
+		}
+		case ID_DUMMYPOPUP_OPENPROXYLINK:
+		{
+			ConfirmOpenLink(proxyDest);
+			break;
+		}
+		case ID_DUMMYPOPUP_COPYIMAGE:
+		{
+			bool hasAlpha = false;
+			if (resourceID.empty()) {
+				DbgPrintW("Copy Image: Resource ID empty!");
+				break;
+			}
+
+			HImage* him = GetAvatarCache()->GetImageNullable(resourceID, hasAlpha);
+
+			if (!him) {
+				DbgPrintW("Copy Image: No image loaded!");
+				break;
+			}
+
+			CopyImageToClipboard(him->Frames[0].Bitmap);
+			break;
+		}
+		case ID_DUMMYPOPUP_SAVEIMAGE:
+		{
+			DownloadFileDialog(GetParent(m_hwnd), proxyDest, ExtractFileNameFromURL(destination));
+			break;
+		}
+	}
+}
+
+bool MessageList::ShouldUseDoubleBuffering()
+{
+	return GetLocalSettings()->UseDoubleBuffering() || GetLocalSettings()->GetMessageStyle() == MS_IMAGE;
+}
+
+HMENU MessageList::GetMenuForAttachment(MessageItem* pRCMsg, size_t index)
+{
+	auto& attachment = pRCMsg->m_attachmentData[index];
+	if (attachment.m_pAttachment->IsImage())
+		return GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_IMAGE_CONTEXT)), 0);
+	else
+		return GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_LINK_CONTEXT)), 0);
+}
+
+HMENU MessageList::GetMenuForInteractable(MessageItem* pRCMsg, size_t index)
+{
+	auto& interactable = pRCMsg->m_interactableData[index];
+	HMENU menu = NULL;
+
+	switch (interactable.m_type)
+	{
+		case InteractableItem::LINK:
+		case InteractableItem::EMBED_LINK:
+			menu = GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_LINK_CONTEXT)), 0);
+			break;
+		case InteractableItem::EMBED_IMAGE:
+			menu = GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_IMAGE_CONTEXT)), 0);
+			break;
+	}
+
+	return menu;
+}
+
+HMENU MessageList::GetMenuForMessage(MessageItem* pRCMsg)
+{
+	HMENU menu = GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_MESSAGE_CONTEXT)), 0);
+
+	// disable the Delete button if we're not the user
+	Profile* ourPf = GetDiscordInstance()->GetProfile();
+	Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+
+	if (!pChan) return NULL;
+
+	bool isThisMyMessage   = pRCMsg->m_msg->m_author_snowflake == ourPf->m_snowflake;
+	bool mayManageMessages = pChan->HasPermission(PERM_MANAGE_MESSAGES);
+	bool maySendMessages = pChan->HasPermission(PERM_SEND_MESSAGES);
+	bool isActionMessage = IsActionMessage(pRCMsg->m_msg->m_type) || IsClientSideMessage(pRCMsg->m_msg->m_type);
+	bool isForward = pRCMsg->m_msg->m_bIsForward;
+	bool isPinned = pRCMsg->m_msg->m_bIsPinned;
+	bool isDM = pChan->IsDM();
+
+	bool mayCopy   = !isForward && !isActionMessage;
+	bool mayDelete = isThisMyMessage || (mayManageMessages && !isDM);
+	bool mayEdit   = isThisMyMessage && !isForward && !isActionMessage && maySendMessages;
+	bool mayPin    = mayManageMessages && !isPinned && !isActionMessage;
+	bool mayUnpin  = mayManageMessages && isPinned && !isActionMessage;
+	bool maySpeak  = !isActionMessage && !pRCMsg->m_msg->m_message.empty();
+	bool mayReply  = (!isActionMessage || IsReplyableActionMessage(pRCMsg->m_msg->m_type)) && maySendMessages;
+
+#ifdef OLD_WINDOWS
+	EnableMenuItem(menu, ID_DUMMYPOPUP_DELETEMESSAGE, mayDelete ? MF_ENABLED : MF_GRAYED);
+	EnableMenuItem(menu, ID_DUMMYPOPUP_EDITMESSAGE,   mayEdit   ? MF_ENABLED : MF_GRAYED);
+	EnableMenuItem(menu, ID_DUMMYPOPUP_PINMESSAGE,    mayPin    ? MF_ENABLED : MF_GRAYED);
+	EnableMenuItem(menu, ID_DUMMYPOPUP_UNPINMESSAGE,  mayUnpin  ? MF_ENABLED : MF_GRAYED);
+	EnableMenuItem(menu, ID_DUMMYPOPUP_SPEAKMESSAGE,  maySpeak  ? MF_ENABLED : MF_GRAYED);
+	EnableMenuItem(menu, ID_DUMMYPOPUP_COPYTEXT,      mayCopy   ? MF_ENABLED : MF_GRAYED);
+	EnableMenuItem(menu, ID_DUMMYPOPUP_REPLY,         mayReply  ? MF_ENABLED : MF_GRAYED);
+#else
+	if (!mayDelete) RemoveMenu(menu, ID_DUMMYPOPUP_DELETEMESSAGE, MF_BYCOMMAND);
+	if (!mayEdit)   RemoveMenu(menu, ID_DUMMYPOPUP_EDITMESSAGE,   MF_BYCOMMAND);
+	if (!mayPin)    RemoveMenu(menu, ID_DUMMYPOPUP_PINMESSAGE,    MF_BYCOMMAND);
+	if (!mayUnpin)  RemoveMenu(menu, ID_DUMMYPOPUP_UNPINMESSAGE,  MF_BYCOMMAND);
+	if (!maySpeak)  RemoveMenu(menu, ID_DUMMYPOPUP_SPEAKMESSAGE,  MF_BYCOMMAND);
+	if (!mayCopy)   RemoveMenu(menu, ID_DUMMYPOPUP_COPYTEXT,      MF_BYCOMMAND);
+	if (!mayReply)  RemoveMenu(menu, ID_DUMMYPOPUP_REPLY,         MF_BYCOMMAND);
+#endif
+
+	return menu;
 }
 
 LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -3643,45 +3907,52 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (IsClientSideMessage(pRCMsg->m_msg->m_type)) break;
 
-			HMENU menu = GetSubMenu(LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_MESSAGE_CONTEXT)), 0);
-
 			pThis->m_rightClickedMessage = pRCMsg->m_msg->m_snowflake;
+			pThis->m_rightClickedInteractableIndex = SIZE_MAX;
+			pThis->m_rightClickedAttachmentIndex = SIZE_MAX;
 
-			// disable the Delete button if we're not the user
-			Profile* ourPf = GetDiscordInstance()->GetProfile();
-			Channel* pChan = GetDiscordInstance()->GetCurrentChannel();
+			HMENU hMenu = NULL;
 
-			if (!pChan) break;
+			// check if we're right clicking any interactables...
+			for (size_t i = 0; i < pRCMsg->m_interactableData.size(); i++)
+			{
+				auto& interactable = pRCMsg->m_interactableData[i];
 
-			bool isThisMyMessage   = pRCMsg->m_msg->m_author_snowflake == ourPf->m_snowflake;
-			bool mayManageMessages = pChan->HasPermission(PERM_MANAGE_MESSAGES);
-			bool isActionMessage = IsActionMessage(pRCMsg->m_msg->m_type) || IsClientSideMessage(pRCMsg->m_msg->m_type);
-			bool isForward = pRCMsg->m_msg->m_bIsForward;
+				if (!interactable.ShouldHandleRightClick())
+					continue;
 
-			bool mayCopy   = !isForward && !isActionMessage;
-			bool mayDelete = isThisMyMessage || mayManageMessages;
-			bool mayEdit   = isThisMyMessage && !isForward && !isActionMessage;
-			bool mayPin    = mayManageMessages;
-			bool maySpeak  = !isActionMessage && !pRCMsg->m_msg->m_message.empty();
-			bool mayReply  = !isActionMessage || IsReplyableActionMessage(pRCMsg->m_msg->m_type);
+				RECT rect = { W32RECT(interactable.m_rect) };
+				if (!PtInRect(&rect, pt))
+					continue;
 
-#ifdef OLD_WINDOWS
-			EnableMenuItem(menu, ID_DUMMYPOPUP_DELETEMESSAGE, mayDelete ? MF_ENABLED : MF_GRAYED);
-			EnableMenuItem(menu, ID_DUMMYPOPUP_EDITMESSAGE,   mayEdit   ? MF_ENABLED : MF_GRAYED);
-			EnableMenuItem(menu, ID_DUMMYPOPUP_PINMESSAGE,    mayPin    ? MF_ENABLED : MF_GRAYED);
-			EnableMenuItem(menu, ID_DUMMYPOPUP_SPEAKMESSAGE,  maySpeak  ? MF_ENABLED : MF_GRAYED);
-			EnableMenuItem(menu, ID_DUMMYPOPUP_COPYTEXT,      mayCopy   ? MF_ENABLED : MF_GRAYED);
-			EnableMenuItem(menu, ID_DUMMYPOPUP_REPLY,         mayReply  ? MF_ENABLED : MF_GRAYED);
-#else
-			if (!mayDelete) RemoveMenu(menu, ID_DUMMYPOPUP_DELETEMESSAGE, MF_BYCOMMAND);
-			if (!mayEdit)   RemoveMenu(menu, ID_DUMMYPOPUP_EDITMESSAGE,   MF_BYCOMMAND);
-			if (!mayPin)    RemoveMenu(menu, ID_DUMMYPOPUP_PINMESSAGE,    MF_BYCOMMAND);
-			if (!maySpeak)  RemoveMenu(menu, ID_DUMMYPOPUP_SPEAKMESSAGE,  MF_BYCOMMAND);
-			if (!mayCopy)   RemoveMenu(menu, ID_DUMMYPOPUP_COPYTEXT,      MF_BYCOMMAND);
-			if (!mayReply)  RemoveMenu(menu, ID_DUMMYPOPUP_REPLY,         MF_BYCOMMAND);
-#endif
+				pThis->m_rightClickedInteractableIndex = i;
+				hMenu = pThis->GetMenuForInteractable(pRCMsg, i);
+				break;
+			}
 
-			TrackPopupMenu(menu, TPM_RIGHTBUTTON, xPos, yPos, 0, hWnd, NULL);
+			// ... or attachments
+			if (hMenu == NULL)
+			{
+				for (size_t i = 0; i < pRCMsg->m_attachmentData.size(); i++)
+				{
+					auto& attachment = pRCMsg->m_attachmentData[i];
+
+					RECT rect = { W32RECT(attachment.m_textRect) };
+					if (!PtInRect(&rect, pt))
+						continue;
+
+					pThis->m_rightClickedAttachmentIndex = i;
+					hMenu = pThis->GetMenuForAttachment(pRCMsg, i);
+					break;
+				}
+			}
+
+			if (hMenu == NULL)
+				hMenu = pThis->GetMenuForMessage(pRCMsg);
+
+			if (hMenu)
+				TrackPopupMenu(hMenu, TPM_RIGHTBUTTON, xPos, yPos, 0, hWnd, NULL);
+			
 			break;
 		}
 		case WM_COMMAND:
@@ -3736,7 +4007,8 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 				for (auto& intd : msg->m_interactableData)
 				{
-					if (PtInRect(&intd.m_rect, pt)) {
+					RECT rc = RectToNative(intd.m_rect);
+					if (PtInRect(&rc, pt)) {
 						pThis->OpenInteractable(&intd, &*msg);
 						break;
 					}
@@ -3815,7 +4087,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			tme.dwHoverTime = 0;
 			ri::TrackMouseEvent(&tme);
 			if (hit) {
-				SetCursor(LoadCursor(NULL, IDC_HAND));
+				SetCursor(GetHandCursor());
 				return TRUE;
 			}
 			else {
@@ -3834,7 +4106,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_ERASEBKGND:
 		{
-			if (GetLocalSettings()->GetMessageStyle() == MS_IMAGE)
+			if (ShouldUseDoubleBuffering())
 				return 1;
 
 			break;
@@ -3845,38 +4117,10 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			HDC hdc = BeginPaint(hWnd, &ps);
 			RECT &paintRect = ps.rcPaint;
 
-			if (GetLocalSettings()->GetMessageStyle() == MS_IMAGE)
+			if (ShouldUseDoubleBuffering())
 			{
-				// Create a DC that we blit to, and then only the finished result goes on screen.
-				RECT rcClient{};
-				GetClientRect(hWnd, &rcClient);
-
-				int prWidth = paintRect.right - paintRect.left, prHeight = paintRect.bottom - paintRect.top;
-				
-				// TODO: Surely there's a better way. Surely there's a way to only create paintRect.width * paintRect.height
-				// sized bitmap, and somehow let Windows know that that's the offset we want. But I don't know of that way,
-				// so this'll do for now.
-				HBITMAP hbm = CreateCompatibleBitmap(hdc, prWidth, prHeight);
-				HDC hdcMem = CreateCompatibleDC(hdc);
-				HGDIOBJ old = SelectObject(hdcMem, hbm);
-
-				POINT oldOrg{};
-				SIZE oldSize{};
-				SetViewportOrgEx(hdcMem, -paintRect.left, -paintRect.top, &oldOrg);
-				//SetViewportExtEx(hdcMem, rcClient.right-rcClient.left,rcClient.bottom-rcClient.top, &oldSize);
-
-				// Paint on this object
-				pThis->Paint(hdcMem, paintRect);
-
-				SetViewportOrgEx(hdcMem, oldOrg.x, oldOrg.y, NULL);
-				//SetViewportExtEx(hdcMem, oldSize.cx, oldSize.cy, NULL);
-
-				// Ok, now flush to the main screen
-				BitBlt(hdc, paintRect.left, paintRect.top, prWidth, prHeight, hdcMem, 0, 0, SRCCOPY);
-
-				// And dispose of the evidence
-				DeleteDC(hdcMem);
-				DeleteBitmap(hbm);
+				DoubleBufferingHelper helper(hdc, paintRect);
+				pThis->Paint(helper.HdcMem(), paintRect);
 			}
 			else
 			{
@@ -4434,7 +4678,42 @@ void MessageList::AdjustHeightInfo(
 
 bool MessageList::ShouldBeDateGap(time_t oldTime, time_t newTime)
 {
-	return !m_bManagedByOwner && (oldTime / 86400 != newTime / 86400);
+	return !m_bManagedByOwner && ((oldTime + m_tzOffset) / 86400 != (newTime + m_tzOffset) / 86400);
+}
+
+void MessageList::OnPageUp()
+{
+	SendMessage(m_hwnd, WM_VSCROLL, SB_PAGEUP, 0);
+}
+
+void MessageList::OnPageDown()
+{
+	SendMessage(m_hwnd, WM_VSCROLL, SB_PAGEDOWN, 0);
+}
+
+void MessageList::EditLastMessage()
+{
+	Profile* profile = GetDiscordInstance()->GetProfile();
+	Snowflake sf = 0;
+
+	for (auto iter = m_messages.rbegin(); iter != m_messages.rend(); ++iter)
+	{
+		if (iter->m_msg->m_author_snowflake != profile->m_snowflake)
+			continue;
+
+		sf = iter->m_msg->m_snowflake;
+		break;
+	}
+
+	if (!sf) {
+		DbgPrintW("Your last message isn't loaded!");
+		return;
+	}
+
+	if (!IsMessageVisible(sf))
+		SendToMessage(sf, false, false);
+
+	SendMessage(g_Hwnd, WM_STARTEDITING, 0, (LPARAM) &sf);
 }
 
 bool MessageList::ShouldStartNewChain(Snowflake prevAuthor, time_t prevTime, int prevPlaceInChain, MessageType::eType prevType, const std::string& prevAuthorName, const std::string& prevAuthorAvatar, const MessageItem& item, bool ifChainTooLongToo)
@@ -4654,6 +4933,9 @@ void MessageList::OnUpdateEmoji(Snowflake sf)
 	{
 		if (msg.m_message.IsFormatted())
 			msg.m_message.RunForEachCustomEmote(&InvalidateEmote, (void*) rgn);
+
+		if (msg.m_pRepliedMessage && msg.m_pRepliedMessage->IsFormatted())
+			msg.m_pRepliedMessage->RunForEachCustomEmote(&InvalidateEmote, (void*) rgn);
 	}
 
 	InvalidateRgn(m_hwnd, rgn, FALSE);
@@ -4905,7 +5187,7 @@ void MessageList::Scroll(int amount, RECT* rcClip, bool shiftAllRects)
 			msg.ShiftUp(amount);
 	}
 	
-	if (GetLocalSettings()->GetMessageStyle() == MS_IMAGE)
+	if (ShouldUseDoubleBuffering())
 	{
 		// nope, just invalidate
 		InvalidateRect(m_hwnd, NULL, FALSE);

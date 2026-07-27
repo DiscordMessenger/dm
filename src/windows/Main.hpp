@@ -26,13 +26,13 @@
 #define USE_SPEECH
 #endif
 
-#if !defined MINGW_SPECIFIC_HACKS
+#ifndef WEBP_DISABLED
 #define WEBP_SUP
 #endif
 
 #define STBI_SUP
 
-#include "../resource.h"
+#include "resource.h"
 
 #include "MissingDefinitions.hpp"
 #include "WindowMessages.hpp"
@@ -43,11 +43,11 @@
 #include "NetworkerThread.hpp"
 #include "TextInterface_Win32.hpp"
 
-#include "../discord/DiscordAPI.hpp"
-#include "../discord/SettingsManager.hpp"
-#include "../discord/Util.hpp"
-#include "../discord/ProfileCache.hpp"
-#include "../discord/DiscordInstance.hpp"
+#include "network/DiscordAPI.hpp"
+#include "config/SettingsManager.hpp"
+#include "utils/Util.hpp"
+#include "state/ProfileCache.hpp"
+#include "DiscordInstance.hpp"
 
 #define MAX_MESSAGE_SIZE 2000 // 4000 with nitro
 
@@ -80,6 +80,7 @@ extern HFONT
 
 extern HICON g_ProfileBorderIcon;
 extern HICON g_ProfileBorderIconGold;
+extern HICON g_ProfileBorderIconUnread;
 
 // from shell32
 extern HICON g_folderClosedIcon;
@@ -153,3 +154,4 @@ void WantQuit();
 void SetHeartbeatInterval(int timeMs);
 int GetProfilePictureSize();
 HBITMAP GetDefaultBitmap();
+bool ShouldBlockDoubleBuffering();

@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <set>
 
-#include "../discord/Snowflake.hpp"
+#include "models/Snowflake.hpp"
 #include "ImageLoader.hpp"
 
 enum class eImagePlace
