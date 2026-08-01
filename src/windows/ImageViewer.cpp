@@ -664,3 +664,8 @@ void CreateImageViewer(const std::string& proxyURL, const std::string& url, cons
 	ShowWindow(g_ivHwnd, SW_SHOW);
 	UpdateWindow(g_ivHwnd);
 }
+
+bool IsImageViewerFocused()
+{
+	return GetForegroundWindow() == g_ivHwnd && !IsIconic(g_ivHwnd);
+}

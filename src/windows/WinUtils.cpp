@@ -453,22 +453,25 @@ std::string MakeStringFromUnicodeString(LPCWSTR wstr)
 	size_t sl = lstrlenW(wstr);
 	// generate the size of the UTF-8 string
 	size_t slmax = (sl + 1) * 4; // whatever
-	char* chr = (char*)malloc(slmax);
+	char* chr = new char[slmax];
 	//_wcstombs_s_l(&sz, chr, slmax, wstr, slmax, CP_UTF8);
 	WideCharToMultiByte(CP_UTF8, 0, wstr, -1, chr, (int) slmax, NULL, NULL);
 
 	chr[slmax - 1] = 0; // ensure the null terminator is there
 	std::string final_str(chr);
-	free(chr);
+	delete[] chr;
 	return final_str;
 }
 
 std::string MakeStringFromEditData(LPCTSTR tstr)
 {
 	std::vector<TCHAR> tch2;
+	tch2.reserve(_tcslen(tstr) + 1);
 	const TCHAR* tcString = tstr;
 	for (; *tcString; tcString++) {
-		if (*tcString != '\r')
+		if (*tcString < 0 || *tcString > 127)
+			tch2.push_back('?');
+		else if (*tcString != '\r')
 			tch2.push_back(*tcString);
 	}
 	tch2.push_back(0);

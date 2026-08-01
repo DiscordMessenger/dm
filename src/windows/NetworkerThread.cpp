@@ -49,9 +49,13 @@ int NetRequest::Priority() const
 		case POST:
 		case POST_JSON:
 		case PATCH:
+		case PUT_OCTETS:
+		case PUT_OCTETS_PROGRESS:
+		case PUT_JSON:
 			prio = 100;
 			break;
 		case GET:
+		case GET_PROGRESS:
 			prio =  90;
 			break;
 		default:

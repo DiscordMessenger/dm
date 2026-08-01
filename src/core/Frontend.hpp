@@ -90,6 +90,7 @@ public:
 	
 	// Queries
 	virtual bool IsWindowMinimized() = 0;
+	virtual bool IsWindowFocused() = 0;
 	
 	// Strings
 	virtual std::string GetDirectMessagesText() = 0;

@@ -649,3 +649,8 @@ void ProfilePopout::Update()
 {
 	SendMessage(m_hwnd, WM_UPDATEPROFILEPOPOUT, 0, 0);
 }
+
+bool ProfilePopout::IsFocused()
+{
+	return GetForegroundWindow() == m_hwnd && !IsIconic(m_hwnd);
+}

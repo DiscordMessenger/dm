@@ -10,6 +10,7 @@ class NotificationViewer
 public:
 	static void Show(int x, int y, bool rightJustify = true);
 	static bool IsActive();
+	static bool IsFocused();
 
 private:
 	static void Initialize(HWND hWnd);
@@ -21,6 +22,7 @@ private:
 	static POINT m_appearXY;
 	static bool m_bRightJustify;
 	static bool m_bActive;
+	static HWND m_hwnd;
 	static MessageList* m_pMessageList;
 };
 

@@ -63,6 +63,7 @@ public:
 	void RestoreWindow() override;
 	void MaximizeWindow() override;
 	bool IsWindowMinimized() override;
+	bool IsWindowFocused() override;
 	std::string GetDirectMessagesText() override;
 	std::string GetPleaseWaitText() override;
 	std::string GetMonthName(int index) override;

@@ -43,17 +43,17 @@ DiscordClientConfig::DiscordClientConfig()
 	m_browser = "Discord Client";
 	m_systemLocale = "en-US";
 	m_timeZone = "Europe/Bucharest"; // TODO: UTC here
-	m_browserVersion = "37.6.0";
-	m_browserVersionSimple = "125";
+	m_browserVersion = "42.7.1";
+	m_browserVersionSimple = "125"; // not used anymore?!
 	m_webKitVersion = "537.36";
 	m_osVersion = "10.0.22621";
 	m_osSdkVersion = "22621";
 	m_releaseChannel = "canary";
-	m_clientBuildNumber = 488590;
-	m_nativeBuildNumber = 74182;
-	m_clientVersion = "1.0.810";
+	m_clientBuildNumber = 584141;
+	m_nativeBuildNumber = 87203;
+	m_clientVersion = "1.0.1070";
 	m_osVersionSimple = "10";
-	m_chromeVersion = "138.0.7204.251";
+	m_chromeVersion = "148.0.7778.280";
 
 	m_browserUserAgent =
 		"Mozilla/5.0 (Windows NT "
@@ -69,7 +69,7 @@ DiscordClientConfig::DiscordClientConfig()
 		+ " Safari/"
 		+ m_webKitVersion;
 
-	m_secChUa = "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\"";
+	m_secChUa = "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"";
 
 	GenerateLaunchSignature();
 
