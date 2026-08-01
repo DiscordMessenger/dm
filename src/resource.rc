@@ -1734,6 +1734,7 @@ BEGIN
     IDS_CANT_LAUNCH_URL_UNS "The specified link %s couldn't be opened, because Windows returned ""%s"". Most likely, your Windows version does not support directly opening URLs."
     IDS_CONFIRM_UNPIN       "You sure you want to remove this pinned message?\n\n%s (%s)\n\n%s"
     IDS_CONFIRM_UNPIN_TITLE "Discord Messenger - Unpin Message"
+    IDS_ETA_STRING_DOWNLOADED "(%s (%s downloaded)"
 END
 
 STRINGTABLE
@@ -1747,6 +1748,965 @@ END
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////
+// Polish resources
+
+LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
+#pragma code_page(1250)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOG_ABOUT DIALOGEX 0, 0, 247, 77
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "O programie Discord Messenger"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,97,58,50,14
+    CTEXT           "Discord Messenger",IDC_PROGRAM_NAME,1,6,246,8,SS_CENTERIMAGE
+    CTEXT           "Copyright (C) 2023-2026 iProgramInCpp. Licensed under the MIT license.",IDC_STATIC,1,42,246,12,SS_CENTERIMAGE
+    ICON            IDI_ICON,IDC_STATIC,112,21,20,20
+END
+
+IDD_DIALOG_OPTIONS DIALOGEX 0, 0, 498, 268
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Preferences"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_OPTIONS_TABS,"SysTabControl32",0x0,7,7,484,254
+END
+
+IDD_DIALOG_MY_ACCOUNT DIALOGEX 0, 0, 260, 242
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    GROUPBOX        "Moje Konto",IDC_MY_ACCOUNT_BOX,6,7,248,52
+    LTEXT           "NazwU\xBF#Tag",IDC_MY_ACCOUNT_NAME,54,18,194,20,SS_CENTERIMAGE
+    LTEXT           "*******@*****.com",IDC_EMAIL_DISPLAY,54,40,126,14,SS_CENTERIMAGE
+    LTEXT           "Adres E-mail:",IDC_EMAIL_TEXT,12,40,20,14,SS_CENTERIMAGE
+    PUSHBUTTON      "Poka\xBF E-mail",IDC_REVEALEMAIL,184,40,64,14
+    GROUPBOX        "Bezpiecze\xF1stwo PW",IDC_STATIC,6,60,248,90
+    LTEXT           "Automatycznie skanuj i usuwaj PW, kt\xF3re zawieraj\xB9 niestosowne multimedia.",IDC_STATIC,12,72,234,18
+    CONTROL         "Ryzykuje\nNie filtruj i nie skanuj wiadomo\x9Cci.",IDC_SDM_LEVEL0,
+                    "Button",BS_AUTORADIOBUTTON | BS_MULTILINE,12,126,234,18
+    CONTROL         "Moi znajomi s\xB9 git\nSkanuj Prywatne Wiadomo\x9Cci od wszystkich nieznajomych.",IDC_SDM_LEVEL1,
+                    "Button",BS_AUTORADIOBUTTON | BS_MULTILINE,12,108,234,18
+    CONTROL         "Ochraniaj mnie\nSkanuj Prywatne Wiadomo\x9Cci od ka\xBFdego.",IDC_SDM_LEVEL2,
+                    "Button",BS_AUTORADIOBUTTON | BS_MULTILINE,12,90,234,18
+    GROUPBOX        "Server privacy defaults",IDC_STATIC,6,150,248,42
+    CONTROL         "Zezw\xF3l PW od cz\xB3onk\xF3w serwera.",IDC_ENABLE_DMS,
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,12,162,234,8
+    LTEXT           "To ustawienie jest zaznaczane, kiedy do\xB3\xB9czasz do nowego serwera. Nie dotyczy to twoich, ju\xBF istniej\xB9cych serwer\xF3w.",IDC_STATIC,23,171,223,17
+    GROUPBOX        "Wylogowanie",IDC_STATIC,6,192,248,42
+    LTEXT           "Naci\x9Cnij ten przycisk, aby zosta\xE6 wylogowanym. Discord Messenger tylko zapomni tw\xF3j token, nie b\xEAdzie on przypominany.",IDC_STATIC,12,200,234,17
+    PUSHBUTTON      "Wyloguj",IDC_LOG_OUT,104,216,50,14
+    CONTROL         "",IDC_STATIC_PROFILE_IMAGE,"Static",SS_BITMAP | SS_CENTERIMAGE,12,18,24,22
+END
+
+IDD_DIALOG_APPEARANCE DIALOGEX 0, 0, 260, 242
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    GROUPBOX        "Wy\x9Cwietlanie Wiadomo\x9Cci",IDC_MDISPLAY_BOX,6,7,248,38
+    CONTROL         "Przyjemny: nowoczesne, \xB3adne i proste dla oczu",IDC_APPEARANCE_COZY,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,18,236,10
+    CONTROL         "Kompaktowy: wi\xEAcej wiadomo\x9Cci na jednym ekranie. #IRC",IDC_APPEARANCE_COMPACT,
+                    "Button",BS_AUTORADIOBUTTON,12,30,236,10
+    GROUPBOX        "Styl Listy Wiadomo\x9Cci",IDC_MSTYLE_BOX,6,105,248,29
+    LTEXT           "Motyw wiadom.:",IDC_STATIC,12,116,53,13,SS_CENTERIMAGE
+    PUSHBUTTON      "Zmie\xF1...",IDC_ACTIVE_IMAGE_BROWSE,198,146,50,14
+    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,53,146,135,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Zdj\xEAcie:",IDC_STATIC,12,146,41,14,SS_CENTERIMAGE
+    COMBOBOX        IDC_MESSAGE_STYLE,73,116,175,128,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Kompaktuj list\xEA cz\xB3onk\xF3w",IDC_COMPACT_MEMBER_LIST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,60,236,10
+    COMBOBOX        IDC_COMBO_ALIGNMENT,53,164,195,78,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "U\xB3\xF3\xBF:",IDC_STATIC,12,164,41,12,SS_CENTERIMAGE
+    GROUPBOX        "Znak Wodny Listy Wiadomo\x9Cci",IDC_STATIC,6,135,248,48
+    GROUPBOX        "Interfejs u\xBFytkownika",IDC_STATIC,6,48,248,56
+    LTEXT           "Rozmiar elem. UI:",IDC_STATIC,12,86,68,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_GUI_SCALE,80,86,168,159,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Rysowanie dwubuforowe (\xB3agodzi migotanie, ale u\xBFywa wi\xEAcej pami\xEAci)",IDC_DOUBLE_BUFFERING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,74,236,10
+END
+
+IDD_DIALOG_PROFILE_POPOUT DIALOGEX 0, 0, 126, 134
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP
+EXSTYLE WS_EX_NOACTIVATE
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Status",IDC_PROFILE_STATUS,65,18,19,8,SS_CENTERIMAGE | SS_WORDELLIPSIS
+    GROUPBOX        "Cz\xB3onek od",IDC_MEMBERSINCEGROUP,7,32,54,9
+    LTEXT           "Static",IDC_GUILD_JOIN_DATE,42,88,20,8,SS_CENTERIMAGE | SS_WORDELLIPSIS
+    LTEXT           "Static",IDC_DISCORD_JOIN_DATE,41,99,20,8,SS_CENTERIMAGE | SS_WORDELLIPSIS
+    CONTROL         IDB_CHANNEL,IDC_ICON_GUILD,"Static",SS_BITMAP | SS_REALSIZEIMAGE,29,86,11,10
+    ICON            IDI_ICON_SMALL,IDC_ICON_DISCORD,29,100,21,20,SS_REALSIZEIMAGE
+    GROUPBOX        "Role",IDC_ROLE_GROUP,7,42,54,9
+    GROUPBOX        "Notatka",IDC_NOTE_GROUP,7,65,54,9
+    EDITTEXT        IDC_NOTE_TEXT,64,28,56,14,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | ES_WANTRETURN | NOT WS_BORDER
+    GROUPBOX        "Wy\x9Clij wiadomo\x9C\xE6 do u\xBFytkownika",IDC_MESSAGE_GROUP,7,75,53,9
+    EDITTEXT        IDC_MESSAGE_TEXT,65,43,55,14,ES_AUTOHSCROLL
+    LTEXT           "Zaimki",IDC_PROFILE_PRONOUNS,40,18,25,8,SS_CENTERIMAGE | SS_WORDELLIPSIS
+    GROUPBOX        "O mnie",IDC_ABOUTME_GROUP,7,52,54,9
+    EDITTEXT        IDC_EDIT_ABOUTME,65,58,55,12,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER
+END
+
+IDD_DIALOG_LOGON DIALOGEX 0, 0, 274, 120
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Zaloguj si\xEA - Discord Messenger"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Zaloguj si\xEA",IDOK,162,99,50,14
+    PUSHBUTTON      "Wyjd\x9F",IDCANCEL,217,99,50,14
+    CONTROL         IDB_LOGON_BANNER,IDC_LOGON_BANNER,"Static",SS_BITMAP,0,0,274,57
+    EDITTEXT        IDC_EDIT_TOKEN,7,77,259,14,ES_AUTOHSCROLL
+    LTEXT           "Aby u\xBFywa\xE6 Discord Messenger, b\xEAdziesz musia\xB3 wklei\xE6 sw\xF3j token tutaj:",IDC_STATIC,7,62,266,15
+    PUSHBUTTON      "Jak mam uzyska\xE6 m\xF3j token?",IDC_HOW_GET_TOKEN,7,99,90,14
+END
+
+
+// Yeah, i know - this feature is not even available yet.
+// But i translated what i thought should be, anyway. 
+// - Jakkret @ 7.06.2026 (DD/MM/YYYY)
+
+IDD_DIALOG_QRCODELOGIN DIALOGEX 0, 0, 203, 238
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Zaloguj si\xEA za pomoc\xB9 kodu QR"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Anuluj",IDCANCEL,146,217,50,14
+    LTEXT           "Zeskanuj kod QR przez aplikacje mobiln\xB9 Discorda, aby zalogowa\xE6 si\xEA natychmiastowo.",IDC_LBL_LOGINQR,7,7,189,11
+    LTEXT           "Code doesn't go here, placeholder text does.\n\nIt'd say:\n\nNo code, but here's the URL:\nhttps://discord.com/ra/blablablabla\n\nI want to get the core functionality working first!",IDC_QRCODE_PLACEHOLDER,7,66,189,89
+END
+
+IDD_DIALOG_INSTANT_INVITE DIALOGEX 0, 0, 259, 192
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Accept Instant Invitation"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Do\xB3\xB9cz SERVERNAMEHERE",IDOK,7,143,245,14
+    PUSHBUTTON      "Nie, dzi\xEAki",IDCANCEL,105,171,50,14
+    CTEXT           "Zosta\xB3e\x9C zaproszony do do\xB3\xB9czenia",IDC_STATIC,7,7,245,8
+    CONTROL         IDB_DEFAULT,IDC_INVITE_GUILD_IMAGE,"Static",SS_BITMAP,120,26,24,22
+    CTEXT           "GUILD NAME HERE",IDC_GUILD_NAME,7,60,245,25
+    LTEXT           "1,000 Dost\xEApnych",IDC_NUM_ONLINE,110,97,42,8
+    LTEXT           "2,000 Cz\xB3onk\xF3w",IDC_NUM_MEMBERS,110,108,50,8
+    ICON            IDI_ONLINE_SM,IDC_STATIC,98,97,21,20,SS_REALSIZEIMAGE
+    ICON            IDI_OFFLINE_SM,IDC_STATIC,98,108,21,20,SS_REALSIZEIMAGE
+END
+
+IDD_DIALOG_PINNEDMESSAGES DIALOGEX 0, 0, 281, 254
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Przypi\xEAte Wiadomo\x9Cci w [Channel]"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CTEXT           "PROTIP: U\xBFytkownicy z uprawnieniem 'Zarz\xB9daj wiadomo\x9Cciami' mog\xB9 przypi\xB9\xE6 wiadomo\x9C\xE6 z poziomu menu kontekstowego.",IDC_STATIC,7,229,267,18
+    CONTROL         "",IDC_MESSAGE_LIST,"Static",SS_BLACKRECT,7,18,267,210
+    LTEXT           "Naci\x9Cnij na wiadomo\x9C\xE6, by przej\x9C\xE6 do niej.",IDC_STATIC,7,7,267,8
+END
+
+IDD_DIALOG_UPLOADFILES DIALOGEX 0, 0, 307, 108
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Wy\x9Clij Pliki"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Wy\x9Clij",IDOK,198,87,50,14
+    PUSHBUTTON      "Anuluj",IDCANCEL,250,87,50,14
+    ICON            "",IDC_FILE_ICON,7,7,21,20
+    LTEXT           "Static",IDC_FILE_NAME,32,7,224,18,SS_CENTERIMAGE
+    LTEXT           "Wy\x9Clij do",IDC_STATIC,7,31,32,13,SS_CENTERIMAGE
+    LTEXT           "#channelnamehere",IDC_CHANNEL_NAME,40,31,260,13,SS_CENTERIMAGE
+    GROUPBOX        "Dodaj komentarz (opcjonalne)",IDC_STATIC,7,52,293,31
+    EDITTEXT        IDC_ATTACH_COMMENT,13,63,280,14,ES_AUTOHSCROLL
+    CONTROL         "Oznacz jako spoiler",IDC_MARK_AS_SPOILER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,88,173,13
+END
+
+IDD_DIALOG_QUICK_SWITCHER DIALOGEX 0, 0, 309, 192
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Quick Switcher"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Id\x9F",IDOK,198,171,50,14
+    PUSHBUTTON      "Anuluj",IDCANCEL,253,171,50,14
+    LTEXT           "Gdzie chcia\xB3by\x9C odwiedzi\xE6?",IDC_STATIC,7,7,90,8
+    EDITTEXT        IDC_QUICK_QUERY,7,18,294,14,ES_AUTOHSCROLL
+    CONTROL         "",IDC_CHANNEL_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHAREIMAGELISTS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,12,48,284,85
+    LTEXT           "PROTIP: Rozpoczynaj wyszukiwania z @, #, !, lub *, aby zaw\xEAzi\xE6 wyniki.\n\nUżywaj klawiszy UP ARROW i DOWN ARROW aby nawigowa\xE6 menu podczas wpisywania.",IDC_STATIC,7,140,294,30
+    GROUPBOX        "Wyniki wyszukiwania",IDC_QUICK_GROUP,7,38,294,99
+END
+
+// too technical, i gotta do this later
+// - JK @ 7.06.2026
+IDD_DIALOG_CONNECTION DIALOGEX 0, 0, 260, 242
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    GROUPBOX        "Discord API && CDN",IDC_STATIC,6,7,248,128
+    LTEXT           "Discord API URL:",IDC_STATIC,12,20,55,8
+    LTEXT           "Discord CDN URL:",IDC_STATIC,12,35,58,8
+    EDITTEXT        IDC_EDIT_DISCORDAPI,72,17,174,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DISCORDCDN,72,33,174,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Revert to official Discord backend",IDC_REVERTTODEFAULT,12,116,118,14
+    PUSHBUTTON      "Aktualizuj",IDC_UPDATE,198,116,50,14
+    ICON            IDI_WARNING_IC,IDC_ICON_WARN_CONNECT,12,54,21,20,SS_REALSIZEIMAGE
+    LTEXT           "For security reasons, when you update the URLs that Discord Messenger uses to interface with Discord's backend, you will be logged out. (your token is forgotten but not revoked)",IDC_STATIC,33,54,215,31
+    ICON            IDI_WARNING_IC,IDC_ICON_WARN_WEBSOCKETSTUFF,12,82,21,20,SS_REALSIZEIMAGE
+    LTEXT           "NOTE: Discord Messenger automatically fetches the websocket gateway URL using the API_URL/gateway endpoint.",IDC_STATIC,33,82,214,19
+    GROUPBOX        "Security Settings",IDC_STATIC,6,139,248,48
+    ICON            IDI_WARNING_IC,IDC_ICON_WARN_WEBSOCKETSTUFF2,12,166,21,20,SS_REALSIZEIMAGE
+    LTEXT           "WARNING: Disabling TLS certificate verification could expose you to MITM (man-in-the-middle) attacks via certificate spoofing!",IDC_STATIC,33,165,215,19
+    CONTROL         "Enable TLS certificate verification",IDC_ENABLE_TLS_CHECKS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,151,230,10
+    GROUPBOX        "Aktualizacja",IDC_STATIC,6,194,248,40
+    CONTROL         "Sprawd\x9F aktualizacje za pomoc\xB9 GitHub API",IDC_CHECK_UPDATES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,204,236,10
+    LTEXT           "iProgramInCpp nie mo\xBFe widzie\xE6 adresu IP przez Serwis Aktualizacji.",IDC_STATIC,12,219,231,10
+    CONTROL         "Add extra headers such as X-Super-Properties to HTTP requests.",IDC_TOGGLE_XSUPERPROPS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,104,231,10
+END
+
+IDD_DIALOG_UPLOADING DIALOGEX 0, 0, 275, 135
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Wysy\xB3anie Pliku"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Anuluj",IDCANCEL,218,114,50,14
+    LTEXT           "Wysy\xB3anie:",IDC_UPLOADING_ACTION,6,46,261,12
+    LTEXT           "Nazwa Pliku:",IDC_UPLOADING_FILENAME,6,58,261,12
+    CONTROL         "",IDC_UPLOADING_PROGRESS,"msctls_progress32",WS_BORDER,6,70,261,12
+    LTEXT           "Oczekiwany Czas Wys\xB3ania:",IDC_STATIC,6,88,72,12
+    LTEXT           "Trwa Wyliczanie...",IDC_UPLOADING_ETA,78,88,190,12
+    LTEXT           "Szybko\x9C\xE6 Tranferu",IDC_STATIC,6,100,72,12
+    LTEXT           "Trwa Wyliczanie...",IDC_UPLOADING_XFERRATE,78,100,190,12
+    CONTROL         "",IDC_PROGRESS_ANIMATE,"SysAnimate32",ACS_CENTER | ACS_TRANSPARENT | ACS_AUTOPLAY | WS_TABSTOP,6,6,264,36
+END
+
+IDD_DIALOG_GUILD_CHOOSER DIALOGEX 0, 0, 285, 203
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Server Chooser"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Go!",IDOK,173,182,50,14,WS_DISABLED
+    PUSHBUTTON      "Cancel",IDCANCEL,228,182,50,14
+    LTEXT           "Here are all the guilds you're in. Double click to switch to a server from below:",IDC_STATIC,7,7,271,8
+    CONTROL         "",IDC_GUILD_LIST,"SysListView32",LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,7,19,271,158
+END
+
+IDD_DIALOG_NOTIFICATIONS DIALOGEX 0, 0, 349, 239
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Powiadomienia"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_MESSAGE_LIST,"Static",SS_BLACKRECT,7,27,335,205
+    LTEXT           "Tutaj s\xB9 Twoje ostatnie powiadomienia na t\xB9 sesje.\nNaci\x9Cnij na wiadomo\x9C\xE6, by zosta\xE6 przekierowanym.",IDC_NOTIFICATION_HINT,7,7,315,17
+    DEFPUSHBUTTON   "",IDC_NOTIFS_MARK_AS_READ,324,7,18,15,BS_ICON
+END
+
+IDD_DIALOG_NOTIFSETTINGS DIALOGEX 0, 0, 260, 242
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    GROUPBOX        "Balloon Notifications",IDC_STATIC,6,7,248,65
+    CONTROL         "W\xB3\xB9cz Powiadomienia typu 'Balonik'",IDC_ENABLE_BALLOON_NOTIFS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,18,235,10
+    CONTROL         "Zamrugaj okem na pasku, je\xBFeli powiadomienie zosta\xB3o odebrane",IDC_FLASH_TASKBAR,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,31,235,10
+    CONTROL         "Zagraj d\x9Fwi\xEAk powiadomienia kiedy odebrano",IDC_USE_DISCORD_SOUND,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,57,235,10
+    CONTROL         "Nie graj d\x9Fwi\xEAku powiadomienia",IDC_MUTE_NOTIFICATIONS,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,44,235,10
+END
+
+IDD_DIALOG_CHATSETTINGS DIALOGEX 0, 0, 260, 242
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    GROUPBOX        "Opcje Wiadomo\x9Cci",IDC_STATIC,6,7,248,59
+    CONTROL         "Wy\xB3\xB9cz formatowanie (sugerowane dla skrypt\xF3w RTL jak arabski lub problem\xF3w z wydajno\x9Cci\xB9)",IDC_DISABLE_FORMATTING,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,12,18,236,18
+    GROUPBOX        "Wy\x9Cwietlanie Zdj\xEA\xE6",IDC_STATIC,6,68,248,41
+    CONTROL         "Podczas wysy\xB3ania bezpo\x9Crednio do Discorda",IDC_IMAGES_WHEN_UPLOADED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,80,236,10
+    CONTROL         "Kiedy s\xB9 wysy\xB3ane jako linki w czacie",IDC_IMAGES_WHEN_EMBEDDED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,93,236,10
+    GROUPBOX        "Ustawienia Embed\xF3w",IDC_STATIC,6,115,248,27
+    CONTROL         "Poka\xBF elementy Embed i podgl\xB9d link\xF3w w czacie",IDC_SHOW_EMBEDS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,126,236,10
+    CONTROL         "U\xBFywaj czasu 12-godzinnego",IDC_USE_12HR_TIME,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,12,38,236,10
+    CONTROL         "Pokazuj zawarto\x9C\xE6 wiadomo\x9Cci od zablokowanych u\xBFytkownik\xF3w",IDC_SHOW_BLOCKED_MESSAGES,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,12,51,236,10
+END
+
+IDD_DIALOG_WINDOWSETTINGS DIALOGEX 0, 0, 260, 242
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    GROUPBOX        "Ustawienia Okna",IDC_STATIC,6,7,248,81
+    CONTROL         "Zapami\xEAtuj rozmiar okna",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,18,236,10
+    CONTROL         "Rozpoczynaj jako zmaksymalizowany",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,32,236,10
+    CONTROL         "Uruchom Discord Messenger podczas uruchomienia",IDC_OPEN_ON_STARTUP,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,46,236,10
+    CONTROL         "Uruchom si\xEA zminimalizowany do ikony",IDC_START_MINIMIZED,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,32,60,216,10
+    CONTROL         "Minimalizuj si\xEA do ikony, kiedy zamykasz przyciskiem",IDC_MINIMIZE_TO_NOTIF,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,74,236,10
+END
+
+IDD_DIALOG_ABOUT_ND DIALOG 0, 0, 247, 77
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About Discord Messenger"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,97,58,50,14
+    CTEXT           "Discord Messenger",IDC_PROGRAM_NAME,1,6,246,8,SS_CENTERIMAGE
+    CTEXT           "Copyright (C) 2023-2026 iProgramInCpp. Licensed under the MIT license.",IDC_STATIC,1,42,246,12,SS_CENTERIMAGE
+    ICON            IDI_ICON,IDC_STATIC,112,21,20,20
+END
+
+IDD_DIALOG_LOGON_ND DIALOG 0, 0, 275, 86
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Zaloguj si\xEA - Discord Messenger"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON   "Zaloguj si\xEA",IDOK,162,64,50,14
+    PUSHBUTTON      "Wyjd\x9F",IDCANCEL,217,64,50,14
+    EDITTEXT        IDC_EDIT_TOKEN,7,39,259,14,ES_AUTOHSCROLL
+    LTEXT           "Witamy w Discord Messenger!\r\n\r\nAby u\xBFywa\xE6 Discord Messenger wymagane jest zalogowanie za pomoc\xB9 tokenu.",IDC_LOGON_BANNER,7,7,259,31
+END
+
+IDD_DIALOG_NOTIFICATIONS_ND DIALOG 0, 0, 349, 239
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Notifications"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    CONTROL         "",IDC_MESSAGE_LIST,"Static",SS_BLACKRECT,7,27,335,205
+    LTEXT           "Tutaj s\xB9 Twoje ostatnie powiadomienia na t\xB9 sesje.\nNaci\x9Cnij na wiadomo\x9C\xE6, by zosta\xE6 przekierowanym.",IDC_NOTIFICATION_HINT,7,7,315,17
+    DEFPUSHBUTTON   "",IDC_NOTIFS_MARK_AS_READ,324,7,18,15,BS_ICON
+END
+
+IDD_DIALOG_PINNEDMESSAGES_ND DIALOG 0, 0, 281, 254
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Pinned Messages In [Channel]"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    CTEXT           "PROTIP: U\xBFytkownicy z uprawnieniem 'Zarz\xB9dzaj Wiadomo\x9Cciami' mog\xB9 przypina\xE6 wiadomo\x9Cci z poziomu menu kontekstowego.",IDC_STATIC,7,229,267,18
+    CONTROL         "",IDC_MESSAGE_LIST,"Static",SS_BLACKRECT,7,18,267,210
+    LTEXT           "Naci\x9Cnij na wiadomo\x9C\xE6 by skoczy\xE6 do niej",IDC_STATIC,7,7,267,8
+END
+
+IDD_DIALOG_PROFILE_POPOUT_ND DIALOG 0, 0, 126, 134
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "Status",IDC_PROFILE_STATUS,65,18,19,8,SS_CENTERIMAGE | SS_WORDELLIPSIS
+    GROUPBOX        "Cz\xB3onek od",IDC_MEMBERSINCEGROUP,7,32,54,9
+    LTEXT           "Static",IDC_GUILD_JOIN_DATE,42,88,20,8,SS_CENTERIMAGE | SS_WORDELLIPSIS
+    LTEXT           "Static",IDC_DISCORD_JOIN_DATE,41,99,20,8,SS_CENTERIMAGE | SS_WORDELLIPSIS
+    CONTROL         IDB_CHANNEL,IDC_ICON_GUILD,"Static",SS_BITMAP | SS_REALSIZEIMAGE,29,86,11,10
+    ICON            IDI_ICON_SMALL,IDC_ICON_DISCORD,29,100,21,20,SS_REALSIZEIMAGE
+    GROUPBOX        "Role",IDC_ROLE_GROUP,7,42,54,9
+    GROUPBOX        "Notatka",IDC_NOTE_GROUP,7,65,54,9
+    EDITTEXT        IDC_NOTE_TEXT,64,28,56,14,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | ES_WANTRETURN | NOT WS_BORDER
+    GROUPBOX        "Napisz wiadomo\x9C\xE6 do u\xBFytkownika",IDC_MESSAGE_GROUP,7,75,53,9
+    EDITTEXT        IDC_MESSAGE_TEXT,65,43,55,14,ES_AUTOHSCROLL
+    LTEXT           "Zaimki",IDC_PROFILE_PRONOUNS,40,18,25,8,SS_CENTERIMAGE | SS_WORDELLIPSIS
+    GROUPBOX        "O mnie",IDC_ABOUTME_GROUP,7,52,54,9
+    EDITTEXT        IDC_EDIT_ABOUTME,65,58,55,12,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER
+END
+
+IDD_DIALOG_QUICK_SWITCHER_ND DIALOG 0, 0, 309, 192
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Quick Switcher"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON   "Id\x9F",IDOK,198,171,50,14
+    PUSHBUTTON      "Anuluj",IDCANCEL,253,171,50,14
+    LTEXT           "Where would you like to go?",IDC_STATIC,7,7,200,8
+    EDITTEXT        IDC_QUICK_QUERY,7,18,294,14,ES_AUTOHSCROLL
+    LTEXT           "PROTIP: Rozpoczynaj wyszukiwania z @, #, !, or *, aby ograniiczy\xE6 wyniki.\n\nUżyj klawiszy UP ARROW i DOWN ARROW by nawigowa\xE6 w menu podczas pisania.",IDC_STATIC,7,140,294,30
+    GROUPBOX        "Wyniki Wyszukiwania",IDC_QUICK_GROUP,7,38,294,99
+    LISTBOX         IDC_CHANNEL_LIST,12,48,284,85,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_DIALOG_UPLOADFILES_ND DIALOG 0, 0, 307, 108
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Wy\x9Clij plik"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON   "Wy\x9Clij",IDOK,198,87,50,14
+    PUSHBUTTON      "Anuluj",IDCANCEL,250,87,50,14
+    ICON            "",IDC_FILE_ICON,7,7,21,20
+    LTEXT           "Static",IDC_FILE_NAME,32,7,224,18,SS_CENTERIMAGE
+    LTEXT           "Wy\x9Clij do",IDC_STATIC,7,31,32,13,SS_CENTERIMAGE
+    LTEXT           "#channelnamehere",IDC_CHANNEL_NAME,40,31,260,13,SS_CENTERIMAGE
+    GROUPBOX        "Add a comment (optional)",IDC_STATIC,7,52,293,31
+    EDITTEXT        IDC_ATTACH_COMMENT,13,63,280,14,ES_AUTOHSCROLL
+    CONTROL         "Oznacz jako spoiler",IDC_MARK_AS_SPOILER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,88,173,13
+END
+
+IDD_DIALOG_UPLOADING_ND DIALOG 0, 0, 275, 96
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "File Upload"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    PUSHBUTTON      "Anuluj",IDCANCEL,218,75,50,14
+    LTEXT           "Wysy\xB3anie:",IDC_UPLOADING_ACTION,6,7,261,12
+    LTEXT           "File Name Here",IDC_UPLOADING_FILENAME,6,19,261,12
+    CONTROL         "",IDC_UPLOADING_PROGRESS,"msctls_progress32",WS_BORDER,6,31,261,12
+    LTEXT           "Estimated time left:",IDC_STATIC,6,49,72,12
+    LTEXT           "Trwa Liczenie...",IDC_UPLOADING_ETA,78,49,190,12
+    LTEXT           "Pr\xEAdko\x9C\xE6 Transferu",IDC_STATIC,6,61,72,12
+    LTEXT           "Trwa Liczenie...",IDC_UPLOADING_XFERRATE,78,61,190,12
+END
+
+IDD_DIALOG_GUILD_CHOOSER_ND DIALOG 0, 0, 285, 203
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Server Chooser"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON   "Id\x9F!",IDOK,173,182,50,14,WS_DISABLED
+    PUSHBUTTON      "Anuluj",IDCANCEL,228,182,50,14
+    LTEXT           "Here are all the guilds you're in. Double click to switch to a server from below:",IDC_STATIC,7,7,271,8
+    LISTBOX         IDC_GUILD_LIST,7,19,271,158,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_DIALOG_PREFERENCES_ND DIALOG 0, 0, 231, 308
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Preferences"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    PUSHBUTTON      "Gotowe",IDOK,174,287,50,14
+    GROUPBOX        "Moje Konto",IDC_STATIC,7,7,218,36
+    GROUPBOX        "Wygl\xB9d",IDC_STATIC,7,45,218,77
+    LTEXT           "Static",IDC_MY_ACCOUNT_NAME,52,17,135,8
+    LTEXT           "Nazwa u\xBFytkownika:",IDC_STATIC,12,17,36,8
+    LTEXT           "*****@*****.***",IDC_EMAIL_DISPLAY,52,29,114,8
+    LTEXT           "E-mail:",IDC_STATIC,12,29,20,8
+    PUSHBUTTON      "Poka\xBF",IDC_REVEALEMAIL,169,26,50,14
+    CONTROL         "Przyjemny",IDC_APPEARANCE_COZY,"Button",BS_AUTORADIOBUTTON,80,56,32,10
+    CONTROL         "Kompaktowy",IDC_APPEARANCE_COMPACT,"Button",BS_AUTORADIOBUTTON,114,56,44,10
+    COMBOBOX        IDC_MESSAGE_STYLE,80,70,137,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Motyw Wiadom.:",IDC_STATIC,12,72,62,8
+    LTEXT           "Wy\x9Cwietlanie wiadomo\x9Cci:",IDC_STATIC,12,56,56,8
+    LTEXT           "Obrazek w tle:",IDC_STATIC,12,88,62,8
+    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,80,86,86,14,ES_AUTOHSCROLL | ES_READONLY
+    PUSHBUTTON      "Zmie\xF1...",IDC_ACTIVE_IMAGE_BROWSE,169,86,50,14
+    LTEXT           "Wyr\xF3wnaj do:",IDC_STATIC,12,105,65,8
+    COMBOBOX        IDC_COMBO_ALIGNMENT,80,104,137,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Czat",IDC_STATIC,7,123,218,76
+    CONTROL         "Wy\xB3\xB9cz formatowanie",IDC_DISABLE_FORMATTING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,134,205,10
+    CONTROL         "Wy\x9Cwietlaj zdj\xEAcia podczas wysy\xB3ania",IDC_IMAGES_WHEN_UPLOADED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,147,205,10
+    CONTROL         "Wy\x9Cwietlaj zdj\xEAcia wysy\xB3ane przez linki",IDC_IMAGES_WHEN_EMBEDDED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,160,205,10
+    CONTROL         "Pokazuj Elementy Embed i pogl\xB9dy link\xF3w na czacie",IDC_SHOW_EMBEDS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,173,205,10
+    GROUPBOX        "Okno",IDC_STATIC,7,200,218,38
+    CONTROL         "Zapisz rozmiar okna",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,211,203,10
+    CONTROL         "Uruchom zmaksymalizowany",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,224,203,10
+    GROUPBOX        "Sprawd\x9F Aktualizacje",IDC_STATIC,7,240,218,44
+    CONTROL         "Sprawd\x9F aktualizacje za pomoc\xB9 Github API",IDC_CHECK_UPDATES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,251,203,10
+    LTEXT           "iProgramInCpp nie może widzie\xE6 adresu IP przez serwis aktualizacji.",IDC_STATIC,12,263,204,17
+    LTEXT           "Zmiany aplikuj\xB9 si\xEA automatycznie.",IDC_STATIC,7,289,163,8
+    CONTROL         "Używaj czasu 12-godzinnego",IDC_USE_12HR_TIME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,186,205,10
+END
+
+
+IDD_DIALOG_LANGUAGE_ND DIALOG 0, 0, 264, 240
+STYLE WS_CHILD | DS_CONTROL
+FONT 8, "MS Shell Dlg"
+BEGIN
+    GROUPBOX        "Opcje j\xEAzyka", IDC_MDISPLAY_BOX, 6, 7, 248, 132
+    LTEXT           "Wybierz j\xEAzyk, w kt\xF3rym Discord Messenger ma wy\x9Cwietla\xE6", IDC_STATIC, 12, 18, 236, 8
+    LISTBOX         IDC_LANGUAGE_LIST, 12, 30, 236, 60, LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    AUTOCHECKBOX    "Wykryj i domy\x9Clnie u\xBFywaj j\xEAzyka systemowego", IDC_LANGUAGE_SYSTEM, 12, 93, 170, 10
+    LTEXT           "J\xEAzyk Systemu: ", IDS_SYSTEM_LANGUAGE, 12, 106, 236, 8
+    PUSHBUTTON      "Zastosuj j\xEAzyk", IDC_LANGUAGE_APPLY, 180, 120, 70, 14
+    PUSHBUTTON      "Przywr\xF3\xE6 Domy\x9Clne", IDC_LANGUAGE_DEFAULTS, 12, 120, 70, 14
+    
+    ICON            IDI_WARNING_IC,IDC_PENDING_RESTART,12,225,136,20,SS_REALSIZEIMAGE
+    LTEXT           "Oczekiwane Uruchomienie Ponowne.", IDC_PENDING_RESTART_TEXT, 28, 226, 236, 8
+    
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_PROGRAM_NAME        "Discord Messenger"
+    IDS_MY_ACCOUNT          "My Account"
+    IDS_WELCOME_MSG         "Welcome to Discord Messenger! Before you use the app, you must first log in.\n\nDISCLAIMER: Using third party clients is against Discord's TOS! Although the risk to get banned is low, the risk is there! The author of this software is not responsible for the status of your Discord account.\n\nDISCLAIMER: This program is in beta. As such, you may experience instability or glitches. Please file an issue if that happens!"
+    IDS_PRIVACY_SAFETY      "Privacy & Safety"
+    IDS_MESSAGE_TOO_LONG_MSG 
+                            "Your message is too long...\n\nYou've hit the 2000 character limit.  Speak your mind with 2x longer messages, send larger file uploads and more with Discord Nitro! "
+    IDS_DMBLOCK_APPLY_RETROACTIVELY 
+                            "Do you want to also apply this change to all your existing servers?  You can also disable direct messages from individual servers by visiting that server's settings page."
+    IDS_NOTLOGGEDIN         "You are not logged in to Discord Messenger.\nThis could be because the token has expired or is invalid.\n\nLog in using a real Discord client, and use its token to log in."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_APPEARANCE          "Wygl\xB9d"
+    IDS_LOG_OUT             "Wyloguj"
+    IDS_SESSION_ERROR       "Discord has closed the current gateway with the error code of %d.  Try restarting the app or using a different token."
+    IDS_CONNECT_FAILURE     "Could not connect to Discord servers.\n\nThis could be because you aren't connected to the Internet, or because Discord servers are down."
+    IDS_ACCOUNT_PRIVACY     "Account && Privacy"
+    IDS_DANGEROUS_DOWNLOAD  "Woah there!  While programs downloaded from the Internet may be beneficial, this type of file can damage your device or steal your personal data. Make sure to only run executables from developers that you trust!\n\nWould you like to download the file %s anyway?"
+    IDS_DANGEROUS_DOWNLOAD_TITLE "Potentially Dangerous Download Warning"
+    IDS_PLEASE_WAIT         "Please wait..."
+    IDS_LOADING_MESSAGES    "Discord Messenger is loading messages... "
+    IDS_CHANGED_GROUP_ICON  " changed the group icon."
+    IDS_CHANGED_CHANNEL_NAME_L " changed the channel name to """
+    IDS_CHANGED_CHANNEL_NAME_R """."
+    IDS_REMOVED_FROM_GROUP  " removed someone from the group."
+    IDS_ADDED_TO_GROUP      " added someone to the group."
+    IDS_PINNED_MESSAGE      " pinned a message to this channel."
+    IDS_WELCOME_01          "$ joined the party."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_WELCOME_02          "$ jest tutaj."
+    IDS_WELCOME_03          "Witaj, $. Mamy nadziej\xEA, \xBFe przynios\xB3e\x9C pizz\xEA."
+    IDS_WELCOME_04          "A wild $ appeared."
+    IDS_WELCOME_05          "$ just landed."
+    IDS_WELCOME_06          "$ just slid into the server!"
+    IDS_WELCOME_07          "$ just showed up!"
+    IDS_WELCOME_08          "Witaj $. Przywitaj si\xEA!"
+    IDS_WELCOME_09          "$ wskoczy\xB3 do serwera."
+    IDS_WELCOME_10          "Przywitajcie wszyscy $!"
+    IDS_WELCOME_11          "Cieszymy si\xEA, \xBFe jeste\x9C $!"
+    IDS_WELCOME_12          "Mi\xB3o Ciebie widzie\xE6, $."
+    IDS_WELCOME_13          "Yay you made it, $!"
+    IDS_WELCOME_PERIOD      "."
+    IDS_UNUSED_1            "b"
+    IDS_UNUSED_2            "c"
+    IDS_UNUSED_3            "d"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_UNUSED_4            "e"
+    IDS_SAVE_IMAGE          "Zapisz Zdj\xEAcie Jako..."
+    IDS_SAVE_FILE_AS_TITLE  "Zapisz Plik"
+    IDS_ERROR_ACCESSING_FILE "The resource %s could not be accessed.\n\n%s"
+    IDS_ERROR_SAVING_FILE   "The file could not be saved at %s.\n\n%s"
+    IDS_IMAGE_SAVING        "Pobieranie..."
+    IDS_IMAGE_SAVED         "Zapisano!"
+    IDS_TOKEN_TOO_LONG      "Your token is too long!  Try using an actual Discord token."
+    IDS_TOKEN_TOO_SHORT     "Your token is too short!  Try using an actual Discord token."
+    IDS_LOGIN_NO_INTERNET   "Nie mo\xBFna po\xB3\xB9czy\xE6 si\xEA z Discord Messenger.\n\nWy\xB3\xB9cz okno logowania kodem QR, sprawd\x9F \xB3\xB9cze internetowe i spr\xF3buj ponownie."
+    IDS_TODAY_AT            "Dzi\x9C o "
+    IDS_YESTERDAY_AT        "Wczoraj o "
+    IDS_LONG_DATE_FMT       "%d-%m-%Y o "
+    IDS_SHORT_DATE_FMT      "%d/%m "
+    IDS_ONLY_DATE_FMT       "%s %d%s, %d"
+    IDS_MONTH_JANUARY       "Stycze\xF1"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_MONTH_FEBRUARY      "Luty"
+    IDS_MONTH_MARCH         "Marzec"
+    IDS_MONTH_APRIL         "Kwiecie\xF1"
+    IDS_MONTH_MAY           "Maj"
+    IDS_MONTH_JUNE          "Czerwiec"
+    IDS_MONTH_JULY          "Lipiec"
+    IDS_MONTH_AUGUST        "Sierpie\xF1"
+    IDS_MONTH_SEPTEMBER     "Wrzesie\xF1"
+    IDS_MONTH_OCTOBER       "Pa\x9Fdziernik"
+    IDS_MONTH_NOVEMBER      "Listopad"
+    IDS_MONTH_DECEMBER      "Grudzie\xF1"
+    IDS_CANT_VIEW_CHANNEL   "Nie masz uprawnie\xF1 widzie\xE6 tego kana\xB3u #%s."
+    IDS_CANT_VIEW_MESSAGE_HISTORY 
+                            "Nie masz uprawnie\xF1 do sprawdzania histori czatu w kanale "
+    IDS_CANT_SEND_MESSAGES  "Nie masz uprawnie\xF1 do wysy\xB3ania wiadomo\x9Cci na tym kanale."
+    IDS_SHORT_TIME_FMT      "%H:%M"
+    IDS_CONFIRM_DELETE      "Jeste\x9C pewnien, \xBFe chcesz usun\xB9\xE6 t\xB9 wiadomo\x9C\xE6?\n\n%s (%s)\n\n%s"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_CONFIRM_DELETE_TITLE "Discord Messenger - Usu\xF1 Wiadomo\x9C\xE6"
+    IDS_CONFIRM_PIN         "Hey, just double checking that you want to pin this message to #%s for posterity and greatness?\n\n%s (%s)\n\n%s"
+    IDS_CONFIRM_PIN_TITLE   "Discord Messenger - Przypnij wiadomo\x9C\xE6 (tak solidnie)"
+    IDS_DIRECT_MESSAGES     "Prywatne Wiadomo\x9Cci"
+    IDS_LINK_CONFIRM        "Links are spoopy.  This link goes to %s. Are you sure you want to go there?"
+    IDS_HOLD_UP_CONFIRM     "Discord Messenger - Poczekaj"
+    IDS_LOADING_PINNED_MESSAGES "\xB3adowanie przypi\xEAtych wiadomo\x9Cci..."
+    IDS_NO_PINNED_MESSAGES  "Ten kana\xB3 nie ma przypi\xEAtych wiadomo\x9Cci... jeszcze."
+    IDS_PINNED_MESSAGES_IN  "Przypi\xEAte Wiadomo\x9Cci w #%s"
+    IDS_CONFIRM_LEAVE_GUILD "Czy na pewno chcesz opu\x9Cci\xE6 %S? Nie b\xEAdziesz m\xF3g\xB3 ponownie po\xB3\xB9czy\xE6 si\xEA z serwerem do momentu a\xBF otrzymasz ponowne zaproszenie."
+    IDS_FAILED_TO_INITIALIZE_SAPI "Failed to initialize Speech API"
+    IDS_FAILED_TO_INITIALIZE_SAPI_TITLE 
+                            "Discord Messenger - Could Not Initialize SAPI"
+    IDS_FAILED_TO_SPEAK_MESSAGE "Failed to speak message"
+    IDS_CANNOT_UPLOAD_ATTACHMENT 
+                            "Can't upload attachment to this channel, do you have the permissions?"
+    IDS_FILE_TOO_BIG        "Your files are too powerful!  The maximum file size is 25 MB.  Use an official Discord client if you have Nitro and wish to upload a larger file."
+    IDS_FILE_EMPTY          "You can't upload an empty file.  Why would you want to do that, anyway?!"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_FILE_OUT_OF_MEMORY  "Not enough memory to begin the upload process.  Try closing some programs."
+    IDS_FILE_NO_OPEN        "Error, can't open the attached file.  Try again."
+    IDS_FILE_NO_READ        "Error, can't read from the attached file.  Do you have the required permission from Windows?"
+    IDS_CONNECTION          "Po\xB3\xB9czenie"
+    IDS_URL_EMPTY           "You need to put in a URL in one of the fields!"
+    IDS_CONFIRM_SET_URLS    "You are about to be logged out. Are you sure you want to override the backend URLs, routing traffic through a service potentially other than Discord?"
+    IDS_CONFIRM_OFFICIAL_URLS 
+                            "You are about to be logged out. Are you sure you want to revert to the official Discord backend URLs?"
+    IDS_CHECK_UPDATES       "Do you want to check for updates every time Discord Messenger starts up?\n\nThis will use the official unauthenticated GitHub API to fetch the latest release of Discord Messenger.\n\nYour setting will be saved and you will not be asked again, but you can change this setting in the Preferences in the File menu."
+    IDS_NEW_VERSION_AVAILABLE 
+                            "Discord Messenger has had a new update!\n\nYour version: %s\nLatest version: %s\n\nWould you like to download the new version?\n\nNote: No web browser window will be opened, the app itself will download the files into a location you choose.\nNote: You won't be bugged again for 3 days."
+    IDS_FAILED_UPDATE_CHECK "Failed to check for updates! (error %d, message '%s').\n\nTrying again when the app restarts."
+    IDS_FAILED_TO_UPLOAD    "Error! Can't upload file %s, got error %d."
+    IDS_SAVED_UPDATE        "Twój pobrany plik zosta\xB3 zapisany w tej lokalizacji: %s\n\nCzy chcia\xB3by\x9C go otworzy\xE6?"
+    IDS_MAY_CONTAIN_TOKEN   "This message may contain a Discord authentication token, which may grant an attacker access to your account. Are you sure you want to send it?"
+    IDS_CANT_UPLOAD_SEVERAL "Hey! I currently only take one file at a time."
+    IDS_WELCOME_TO_START_1  "Witamy na pocz\xB9tku kana\xB3u "
+    IDS_WELCOME_TO_START_2  "."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_PINNED_1            " przypi\xB9\xB3 "
+    IDS_PINNED_2            "wiadomo\x9C\xE6"
+    IDS_PINNED_3            " do tego kana\xB3u."
+    IDS_BOOSTED_GUILD       " has boosted the server! "
+    IDS_BOOSTED_ACHIEVED    " has achieved "
+    IDS_BOOSTED_TIER_1      "Poziom 1"
+    IDS_BOOSTED_TIER_2      "Poziom 2"
+    IDS_BOOSTED_TIER_3      "Poziom 3"
+    IDS_STAGE_STARTED       " rozpocz\xB9\xB3 "
+    IDS_STAGE_ENDED         " zako\xF1czy\xB3 "
+    IDS_STAGE_TOPIC         " zmieni\xB3 temat dla podium: "
+    IDS_STAGE_SPEAKER       " sta\xB3 si\xEA m\xF3wc\xB9."
+    IDS_GROUP_JOIN_1        " dodano "
+    IDS_GROUP_JOIN_2        " do grupy."
+    IDS_GROUP_REMOVE_1      " usuni\xEAto "
+    IDS_GROUP_REMOVE_2      " z grupy."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_CHANNEL_RENAME      " zmieni\xB3(-a) nazwe kana\xB3u: "
+    IDS_GROUP_SELF_REMOVE   " opu\x9Cci\xB3(-a) grup\xEA."
+    IDS_EXCITED_YES         "Yep!"
+    IDS_CANT_LAUNCH_URL_MEM "Whoa, like, can't launch the URL %s! Yer' outta memory, duuude!"
+    IDS_CANT_LAUNCH_URL_ERR "Can't launch URL %s. ShellExecute returned error %d.  Look up ""ShellExecute error %d"" if you care."
+    IDS_SSL_ERROR_1         "WARNING:  Your connection may not be private\n\nDiscord Messenger could not verify that it is connecting to the following URL: "
+    IDS_SSL_ERROR_2         "This could be because:\no   Your computer does not trust the certificate that the service has declared because it is wrong,\no   Your computer does not trust the certificate that the service has declared because it doesn't trust the root certificate,\no   Your computer does not trust the certificate that the service has declared because your date and time are incorrect,\no   The website reported a protocol which the client is outdated for and cannot handle, or\no   SOMEONE IS EAVESDROPPING ON YOU RIGHT NOW! (man-in-the-middle attack)\n\nIt is not recommended to proceed if you see this error. Please ensure you can connect to the URL using a capable device on the same network as this one.  If you are able to connect, export the root certificate from that device and import it into Windows, so that you won't get this error again.\n\nYou may also disable SSL server verification, and then restart the application. However, you have to take into account the risks that this entails."
+    IDS_SSL_ERROR_TITLE     "Discord Messenger - SECURITY ALERT"
+    IDS_UNKNOWN_FILE_NAME   "unknown.png"
+    IDS_RESTART_CONFIG_CHANGE 
+                            "Discord Messenger will now restart due to a change in configuration."
+    IDS_NO_APPDATA          "Discord Messenger could not locate your Application Data directory.  The application cannot cache images or save your configuration."
+    IDS_NO_CACHE_DIR        "Discord Messenger could not create ""DiscordMessenger\\cache"" in your Application Data directory. The application cannot store caches of images."
+    IDS_NON_CRITICAL_ERROR  "Discord Messenger - Niekrytyczny b\xB3\xB9d"
+    IDS_ERROR               "B\xB3\xB9d Discord Messenger"
+    IDS_JSON_EXCEPTION      "A bug has occurred and Discord Messenger failed to parse a piece of JSON received from the server.\n\nMessage:"
+    IDS_PROTOBUF_ERROR      "Cannot load settings information from Discord. Got error code %d from protobuf."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_CANNOT_CONNECT_WS   "ERROR: Could not connect to the websocket gateway.\nConnection was closed with code: %d\n\nMessage: %s"
+    IDS_SSL_ERROR_WS        "WARNING: Your connection may not be private\n\nDiscord Messenger could not verify that it is connecting to the WebSocket service required to use Discord Messenger in real time."
+    IDS_SSL_ERROR_3         "Use one of the following buttons to determine how to proceed:\no   ABORT: Declare this HTTP request a failure.\no   RETRY: Retry this HTTP request.  Keep in mind that you will need to restart the app if you have installed a new certificate.\no   IGNORE: This error and future SSL errors will be ignored.  This option is RISKY because it could expose you to man-in-the-middle attacks. If you wish to enable SSL server verification again after clicking Ignore, you can go to the File > Preferences menu, Connection tab, and check the relevant checkbox."
+    IDS_IS_TYPING           " pisz\xEA..."
+    IDS_ARE_TYPING          " pisz\xB9..."
+    IDS_CANNOT_CONNECT_WS_2 "\n\nClick Retry to try connecting again, or Cancel to quit."
+    IDS_AND                 " and "
+    IDS_LOG_OUT_MESSAGE     "Are you sure you want to log out?\n\nThis won't revoke your token, so you can log in with the same token again."
+    IDS_CERT_SETTING_CONFIRM 
+                            "WARNING:\n\nYou are about to change the TLS certificate verification setting. This may expose you to MITM (man-in-the-middle) attacks. It is recommended you instead import the required certificates into Windows.\n\nAre you sure you want to do this? (you can re-enable it anytime in the preferences menu)"
+    IDS_CANCELLING          "Cancelling..."
+    IDS_CALCULATING         "Calculating..."
+    IDS_ETA_STRING          "%s (%s uploaded)"
+    IDS_KB_PER_SEC          "%zu KB/Sec"
+    IDS_FILE_DOWNLOAD       "File Download"
+    IDS_FILE_UPLOAD         "File Upload"
+    IDS_DOWNLOADING         "Downloading:"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_UPLOADING           "Przesy\xB3anie:"
+    IDS_EDITING_MESSAGE     "Edytowanie wiadomo\x9Cci"
+    IDS_REPLYING_TO_MESSAGE "Odpowiadanie "
+    IDS_MENTION             "Wzmianka"
+    IDS_SEND_MESSAGE        "Wy\x9Clij"
+    IDS_CANT_SHOW_BITMAP    "Can't show bitmap! Windows API mismatch?"
+    IDS_CANNOT_INIT_WS      "The WebSocket client could not be initialized.\n\nDiscord Messenger will now exit."
+    IDS_SELECT_BACKGROUND_IMAGE "Wybierz obraz t\xB3a"
+    IDS_GUI_SCALE_CHANGED   "Wymagane jest uruchomienie ponowne, aby zastosowa\xE6 nowe elementy UI."
+    IDS_NO_NOTIFICATIONS    "There are no recent notifications. Wumpus isn't here either."
+    IDS_WELCOME_TO_START_DM_1 
+                            "To jest pocz\xB9tek Twojej histori prywatnych wiadomo\x9Cci z użytkownikiem "
+    IDS_WELCOME_TO_START_DM_2 "."
+    IDS_WELCOME_TO_START_GROUP " group."
+    IDS_NOTIFICATIONS       "Powiadomienia"
+    IDS_CHAT                "Czat"
+    IDS_WINDOW              "Okno"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_TERMINATE_HUNG_PROCESS 
+                            "Instancja aplikacji Discord Messenger jest uruchomiona, ale jest zawieszona. Przed prób\xB9 ponownego uruchomienia aplikacji, należy zakończy\xE6 dotychczasow\xB9 instancje Discord Messenger."
+    IDS_CONNECT_ERROR_1     "Aplikacja Discord Messenger nie może uzyska\xE6 dost\xEApu do danego URL: "
+    IDS_CONNECT_ERROR_2     "Sprawd\x9F po\xB3\xB9czenie sieciowe."
+    IDS_CONNECT_ERROR_3     "Use one of the following buttons to determine how to proceed:\no   RETRY: Retries the request. Use this once you have ensured a connection to the internet.\no   CANCEL: Cancels the request with unloaded data."
+    IDS_CONNECT_ERROR_TITLE "Discord Messenger - B\xB3\xB9d Po\xB3\xB9czenia"
+    IDS_SAVED_STRING_EXE    "Twój pobrany plik zosta\xB3 zapisany w tej lokalizacji: %s\n\nUWAGA: Ten plik może by\xE6 z\xB3o\x9Cliwy.  Upewnij si\xEA, że ufasz wysy\xB3aj\xB9cemu b\xB9d\x9F autorowi tego pliku.\nCzy chcia\xB3by\x9C go otworzy\xE6?"
+    IDS_GET_TOKEN_TUTORIAL  "Here are a few steps you can use to get your Discord token:\n\no  Open a web browser, then navigate to discord.com\n\no  Log in using your Discord account.\n\no  Navigate to any channel.\n\no  Press Ctrl+Shift+I while focused on that channel.\n\no  Navigate to the Network tab, and then send a message.\n\no  Check the ""messages"" request, and in the Request Headers, find the ""Authorization"" string.\n\no  That's your token! Make sure to copy it without any quote marks, then paste it here.\n\nEnjoy!"
+    IDS_CANT_LAUNCH_URL_UNS "Okre\x9Clony link %s nie może by\xE6 otwarty, ponieważ system zwróci\xB3 ""%s"". Najpewniej twoja wersja systemu Windows nie wspiera otwierania linków URL bezpo\x9Crednio."
+    IDS_CONFIRM_UNPIN       "Jeste\x9C pewien, że chcesz przypi\xB9\xE6 t\xEA wiadomo\x9C\xE6?\n\n%s (%s)\n\n%s"
+    IDS_CONFIRM_UNPIN_TITLE "Discord Messenger - Odepnij wiadomo\x9C\xE6"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_APPLY_LANG           "In order to apply the language, you need to restart Discord Messenger.\nDo you wish to restart now?"
+    IDS_RESTART_REQUIRED     "Discord Messenger - Wymagany restart"
+    IDS_LANG_DEFAULTS        "Default Settings have been loaded. They will take affect after a restart."
+    IDS_LANGUAGE             "J\xEAzyk"
+    IDS_SYSTEM_LANGUAGE      "J\xEAzyk Systemu: %s"
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINMENU MENU
+BEGIN
+    POPUP "Pli&k"
+    BEGIN
+        MENUITEM "&Preferencje",                ID_FILE_PREFERENCES
+        MENUITEM SEPARATOR
+        MENUITEM "&Po\xB3\xB9cz ponownie z Discord",       ID_FILE_RECONNECTTODISCORD
+        MENUITEM "Zaprzesta\xF1 &TTS",            ID_FILE_STOPALLSPEECH
+        MENUITEM SEPARATOR
+        MENUITEM "&Zako\xF1cz",                       ID_FILE_EXIT
+    END
+    POPUP "&Serwer"
+    BEGIN
+        MENUITEM "&Zapro\x9C Osoby",              IDM_INVITEPEOPLE, GRAYED
+        MENUITEM SEPARATOR
+        POPUP "Opcje &Powiadomie\xF1", GRAYED
+        BEGIN
+            MENUITEM "Wszystkie wiadomo\x9Cci",                IDM_NOTIFYALL, GRAYED
+            MENUITEM "Tylko @wzmianki",              IDM_NOTIFYMENTS, GRAYED
+            MENUITEM "Brak Powiadomie\xF1",            IDM_NOTIFYNONE, GRAYED
+            MENUITEM SEPARATOR
+            MENUITEM "Suppress @everyone and @here", IDM_NOTIFYSUPPRGLOB, GRAYED
+            MENUITEM "Suppress all role @mentions", IDM_NOTIFYSUPPRROLE, GRAYED
+        END
+        MENUITEM "Ustawienia &Serwera",            IDM_GUILDSETTINGS, GRAYED
+        MENUITEM "Opcje Prywatno\x9Cci",           IDM_PRIVACYSETTINGS, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "&Zmie\xF1 nick",            IDM_EDITNICKNAME, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "&Opu\x9C\xE6 Serwer",               IDM_LEAVEGUILD
+    END
+    POPUP "&Akcje"
+    BEGIN
+        MENUITEM "&Wyszukaj...\tCtrl+F",          ID_ACTIONS_SEARCH, GRAYED
+        MENUITEM "Quick Switcher...\tCtrl+K",   ID_ACTIONS_QUICKSWITCHER
+        MENUITEM SEPARATOR
+        MENUITEM "Nowa Grupa &PW...",            ID_ACTIONS_NEWGROUPDM, GRAYED
+        MENUITEM "Dodaj &Przyjaciela...",              ID_ACTIONS_ADDFRIEND, GRAYED
+    END
+    POPUP "&Konto"
+    BEGIN
+        POPUP "S&tatus"
+        BEGIN
+            MENUITEM "Dost\xEApny (Online)",                      ID_ONLINESTATUSPLACEHOLDER_ONLINE, CHECKED
+            MENUITEM SEPARATOR
+            MENUITEM "Zaraz Wracam (Idle)",                        ID_ONLINESTATUSPLACEHOLDER_IDLE
+            MENUITEM "Nie Przeszkadza\xE6 (Do not disturb)",              ID_ONLINESTATUSPLACEHOLDER_DONOTDISTURB
+            MENUITEM "Niewidoczny",                   ID_ONLINESTATUSPLACEHOLDER_INVISIBLE
+        END
+        MENUITEM "Ustaw &W\xB3asny Status",          ID_ACCOUNT_SETCUSTOMSTATUS, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "&Wy\xB3\xB9cz wyciszenie",                     ID_ACCOUNT_UNMUTE, GRAYED
+        MENUITEM "&W\xB3\xB9cz D\x9Fwi\xEAk",                     ID_ACCOUNT_DEAFEN, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Ustawienia Użytkownika",              ID_ACCOUNT_USERSETTINGS, GRAYED
+    END
+    POPUP "&Pomoc"
+    BEGIN
+        MENUITEM "&Tematy Pomocy...",             ID_HELP_HELPTOPICS, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "&o Discord Messenger...", ID_HELP_ABOUTDISCORDMESSENGER
+    END
+END
+
+IDR_MESSAGE_CONTEXT MENU
+BEGIN
+    POPUP "Dummy Popup"
+    BEGIN
+        POPUP "Dodaj Reakcj\xEA"
+        BEGIN
+            MENUITEM "Reaction1",                   ID_ADDREACTION_REACTION1
+            MENUITEM "Reaction2",                   ID_ADDREACTION_REACTION2
+            MENUITEM "Reaction3",                   ID_ADDREACTION_REACTION3
+            MENUITEM "Reaction4",                   ID_ADDREACTION_REACTION4
+            MENUITEM "Reaction5",                   ID_ADDREACTION_REACTION5
+            MENUITEM "Reaction6",                   ID_ADDREACTION_REACTION6
+            MENUITEM "Reaction7",                   ID_ADDREACTION_REACTION7
+            MENUITEM "Reaction8",                   ID_ADDREACTION_REACTION8
+            MENUITEM SEPARATOR
+            MENUITEM "View More",                   ID_ADDREACTION_VIEWMORE
+        END
+        MENUITEM "Edytuj Wiadomo\x9C\xE6",                ID_DUMMYPOPUP_EDITMESSAGE
+        MENUITEM "Przypnij wiadomo\x9C\xE6",              ID_DUMMYPOPUP_PINMESSAGE
+        MENUITEM "Odepnij Wiadomo\x9C\xE6",               ID_DUMMYPOPUP_UNPINMESSAGE
+        MENUITEM "Odpowiedz",                       ID_DUMMYPOPUP_REPLY
+        MENUITEM "Kopiuj Tekst",                    ID_DUMMYPOPUP_COPYTEXT
+        MENUITEM "Oznacz Jako Nieprzeczytane",      ID_DUMMYPOPUP_MARKUNREAD
+        MENUITEM "Kopiuj Link do Wiadomo\x9Cci",       ID_DUMMYPOPUP_COPYMESSAGELINK
+        MENUITEM "Przeczytaj Wiadomo\x9C\xE6 (TTS)",      ID_DUMMYPOPUP_SPEAKMESSAGE
+        MENUITEM "Usu\xF1 Wiadomo\x9C\xE6",                  ID_DUMMYPOPUP_DELETEMESSAGE
+        MENUITEM SEPARATOR
+        MENUITEM "Kopiuj ID Wiadomo\x9Cci",                 ID_DUMMYPOPUP_COPYID
+    END
+END
+
+IDR_GUILD_CONTEXT MENU
+BEGIN
+    POPUP "Dummy"
+    BEGIN
+        MENUITEM "Mark as Read",                IDM_MARKASREAD
+        MENUITEM SEPARATOR
+        MENUITEM "Invite People",               IDM_INVITEPEOPLE
+        MENUITEM SEPARATOR
+        MENUITEM "Mute Server",                 IDM_MUTESERVER, CHECKED
+        POPUP "Notification Settings"
+        BEGIN
+            MENUITEM "All Messages",                IDM_NOTIFYALL
+            MENUITEM "Only @mentions",              IDM_NOTIFYMENTS
+            MENUITEM "No Notifications",            IDM_NOTIFYNONE
+            MENUITEM SEPARATOR
+            MENUITEM "Suppress @everyone and @here", IDM_NOTIFYSUPPRGLOB
+            MENUITEM "Suppress all role @mentions", IDM_NOTIFYSUPPRROLE
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Server Settings",             IDM_GUILDSETTINGS
+        MENUITEM "Privacy Settings",            IDM_PRIVACYSETTINGS
+        MENUITEM "Change Nickname",             IDM_EDITNICKNAME
+        MENUITEM SEPARATOR
+        MENUITEM "Create Channel",              IDM_CREATECHAN
+        MENUITEM "Create Category",             IDM_CREATECATEG
+        MENUITEM SEPARATOR
+        MENUITEM "Leave Server",                IDM_LEAVEGUILD
+        MENUITEM SEPARATOR
+        MENUITEM "Copy Server ID",              IDM_COPYGUILDID
+    END
+END
+
+IDR_CHANNEL_CONTEXT MENU
+BEGIN
+    POPUP "Dummy"
+    BEGIN
+        MENUITEM "Mute Channel",                IDM_MUTECHANNEL, CHECKED
+        MENUITEM "Mark as Read",                IDM_MARKASREAD
+        MENUITEM SEPARATOR
+        MENUITEM "Instant Invite",              IDM_INSTANTINVITE
+        MENUITEM SEPARATOR
+        MENUITEM "Copy ID",                     IDM_COPYCHANID
+    END
+END
+
+IDR_DMCHANNEL_CONTEXT MENU
+BEGIN
+    POPUP "Dummy"
+    BEGIN
+        MENUITEM "Profile",                     IDM_PROFILE
+        MENUITEM "Close DM",                    IDM_CLOSEDM
+        MENUITEM SEPARATOR
+        MENUITEM "Add Friend",                  IDM_ADDFRIEND, INACTIVE
+        MENUITEM "Block",                       IDM_BLOCK
+        MENUITEM SEPARATOR
+        MENUITEM "Copy ID",                     IDM_COPYID
+    END
+END
+
+IDR_NOTIFICATION_CONTEXT MENU
+BEGIN
+    POPUP "Notification"
+    BEGIN
+        MENUITEM "Show",                        ID_NOTIFICATION_SHOW
+        POPUP "Status"
+        BEGIN
+            MENUITEM "Online",                      ID_ONLINESTATUSPLACEHOLDER_ONLINE, CHECKED
+            MENUITEM SEPARATOR
+            MENUITEM "Idle",                        ID_ONLINESTATUSPLACEHOLDER_IDLE
+            MENUITEM "Do not disturb",              ID_ONLINESTATUSPLACEHOLDER_DONOTDISTURB
+            MENUITEM "Invisible",                   ID_ONLINESTATUSPLACEHOLDER_INVISIBLE
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Exit",                        ID_NOTIFICATION_EXIT
+    END
+END
+
+IDR_ATTACHMENT_CONTEXT MENU
+BEGIN
+    POPUP "Dummy"
+    BEGIN
+        MENUITEM "Copy Image",                  ID_DUMMY_COPYIMAGE
+        MENUITEM "Save Image",                  ID_DUMMY_SAVEIMAGE
+        MENUITEM SEPARATOR
+        MENUITEM "Copy Image Link",             ID_DUMMY_COPYIMAGELINK
+    END
+END
+
+IDR_LINK_CONTEXT MENU
+BEGIN
+    POPUP "Dummy Popup"
+    BEGIN
+        MENUITEM "Copy Link",                   ID_DUMMYPOPUP_COPYLINK
+        MENUITEM "Open Link",                   ID_DUMMYPOPUP_OPENLINK1105
+        MENUITEM SEPARATOR
+        MENUITEM "Copy Proxy Link",             ID_DUMMYPOPUP_COPYPROXYLINK
+        MENUITEM "Open Proxy Link",             ID_DUMMYPOPUP_OPENPROXYLINK
+    END
+END
+
+IDR_IMAGE_CONTEXT MENU
+BEGIN
+    POPUP "Dummy Popup"
+    BEGIN
+        MENUITEM "Copy Image",                  ID_DUMMYPOPUP_COPYIMAGE
+        MENUITEM "Save Image",                  ID_DUMMYPOPUP_SAVEIMAGE
+        MENUITEM SEPARATOR
+        MENUITEM "Copy Link",                   ID_DUMMYPOPUP_COPYLINK
+        MENUITEM "Open Link",                   ID_DUMMYPOPUP_OPENLINK
+        MENUITEM SEPARATOR
+        MENUITEM "Copy Proxy Link",             ID_DUMMYPOPUP_COPYPROXYLINK
+        MENUITEM "Open Proxy Link",             ID_DUMMYPOPUP_OPENPROXYLINK
+    END
+END
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// End Polish resources
 
 
 #ifndef APSTUDIO_INVOKED

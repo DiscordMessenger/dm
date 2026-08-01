@@ -338,11 +338,12 @@
 #define IDS_CANT_LAUNCH_URL_UNS         775
 #define IDS_CONFIRM_UNPIN               776
 #define IDS_CONFIRM_UNPIN_TITLE         777
-#define IDS_LANGUAGE					778
+#define IDS_ETA_STRING_DOWNLOADED       778
 #define IDS_APPLY_LANG					779
 #define IDS_RESTART_REQUIRED			780
 #define IDS_LANG_DEFAULTS				781
 #define IDS_SYSTEM_LANGUAGE				782
+#define IDS_LANGUAGE					783
 #define IDC_OPTIONS_TABS                801
 #define IDC_MY_ACCOUNT_BOX              802
 #define IDC_MY_ACCOUNT_NAME             803
