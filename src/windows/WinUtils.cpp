@@ -468,11 +468,13 @@ std::string MakeStringFromEditData(LPCTSTR tstr)
 	std::vector<TCHAR> tch2;
 	tch2.reserve(_tcslen(tstr) + 1);
 	const TCHAR* tcString = tstr;
-	for (; *tcString; tcString++) {
-		if (*tcString < 0 || *tcString > 127)
+	for (; *tcString; tcString++)
+	{
+		if (sizeof(TCHAR) == 1 && (*tcString < 0 || *tcString > 127)) {
 			tch2.push_back('?');
-		else if (*tcString != '\r')
+		} else if (*tcString != '\r') {
 			tch2.push_back(*tcString);
+		}
 	}
 	tch2.push_back(0);
 
