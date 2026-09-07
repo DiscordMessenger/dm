@@ -245,7 +245,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib\VC\x86\MDd;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
       <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
@@ -263,7 +263,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib\VC\x86\MDd;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
       <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
@@ -281,7 +281,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib\VC\x86\MDd;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
       <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
@@ -299,7 +299,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib\VC\x86\MDd;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
       <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
@@ -321,7 +321,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib\VC\x86\MD;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
       <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -342,7 +342,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(OPENSSL_INSTALL)\lib\VC\x86\MD;$(OPENSSL_INSTALL)\lib;$(OPENSSL_INSTALL);</AdditionalLibraryDirectories>
       <AdditionalDependencies>libwebp.lib;libcrypto.lib;libssl.lib;ws2_32.lib;msimg32.lib;shlwapi.lib;comctl32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

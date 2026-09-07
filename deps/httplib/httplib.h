@@ -10,6 +10,11 @@
 
 #include "ri/resock2.hpp"
 
+// Check for v4.0.2 or lower
+#if OPENSSL_VERSION_NUMBER <= 0x40000020L
+#define ASN1_STRING_get_length ASN1_STRING_length
+#endif
+
 extern int g_latestSSLError; // HACK - To debug an "SSL connection failed" issue.
 
 #ifdef MINGW_SPECIFIC_HACKS // iProgramInCpp
@@ -8136,14 +8141,31 @@ inline bool SSLClient::verify_host_with_common_name(X509 *server_cert) const {
   const auto subject_name = X509_get_subject_name(server_cert);
 
   if (subject_name != nullptr) {
-    char name[BUFSIZ];
-    // TODO: this shit is deprecated as of OSSL v4.0
-    auto name_len = X509_NAME_get_text_by_NID(subject_name, NID_commonName,
-                                              name, sizeof(name));
+#if defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x30300000L
+    int idx = X509_NAME_get_index_by_NID(subject_name, NID_commonName, -1);
+    if (idx < 0) { return false; }
 
+    auto entry = X509_NAME_get_entry(subject_name, idx);
+    if (entry == nullptr) { return false; }
+
+    auto asn1_str = X509_NAME_ENTRY_get_data(entry);
+    if (asn1_str == nullptr) { return false; }
+
+    auto data = ASN1_STRING_get0_data(asn1_str);
+    auto len = ASN1_STRING_length(asn1_str);
+
+    if (data != nullptr && len > 0) {
+      return check_host_name(reinterpret_cast<const char *>(data),
+                              static_cast<size_t>(len));
+    }
+#else
+    char name[BUFSIZ];
+    auto name_len = X509_NAME_get_text_by_NID(subject_name, NID_commonName,
+                                               name, sizeof(name));
     if (name_len != -1) {
       return check_host_name(name, static_cast<size_t>(name_len));
     }
+#endif
   }
 
   return false;

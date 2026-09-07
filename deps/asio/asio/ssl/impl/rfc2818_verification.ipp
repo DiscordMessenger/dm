@@ -27,6 +27,11 @@
 
 #include "asio/detail/push_options.hpp"
 
+// Check for v4.0.2 or lower
+#if OPENSSL_VERSION_NUMBER <= 0x40000020L
+#define ASN1_STRING_get_length ASN1_STRING_length
+#endif
+
 namespace asio {
 namespace ssl {
 
