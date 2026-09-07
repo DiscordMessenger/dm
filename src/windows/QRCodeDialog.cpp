@@ -195,11 +195,13 @@ void QRCodeDialog::OnDestroy()
 
 void QRCodeDialog::CreateRSAKey()
 {
+	/*
 	if (RAND_status() == 0) {
 		DbgPrintW("QRCodeDialog: OpenSSL random is not seeded!!");
 		assert(!"OpenSSL rand is not seeded!");
 		return;
 	}
+	*/
 
 	EVP_PKEY* pkey = nullptr;
 	BUF_MEM* bptr = NULL;

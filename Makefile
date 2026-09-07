@@ -59,14 +59,14 @@ endif
 $(info Discord Messenger makefile)
 $(info Debug: $(DEBUG))
 $(info Unicode: $(UNICODE))
-$(info OpenSSL Include Path: $(OPENSSL_INC_DIR))
-$(info OpenSSL Library Path: $(OPENSSL_LIB_DIR))
-
 # -----------------------------
 # Include and library paths
 # -----------------------------
 OPENSSL_INC_DIR = $(OPENSSL_DIR)/include
 OPENSSL_LIB_DIR = $(OPENSSL_DIR)
+
+$(info OpenSSL Include Path: $(OPENSSL_INC_DIR))
+$(info OpenSSL Library Path: $(OPENSSL_LIB_DIR))
 
 SYSROOTD=
 ifdef SYSROOT

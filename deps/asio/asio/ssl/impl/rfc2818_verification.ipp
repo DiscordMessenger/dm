@@ -62,10 +62,10 @@ bool rfc2818_verification::operator()(
     if (gen->type == GEN_DNS && !is_address)
     {
       ASN1_IA5STRING* domain = gen->d.dNSName;
-      if (domain->type == V_ASN1_IA5STRING && domain->data && domain->length)
+      if (ASN1_STRING_type(domain) == V_ASN1_IA5STRING && ASN1_STRING_get0_data(domain) && ASN1_STRING_get_length(domain))
       {
-        const char* pattern = reinterpret_cast<const char*>(domain->data);
-        std::size_t pattern_length = domain->length;
+        const char* pattern = reinterpret_cast<const char*>(ASN1_STRING_get0_data(domain));
+        std::size_t pattern_length = ASN1_STRING_get_length(domain);
         if (match_pattern(pattern, pattern_length, host_.c_str()))
         {
           GENERAL_NAMES_free(gens);
@@ -76,21 +76,21 @@ bool rfc2818_verification::operator()(
     else if (gen->type == GEN_IPADD && is_address)
     {
       ASN1_OCTET_STRING* ip_address = gen->d.iPAddress;
-      if (ip_address->type == V_ASN1_OCTET_STRING && ip_address->data)
+      if (ASN1_STRING_type(ip_address) == V_ASN1_OCTET_STRING && ASN1_STRING_get0_data(ip_address))
       {
-        if (address.is_v4() && ip_address->length == 4)
+        if (address.is_v4() && ASN1_STRING_get_length(ip_address) == 4)
         {
           ip::address_v4::bytes_type bytes = address.to_v4().to_bytes();
-          if (memcmp(bytes.data(), ip_address->data, 4) == 0)
+          if (memcmp(bytes.data(), ASN1_STRING_get0_data(ip_address), 4) == 0)
           {
             GENERAL_NAMES_free(gens);
             return true;
           }
         }
-        else if (address.is_v6() && ip_address->length == 16)
+        else if (address.is_v6() && ASN1_STRING_get_length(ip_address) == 16)
         {
           ip::address_v6::bytes_type bytes = address.to_v6().to_bytes();
-          if (memcmp(bytes.data(), ip_address->data, 16) == 0)
+          if (memcmp(bytes.data(), ASN1_STRING_get0_data(ip_address), 16) == 0)
           {
             GENERAL_NAMES_free(gens);
             return true;
@@ -103,18 +103,18 @@ bool rfc2818_verification::operator()(
 
   // No match in the alternate names, so try the common names. We should only
   // use the "most specific" common name, which is the last one in the list.
-  X509_NAME* name = X509_get_subject_name(cert);
+  const X509_NAME* name = X509_get_subject_name(cert);
   int i = -1;
-  ASN1_STRING* common_name = 0;
+  const ASN1_STRING* common_name = 0;
   while ((i = X509_NAME_get_index_by_NID(name, NID_commonName, i)) >= 0)
   {
-    X509_NAME_ENTRY* name_entry = X509_NAME_get_entry(name, i);
+    const X509_NAME_ENTRY* name_entry = X509_NAME_get_entry(name, i);
     common_name = X509_NAME_ENTRY_get_data(name_entry);
   }
-  if (common_name && common_name->data && common_name->length)
+  if (common_name && ASN1_STRING_get0_data(common_name) && ASN1_STRING_get_length(common_name))
   {
-    const char* pattern = reinterpret_cast<const char*>(common_name->data);
-    std::size_t pattern_length = common_name->length;
+    const char* pattern = reinterpret_cast<const char*>(ASN1_STRING_get0_data(common_name));
+    std::size_t pattern_length = ASN1_STRING_get_length(common_name);
     if (match_pattern(pattern, pattern_length, host_.c_str()))
       return true;
   }

@@ -8110,7 +8110,7 @@ SSLClient::verify_host_with_subject_alt_name(X509 *server_cert) const {
       auto val = sk_GENERAL_NAME_value(alt_names, i);
       if (val->type == type) {
         auto name = (const char *)ASN1_STRING_get0_data(val->d.ia5);
-        auto name_len = (size_t)ASN1_STRING_length(val->d.ia5);
+        auto name_len = (size_t)ASN1_STRING_get_length(val->d.ia5);
 
         switch (type) {
         case GEN_DNS: dsn_matched = check_host_name(name, name_len); break;
@@ -8137,6 +8137,7 @@ inline bool SSLClient::verify_host_with_common_name(X509 *server_cert) const {
 
   if (subject_name != nullptr) {
     char name[BUFSIZ];
+    // TODO: this shit is deprecated as of OSSL v4.0
     auto name_len = X509_NAME_get_text_by_NID(subject_name, NID_commonName,
                                               name, sizeof(name));
 
