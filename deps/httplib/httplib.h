@@ -10,11 +10,6 @@
 
 #include "ri/resock2.hpp"
 
-// Check for v4.0.2 or lower
-#if OPENSSL_VERSION_NUMBER <= 0x40000020L
-#define ASN1_STRING_get_length ASN1_STRING_length
-#endif
-
 extern int g_latestSSLError; // HACK - To debug an "SSL connection failed" issue.
 
 #ifdef MINGW_SPECIFIC_HACKS // iProgramInCpp
@@ -318,6 +313,11 @@ using socket_t = int;
 #error Sorry, OpenSSL versions prior to 1.1.1 are not supported
 #elif OPENSSL_VERSION_NUMBER < 0x30000000L
 #define SSL_get1_peer_certificate SSL_get_peer_certificate
+#endif
+
+// Check for v4.0.2 or lower
+#if OPENSSL_VERSION_NUMBER <= 0x40000020L
+#define ASN1_STRING_get_length ASN1_STRING_length
 #endif
 
 #endif
@@ -8152,7 +8152,7 @@ inline bool SSLClient::verify_host_with_common_name(X509 *server_cert) const {
     if (asn1_str == nullptr) { return false; }
 
     auto data = ASN1_STRING_get0_data(asn1_str);
-    auto len = ASN1_STRING_length(asn1_str);
+    auto len = ASN1_STRING_get_length(asn1_str);
 
     if (data != nullptr && len > 0) {
       return check_host_name(reinterpret_cast<const char *>(data),
