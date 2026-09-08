@@ -4631,14 +4631,14 @@ void MessageList::AdjustHeightInfo(
 
 	// also figure out attachment size
 	attachheight = 0;
-	for (auto& att : msg.m_msg->m_attachments)
+	for (auto& att : msg.m_attachmentData)
 	{
 		// XXX improve?
 		int inc = 0;
-		if (!GetLocalSettings()->ShowAttachmentImages() || !att.IsImage())
+		if (!GetLocalSettings()->ShowAttachmentImages() || !att.m_pAttachment->IsImage())
 			inc = ATTACHMENT_HEIGHT + ATTACHMENT_GAP;
 		else
-			inc = att.m_previewHeight + ATTACHMENT_GAP;
+			inc = att.m_pAttachment->m_previewHeight + ATTACHMENT_GAP;
 
 		height += inc;
 		attachheight += inc;
