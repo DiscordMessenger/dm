@@ -9,6 +9,8 @@
 #endif
 #include <commdlg.h>
 
+static bool g_bPendingRestart = false;
+
 const eMessageStyle g_indexToMessageStyle[] = {
 	MS_3DFACE,
 	MS_GRADIENT,
@@ -39,6 +41,7 @@ enum ePage
 	PG_CHAT,
 	PG_WINDOW,
 	PG_CONNECTION,
+	PG_LANGUAGE,
 	PG_PAGE_COUNT,
 	PG_FIRST = PG_ACCOUNT_AND_PRIVACY
 };
@@ -290,6 +293,45 @@ void OptionsInitPage(HWND hwndDlg, int pageNum)
 
 			break;
 		}
+		case PG_LANGUAGE:
+		{	
+			if (g_bPendingRestart) {
+				ShowWindow(GetDlgItem(hwndDlg, IDC_PENDING_RESTART), SW_SHOW);
+				ShowWindow(GetDlgItem(hwndDlg, IDC_PENDING_RESTART_TEXT), SW_SHOW);
+			}
+			else {
+				ShowWindow(GetDlgItem(hwndDlg, IDC_PENDING_RESTART), SW_HIDE);
+				ShowWindow(GetDlgItem(hwndDlg, IDC_PENDING_RESTART_TEXT), SW_HIDE);
+			}
+
+			// TODO: Make a function that reads off available languages
+			// off resource file and adds them as listbox options
+			HWND hList = GetDlgItem(hwndDlg, IDC_LANGUAGE_LIST);
+
+			// NOTE: must be in order!!
+			ListBox_AddString(hList, TEXT("English (US)"));
+			ListBox_AddString(hList, TEXT("Deutsch"));
+			ListBox_AddString(hList, TEXT("Espa\xf1ol"));
+			ListBox_AddString(hList, TEXT("Polski"));
+
+			TCHAR szSysLang[128];
+			TCHAR szResText[256];
+
+			// Check if currently loaded language is the name as the system.
+			LocalSettings* pSettings = GetLocalSettings();
+
+			if (GetSystemDefaultLangID() == pSettings->GetLanguage()) {
+				SendMessage(GetDlgItem(hwndDlg, IDC_LANGUAGE_SYSTEM), BM_SETCHECK, BST_CHECKED, 0);
+			}
+
+			// Get Systems Language and display that
+			GetLocaleInfo(MAKELCID(GetSystemDefaultLangID(), SORT_DEFAULT), LOCALE_SLANGUAGE, szSysLang, 128);
+
+			_stprintf(szResText, (LPCTSTR)TmGetTString(IDS_SYSTEM_LANGUAGE), szSysLang);
+			SetDlgItemText(hwndDlg, IDS_SYSTEM_LANGUAGE, szResText);
+
+			break;
+		}
 	}
 
 }
@@ -316,6 +358,7 @@ void WINAPI OnChildDialogInit(HWND hwndDlg)
 
 INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+
 	if (LOWORD(wParam) == IDOK)
 		return EndDialog(hWnd, IDOK);
 	
@@ -648,6 +691,71 @@ INT_PTR OptionsHandleCommand(HWND hwndParent, HWND hWnd, int pageNum, UINT uMsg,
 			}
 			break;
 		}
+		case PG_LANGUAGE:
+		{	
+
+			switch (LOWORD(wParam)) {
+
+				case IDC_LANGUAGE_APPLY:
+				{
+					// NOTE: this must be in order as the ListBox
+					// temporary, once i'll figure out other ways
+
+					LANGID langIds[] = {
+						MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US)
+					};
+
+					int sel = ListBox_GetCurSel(GetDlgItem(hWnd, IDC_LANGUAGE_LIST));
+
+					GetLocalSettings()->SetLanguage(langIds[sel]);
+					GetLocalSettings()->Save();
+
+					if (MessageBox(hWnd, TmGetTString(IDS_APPLY_LANG), TmGetTString(IDS_RESTART_REQUIRED), MB_YESNO | MB_ICONEXCLAMATION) == IDYES) {
+						RestartInstance();
+					}
+					else {
+						g_bPendingRestart = true;
+
+						ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART), SW_SHOW);
+						ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART_TEXT), SW_SHOW);
+					}
+					break;
+				}
+
+				case IDC_LANGUAGE_DEFAULTS:
+				{
+					MessageBox(hWnd, TmGetTString(IDS_LANG_DEFAULTS), TmGetTString(IDS_RESTART_REQUIRED), MB_OK);
+					g_bPendingRestart = true;
+
+					ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART), SW_SHOW);
+					ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART_TEXT), SW_SHOW);
+
+					// the default langID for English US
+					GetLocalSettings()->SetLanguage(1033);
+					GetLocalSettings()->Save();
+
+					break;
+				}
+
+				case IDC_LANGUAGE_SYSTEM:
+				{
+					GetLocalSettings()->SetLanguage(GetSystemDefaultLangID());
+					GetLocalSettings()->Save();
+
+					if (MessageBox(hWnd, TmGetTString(IDS_APPLY_LANG), TmGetTString(IDS_RESTART_REQUIRED), MB_YESNO | MB_ICONEXCLAMATION) == IDYES) {
+						RestartInstance();
+					}
+					else {
+						g_bPendingRestart = true;
+
+						ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART), SW_SHOW);
+						ShowWindow(GetDlgItem(hWnd, IDC_PENDING_RESTART_TEXT), SW_SHOW);
+					}
+
+					break;
+				}
+			}
+		}
 	}
 
 	return 0;
@@ -743,6 +851,7 @@ HRESULT OnPreferenceDialogInit(HWND hWnd)
 	AddTab(hwndTab, tie, PG_CHAT,                (LPTSTR)TmGetTString(IDS_CHAT));
 	AddTab(hwndTab, tie, PG_WINDOW,              (LPTSTR)TmGetTString(IDS_WINDOW));
 	AddTab(hwndTab, tie, PG_CONNECTION,          (LPTSTR)TmGetTString(IDS_CONNECTION));
+	AddTab(hwndTab, tie, PG_LANGUAGE,			 (LPTSTR)TmGetTString(IDS_LANGUAGE));
 
 	// Lock the resources for the child dialog boxes.
 	pHeader->apRes[PG_ACCOUNT_AND_PRIVACY] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_MY_ACCOUNT));
@@ -751,6 +860,8 @@ HRESULT OnPreferenceDialogInit(HWND hWnd)
 	pHeader->apRes[        PG_CHAT       ] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_CHATSETTINGS));
 	pHeader->apRes[       PG_WINDOW      ] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_WINDOWSETTINGS));
 	pHeader->apRes[     PG_CONNECTION    ] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_CONNECTION));
+	pHeader->apRes[      PG_LANGUAGE     ] = LockDialogResource(MAKEINTRESOURCE(IDD_DIALOG_LANGUAGE_ND));
+
 
 	RECT rcTab;
 	SetRectEmpty(&rcTab);
