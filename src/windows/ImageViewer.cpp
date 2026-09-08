@@ -287,7 +287,7 @@ LRESULT CALLBACK ImageViewerChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 
 			HImage* him = GetBitmap();
 			if (!him) {
-				COLORREF oldBk = SetBkColor(hdc, GetSysColor (COLOR_3DDKSHADOW));
+				COLORREF oldBk = SetBkColor(hdc, GetSysColorV2 (COLOR_3DDKSHADOW));
 				COLORREF oldText = SetTextColor(hdc, RGB(255, 255, 255));
 				HGDIOBJ oldObject = SelectObject(hdc, g_MessageTextFont);
 
@@ -491,7 +491,7 @@ bool RegisterImageViewerClass()
 	wc.lpfnWndProc   = ImageViewerWndProc;
 	wc.hInstance     = g_hInstance;
 	wc.lpszClassName = DM_IMAGE_VIEWER_CLASS;
-	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = GetSysColorBrushV2(COLOR_3DFACE);
 	wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
 	wc.hIcon         = g_Icon = LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_ICON));
 
@@ -501,7 +501,7 @@ bool RegisterImageViewerClass()
 	wc2.lpfnWndProc   = ImageViewerChildWndProc;
 	wc2.hInstance     = g_hInstance;
 	wc2.lpszClassName = DM_IMAGE_VIEWER_CHILD_CLASS;
-	wc2.hbrBackground = ri::GetSysColorBrush(COLOR_3DDKSHADOW);
+	wc2.hbrBackground = GetSysColorBrushV2(COLOR_3DDKSHADOW);
 	wc2.hCursor       = LoadCursor(NULL, IDC_ARROW);
 	wc2.hIcon         = g_Icon = LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_ICON));
 

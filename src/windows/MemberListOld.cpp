@@ -59,7 +59,7 @@ void MemberListOld::InitializeClass()
 	WNDCLASS& wc = g_memberListOldClass;
 
 	wc.lpszClassName = T_MEMBER_LIST_CLASS_OLD;
-	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = GetSysColorBrushV2(COLOR_3DFACE);
 	wc.style = 0;
 	wc.hCursor = LoadCursor(0, IDC_ARROW);
 	wc.lpfnWndProc = &MemberListOld::WndProc;
@@ -197,6 +197,15 @@ LRESULT MemberListOld::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			WORD wHeight = HIWORD(lParam);
 			MoveWindow(pList->m_listHwnd, 0, 0, wWidth, wHeight, TRUE);
 			break;
+		}
+
+		case WM_CTLCOLORLISTBOX: {
+			HDC hdc = (HDC)wParam;
+
+			SetBkColor(hdc, GetSysColorV2(COLOR_WINDOW));
+			SetTextColor(hdc, GetSysColorV2(COLOR_WINDOWTEXT));
+
+			return (LRESULT)GetSysColorBrushV2(COLOR_WINDOW);
 		}
 	}
 

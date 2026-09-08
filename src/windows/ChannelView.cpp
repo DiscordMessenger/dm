@@ -63,13 +63,13 @@ bool ChannelView::InitTreeView()
 	// Add the open file, closed file, and document bitmaps.
 	m_nCategoryExpandIcon   = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CATEGORY_EXPAND))));
 	m_nCategoryCollapseIcon = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CATEGORY_COLLAPSE))));
-	m_nChannelIcon    = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL))));
-	m_nForumIcon      = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM))));
-	m_nVoiceIcon      = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_VOICE))));
-	m_nDmIcon         = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_DM))));
-	m_nGroupDmIcon    = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_GROUPDM))));
-	m_nChannelDotIcon = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL_UNREAD))));
-	m_nChannelRedIcon = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(IDI_CHANNEL_MENTIONED))));
+	m_nChannelIcon    = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(DMV(IDI_CHANNEL)))));
+	m_nForumIcon      = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(DMV(IDI_GROUPDM)))));
+	m_nVoiceIcon      = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(DMV(IDI_VOICE)))));
+	m_nDmIcon         = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(DMV(IDI_DM)))));
+	m_nGroupDmIcon    = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(DMV(IDI_GROUPDM)))));
+	m_nChannelDotIcon = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(DMV(IDI_CHANNEL_UNREAD)))));
+	m_nChannelRedIcon = ri::ImageList_AddIcon(himl, LoadIcon(g_hInstance, MAKEINTRESOURCE(DMIC(DMV(IDI_CHANNEL_MENTIONED)))));
 
 	// Fail if not all of the images were added.
 	int ic = ri::ImageList_GetImageCount(himl);
@@ -84,6 +84,11 @@ bool ChannelView::InitTreeView()
 	TreeView_SetImageList(hwndTV, himl, TVSIL_NORMAL);
 
 	SetWindowFont(hwndTV, g_MessageTextFont, TRUE);
+
+	if (IsDarkModeEnabled()) {
+		TreeView_SetBkColor(m_treeHwnd, GetSysColorV2(COLOR_WINDOW));
+		TreeView_SetTextColor(m_treeHwnd, GetSysColorV2(COLOR_WINDOWTEXT));
+	}
 
 	return TRUE;
 }
@@ -108,6 +113,11 @@ bool ChannelView::InitListView()
 	ListView_InsertColumn(m_listHwnd, 0, &col);
 
 	SetWindowFont(m_listHwnd, g_MessageTextFont, TRUE);
+
+	if (IsDarkModeEnabled()) {
+		TreeView_SetBkColor(m_listHwnd, GetSysColorV2(COLOR_WINDOW));
+		TreeView_SetTextColor(m_listHwnd, GetSysColorV2(COLOR_WINDOWTEXT));
+	}
 
 	return TRUE;
 }
@@ -494,6 +504,8 @@ ChannelView* ChannelView::Create(HWND hwnd, LPRECT rect)
 		view = NULL;
 	}
 
+	view->SetMode(false);
+
 	return view;
 }
 
@@ -509,7 +521,7 @@ void ChannelView::InitializeClass()
 	WNDCLASS& wc = g_ChannelViewClass;
 
 	wc.lpszClassName = T_CHANNEL_VIEW_CONTAINER_CLASS;
-	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = GetSysColorBrushV2(COLOR_3DFACE);
 	wc.style = 0;
 	wc.hCursor = LoadCursor(0, IDC_ARROW);
 	wc.lpfnWndProc = &ChannelView::WndProc;
@@ -691,27 +703,27 @@ LRESULT ChannelView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			ChannelMember* pMember = &pView->m_channels[lpdis->itemID];
 			Channel* pChan = GetDiscordInstance()->GetChannel(pMember->m_snowflake);
 
-			COLORREF nameTextColor = GetSysColor(COLOR_WINDOWTEXT);
-			COLORREF statusTextColor = GetSysColor(COLOR_GRAYTEXT);
-			COLORREF backgdColor = GetSysColor(COLOR_WINDOW);
+			COLORREF nameTextColor = GetSysColorV2(COLOR_WINDOWTEXT);
+			COLORREF statusTextColor = GetSysColorV2(COLOR_GRAYTEXT);
+			COLORREF backgdColor = GetSysColorV2(COLOR_WINDOW);
 			
 			if (pView->m_hotItem == lpdis->itemID)
 			{
-				FillRect(lpdis->hDC, &lpdis->rcItem, ri::GetSysColorBrush(COLOR_MENUBAR));
-				backgdColor = GetSysColor(COLOR_MENUBAR);
+				FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrushV2(COLOR_MENUBAR));
+				backgdColor = GetSysColorV2(COLOR_MENUBAR);
 			}
 			else
 			{
 				// Windows 2000 doesn't do automatic clearing
-				FillRect(lpdis->hDC, &lpdis->rcItem, ri::GetSysColorBrush(COLOR_WINDOW));
+				FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrushV2(COLOR_WINDOW));
 			}
 			
 			if (lpdis->itemState & ODS_SELECTED)
 			{
-				FillRect(lpdis->hDC, &lpdis->rcItem, ri::GetSysColorBrush(COLOR_HIGHLIGHT));
-				backgdColor     = GetSysColor(COLOR_HIGHLIGHT);
-				nameTextColor   = GetSysColor(COLOR_HIGHLIGHTTEXT);
-				statusTextColor = GetSysColor(COLOR_HIGHLIGHTTEXT);
+				FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrushV2(COLOR_HIGHLIGHT));
+				backgdColor     = GetSysColorV2(COLOR_HIGHLIGHT);
+				nameTextColor   = GetSysColorV2(COLOR_HIGHLIGHTTEXT);
+				statusTextColor = GetSysColorV2(COLOR_HIGHLIGHTTEXT);
 			}
 
 			// draw profile picture frame
@@ -806,20 +818,20 @@ LRESULT ChannelView::ListWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 	switch (uMsg)
 	{
-	case WM_DESTROY:
-	{
-		SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)NULL);
-		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)pView->m_origListWndProc);
-		pView->m_listHwnd = NULL;
-		break;
-	}
-	case WM_MOUSELEAVE:
-	{
-		int oldItem = pView->m_hotItem;
-		pView->m_hotItem = -1;
-		ListView_RedrawItems(hWnd, oldItem, oldItem);
-		break;
-	}
+		case WM_DESTROY:
+		{
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)NULL);
+			SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)pView->m_origListWndProc);
+			pView->m_listHwnd = NULL;
+			break;
+		}
+		case WM_MOUSELEAVE:
+		{
+			int oldItem = pView->m_hotItem;
+			pView->m_hotItem = -1;
+			ListView_RedrawItems(hWnd, oldItem, oldItem);
+			break;
+		}
 	}
 
 	return CallWindowProc(pView->m_origListWndProc, hWnd, uMsg, wParam, lParam);

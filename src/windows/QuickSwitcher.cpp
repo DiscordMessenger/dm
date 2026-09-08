@@ -297,16 +297,16 @@ LRESULT QuickSwitcher::HandleCustomDraw(HWND hWnd, NMLVCUSTOMDRAW* pInfo)
 			int sta = ListView_GetItemState(hList, idx, LVIS_SELECTED);
 
 			if (sta & LVIS_SELECTED) {
-				pInfo->clrTextBk = GetSysColor(COLOR_HIGHLIGHT);
-				pInfo->clrText = GetSysColor(COLOR_HIGHLIGHTTEXT);
+				pInfo->clrTextBk = GetSysColorV2(COLOR_HIGHLIGHT);
+				pInfo->clrText = GetSysColorV2(COLOR_HIGHLIGHTTEXT);
 			}
 			else if (pInfo->iSubItem == COL_CATEGORY_NAME) {
-				pInfo->clrTextBk = GetSysColor(COLOR_WINDOW);
-				pInfo->clrText = GetSysColor(COLOR_GRAYTEXT);
+				pInfo->clrTextBk = GetSysColorV2(COLOR_WINDOW);
+				pInfo->clrText = GetSysColorV2(COLOR_GRAYTEXT);
 			}
 			else {
-				pInfo->clrTextBk = GetSysColor(COLOR_WINDOW);
-				pInfo->clrText = GetSysColor(COLOR_MENUTEXT);
+				pInfo->clrTextBk = GetSysColorV2(COLOR_WINDOW);
+				pInfo->clrText = GetSysColorV2(COLOR_MENUTEXT);
 			}
 
 			return CDRF_NEWFONT;

@@ -163,6 +163,10 @@ bool LocalSettings::Load()
 
 	if (j.contains("AddExtraHeaders"))
 		m_bAddExtraHeaders = j["AddExtraHeaders"];
+
+	if (j.contains("EnableDarkMode"))
+		m_bEnableDarkMode = j["EnableDarkMode"];
+
 	return true;
 }
 
@@ -203,6 +207,7 @@ bool LocalSettings::Save()
 	j["Use12HourTime"] = m_bUse12HourTime;
 	j["ShowBlockedMessages"] = m_bShowBlockedMessages;
 	j["UseDoubleBuffering"] = m_bUseDoubleBuffering;
+	j["EnableDarkMode"] = m_bEnableDarkMode;
 	
 	if (m_bSaveWindowSize) {
 		j["WindowWidth"] = m_width;

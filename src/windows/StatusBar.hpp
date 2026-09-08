@@ -36,6 +36,8 @@ private:
 	int GetNextExpiryTime();
 	void OnExpiryTick();
 	void OnAnimationTick();
+	void DrawTypingItem(LPDRAWITEMSTRUCT lpDIS);
+	void DrawCharCountItem(LPDRAWITEMSTRUCT lpDIS);
 
 public:
 	// should only be called by Main.cpp
@@ -57,4 +59,5 @@ private:
 	int m_anim_frame_number = 0;
 	RECT m_typing_status_rect;
 	RECT m_typing_animation_rect;
+	LPTSTR m_charCountStr = NULL;
 };
