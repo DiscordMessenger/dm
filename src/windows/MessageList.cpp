@@ -2917,8 +2917,6 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 	auto& attachItemVec = item.m_attachmentData;
 	sz = attachItemVec.size();
 
-	assert(attachVec.size() == attachItemVec.size());
-
 	attachRect.right   = msgRect.right - ScaleByDPI(10);
 	attachRect.top     = attachRect.bottom;
 
