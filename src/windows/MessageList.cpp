@@ -4128,7 +4128,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			EndPaint(hWnd, &ps);
-			break;
+			return 0;
 		}
 	}
 

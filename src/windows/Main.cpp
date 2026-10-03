@@ -28,6 +28,7 @@
 #include "InstanceMutex.hpp"
 #include "CrashDebugger.hpp"
 #include "MemberListOld.hpp"
+#include "WindowContainer.hpp"
 #include "config/LocalSettings.hpp"
 #include "network/WebsocketClient.hpp"
 #include "utils/UpdateChecker.hpp"
@@ -1236,6 +1237,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			IChannelView::InitializeClasses();
 			MessageEditor::InitializeClass();
 			LoadingMessage::InitializeClass();
+			WindowContainer::InitializeClass();
 
 			RECT rect = {}, rect2 = {};
 			GetClientRect(hWnd, &rect);
