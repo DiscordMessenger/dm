@@ -27,7 +27,7 @@ NetRequest::NetRequest(
 	assert(_size == 0 || _bytes);
 	params_bytes.resize(_size);
 
-	if (_size != 0) {
+	if (_bytes && _size != 0) {
 		memcpy(params_bytes.data(), _bytes, _size);
 	}
 
