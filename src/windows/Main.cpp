@@ -260,7 +260,7 @@ void ProperlySizeControls(HWND hWnd)
 	rect.right  -= scaled10;
 	rect.bottom -= scaled10;
 
-	HWND hWndMsg = g_pMessageList->m_hwnd;
+	HWND hWndMsg = g_pMessageList->m_container.GetContainerHWND();
 	HWND hWndChv = g_pChannelView->m_hwnd;
 	HWND hWndPfv = g_pProfileView->m_hwnd;
 	HWND hWndGuh = g_pGuildHeader->m_hwnd;

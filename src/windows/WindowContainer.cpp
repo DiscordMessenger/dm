@@ -20,6 +20,11 @@ void WindowContainer::InitializeClass()
 
 HWND WindowContainer::InitWindow(DWORD dwExStyle, LPCTSTR className, LPCTSTR windowName, DWORD dwStyle, int X, int Y, int width, int height, HWND hwndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 {
+	m_exStyle = dwExStyle;
+	m_style = dwStyle;
+
+	int orgX = 0, orgY = 0;
+
 	// force some things on which this won't work without.
 	dwStyle |= WS_CHILD | WS_VISIBLE;
 
@@ -40,8 +45,8 @@ HWND WindowContainer::InitWindow(DWORD dwExStyle, LPCTSTR className, LPCTSTR win
 		if (!edgeWidth) edgeWidth = 2;
 		if (!edgeHeight) edgeHeight = 2;
 
-		X += edgeWidth;
-		Y += edgeHeight;
+		orgX += edgeWidth;
+		orgY += edgeHeight;
 		width -= edgeWidth * 2;
 		height -= edgeHeight * 2;
 	}
@@ -54,7 +59,7 @@ HWND WindowContainer::InitWindow(DWORD dwExStyle, LPCTSTR className, LPCTSTR win
 			scrollBarHeight -= GetSystemMetrics(SM_CYHSCROLL);
 		}
 
-		m_vscrollHwnd = CreateWindow(TEXT("SCROLLBAR"), NULL, WS_CHILD | WS_VISIBLE | SBS_VERT, X + width - scrollBarWidth, Y, scrollBarWidth, scrollBarHeight, m_parentHwnd, NULL, hInstance, NULL);
+		m_vscrollHwnd = CreateWindow(TEXT("SCROLLBAR"), NULL, WS_CHILD | WS_VISIBLE | SBS_VERT, orgX + width - scrollBarWidth, orgY, scrollBarWidth, scrollBarHeight, m_parentHwnd, NULL, hInstance, NULL);
 		if (!m_vscrollHwnd) {
 			KillWindow();
 			return NULL;
@@ -67,7 +72,7 @@ HWND WindowContainer::InitWindow(DWORD dwExStyle, LPCTSTR className, LPCTSTR win
 			scrollBarHeight -= GetSystemMetrics(SM_CXVSCROLL);
 		}
 
-		m_hscrollHwnd = CreateWindow(TEXT("SCROLLBAR"), NULL, WS_CHILD | WS_VISIBLE | SBS_HORZ, X, Y + height - scrollBarHeight, scrollBarWidth, scrollBarHeight, m_parentHwnd, NULL, hInstance, NULL);
+		m_hscrollHwnd = CreateWindow(TEXT("SCROLLBAR"), NULL, WS_CHILD | WS_VISIBLE | SBS_HORZ, orgX, orgY + height - scrollBarHeight, scrollBarWidth, scrollBarHeight, m_parentHwnd, NULL, hInstance, NULL);
 		if (!m_hscrollHwnd) {
 			KillWindow();
 			return NULL;
@@ -82,7 +87,7 @@ HWND WindowContainer::InitWindow(DWORD dwExStyle, LPCTSTR className, LPCTSTR win
 	dwStyle &= ~(WS_HSCROLL | WS_VSCROLL);
 
 	// Finally, create the actual window.
-	m_hwnd = CreateWindowEx(dwExStyle, className, windowName, dwStyle, X, Y, width, height, m_parentHwnd, hMenu, hInstance, lpParam);
+	m_hwnd = CreateWindowEx(dwExStyle, className, windowName, dwStyle, orgX, orgY, width, height, m_parentHwnd, hMenu, hInstance, lpParam);
 	if (!m_hwnd) {
 		KillWindow();
 		return NULL;
@@ -127,7 +132,7 @@ HWND WindowContainer::GetHWND()
 
 HWND WindowContainer::GetVerticalScrollbarHWND()
 {
-	return m_parentHwnd;
+	return m_vscrollHwnd;
 }
 
 HWND WindowContainer::GetHorizontalScrollbarHWND()
@@ -137,7 +142,7 @@ HWND WindowContainer::GetHorizontalScrollbarHWND()
 
 HWND WindowContainer::GetContainerHWND()
 {
-	return m_vscrollHwnd;
+	return m_parentHwnd;
 }
 
 void WindowContainer::GetScrollInfo(int nBar, SCROLLINFO* outScrollInfo)
@@ -177,6 +182,10 @@ void WindowContainer::SetScrollInfo(int nBar, SCROLLINFO* inScrollInfo, bool red
 LRESULT WindowContainer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	WindowContainer* pThis = (WindowContainer*) GetWindowLongPtr(hWnd, GWLP_USERDATA);
+	if (!pThis && uMsg != WM_NCCREATE) {
+		DbgPrintW("WindowContainer::WndProc: called with no pThis?");
+		return DefWindowProc(hWnd, uMsg, wParam, lParam);
+	}
 
 	switch (uMsg)
 	{
@@ -188,7 +197,7 @@ LRESULT WindowContainer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		}
 		case WM_PAINT:
 		{
-			if (!pThis->m_drawEdge)
+			if (!(pThis->m_exStyle & WS_EX_CLIENTEDGE))
 				break;
 
 			PAINTSTRUCT ps = {};
@@ -196,10 +205,56 @@ LRESULT WindowContainer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			RECT rect{};
 			GetWindowRect(hWnd, &rect);
+			OffsetRect(&rect, -rect.left, -rect.top);
 
 			DrawEdgeV2(hdc, &rect, BDR_SUNKENINNER, BF_RECT);
 
 			EndPaint(hWnd, &ps);
+			return 0;
+		}
+		case WM_SIZE:
+		{
+			RECT rc;
+			GetWindowRect(hWnd, &rc);
+
+			int width = rc.right - rc.left;
+			int height = rc.bottom - rc.top;
+
+			// Handle client edge
+			int orgX = 0, orgY = 0;
+			if (pThis->m_exStyle & WS_EX_CLIENTEDGE)
+			{
+				int edgeWidth = GetSystemMetrics(SM_CXEDGE), edgeHeight = GetSystemMetrics(SM_CYEDGE);
+
+				if (!edgeWidth) edgeWidth = 2;
+				if (!edgeHeight) edgeHeight = 2;
+
+				orgX += edgeWidth;
+				orgY += edgeHeight;
+				width -= edgeWidth * 2;
+				height -= edgeHeight * 2;
+			}
+
+			int awidth = width, aheight = height;
+			int sbwidth = 0, sbheight = 0;
+			if (pThis->m_vscrollHwnd) {
+				sbwidth = GetSystemMetrics(SM_CXVSCROLL);
+				width -= sbwidth;
+			}
+			if (pThis->m_hscrollHwnd) {
+				sbheight = GetSystemMetrics(SM_CYHSCROLL);
+				height -= sbheight;
+			}
+
+			if (pThis->m_vscrollHwnd) {
+				MoveWindow(pThis->m_vscrollHwnd, orgX + awidth - sbwidth, orgY, sbwidth, height, TRUE);
+			}
+			if (pThis->m_hscrollHwnd) {
+				MoveWindow(pThis->m_hscrollHwnd, orgX, orgY + aheight - sbheight, width, sbheight, TRUE);
+			}
+			if (pThis->m_hwnd) {
+				MoveWindow(pThis->m_hwnd, orgX, orgY, width, height, TRUE);
+			}
 			return 0;
 		}
 		case WM_VSCROLL:

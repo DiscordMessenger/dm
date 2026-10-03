@@ -36,6 +36,6 @@ private:
 	HWND m_vscrollHwnd = NULL, m_hscrollHwnd = NULL;
 
 	// whether to draw an edge around everything
-	bool m_drawEdge = false;
+	DWORD m_exStyle = 0, m_style = 0;
 };
 
