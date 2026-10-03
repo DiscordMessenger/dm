@@ -1886,7 +1886,7 @@ const COLORREF s_DarkModeColors[] = {
 COLORREF GetSysColorV2(int nIndex)
 {
 	if (!IsDarkModeEnabled() || nIndex < 0 || nIndex >= 31)
-		return GetSysColor(nIndex);
+		return GetSysColorV2(nIndex);
 
 	return s_DarkModeColors[nIndex];
 }
@@ -1909,15 +1909,145 @@ HBRUSH GetSysColorBrushV2(int nIndex)
 	return brushes[nIndex];
 }
 
+#define DRE_BLACKOUTER  0x80000000
+#define DRE_HOT         0x40000000
 BOOL DrawEdgeV2(HDC hdc, LPRECT lprect, UINT style, UINT grfFlags)
 {
 	if (!IsDarkModeEnabled())
 		return ri::DrawEdge(hdc, lprect, style, grfFlags);
 
-	if (grfFlags & BF_MIDDLE) {
-		grfFlags &= ~BF_MIDDLE;
-		FillRect(hdc, lprect, GetSysColorBrushV2(COLOR_3DFACE));
-	}
+	// Dark mode is enabled
+	// NOTE: copied from ri/reimpl.cpp, but whatever.
+	RECT rect = *lprect;
 
-	return ri::DrawEdge(hdc, lprect, style, grfFlags);
+	// copied from NanoShell, which kinda recreated Windows
+	if (grfFlags & BF_FLAT)
+	{
+		grfFlags &= ~BF_FLAT;
+		style &= ~(BDR_INNER | BDR_OUTER);
+		style |=  DRE_BLACKOUTER;
+	}
+	
+	// the depth levels are as follows:
+	// 6 - BUTTON_HILITE_COLOR
+	// 5 - Avg(BUTTON_HILITE_COLOR, BUTTON_MIDDLE_COLOR)
+	// 4 - BUTTON_MIDDLE_COLOR
+	// 3 - WINDOW_BORDER_COLOR
+	// 2 - BUTTON_SHADOW_COLOR
+	// 1 - BUTTON_XSHADOW_COLOR
+	// 0 - BUTTON_EDGE_COLOR
+	
+	uint32_t tl = 0, br = 0;
+	
+	// the flags we need to check, in order of priority.
+	// These match up with their definitions in window.h and represent the amount 1 is shifted by.
+	static const int flags[] = { 4, 3, 1, 2, 0 };
+	
+	int colors[] =
+	{
+		0, //BUTTON_EDGE_COLOR,
+		0, //BUTTON_XSHADOW_COLOR,
+		0, //BUTTON_SHADOW_COLOR,
+		0, //WINDOW_BORDER_COLOR,
+		0, //0,
+		0, //0,
+		0, //BUTTON_HILITE_COLOR,
+	};
+
+	colors[0] = GetSysColorV2(COLOR_WINDOWFRAME);
+	colors[1] = GetSysColorV2(COLOR_3DDKSHADOW);
+	colors[2] = GetSysColorV2(COLOR_3DSHADOW);
+	colors[3] = GetSysColorV2(COLOR_ACTIVEBORDER);
+	colors[6] = GetSysColorV2(COLOR_3DHILIGHT);
+	
+	if ((style & DRE_BLACKOUTER) && colors[1] == 0)
+		colors[1] = colors[2];
+	
+	if (style & DRE_HOT)
+		colors[4] = GetSysColorV2(COLOR_3DLIGHT);
+	else
+		colors[4] = GetSysColorV2(COLOR_3DFACE);
+	
+	// get color #5.
+	unsigned colorAvg = 0;
+	colorAvg |= ((colors[6] & 0xff0000) + (colors[4] & 0xff0000)) >> 1;
+	colorAvg |= ((colors[6] & 0x00ff00) + (colors[4] & 0x00ff00)) >> 1;
+	colorAvg |= ((colors[6] & 0x0000ff) + (colors[4] & 0x0000ff)) >> 1;
+	colors[5] = colorAvg;
+	
+	// 4 pairs of ints corresponding to the border type. These ints are
+	// indices into the colors array.
+	static const int color_indices[] =
+	{
+		6, 2, // raised inner
+		1, 2, // sunken inner
+		5, 1, // raised outer
+		2, 6,
+		0, 0,
+	};
+
+#define ARRAY_COUNT(x) (sizeof(x)/sizeof((x)[0]))
+	for (int i = 0; i < (int)ARRAY_COUNT(flags); i++)
+	{
+		if (~style & (1 << flags[i])) continue;
+		
+		tl = colors[color_indices[0 + 2 * flags[i]]];
+		br = colors[color_indices[1 + 2 * flags[i]]];
+		
+		// top left
+		HPEN hp = CreatePen(PS_SOLID, 1, tl);
+		HGDIOBJ go = SelectObject(hdc, hp);
+		POINT ptold;
+		
+		//VidDrawHLine(tl, rect.left, rect.right, rect.top);
+		MoveToEx(hdc, rect.left, rect.top, &ptold);
+		if (grfFlags & BF_TOP) {
+			LineTo(hdc, rect.right, rect.top);
+		}
+
+		//VidDrawVLine(tl, rect.top, rect.bottom, rect.left);
+		if (grfFlags & BF_LEFT) {
+			MoveToEx(hdc, rect.left, rect.top, NULL);
+			LineTo(hdc, rect.left, rect.bottom);
+		}
+
+		SelectObject(hdc, go);
+		DeleteObject(hp);
+
+		// bottom right
+		hp = CreatePen(PS_SOLID, 1, br);
+		go = SelectObject(hdc, hp);
+		
+		//VidDrawHLine(br, rect.left, rect.right, rect.bottom);
+		if (grfFlags & BF_BOTTOM) {
+			MoveToEx(hdc, rect.left, rect.bottom - 1, NULL);
+			LineTo(hdc, rect.right, rect.bottom - 1);
+		}
+
+		//VidDrawVLine(br, rect.top, rect.bottom, rect.right);
+		if (grfFlags & BF_RIGHT) {
+			MoveToEx(hdc, rect.right - 1, rect.top, NULL);
+			LineTo(hdc, rect.right - 1, rect.bottom);
+		}
+
+		SelectObject(hdc, go);
+		DeleteObject(hp);
+		MoveToEx(hdc, ptold.x, ptold.y, NULL);
+		
+		rect.left++;
+		rect.top++;
+		rect.right--;
+		rect.bottom--;
+	}
+	
+	if (grfFlags & BF_MIDDLE)
+		//VidFillRectangle(bg, rect);
+		FillRect(hdc, &rect, GetSysColorBrushV2(COLOR_3DFACE));
+
+	if (grfFlags & BF_ADJUST)
+		*lprect = rect;
+
+#undef ARRAY_COUNT
+
+	return TRUE;
 }

@@ -246,6 +246,8 @@ LRESULT WindowContainer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 				height -= sbheight;
 			}
 
+			InvalidateRect(pThis->m_parentHwnd, NULL, FALSE);
+
 			if (pThis->m_vscrollHwnd) {
 				MoveWindow(pThis->m_vscrollHwnd, orgX + awidth - sbwidth, orgY, sbwidth, height, TRUE);
 			}
