@@ -226,6 +226,12 @@ public:
 	void SetUseDoubleBuffering(bool b) {
 		m_bUseDoubleBuffering = b;
 	}
+	bool EnableDarkMode() const {
+		return m_bEnableDarkMode;
+	}
+	void SetEnableDarkMode(bool b) {
+		m_bEnableDarkMode = b;
+	}
 
 private:
 	std::string m_token;
@@ -258,6 +264,7 @@ private:
 	bool m_bUse12HourTime = false;
 	bool m_bShowBlockedMessages = false;
 	bool m_bUseDoubleBuffering = false;
+	bool m_bEnableDarkMode = false;
 	time_t m_remindUpdatesOn = 0;
 	int m_width = 1000;
 	int m_height = 700;

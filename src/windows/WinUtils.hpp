@@ -20,9 +20,10 @@
 #define DMCDF_WS2_32   0x0040
 #define DMCDF_OLE32    0x0080
 #define DMCDF_COMCTL32 0x0100
-#define DMCDF_ALL      0x01FF
-#define DMCDF_NODLGEX  0x0200
-#define DMCDF_NODRIEX  0x0400
+#define DMCDF_UXTHEME  0x0200
+#define DMCDF_ALL      0x03FF
+#define DMCDF_NODLGEX  0x0400
+#define DMCDF_NODRIEX  0x0800
 
 #ifdef UNICODE
 #define WAsnprintf _snwprintf
@@ -109,6 +110,7 @@ SIZE EnsureMaximumSize(int width, int height, int maxWidth, int maxHeight);
 bool Supports32BitIcons(); // Really, this checks if we are using Windows 2000 or older.
 bool SupportsDialogEx(); // Really, this checks if we are using Windows NT 3.51 or older.
 int MapIconToOldIfNeeded(int iconID);
+int MapIconToDarkModeIfNeeded(int iconID);
 int MapDialogToOldIfNeeded(int dialogID);
 void InitializeStatusIcons();
 void DrawMentionStatus(HDC hdc, int x, int y, int mentionCount);
@@ -138,10 +140,13 @@ void DbgPrintW(const char* fmt, ...);
 
 // Convenience macro
 #define DMIC(iid) MapIconToOldIfNeeded((iid))
+#define DMV(iid)  MapIconToDarkModeIfNeeded((iid))
 #define DMDI(iid) MapDialogToOldIfNeeded((iid))
 
 // File utils
 bool FileExists(const std::string& path);
+std::string LoadEntireFile(const std::string& fileNameUTF8);
+bool SaveEntireFile(const std::string& fileNameUTF8, const std::string& data);
 
 bool XSetProcessDPIAware();
 
@@ -150,6 +155,10 @@ COLORREF LerpColor(COLORREF a, COLORREF b, int progMul, int progDiv);
 bool IsColorDark(COLORREF cr);
 bool IsTextColorDark();
 bool IsIconMostlyBlack(HICON hic);
+bool IsDarkModeEnabled();
+COLORREF GetSysColorV2(int nIndex);
+HBRUSH GetSysColorBrushV2(int nIndex);
+BOOL DrawEdgeV2(HDC hdc, LPRECT lprect, UINT style, UINT grfFlags);
 
 #define IsColorLight(cr)   (!IsColorDark(cr))
 #define IsTextColorLight() (!IsTextColorDark())

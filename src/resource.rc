@@ -458,6 +458,30 @@ IDI_PROFILE_BORDER_UNREAD ICON                    "../res/icons/icon_profile_bor
 
 IDI_PROFILE_BORDER_UNREAD_2K ICON                    "../res/icons/icon_profile_border_unread_2k.ico"
 
+IDI_CHANNEL_DARK        ICON                    "../res/icons/icon_channel_dark.ico"
+
+IDI_DM_DARK             ICON                    "../res/icons/icon_dm_dark.ico"
+
+IDI_GROUPDM_DARK        ICON                    "../res/icons/icon_groupdm_dark.ico"
+
+IDI_VOICE_DARK          ICON                    "../res/icons/icon_voice_dark.ico"
+
+IDI_CHANNEL_MENTIONED_DARK ICON                    "../res/icons/icon_channel_mentioned_dark.ico"
+
+IDI_CHANNEL_UNREAD_DARK ICON                    "../res/icons/icon_channel_unread_dark.ico"
+
+IDI_CHANNEL_DARK_2K     ICON                    "../res/icons/icon_channel_dark_2k.ico"
+
+IDI_DM_DARK_2K          ICON                    "../res/icons/icon_dm_dark_2k.ico"
+
+IDI_GROUPDM_DARK_2K     ICON                    "../res/icons/icon_groupdm_dark_2k.ico"
+
+IDI_VOICE_DARK_2K       ICON                    "../res/icons/icon_voice_dark_2k.ico"
+
+IDI_CHANNEL_MENTIONED_DARK_2K ICON                    "../res/icons/icon_channel_mentioned_dark_2k.ico"
+
+IDI_CHANNEL_UNREAD_DARK_2K ICON                    "../res/icons/icon_channel_unread_dark_2k.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -519,21 +543,22 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,18,236,10
     CONTROL         "Compact: Fit more messages on screen at one time. #IRC",IDC_APPEARANCE_COMPACT,
                     "Button",BS_AUTORADIOBUTTON,12,30,236,10
-    GROUPBOX        "Message List Style",IDC_MSTYLE_BOX,6,105,248,29
-    LTEXT           "Message theme:",IDC_STATIC,12,116,53,13,SS_CENTERIMAGE
-    PUSHBUTTON      "Change...",IDC_ACTIVE_IMAGE_BROWSE,198,146,50,14
-    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,53,146,135,14,ES_AUTOHSCROLL | ES_READONLY
-    LTEXT           "Image:",IDC_STATIC,12,146,41,14,SS_CENTERIMAGE
-    COMBOBOX        IDC_MESSAGE_STYLE,73,116,175,128,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Message List Style",IDC_MSTYLE_BOX,6,120,248,29
+    LTEXT           "Message theme:",IDC_STATIC,12,131,53,13,SS_CENTERIMAGE
+    PUSHBUTTON      "Change...",IDC_ACTIVE_IMAGE_BROWSE,198,161,50,14
+    EDITTEXT        IDC_ACTIVE_IMAGE_EDIT,53,161,135,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Image:",IDC_STATIC,12,161,41,14,SS_CENTERIMAGE
+    COMBOBOX        IDC_MESSAGE_STYLE,73,131,175,128,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Compact member list",IDC_COMPACT_MEMBER_LIST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,60,236,10
-    COMBOBOX        IDC_COMBO_ALIGNMENT,53,164,195,78,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Aligned to:",IDC_STATIC,12,164,41,12,SS_CENTERIMAGE
-    GROUPBOX        "Message List Watermark",IDC_STATIC,6,135,248,48
-    GROUPBOX        "User Interface",IDC_STATIC,6,48,248,56
-    LTEXT           "Size of UI elements:",IDC_STATIC,12,86,68,12,SS_CENTERIMAGE
-    COMBOBOX        IDC_COMBO_GUI_SCALE,80,86,168,159,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_ALIGNMENT,53,179,195,78,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Aligned to:",IDC_STATIC,12,179,41,12,SS_CENTERIMAGE
+    GROUPBOX        "Message List Watermark",IDC_STATIC,6,150,248,48
+    GROUPBOX        "User Interface",IDC_STATIC,6,48,248,69
+    LTEXT           "Size of UI elements:",IDC_STATIC,12,100,68,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_GUI_SCALE,80,100,168,159,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Double-buffer drawing (reduces flicker but uses more memory)",IDC_DOUBLE_BUFFERING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,74,236,10
+    CONTROL         "Enable dark mode",IDC_DARK_MODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,88,236,10
 END
 
 IDD_DIALOG_PROFILE_POPOUT DIALOGEX 0, 0, 126, 134
@@ -869,19 +894,19 @@ BEGIN
     LISTBOX         IDC_GUILD_LIST,7,19,271,158,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_DIALOG_PREFERENCES_ND DIALOG 0, 0, 231, 308
+IDD_DIALOG_PREFERENCES_ND DIALOG 0, 0, 269, 294
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Preferences"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    PUSHBUTTON      "Done",IDOK,174,287,50,14
-    GROUPBOX        "My Account",IDC_STATIC,7,7,218,36
-    GROUPBOX        "Appearance",IDC_STATIC,7,45,218,77
+    PUSHBUTTON      "Done",IDOK,212,273,50,14
+    GROUPBOX        "My Account",IDC_STATIC,7,7,255,36
+    GROUPBOX        "Appearance",IDC_STATIC,7,46,255,87
     LTEXT           "Static",IDC_MY_ACCOUNT_NAME,52,17,135,8
     LTEXT           "Username:",IDC_STATIC,12,17,36,8
     LTEXT           "*****@*****.***",IDC_EMAIL_DISPLAY,52,29,114,8
     LTEXT           "Email:",IDC_STATIC,12,29,20,8
-    PUSHBUTTON      "Reveal",IDC_REVEALEMAIL,169,26,50,14
+    PUSHBUTTON      "Reveal",IDC_REVEALEMAIL,208,26,50,14
     CONTROL         "Cozy",IDC_APPEARANCE_COZY,"Button",BS_AUTORADIOBUTTON,80,56,32,10
     CONTROL         "Compact",IDC_APPEARANCE_COMPACT,"Button",BS_AUTORADIOBUTTON,114,56,44,10
     COMBOBOX        IDC_MESSAGE_STYLE,80,70,137,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
@@ -892,24 +917,25 @@ BEGIN
     PUSHBUTTON      "Change...",IDC_ACTIVE_IMAGE_BROWSE,169,86,50,14
     LTEXT           "Aligned to:",IDC_STATIC,12,105,65,8
     COMBOBOX        IDC_COMBO_ALIGNMENT,80,104,137,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Chat",IDC_STATIC,7,123,218,76
+    GROUPBOX        "Chat",IDC_STATIC,7,134,255,52
     CONTROL         "Disable markdown formatting",IDC_DISABLE_FORMATTING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,134,205,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,147,107,10
     CONTROL         "Display images when uploaded directly to Discord",IDC_IMAGES_WHEN_UPLOADED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,147,205,10
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,151,147,104,17
     CONTROL         "Display images when posted as links in chat",IDC_IMAGES_WHEN_EMBEDDED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,160,205,10
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,151,165,104,19
     CONTROL         "Show embeds and preview links in chat",IDC_SHOW_EMBEDS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,173,205,10
-    GROUPBOX        "Window",IDC_STATIC,7,200,218,38
-    CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,211,203,10
-    CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,224,203,10
-    GROUPBOX        "Check for updates",IDC_STATIC,7,240,218,44
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,160,137,10
+    GROUPBOX        "Window",IDC_STATIC,7,186,255,38
+    CONTROL         "Save window size",IDC_SAVE_WINDOW_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,197,203,10
+    CONTROL         "Start maximized",IDC_START_MAXIMIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,210,203,10
+    GROUPBOX        "Check for updates",IDC_STATIC,7,226,255,44
     CONTROL         "Check for updates using the GitHub API",IDC_CHECK_UPDATES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,251,203,10
-    LTEXT           "iProgramInCpp cannot see your IP address through the update service.",IDC_STATIC,12,263,204,17
-    LTEXT           "Changes apply automatically.",IDC_STATIC,7,289,163,8
-    CONTROL         "Use 12-hour time",IDC_USE_12HR_TIME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,186,205,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,237,203,10
+    LTEXT           "iProgramInCpp cannot see your IP address through the update service.",IDC_STATIC,12,249,204,17
+    LTEXT           "Changes apply automatically.",IDC_STATIC,7,275,163,8
+    CONTROL         "Use 12-hour time",IDC_USE_12HR_TIME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,173,136,10
+    CONTROL         "Enable dark mode",IDC_DARK_MODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,119,136,10
 END
 
 
@@ -1148,9 +1174,9 @@ BEGIN
     IDD_DIALOG_PREFERENCES_ND, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 224
+        RIGHTMARGIN, 262
         TOPMARGIN, 7
-        BOTTOMMARGIN, 301
+        BOTTOMMARGIN, 287
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1717,6 +1743,12 @@ BEGIN
     IDS_CONFIRM_UNPIN       "You sure you want to remove this pinned message?\n\n%s (%s)\n\n%s"
     IDS_CONFIRM_UNPIN_TITLE "Discord Messenger - Unpin Message"
     IDS_ETA_STRING_DOWNLOADED "(%s (%s downloaded)"
+    IDS_FAILED_TO_LOAD_CONFIG_1 
+                            "Discord Messenger failed to load your configuration.  You will need to re-insert your Discord token.\n\nTechnical details:\n"
+    IDS_FAILED_TO_LOAD_CONFIG_2 
+                            "\n\nThe corrupted settings file is located at:\n"
+    IDS_FAILED_TO_LOAD_CONFIG_RECOVERED_TOKEN 
+                            "Discord Messenger failed to load your configuration. A Discord token was successfully recovered from the corrupted config file, and will be used to attempt to log in, but it might be wrong.\n\nTechnical details:\n"
 END
 
 #endif    // English (United States) resources

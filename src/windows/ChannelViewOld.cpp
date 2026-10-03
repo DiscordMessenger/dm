@@ -58,7 +58,7 @@ void ChannelViewOld::InitializeClass()
 	WNDCLASS& wc = g_ChannelViewLegacyClass;
 
 	wc.lpszClassName = T_CHANNEL_VIEW_CONTAINER_CLASS2;
-	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = GetSysColorBrushV2(COLOR_3DFACE);
 	wc.style = 0;
 	wc.hCursor = LoadCursor(0, IDC_ARROW);
 	wc.lpfnWndProc = &ChannelViewOld::WndProc;
@@ -250,6 +250,16 @@ LRESULT ChannelViewOld::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			pView->m_currentChannel = sf;
 			GetDiscordInstance()->OnSelectChannel(sf);
 			break;
+		}
+
+		case WM_CTLCOLORLISTBOX:
+		{
+			HDC hdc = (HDC)wParam;
+
+			SetBkColor(hdc, GetSysColorV2(COLOR_WINDOW));
+			SetTextColor(hdc, GetSysColorV2(COLOR_WINDOWTEXT));
+
+			return (LRESULT) GetSysColorBrushV2(COLOR_WINDOW);
 		}
 	}
 

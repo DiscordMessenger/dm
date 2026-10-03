@@ -41,6 +41,12 @@ StatusBar* StatusBar::Create(HWND hParent)
 
 	SetWindowFont(pBar->m_hwnd, g_MessageTextFont, TRUE);
 	SetWindowLongPtr(pBar->m_hwnd, GWLP_USERDATA, (LONG_PTR) pBar);
+
+	if (IsDarkModeEnabled()) {
+		ri::SetWindowTheme(pBar->m_hwnd, L" ", L" ");
+		SendMessage(pBar->m_hwnd, SB_SETBKCOLOR, 0, (LPARAM) GetSysColorV2(COLOR_3DFACE));
+	}
+
 	return pBar;
 }
 
@@ -188,6 +194,21 @@ void StatusBar::OnAnimationTick()
 
 void StatusBar::UpdateCharacterCounter(int nChars, int nCharsMax)
 {
+	if (IsDarkModeEnabled()) {
+		if (!nChars) {
+			if (m_charCountStr)
+				free(m_charCountStr);
+			m_charCountStr = NULL;
+		}
+		else {
+			std::string text = std::to_string(nChars) + "/" + std::to_string(nCharsMax);
+			LPTSTR tstr = ConvertCppStringToTString(text);
+			m_charCountStr = tstr;
+		}
+		SendMessage(m_hwnd, SB_SETTEXT, IDP_CHRCNT | SBT_OWNERDRAW, 0);
+		return;
+	}
+
 	if (!nChars) {
 		SendMessage(m_hwnd, SB_SETTEXT, IDP_CHRCNT, (LPARAM) TEXT(""));
 		return;
@@ -200,6 +221,33 @@ void StatusBar::UpdateCharacterCounter(int nChars, int nCharsMax)
 }
 
 void StatusBar::DrawItem(LPDRAWITEMSTRUCT lpDIS)
+{
+	switch (lpDIS->itemID) {
+		case IDP_TYPING:
+			DrawTypingItem(lpDIS);
+			break;
+		case IDP_CHRCNT:
+			DrawCharCountItem(lpDIS);
+			break;
+	}
+}
+
+void StatusBar::DrawCharCountItem(LPDRAWITEMSTRUCT lpDIS)
+{
+	HDC hdc = lpDIS->hDC;
+	RECT rc = lpDIS->rcItem;
+	int mode = SetBkMode(hdc, TRANSPARENT);
+	COLORREF textOld = SetTextColor(hdc, GetSysColorV2(COLOR_WINDOWTEXT));
+
+	if (m_charCountStr) {
+		DrawText(hdc, m_charCountStr, -1, &rc, DT_NOPREFIX | DT_SINGLELINE | DT_VCENTER);
+	}
+
+	SetTextColor(hdc, textOld);
+	SetBkMode(hdc, mode);
+}
+
+void StatusBar::DrawTypingItem(LPDRAWITEMSTRUCT lpDIS)
 {
 	// this is the only owner drawn item
 	assert(lpDIS->itemID == IDP_TYPING);
@@ -221,7 +269,7 @@ void StatusBar::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 
 	int mode = SetBkMode(hdc, TRANSPARENT);
 	HGDIOBJ gdiObjOld = SelectObject(hdc, g_TypingBoldFont);
-	COLORREF textOld = SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+	COLORREF textOld = SetTextColor(hdc, GetSysColorV2(COLOR_WINDOWTEXT));
 
 	m_typing_status_rect = rc;
 

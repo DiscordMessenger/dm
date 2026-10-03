@@ -2,6 +2,7 @@
 #include <set>
 #include <map>
 #include "Main.hpp"
+#include "WindowContainer.hpp"
 #include "text/FormattedText.hpp"
 
 #define T_MESSAGE_LIST_PARENT_CLASS TEXT("MessageListParent")
@@ -359,6 +360,7 @@ class MessageList
 {
 public:
 	HWND m_hwnd = NULL;
+	WindowContainer m_container;
 
 private:
 	UINT_PTR m_flash_timer = 0;

@@ -59,7 +59,7 @@ static const int g_WelcomeTextCount = _countof(g_WelcomeTextIds);
 
 MessageList::MessageList()
 {
-	m_defaultBackgroundBrush = ri::GetSysColorBrush(COLOR_WINDOW);
+	m_defaultBackgroundBrush = GetSysColorBrushV2(COLOR_WINDOW);
 
 	// This ugly hack allows me to calculate the offset between GMT and
 	// local time.  This is used when calculating date gaps.
@@ -277,7 +277,7 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 	rcGradient.left += ScaleByDPI(4);
 	COLORREF oldColor = SetBkColor(hdc, pList->GetDarkerBackgroundColor());
 	if (GetLocalSettings()->GetMessageStyle() == MS_GRADIENT) {
-		FillGradientColors(hdc, &rcGradient, GetSysColor(COLOR_WINDOWFRAME), CLR_NONE, true);
+		FillGradientColors(hdc, &rcGradient, GetSysColorV2(COLOR_WINDOWFRAME), CLR_NONE, true);
 	}
 	else {
 		COLORREF oldClr = ri::SetDCBrushColor(hdc, pList->GetDarkerBackgroundColor());
@@ -299,7 +299,7 @@ void RichEmbedItem::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 	rc.right  -= borderSize;
 	rc.bottom -= borderSize;
 	HGDIOBJ oldObj = SelectObject(hdc, GetStockFont(ANSI_VAR_FONT));
-	COLORREF windowTextColor = pList->InvertIfNeeded(GetSysColor(COLOR_WINDOWTEXT));
+	COLORREF windowTextColor = pList->InvertIfNeeded(GetSysColorV2(COLOR_WINDOWTEXT));
 
 	if (m_providerSize.cy) {
 		SelectObject(hdc, g_ReplyTextFont);
@@ -869,7 +869,7 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 	scrollInfo.cbSize = sizeof scrollInfo;
 	scrollInfo.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 
-	ri::GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
+	m_container.GetScrollInfo(SB_VERT, &scrollInfo);
 
 	// Find the position of the old message
 	int oldYMessage = 0;
@@ -1138,8 +1138,8 @@ void MessageList::RefetchMessages(Snowflake gapCulprit, bool causedByLoad)
 		haveUpdateRect = false;
 	}
 
-	ri::SetScrollInfo(m_hwnd, SB_VERT, &scrollInfo, true);
-	ri::GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
+	m_container.SetScrollInfo(SB_VERT, &scrollInfo, true);
+	m_container.GetScrollInfo(SB_VERT, &scrollInfo);
 
 	m_oldPos = scrollInfo.nPos;
 	
@@ -1537,7 +1537,7 @@ void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem
 	if (attachItem.m_bHighlighted && inView)
 		old = SetTextColor(hdc, RGB(0, 0, 255));
 	else
-		old = SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+		old = SetTextColor(hdc, GetSysColorV2(COLOR_WINDOWTEXT));
 
 	LPCTSTR name = attachItem.m_nameText;
 	RECT rcMeasure;
@@ -1558,7 +1558,7 @@ void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem
 
 	if (inView)
 	{
-		ri::DrawEdge(hdc, &childAttachRect, BDR_RAISEDINNER | BDR_RAISEDOUTER, BF_RECT | BF_MIDDLE);
+		DrawEdgeV2(hdc, &childAttachRect, BDR_RAISEDINNER | BDR_RAISEDOUTER, BF_RECT | BF_MIDDLE);
 		DrawText(hdc, name, -1, &textRect, DT_NOPREFIX | DT_NOCLIP);
 		ri::DrawIconEx(
 			hdc,
@@ -1575,7 +1575,7 @@ void MessageList::DrawDefaultAttachment(HDC hdc, RECT& paintRect, AttachmentItem
 
 	attachItem.m_textRect = textRect;
 
-	uint32_t oc = SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+	uint32_t oc = SetTextColor(hdc, GetSysColorV2(COLOR_WINDOWTEXT));
 	if (old == CLR_NONE)
 		old = oc;
 
@@ -1991,7 +1991,7 @@ void MessageList::DrawReplyPieceIcon(HDC hdc, int leftX, int topY)
 		return;
 	}
 
-	HPEN hpen = CreatePen(PS_SOLID, 3, InvertIfNeeded(GetSysColor(COLOR_WINDOWTEXT)));
+	HPEN hpen = CreatePen(PS_SOLID, 3, InvertIfNeeded(GetSysColorV2(COLOR_WINDOWTEXT)));
 	HGDIOBJ old = SelectObject(hdc, hpen);
 
 	POINT ptold = {};
@@ -2092,7 +2092,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 	}
 
 	if (nameClr == CLR_NONE)
-		nameClr = InvertIfNeeded(GetSysColor(COLOR_WINDOWTEXT));
+		nameClr = InvertIfNeeded(GetSysColorV2(COLOR_WINDOWTEXT));
 
 	LPCTSTR strPart1 = TEXT("");
 	LPCTSTR strPart2 = NULL;
@@ -2133,7 +2133,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 	}
 
 	// Draw the text
-	COLORREF old = SetTextColor(hdc, GetSysColor(COLOR_GRAYTEXT));
+	COLORREF old = SetTextColor(hdc, GetSysColorV2(COLOR_GRAYTEXT));
 	SelectObject(hdc, g_ReplyTextFont);
 	RECT rcMeasure{};
 
@@ -2155,7 +2155,7 @@ int MessageList::DrawMessageReply(HDC hdc, MessageItem& item, RECT& rc)
 	if (!isActionMessage)
 		rcReply.left += ScaleByDPI(5);
 
-	SetTextColor(hdc, GetSysColor(COLOR_GRAYTEXT));
+	SetTextColor(hdc, GetSysColorV2(COLOR_GRAYTEXT));
 
 	if (STRAVAILABLE(strPart2))
 	{
@@ -2230,9 +2230,9 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 	bool isFlashed = (m_emphasizedMessage == item.m_msg->m_snowflake) && (m_flash_counter % 2 != 0);
 
-	COLORREF chosenTextColor = GetSysColor(COLOR_WINDOWTEXT);
+	COLORREF chosenTextColor = GetSysColorV2(COLOR_WINDOWTEXT);
 	if (item.m_msg->m_bRead)
-		chosenTextColor = GetSysColor(COLOR_3DSHADOW);
+		chosenTextColor = GetSysColorV2(COLOR_3DSHADOW);
 
 	COLORREF textColor = InvertIfNeeded(chosenTextColor), bkgdColor = CLR_NONE;
 
@@ -2260,7 +2260,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 		LPTSTR strDateGap = ConvertCppStringToTString("  " + item.m_msg->m_dateOnly + "  ");
 
-		COLORREF clrText = InvertIfNeeded(bDrawNewMarker ? NEW_MARKER_COLOR : GetSysColor(COLOR_GRAYTEXT));
+		COLORREF clrText = InvertIfNeeded(bDrawNewMarker ? NEW_MARKER_COLOR : GetSysColorV2(COLOR_GRAYTEXT));
 		COLORREF oldTextClr = SetTextColor(hdc, clrText);
 		COLORREF oldPenClr = ri::SetDCPenColor(hdc, clrText);
 
@@ -2270,13 +2270,13 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			if (mStyle == MS_FLATBR) clr = COLOR_WINDOW;
 			else if (mStyle == MS_GRADIENT) {
 				COLORREF c1, c2;
-				c1 = GetSysColor(COLOR_WINDOW); // high
-				c2 = GetSysColor(COLOR_3DFACE); // low
+				c1 = GetSysColorV2(COLOR_WINDOW); // high
+				c2 = GetSysColorV2(COLOR_3DFACE); // low
 				if (c1 < c2) clr = COLOR_3DFACE;
 				else         clr = COLOR_WINDOW;
 			}
 
-			FillRect(hdc, &dgRect, ri::GetSysColorBrush(clr));
+			FillRect(hdc, &dgRect, GetSysColorBrushV2(clr));
 		}
 		else
 		{
@@ -2339,27 +2339,27 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			else rect2.top -= 4;
 
 			if (!isFlashed)
-				bkgdColor = GetSysColor(COLOR_3DFACE);
+				bkgdColor = GetSysColorV2(COLOR_3DFACE);
 
 			if (item.m_msg->m_type != MessageType::CHANNEL_HEADER) {
-				ri::DrawEdge(hdc, &rect2, BDR_RAISED, edgeFlags);
+				DrawEdgeV2(hdc, &rect2, BDR_RAISED, edgeFlags);
 			}
 			else if (edgeFlags & BF_MIDDLE) {
-				FillRect(hdc, &rect2, ri::GetSysColorBrush(COLOR_3DFACE));
+				FillRect(hdc, &rect2, GetSysColorBrushV2(COLOR_3DFACE));
 			}
 			break;
 		}
 		case MS_FLAT: {
 			if (!isFlashed) {
-				bkgdColor = GetSysColor(COLOR_3DFACE);
-				FillRect(hdc, &msgRect, ri::GetSysColorBrush(COLOR_3DFACE));
+				bkgdColor = GetSysColorV2(COLOR_3DFACE);
+				FillRect(hdc, &msgRect, GetSysColorBrushV2(COLOR_3DFACE));
 			}
 			break;
 		}
 		case MS_FLATBR: {
 			if (!isFlashed) {
-				bkgdColor = GetSysColor(COLOR_WINDOW);
-				FillRect(hdc, &msgRect, ri::GetSysColorBrush(COLOR_WINDOW));
+				bkgdColor = GetSysColorV2(COLOR_WINDOW);
+				FillRect(hdc, &msgRect, GetSysColorBrushV2(COLOR_WINDOW));
 			}
 			break;
 		}
@@ -2369,8 +2369,8 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 				break;
 
 			COLORREF c1, c2;
-			c1 = GetSysColor(COLOR_WINDOW); // high
-			c2 = GetSysColor(COLOR_3DFACE); // low
+			c1 = GetSysColorV2(COLOR_WINDOW); // high
+			c2 = GetSysColorV2(COLOR_3DFACE); // low
 			bool swapped = false;
 
 			if (c1 < c2) {
@@ -2392,7 +2392,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 
 			if (isChainCont) {
 				// Just render a flat background using the bottom color
-				FillRect(hdc, &msgRect, ri::GetSysColorBrush(swapped ? COLOR_WINDOW : COLOR_3DFACE));
+				FillRect(hdc, &msgRect, GetSysColorBrushV2(swapped ? COLOR_WINDOW : COLOR_3DFACE));
 				break;
 			}
 
@@ -2779,7 +2779,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			if (item.m_msg->m_type == MessageType::UNSENT_MESSAGE)
 				oldTextColor = SetTextColor(hdc, RGB(255, 0, 0));
 			else if (item.m_msg->m_type == MessageType::SENDING_MESSAGE)
-				oldTextColor = SetTextColor(hdc, GetSysColor(COLOR_GRAYTEXT));
+				oldTextColor = SetTextColor(hdc, GetSysColorV2(COLOR_GRAYTEXT));
 			
 			item.m_message.Draw(&mddc, offsetY);
 
@@ -2788,7 +2788,7 @@ void MessageList::DrawMessage(HDC hdc, MessageItem& item, RECT& msgRect, RECT& c
 			if (oldTextColor != CLR_NONE)
 				SetTextColor(hdc, oldTextColor);
 
-			COLORREF windowTextColor = InvertIfNeeded(GetSysColor(COLOR_WINDOWTEXT));
+			COLORREF windowTextColor = InvertIfNeeded(GetSysColorV2(COLOR_WINDOWTEXT));
 			for (size_t i = 0; i < item.m_interactableData.size(); i++) {
 				InteractableItem& iitem = item.m_interactableData[i];
 
@@ -3069,7 +3069,7 @@ bool MessageList::IsMessageVisible(Snowflake sf)
 	SCROLLINFO si;
 	si.cbSize = sizeof(si);
 	si.fMask = SIF_POS | SIF_RANGE;
-	ri::GetScrollInfo(m_hwnd, SB_VERT, &si);
+	m_container.GetScrollInfo(SB_VERT, &si);
 	ScrollHeight = si.nPos;
 
 	RECT msgRect = rect;
@@ -3110,7 +3110,7 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 	SCROLLINFO si;
 	si.cbSize = sizeof(si);
 	si.fMask = SIF_POS | SIF_RANGE;
-	ri::GetScrollInfo(m_hwnd, SB_VERT, &si);
+	m_container.GetScrollInfo(SB_VERT, &si);
 	ScrollHeight = si.nPos;
 
 	RECT msgRect = rect;
@@ -3132,11 +3132,11 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 		case MS_GRADIENT: {
 			oldBkMode = SetBkMode(hdc, TRANSPARENT);
 			oldBkModeSet = true;
-			chosenBkColor = GetSysColor(COLOR_3DFACE);
+			chosenBkColor = GetSysColorV2(COLOR_3DFACE);
 			break;
 		}
 		case MS_FLATBR: {
-			chosenBkColor = GetSysColor(COLOR_WINDOW);
+			chosenBkColor = GetSysColorV2(COLOR_WINDOW);
 			oldBkColor = SetBkColor(hdc, chosenBkColor);
 			break;
 		}
@@ -3147,7 +3147,7 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 			break;
 		}
 		default: {
-			chosenBkColor = GetSysColor(COLOR_3DFACE);
+			chosenBkColor = GetSysColorV2(COLOR_3DFACE);
 			oldBkColor = SetBkColor(hdc, chosenBkColor);
 			break;
 		}
@@ -3155,7 +3155,7 @@ void MessageList::Paint(HDC hdc, RECT& paintRect)
 
 	DrawingContext mddc(hdc);
 	mddc.SetBackgroundColor(chosenBkColor);
-	mddc.SetInvertTextColor(InvertIfNeeded(GetSysColor(COLOR_WINDOWTEXT)));
+	mddc.SetInvertTextColor(InvertIfNeeded(GetSysColorV2(COLOR_WINDOWTEXT)));
 
 	Snowflake lastDrawnMessage = 0;
 	Snowflake lastKnownMessage = 0;
@@ -3712,7 +3712,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (oldWidth != GET_X_LPARAM(lParam)) {
 					si.cbSize = sizeof(si);
 					si.fMask = SIF_TRACKPOS | SIF_POS | SIF_RANGE | SIF_PAGE;
-					ri::GetScrollInfo(hWnd, SB_VERT, &si);
+					pThis->m_container.GetScrollInfo(SB_VERT, &si);
 
 					bool retrack = si.nPos < si.nMax - int(si.nPage) - 10;
 					int position = 0, ypos = 0, ypos2 = 0;
@@ -3777,11 +3777,11 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			si.cbSize = sizeof(si);
 			si.fMask = SIF_TRACKPOS | SIF_POS | SIF_RANGE;
-			ri::GetScrollInfo(pThis->m_hwnd, SB_VERT, &si);
+			pThis->m_container.GetScrollInfo(SB_VERT, &si);
 			si.nTrackPos = si.nPos - (zDelta / 3);
 			if (si.nTrackPos < si.nMin) si.nTrackPos = si.nMin;
 			if (si.nTrackPos > si.nMax) si.nTrackPos = si.nMax;
-			ri::SetScrollInfo(pThis->m_hwnd, SB_VERT, &si, false);
+			pThis->m_container.SetScrollInfo(SB_VERT, &si, false);
 
 			wParam = SB_THUMBTRACK | (si.nTrackPos << 16);
 			goto _lbl;
@@ -3796,7 +3796,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			si.cbSize = sizeof(si);
 			si.fMask = SIF_ALL;
 
-			ri::GetScrollInfo(pThis->m_hwnd, SB_VERT, &si);
+			pThis->m_container.GetScrollInfo(SB_VERT, &si);
 
 		_lbl:
 			;
@@ -3845,8 +3845,8 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					break;
 			}
 
-			ri::SetScrollInfo(pThis->m_hwnd, SB_VERT, &si, true);
-			ri::GetScrollInfo(pThis->m_hwnd, SB_VERT, &si);
+			pThis->m_container.SetScrollInfo(SB_VERT, &si, true);
+			pThis->m_container.GetScrollInfo(SB_VERT, &si);
 
 			diffUpDown = si.nPos - pThis->m_oldPos;
 			pThis->m_oldPos = si.nPos;
@@ -4065,7 +4065,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ZeroMemory(&si, sizeof(SCROLLINFO));
 			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask = SIF_PAGE;
-			ri::GetScrollInfo(hWnd, SB_VERT, &si);
+			pThis->m_container.GetScrollInfo(SB_VERT, &si);
 
 			InvalidateRect(hWnd, &refreshRect, pThis->MayErase() && int(si.nPage) > pThis->m_total_height);
 
@@ -4128,7 +4128,7 @@ LRESULT CALLBACK MessageList::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			EndPaint(hWnd, &ps);
-			break;
+			return 0;
 		}
 	}
 
@@ -4140,7 +4140,7 @@ void MessageList::InitializeClass()
 	WNDCLASS& wc = g_MsgListClass;
 
 	wc.lpszClassName = T_MESSAGE_LIST_CLASS;
-	wc.hbrBackground = ri::GetSysColorBrush(COLOR_3DFACE);
+	wc.hbrBackground = GetSysColorBrushV2(COLOR_3DFACE);
 	wc.style         = 0;
 	wc.lpfnWndProc   = MessageList::WndProc;
 	wc.hCursor       = LoadCursor(0, IDC_ARROW);
@@ -4164,7 +4164,7 @@ void MessageList::UpdateBackgroundBrush()
 	if (mode == MS_IMAGE)
 		SetClassLongPtr(m_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR) m_backgroundBrush);
 	else
-		SetClassLongPtr(m_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR) ri::GetSysColorBrush(bru));
+		SetClassLongPtr(m_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR) GetSysColorBrushV2(bru));
 }
 
 bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded, bool forceInvalidate)
@@ -4189,7 +4189,7 @@ bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded, bool forceIn
 		SCROLLINFO si{};
 		si.cbSize = sizeof(SCROLLINFO);
 		si.fMask = SIF_RANGE;
-		ri::GetScrollInfo(m_hwnd, SB_VERT, &si);
+		m_container.GetScrollInfo(SB_VERT, &si);
 
 		int yOffs = (rcClient.bottom - rcClient.top) / 2 - mi->m_height / 2;
 		y -= yOffs;
@@ -4202,7 +4202,7 @@ bool MessageList::SendToMessage(Snowflake sf, bool requestIfNeeded, bool forceIn
 		// Just scroll there
 		si.fMask = SIF_POS;
 		si.nPos = y;
-		ri::SetScrollInfo(m_hwnd, SB_VERT, &si, true);
+		m_container.SetScrollInfo(SB_VERT, &si, true);
 
 		FlashMessage(mi->m_msg->m_snowflake);
 
@@ -4329,7 +4329,7 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 	scrollInfo.cbSize = sizeof scrollInfo;
 	scrollInfo.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 
-	ri::GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
+	m_container.GetScrollInfo(SB_VERT, &scrollInfo);
 
 	bool scroll = true;
 
@@ -4360,8 +4360,8 @@ void MessageList::UpdateScrollBar(int addToHeight, int diffNow, bool toStart, bo
 		scrollInfo.nMax = (int) scrollInfo.nPage;
 
 	int posNow = scrollInfo.nPos;
-	ri::SetScrollInfo(m_hwnd, SB_VERT, &scrollInfo, true);
-	ri::GetScrollInfo(m_hwnd, SB_VERT, &scrollInfo);
+	m_container.SetScrollInfo(SB_VERT, &scrollInfo, true);
+	m_container.GetScrollInfo(SB_VERT, &scrollInfo);
 	m_oldPos = scrollInfo.nPos;
 
 	if (m_bManagedByOwner)
@@ -4457,8 +4457,8 @@ void MessageList::ReloadBackground()
 
 	if (m_bBackgroundHasAlpha)
 	{
-		m_backgroundColor = GetSysColor(COLOR_WINDOW);
-		m_backgroundBrush = ri::GetSysColorBrush(COLOR_WINDOW);
+		m_backgroundColor = GetSysColorV2(COLOR_WINDOW);
+		m_backgroundBrush = GetSysColorBrushV2(COLOR_WINDOW);
 		m_bDontDeleteBackgroundBrush = true;
 	}
 	else
@@ -4486,7 +4486,7 @@ void MessageList::ReloadBackground()
 		m_bDontDeleteBackgroundBrush = false;
 	}
 
-	m_bInvertTextColors = IsColorDark(m_backgroundColor) ^ (!IsColorDark(GetSysColor(COLOR_WINDOWTEXT)));
+	m_bInvertTextColors = IsColorDark(m_backgroundColor) ^ (!IsColorDark(GetSysColorV2(COLOR_WINDOWTEXT)));
 }
 
 void MessageList::UnloadBackground()
@@ -4554,9 +4554,9 @@ COLORREF MessageList::GetDarkerBackgroundColor() const
 	if (style == MS_IMAGE)
 		bgColor = m_backgroundColor;
 	else if (style == MS_FLATBR)
-		bgColor = GetSysColor(COLOR_WINDOW);
+		bgColor = GetSysColorV2(COLOR_WINDOW);
 	else
-		bgColor = GetSysColor(COLOR_3DFACE);
+		bgColor = GetSysColorV2(COLOR_3DFACE);
 
 	COLORREF hint = IsColorDark(bgColor) ? 0xFFFFFF : 0x000000;
 
@@ -5312,10 +5312,15 @@ MessageList* MessageList::Create(HWND hwnd, LPRECT pRect)
 	MessageList* newThis = new MessageList;
 	int width = pRect->right - pRect->left, height = pRect->bottom - pRect->top;
 
-	newThis->m_hwnd = CreateWindowEx(
+	newThis->m_hwnd = newThis->m_container.InitWindow(
 		WS_EX_CLIENTEDGE, T_MESSAGE_LIST_CLASS, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL,
 		pRect->left, pRect->top, width, height, hwnd, (HMENU)CID_MESSAGELIST, g_hInstance, newThis
 	);
+
+	if (!newThis->m_hwnd) {
+		delete newThis;
+		return NULL;
+	}
 
 	newThis->UpdateBackgroundBrush();
 
@@ -5372,7 +5377,7 @@ void MessagePollData::Draw(HDC hdc, RECT& messageRect, MessageList* pList)
 	rcPoll.right = rcPoll.left + m_width;
 	rcPoll.bottom = rcPoll.top + m_height;
 	rcPoll2 = rcPoll;
-	ri::DrawEdge(hdc, &rcPoll2, EDGE_RAISED, BF_RECT);
+	DrawEdgeV2(hdc, &rcPoll2, EDGE_RAISED, BF_RECT);
 
 	rcPoll.left += borderSize;
 	rcPoll.top += borderSize;

@@ -20,6 +20,7 @@
 #include "TextManager.hpp"
 #include "ProgressDialog.hpp"
 #include "DoubleBufferingHelper.hpp"
+#include "config/LocalSettings.hpp"
 
 #ifndef OLD_WINDOWS
 #include <shlwapi.h>
@@ -606,12 +607,12 @@ void FillGradient(HDC hdc, const LPRECT lpRect, int sci1, int sci2, bool vertica
 			sci1 = COLOR_INACTIVECAPTION;
 	}
 	if (ri::HaveMsImg()) {
-		COLORREF c1 = GetSysColor(sci1);
-		COLORREF c2 = GetSysColor(sci2);
+		COLORREF c1 = GetSysColorV2(sci1);
+		COLORREF c2 = GetSysColorV2(sci2);
 		FillGradientColors(hdc, lpRect, c1, c2, vertical);
 	}
 	else {
-		HBRUSH hbr = ri::GetSysColorBrush(sci1);
+		HBRUSH hbr = GetSysColorBrushV2(sci1);
 		FillRect(hdc, lpRect, hbr);
 	}
 }
@@ -1167,7 +1168,9 @@ int MapIconToOldIfNeeded(int iconID)
 
 	switch (iconID)
 	{
+		case IDI_CHANNEL_MENTIONED_DARK: return IDI_CHANNEL_MENTIONED_DARK_2K;
 		case IDI_PROFILE_BORDER_UNREAD: return IDI_PROFILE_BORDER_UNREAD_2K;
+		case IDI_CHANNEL_UNREAD_DARK: return IDI_CHANNEL_UNREAD_DARK_2K;
 		case IDI_PROFILE_BORDER_GOLD: return IDI_PROFILE_BORDER_GOLD_2K;
 		case IDI_CHANNEL_MENTIONED: return IDI_CHANNEL_MENTIONED_2K;
 		case IDI_CHANNEL_UNREAD: return IDI_CHANNEL_UNREAD_2K;
@@ -1175,15 +1178,19 @@ int MapIconToOldIfNeeded(int iconID)
 		case IDI_TYPING_FRAME1: return IDI_TYPING_FRAME1_2K;
 		case IDI_TYPING_FRAME2: return IDI_TYPING_FRAME2_2K;
 		case IDI_TYPING_FRAME3: return IDI_TYPING_FRAME3_2K;
+		case IDI_CHANNEL_DARK: return IDI_CHANNEL_DARK_2K;
+		case IDI_GROUPDM_DARK: return IDI_GROUPDM_DARK_2K;
 		case IDI_NOTIFICATION: return IDI_NOTIFICATION_2K;
 		case IDI_REPLY_PIECE: return IDI_REPLY_PIECE_2K;
 		case IDI_SHIFT_RIGHT: return IDI_SHIFT_RIGHT_2K;
 		case IDI_NEW_INLINE: return IDI_NEW_INLINE_2K;
 		case IDI_SHIFT_LEFT: return IDI_SHIFT_LEFT_2K;
+		case IDI_VOICE_DARK: return IDI_VOICE_DARK_2K;
 		case IDI_CATEGORY: return IDI_CATEGORY_2K;
 		case IDI_CHANNEL: return IDI_CHANNEL_2K;
 		case IDI_MEMBERS: return IDI_MEMBERS_2K;
 		case IDI_GROUPDM: return IDI_GROUPDM_2K;
+		case IDI_DM_DARK: return IDI_DM_DARK_2K;
 		case IDI_SERVER: return IDI_SERVER_2K;
 		case IDI_BOOST: return IDI_BOOST_2K;
 		case IDI_VOICE: return IDI_VOICE_2K;
@@ -1197,6 +1204,42 @@ int MapIconToOldIfNeeded(int iconID)
 		case IDI_DM: return IDI_DM_2K;
 
 		default: // No mapping
+			return iconID;
+	}
+}
+
+int MapIconToDarkModeIfNeeded(int iconID)
+{
+	if (!IsDarkModeEnabled())
+		return iconID;
+
+	switch (iconID)
+	{
+		case IDI_CHANNEL:
+			return IDI_CHANNEL_DARK;
+		case IDI_VOICE:
+			return IDI_VOICE_DARK;
+		case IDI_DM:
+			return IDI_DM_DARK;
+		case IDI_GROUPDM:
+			return IDI_GROUPDM_DARK;
+		case IDI_CHANNEL_MENTIONED:
+			return IDI_CHANNEL_MENTIONED_DARK;
+		case IDI_CHANNEL_UNREAD:
+			return IDI_CHANNEL_UNREAD_DARK;
+		case IDI_CHANNEL_2K:
+			return IDI_CHANNEL_DARK_2K;
+		case IDI_VOICE_2K:
+			return IDI_VOICE_DARK_2K;
+		case IDI_DM_2K:
+			return IDI_DM_DARK_2K;
+		case IDI_GROUPDM_2K:
+			return IDI_GROUPDM_DARK_2K;
+		case IDI_CHANNEL_MENTIONED_2K:
+			return IDI_CHANNEL_MENTIONED_DARK_2K;
+		case IDI_CHANNEL_UNREAD_2K:
+			return IDI_CHANNEL_UNREAD_DARK_2K;
+		default:
 			return iconID;
 	}
 }
@@ -1272,7 +1315,7 @@ void DrawActivityStatus(HDC hdc, int x, int y, eActiveStatus status)
 
 void DrawLoadingBox(HDC hdc, RECT rect)
 {
-	ri::DrawEdge(hdc, &rect, BDR_SUNKEN, BF_RECT);
+	DrawEdgeV2(hdc, &rect, BDR_SUNKEN, BF_RECT);
 
 	HRGN rgn = DoubleBufferingHelper::CreateRectRgn(hdc, rect);
 	SelectClipRgn(hdc, rgn);
@@ -1288,7 +1331,7 @@ void DrawLoadingBox(HDC hdc, RECT rect)
 
 void DrawErrorBox(HDC hdc, RECT rect)
 {
-	ri::DrawEdge(hdc, &rect, BDR_SUNKEN, BF_RECT);
+	DrawEdgeV2(hdc, &rect, BDR_SUNKEN, BF_RECT);
 
 	HRGN rgn = DoubleBufferingHelper::CreateRectRgn(hdc, rect);
 	SelectClipRgn(hdc, rgn);
@@ -1523,7 +1566,7 @@ bool IsColorDark(COLORREF cr)
 
 bool IsTextColorDark()
 {
-	return IsColorDark(GetSysColor(COLOR_CAPTIONTEXT));
+	return IsColorDark(GetSysColorV2(COLOR_CAPTIONTEXT));
 }
 
 std::map<HICON, bool> m_bMostlyBlack;
@@ -1744,4 +1787,267 @@ std::string FilterToken(const std::string& ogToken)
 	}
 
 	return newToken;
+}
+
+std::string LoadEntireFile(const std::string& fileNameUTF8)
+{
+	LPTSTR fileNameUTF16 = ConvertCppStringToTString(fileNameUTF8);
+	HANDLE handle = CreateFile(fileNameUTF16, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	free(fileNameUTF16);
+
+	if (!handle) {
+		DbgPrintW("Failed to open %s: %d", fileNameUTF8.c_str(), GetLastError());
+		return "";
+	}
+
+	DWORD fileSize = GetFileSize(handle, NULL);
+	if (fileSize > 10000000) {
+		DbgPrintW("Uh oh, file is too big!");
+		CloseHandle(handle);
+		return "";
+	}
+
+	DWORD bytesRead = 0;
+	std::string data;
+	data.resize(fileSize);
+	ReadFile(handle, (void*) data.data(), fileSize, &bytesRead, NULL);
+	CloseHandle(handle);
+
+	if (bytesRead != fileSize) {
+		DbgPrintW("We only read %zu bytes, out of %zu!", (size_t) bytesRead, (size_t) fileSize);
+		return "";
+	}
+
+	return data;
+}
+
+bool SaveEntireFile(const std::string& fileNameUTF8, const std::string& data)
+{
+	LPTSTR fileNameUTF16 = ConvertCppStringToTString(fileNameUTF8);
+	HANDLE handle = CreateFile(fileNameUTF16, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	free(fileNameUTF16);
+
+	if (!handle) {
+		DbgPrintW("Failed to save %s: %d", fileNameUTF8.c_str(), GetLastError());
+		return false;
+	}
+
+	DWORD bytesWritten = 0;
+	WriteFile(handle, (const void*)data.data(), (DWORD) data.size(), &bytesWritten, NULL);
+	CloseHandle(handle);
+
+	if (bytesWritten != (DWORD) data.size()) {
+		DbgPrintW("We only wrote %zu bytes, out of %zu! Data may have been corrupted!", (size_t) bytesWritten, data.size());
+		return false;
+	}
+
+	return true;
+}
+
+bool IsDarkModeEnabled()
+{
+	return GetLocalSettings()->EnableDarkMode();
+}
+
+const COLORREF s_DarkModeColors[] = {
+	RGB(20,20,20), // COLOR_SCROLLBAR
+	RGB(40,40,40), // COLOR_BACKGROUND
+	RGB(0,0,0), // COLOR_ACTIVECAPTION
+	RGB(0,0,0), // COLOR_INACTIVECAPTION
+	RGB(40,40,40), // COLOR_MENU
+	RGB(0,0,0), // COLOR_WINDOW
+	RGB(80,80,80), // COLOR_WINDOWFRAME
+	RGB(255,255,255), // COLOR_MENUTEXT
+	RGB(255,255,255), // COLOR_WINDOWTEXT
+	RGB(255,255,255), // COLOR_CAPTIONTEXT
+	RGB(255,255,255), // COLOR_ACTIVEBORDER
+	RGB(255,255,255), // COLOR_INACTIVEBORDER
+	RGB(40,40,40), // COLOR_APPWORKSPACE
+	RGB(40,40,128), // COLOR_HIGHLIGHT
+	RGB(255,255,255), // COLOR_HIGHLIGHTTEXT
+	RGB(60,60,60), // COLOR_BTNFACE
+	RGB(20,20,20), // COLOR_BTNSHADOW
+	RGB(96,96,96), // COLOR_GRAYTEXT
+	RGB(255,255,255), // COLOR_BTNTEXT
+	RGB(128,128,128), // COLOR_INACTIVECAPTIONTEXT
+	RGB(80,80,80), // COLOR_BTNHIGHLIGHT
+	RGB(0,0,0), // COLOR_3DDKSHADOW
+	RGB(100,100,100), // COLOR_3DLIGHT
+	RGB(255,255,255), // COLOR_INFOTEXT
+	RGB(80,80,80), // COLOR_INFOBK
+	RGB(0,0,0), // missing #25
+	RGB(255,0,255), // COLOR_HOTLIGHT
+	RGB(0,0,0), // COLOR_GRADIENTACTIVECAPTION
+	RGB(0,0,0), // COLOR_GRADIENTINACTIVECAPTION
+	RGB(40,40,128), // COLOR_MENUHILIGHT
+	RGB(30,30,30), // COLOR_MENUBAR
+};
+
+COLORREF GetSysColorV2(int nIndex)
+{
+	if (!IsDarkModeEnabled() || nIndex < 0 || nIndex >= 31)
+		return GetSysColorV2(nIndex);
+
+	return s_DarkModeColors[nIndex];
+}
+
+HBRUSH GetSysColorBrushV2(int nIndex)
+{
+	if (!IsDarkModeEnabled())
+		return ri::GetSysColorBrush(nIndex);
+
+	if (nIndex < 0 || nIndex >= 31) {
+		// fallback, but this usage is WRONG!
+		DbgPrintW("bad index %d used in GetSysColorBrushV2", nIndex);
+		return ri::GetSysColorBrush(nIndex);
+	}
+
+	static HBRUSH brushes[31];
+	if (!brushes[nIndex])
+		brushes[nIndex] = CreateSolidBrush(GetSysColorV2(nIndex));
+	
+	return brushes[nIndex];
+}
+
+#define DRE_BLACKOUTER  0x80000000
+#define DRE_HOT         0x40000000
+BOOL DrawEdgeV2(HDC hdc, LPRECT lprect, UINT style, UINT grfFlags)
+{
+	if (!IsDarkModeEnabled())
+		return ri::DrawEdge(hdc, lprect, style, grfFlags);
+
+	// Dark mode is enabled
+	// NOTE: copied from ri/reimpl.cpp, but whatever.
+	RECT rect = *lprect;
+
+	// copied from NanoShell, which kinda recreated Windows
+	if (grfFlags & BF_FLAT)
+	{
+		grfFlags &= ~BF_FLAT;
+		style &= ~(BDR_INNER | BDR_OUTER);
+		style |=  DRE_BLACKOUTER;
+	}
+	
+	// the depth levels are as follows:
+	// 6 - BUTTON_HILITE_COLOR
+	// 5 - Avg(BUTTON_HILITE_COLOR, BUTTON_MIDDLE_COLOR)
+	// 4 - BUTTON_MIDDLE_COLOR
+	// 3 - WINDOW_BORDER_COLOR
+	// 2 - BUTTON_SHADOW_COLOR
+	// 1 - BUTTON_XSHADOW_COLOR
+	// 0 - BUTTON_EDGE_COLOR
+	
+	uint32_t tl = 0, br = 0;
+	
+	// the flags we need to check, in order of priority.
+	// These match up with their definitions in window.h and represent the amount 1 is shifted by.
+	static const int flags[] = { 4, 3, 1, 2, 0 };
+	
+	int colors[] =
+	{
+		0, //BUTTON_EDGE_COLOR,
+		0, //BUTTON_XSHADOW_COLOR,
+		0, //BUTTON_SHADOW_COLOR,
+		0, //WINDOW_BORDER_COLOR,
+		0, //0,
+		0, //0,
+		0, //BUTTON_HILITE_COLOR,
+	};
+
+	colors[0] = GetSysColorV2(COLOR_WINDOWFRAME);
+	colors[1] = GetSysColorV2(COLOR_3DDKSHADOW);
+	colors[2] = GetSysColorV2(COLOR_3DSHADOW);
+	colors[3] = GetSysColorV2(COLOR_ACTIVEBORDER);
+	colors[6] = GetSysColorV2(COLOR_3DHILIGHT);
+	
+	if ((style & DRE_BLACKOUTER) && colors[1] == 0)
+		colors[1] = colors[2];
+	
+	if (style & DRE_HOT)
+		colors[4] = GetSysColorV2(COLOR_3DLIGHT);
+	else
+		colors[4] = GetSysColorV2(COLOR_3DFACE);
+	
+	// get color #5.
+	unsigned colorAvg = 0;
+	colorAvg |= ((colors[6] & 0xff0000) + (colors[4] & 0xff0000)) >> 1;
+	colorAvg |= ((colors[6] & 0x00ff00) + (colors[4] & 0x00ff00)) >> 1;
+	colorAvg |= ((colors[6] & 0x0000ff) + (colors[4] & 0x0000ff)) >> 1;
+	colors[5] = colorAvg;
+	
+	// 4 pairs of ints corresponding to the border type. These ints are
+	// indices into the colors array.
+	static const int color_indices[] =
+	{
+		6, 2, // raised inner
+		1, 2, // sunken inner
+		5, 1, // raised outer
+		2, 6,
+		0, 0,
+	};
+
+#define ARRAY_COUNT(x) (sizeof(x)/sizeof((x)[0]))
+	for (int i = 0; i < (int)ARRAY_COUNT(flags); i++)
+	{
+		if (~style & (1 << flags[i])) continue;
+		
+		tl = colors[color_indices[0 + 2 * flags[i]]];
+		br = colors[color_indices[1 + 2 * flags[i]]];
+		
+		// top left
+		HPEN hp = CreatePen(PS_SOLID, 1, tl);
+		HGDIOBJ go = SelectObject(hdc, hp);
+		POINT ptold;
+		
+		//VidDrawHLine(tl, rect.left, rect.right, rect.top);
+		MoveToEx(hdc, rect.left, rect.top, &ptold);
+		if (grfFlags & BF_TOP) {
+			LineTo(hdc, rect.right, rect.top);
+		}
+
+		//VidDrawVLine(tl, rect.top, rect.bottom, rect.left);
+		if (grfFlags & BF_LEFT) {
+			MoveToEx(hdc, rect.left, rect.top, NULL);
+			LineTo(hdc, rect.left, rect.bottom);
+		}
+
+		SelectObject(hdc, go);
+		DeleteObject(hp);
+
+		// bottom right
+		hp = CreatePen(PS_SOLID, 1, br);
+		go = SelectObject(hdc, hp);
+		
+		//VidDrawHLine(br, rect.left, rect.right, rect.bottom);
+		if (grfFlags & BF_BOTTOM) {
+			MoveToEx(hdc, rect.left, rect.bottom - 1, NULL);
+			LineTo(hdc, rect.right, rect.bottom - 1);
+		}
+
+		//VidDrawVLine(br, rect.top, rect.bottom, rect.right);
+		if (grfFlags & BF_RIGHT) {
+			MoveToEx(hdc, rect.right - 1, rect.top, NULL);
+			LineTo(hdc, rect.right - 1, rect.bottom);
+		}
+
+		SelectObject(hdc, go);
+		DeleteObject(hp);
+		MoveToEx(hdc, ptold.x, ptold.y, NULL);
+		
+		rect.left++;
+		rect.top++;
+		rect.right--;
+		rect.bottom--;
+	}
+	
+	if (grfFlags & BF_MIDDLE)
+		//VidFillRectangle(bg, rect);
+		FillRect(hdc, &rect, GetSysColorBrushV2(COLOR_3DFACE));
+
+	if (grfFlags & BF_ADJUST)
+		*lprect = rect;
+
+#undef ARRAY_COUNT
+
+	return TRUE;
 }
