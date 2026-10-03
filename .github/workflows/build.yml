@@ -25,7 +25,7 @@ jobs:
       
       - name: Download OpenSSL
         run: |
-          curl -Lo "openssl-stuff.zip" https://github.com/DiscordMessenger/openssl/releases/download/release-1/openssl-stuff.zip
+          curl -Lo "openssl-stuff.zip" https://github.com/DiscordMessenger/openssl/releases/download/release-2/openssl-stuff.zip
           mkdir -p $OPENSSL_DIR
           unzip openssl-stuff.zip -d $OPENSSL_DIR
       
@@ -46,20 +46,33 @@ jobs:
       - name: Make Unicode Build
         run: make DEBUG=no UNICODE=yes COMMIT_HASH=${{ steps.get-latest-tag.outputs.COMMIT }} -j$(nproc)
       
+      - name: Prepare Unicode Build
+        run: |
+          rm -rf bin/prepared && mkdir bin/prepared
+          cp bin/DiscordMessenger.exe bin/prepared/DiscordMessenger.exe
+          cp $OPENSSL_DIR/libcrypto-4.dll bin/prepared/libcrypto-4.dll
+          cp $OPENSSL_DIR/libssl-4.dll bin/prepared/libssl-4.dll
+      
       - name: Upload Unicode Artifact
         uses: actions/upload-artifact@v4
         with:
           name: 'DiscordMessenger-${{ steps.get-latest-tag.outputs.TAG }}-PRE-MinGW'
-          path: bin/DiscordMessenger.exe
-      
+          path: bin/prepared/
+
       - name: Make ANSI Build
         run: |
           rm -rf build
           CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ WR=i686-w64-mingw32-windres EXTRA_FLAGS="-static-libstdc++ -static-libgcc -Wl,--no-whole-archive" DEBUG=no UNICODE=no make -j$(nproc)
       
+      - name: Prepare ANSI Build
+        run: |
+          rm -rf bin/prepared && mkdir bin/prepared
+          cp bin/DiscordMessenger.exe bin/prepared/DiscordMessenger.exe
+          cp $OPENSSL_DIR/libcrypto-4.dll bin/prepared/libcrypto-4.dll
+          cp $OPENSSL_DIR/libssl-4.dll bin/prepared/libssl-4.dll
+      
       - name: Upload ANSI Artifact
         uses: actions/upload-artifact@v4
         with:
           name: 'DiscordMessenger-${{ steps.get-latest-tag.outputs.TAG }}-PRE-MinGWA'
-          path: bin/DiscordMessenger.exe
-
+          path: bin/prepared/

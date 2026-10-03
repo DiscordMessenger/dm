@@ -44,14 +44,14 @@ DiscordClientConfig::DiscordClientConfig()
 	m_systemLocale = "en-US";
 	m_timeZone = "Europe/Bucharest"; // TODO: UTC here
 	m_browserVersion = "42.7.1";
-	m_browserVersionSimple = "125"; // not used anymore?!
+	m_browserVersionSimple = "148"; // not used anymore?!
 	m_webKitVersion = "537.36";
 	m_osVersion = "10.0.22621";
 	m_osSdkVersion = "22621";
-	m_releaseChannel = "canary";
-	m_clientBuildNumber = 584141;
-	m_nativeBuildNumber = 87203;
-	m_clientVersion = "1.0.1070";
+	m_releaseChannel = "stable";
+	m_clientBuildNumber = 603738;
+	m_nativeBuildNumber = 89332;
+	m_clientVersion = "1.0.9255";
 	m_osVersionSimple = "10";
 	m_chromeVersion = "148.0.7778.280";
 

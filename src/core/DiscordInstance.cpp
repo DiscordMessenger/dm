@@ -619,6 +619,28 @@ void DiscordInstance::HandleRequest(NetRequest* pRequest)
 
 		case HTTP_BADREQUEST:
 		{
+			// Check if this request was made to the gateway.
+			//
+			// Some people report 400 Bad Request errors and this is a work-around.
+			// Note that we hardcode the URL check, because we expect that Discord reimplementation
+			// servers don't throw up these kinds of errors.
+			if (pRequest->itype == GATEWAY && pRequest->url == "https://discord.com/api/v9/gateway")
+			{
+				GetFrontend()->OnGenericError(
+					"A response code of 400 was reported when trying to get the Discord gateway connection URL.\n"
+					"This is likely because Cloudflare is treating your IP address with increased scrutiny.\n\n"
+					"We'll attempt to use wss://gateway.discord.gg as the gateway URL, however, you may not be "
+					"able to continue using the client.\n\n"
+					"If you still experience issues (such as messages not loading), try logging in to Discord from "
+					"the same IP address as your machine, and it might just solve the problem.  However, no "
+					"guarantee can be provided."
+				);
+
+				pRequest->response = "{\"url\":\"wss://gateway.discord.gg\"}";
+				pRequest->result = HTTP_OK;
+				break;
+			}
+
 			str = "A bug occurred and the client has sent an invalid request.\n"
 				"The resource in question is: " + pRequest->url + "\n\n" + pRequest->response;
 			bExitAfterError = false;
