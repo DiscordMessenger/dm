@@ -108,7 +108,7 @@ namespace
 		}
 		else
 		{
-			const char* text = "Preparing a code\xe2\x80\xa6";
+			const char* text = s->failed ? "No code: see below" : "Preparing a code\xe2\x80\xa6";
 			int tw = Fonts::Measure(text, FS_ITALIC, 14);
 			Fonts::Draw(c, ((int) w - tw) / 2, (int) h / 2, text, FS_ITALIC, 14, 0x606060);
 		}
