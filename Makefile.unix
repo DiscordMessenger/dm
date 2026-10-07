@@ -15,7 +15,10 @@ CXX         ?= c++
 CC          ?= cc
 EXTRA_CXXFLAGS ?=
 EXTRA_LDFLAGS  ?=
+X_CFLAGS    ?=
 X_LIBS      ?= -lXm -lXt -lXext -lX11
+FT_CFLAGS   ?= -I$(PREFIX_DEPS)/include/freetype2
+FT_LIBS     ?= -lfreetype
 
 BUILD_DIR = build-unix/$(FRONTEND)
 TARGET    = bin/dm-$(FRONTEND)
@@ -58,7 +61,8 @@ DEFINES += -DDISABLE_WEBP
 endif
 
 ifeq ($(FRONTEND),motif)
-LIBS += $(X_LIBS)
+CXXFLAGS += $(X_CFLAGS) $(FT_CFLAGS)
+LIBS += $(FT_LIBS) $(X_LIBS)
 endif
 
 CXXFILES := \
@@ -83,7 +87,7 @@ $(BUILD_DIR)/%.o: %.cpp
 	@echo ">> $<"
 	@$(CXX) $(CXXFLAGS) -MMD -MF $(BUILD_DIR)/$*.d -c $< -o $@
 
-$(TARGET): $(OBJ)
+$(TARGET): $(OBJ) Makefile.unix
 	@mkdir -p bin
 	@echo ">> linking $@"
 	@$(CXX) -o $@ $(OBJ) $(LDFLAGS) $(LIBS)
