@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstring>
 #include <cassert>
 #include <cstdarg>
 #include <sstream>
@@ -58,7 +59,8 @@ uint64_t HashStringLong(const char* str, int len)
 	if (len == 0) len = int(strlen(str));
 	for (int i = 0; i < len - 7; i += 8)
 	{
-		uint64_t lol = *(uint64_t*)&str[i];
+		uint64_t lol;
+		memcpy(&lol, &str[i], sizeof lol); // str need not be aligned
 		lol = BitMix(lol);
 		startHash ^= lol;
 	}

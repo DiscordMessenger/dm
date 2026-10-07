@@ -741,16 +741,10 @@ namespace Protobuf
 		{
 			EncodeVarInt(outputStream, CombineFieldNumberAndTag(GetFieldNumber(), TAG_I64));
 
-			union {
-				uint8_t bytes[8];
-				uint64_t u64;
-			} x;
-			x.u64 = m_value;
-
-			// TODO: Big endian support here
-			//for (int i = 7; i >= 0; i--)
+			// little-endian on the wire, whatever the CPU
+			uint64_t v = (uint64_t) m_value;
 			for (int i = 0; i < 8; i++)
-				outputStream.push_back(x.bytes[i]);
+				outputStream.push_back((uint8_t) (v >> (8 * i)));
 		}
 
 		bool IsEmpty() override
@@ -788,16 +782,8 @@ namespace Protobuf
 		{
 			EncodeVarInt(outputStream, CombineFieldNumberAndTag(GetFieldNumber(), TAG_I32));
 
-			union {
-				uint8_t bytes[4];
-				uint32_t u32;
-			} x;
-			x.u32 = m_value;
-
-			// TODO: Big endian support here
-			//for (int i = 3; i >= 0; i--)
 			for (int i = 0; i < 4; i++)
-				outputStream.push_back(x.bytes[i]);
+				outputStream.push_back((uint8_t) (m_value >> (8 * i)));
 		}
 
 	private:
@@ -929,7 +915,11 @@ namespace Protobuf
 				if (offset + sizeof(uint64_t) > sz)
 					return ERROR_OUTOFBOUNDS;
 
-				returnIfNonNull(block->AddObject(new ObjectFixed64(fieldNum, *((uint64_t*)&data[offset]))));
+				// little-endian on the wire, at any alignment
+				uint64_t v64 = 0;
+				for (int i = 7; i >= 0; i--)
+					v64 = (v64 << 8) | (uint8_t) data[offset + i];
+				returnIfNonNull(block->AddObject(new ObjectFixed64(fieldNum, v64)));
 				offset += sizeof(uint64_t);
 				break;
 			}
@@ -938,7 +928,10 @@ namespace Protobuf
 				if (offset + sizeof(uint32_t) > sz)
 					return ERROR_OUTOFBOUNDS;
 
-				returnIfNonNull(block->AddObject(new ObjectFixed32(fieldNum, *((uint32_t*)&data[offset]))));
+				uint32_t v32 = 0;
+				for (int i = 3; i >= 0; i--)
+					v32 = (v32 << 8) | (uint8_t) data[offset + i];
+				returnIfNonNull(block->AddObject(new ObjectFixed32(fieldNum, v32)));
 				offset += sizeof(uint32_t);
 				break;
 			}
