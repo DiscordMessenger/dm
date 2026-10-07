@@ -66,6 +66,9 @@ private:
 	void PaintItem(Item& item, int top);
 	void RequestVisibleGaps();
 	void OnClick(int x, int y);
+	void DrawPicture(const Rect& r, const std::string& url, int top, const std::string& label);
+	void ImagesChanged();
+	static void RepaintTimerCB(XtPointer, XtIntervalId*);
 	int ContentWidth() const;
 
 	Widget m_form, m_area, m_scroll;
@@ -81,4 +84,5 @@ private:
 	int m_scrollY = 0;
 	int m_viewW = 1, m_viewH = 1;
 	bool m_stickToBottom = true;
+	XtIntervalId m_repaintTimer = 0;
 };

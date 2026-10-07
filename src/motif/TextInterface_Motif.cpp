@@ -5,6 +5,7 @@
 
 #include "text/FormattedText.hpp"
 #include "text/TextInterface.hpp"
+#include "ImageCache.hpp"
 
 static const int CODE_PAD = 4;      // inside multi-line code blocks
 static const int QUOTE_INDENT = 12;
@@ -114,8 +115,22 @@ void MdDrawString(DrawingContext* ctx, const Rect& rect, const String& str, int 
 	const std::string& s = str.GetWrapped();
 
 	if (styleFlags & WORD_CEMOJI) {
-		// Custom emoji images are not loaded yet: show the emoji's name.
+		// <:name:id> or <a:name:id>: the id follows the second colon
+		Snowflake id = 0;
+		int colons = 0;
+		for (char ch : s) {
+			if (ch == ':')
+				colons++;
+			else if (colons == 2 && ch >= '0' && ch <= '9')
+				id = id * 10 + (Snowflake) (ch - '0');
+		}
 		int h = rect.Height();
+		const Image* img = id ? ImageCache::Get(ImageCache::EMOJI, "", id, h, h) : nullptr;
+		if (img) {
+			c.BlendArgb(rect.left + (h - img->w) / 2, rect.top + (h - img->h) / 2, img->px.data(), img->w, img->h, img->w);
+			return;
+		}
+		// until it arrives: a box with the emoji name's initial
 		c.FillRounded(rect.left, rect.top, h, h, 4, LerpRgb(ctx->bg, ctx->muted, 1, 3));
 		size_t a = s.find(':'), b = s.find(':', a + 1);
 		std::string name = (a != std::string::npos && b != std::string::npos) ? s.substr(a + 1, b - a - 1) : "?";

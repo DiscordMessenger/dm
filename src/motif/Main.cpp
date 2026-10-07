@@ -19,6 +19,7 @@
 
 #include "Canvas.hpp"
 #include "Fonts.hpp"
+#include "ImageCache.hpp"
 #include "LogonDialog.hpp"
 #include "MainWindow.hpp"
 #include "MessageView.hpp"
@@ -109,6 +110,12 @@ public:
 		GetMainWindow()->UpdateMemberList();
 	}
 	void UpdateUserData(Snowflake userID) override {}
+	void OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_t* pData, size_t nSize, const std::string& additData) override {
+		ImageCache::Downloaded(additData, pData, nSize);
+	}
+	void OnAttachmentFailed(bool bIsProfilePicture, const std::string& additData) override {
+		ImageCache::DownloadFailed(additData);
+	}
 	void SetHeartbeatInterval(int timeMs) override {
 		if (m_heartbeat)
 			XtRemoveTimeOut(m_heartbeat);
@@ -244,6 +251,17 @@ static void LoadDemo()
 			a.m_actualUrl = "https://example.com/bootp-setup.txt";
 			m.m_attachments.push_back(a);
 		}
+		if (sm.author == 1002 && sm.minutesAgo == 12) {
+			Attachment a;
+			a.m_fileName = "transparency.png";
+			a.m_size = 226933;
+			a.m_width = 800;
+			a.m_height = 600;
+			a.m_contentType = ContentType::PNG;
+			a.m_proxyUrl = a.m_actualUrl = "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png";
+			a.UpdatePreviewSize();
+			m.m_attachments.push_back(a);
+		}
 		if (sm.author == 1004) {
 			m.m_pReferencedMessage = std::make_shared<ReferenceMessage>();
 			m.m_pReferencedMessage->m_author = "Ada";
@@ -255,6 +273,10 @@ static void LoadDemo()
 			e.m_url = "https://www.sgi.com/";
 			e.m_description = "High-performance computing and *visualization* since 1982.";
 			e.m_footerText = "Embed footer";
+			e.m_bHasImage = true;
+			e.m_imageUrl = e.m_imageProxiedUrl = "https://www.gstatic.com/webp/gallery/1.webp";
+			e.m_imageWidth = 550;
+			e.m_imageHeight = 368;
 			m.m_embeds.push_back(e);
 		}
 		GetMessageCache()->AddMessage(chan, m);

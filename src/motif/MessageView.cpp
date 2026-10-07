@@ -13,6 +13,7 @@
 #include "Frontend.hpp"
 #include "state/MessageCache.hpp"
 #include "Theme.hpp"
+#include "ImageCache.hpp"
 
 // Geometry, in pixels
 static const int MARGIN = 16;        // left and right
@@ -37,6 +38,11 @@ struct MessageView::ItemExtra
 	std::vector<std::unique_ptr<FormattedText>> embedTexts;
 	std::vector<int> embedTops;
 	std::vector<int> embedHeights;
+	// images: where they go (item coordinates) and what to fetch
+	struct Pic { Rect rect; std::string url; };
+	std::vector<Pic> attachPics;       // one per attachment; empty url: a file line
+	std::vector<Pic> embedThumbs;      // one per embed; empty url: none
+	std::vector<Pic> embedImages;      // one per embed; empty url: none
 	int attachTop = 0;
 	int replyTop = 0;
 	int headerTop = 0;
@@ -53,6 +59,30 @@ static std::string FormatSize(int bytes)
 	else
 		snprintf(buf, sizeof buf, "%d bytes", bytes);
 	return buf;
+}
+
+// A media proxy URL asking for the w x h preview, when that differs from
+// the original size.
+static std::string PreviewURL(const std::string& base, int w, int h, int origW, int origH)
+{
+	if (base.empty() || (w == origW && h == origH))
+		return base;
+	return base + (base.find('?') == std::string::npos ? "?" : "&") +
+		"width=" + std::to_string(w) + "&height=" + std::to_string(h);
+}
+
+// w x h scaled to fit in maxW x maxH (never enlarged).
+static void FitBox(int& w, int& h, int maxW, int maxH)
+{
+	if (w <= 0 || h <= 0) {
+		w = maxW;
+		h = maxH / 2;
+		return;
+	}
+	if (w > maxW) { h = h * maxW / w; w = maxW; }
+	if (h > maxH) { w = w * maxH / h; h = maxH; }
+	if (w < 1) w = 1;
+	if (h < 1) h = 1;
 }
 
 static std::string DayOf(time_t t)
@@ -133,6 +163,7 @@ MessageView::MessageView(Widget parent, const PixelFormat& fmt) : m_fmt(fmt)
 
 	XtManageChild(m_form);
 	ApplyTheme(m_ctx);
+	ImageCache::SetChangedCallback([this] { ImagesChanged(); });
 }
 
 int MessageView::ContentWidth() const
@@ -317,11 +348,24 @@ void MessageView::LayoutItem(Item& item, int width)
 		item.laidOutWidth = width;
 	}
 
-	// attachments: a line each
+	// attachments: images as previews, other files a line each
 	ex.attachTop = y;
 	ex.links.clear();
+	ex.attachPics.clear();
 	int lh = Fonts::LineHeight(FS_REGULAR, m_ctx.px) + 4;
 	for (auto& att : m.m_attachments) {
+		if (att.IsImage() && att.m_width > 0 && att.m_height > 0) {
+			int w = att.m_previewWidth > 0 ? att.m_previewWidth : att.m_width;
+			int h = att.m_previewHeight > 0 ? att.m_previewHeight : att.m_height;
+			FitBox(w, h, std::min(300, right - TEXT_X), 300);
+			y += 4;
+			Rect r(TEXT_X, y, TEXT_X + w, y + h);
+			ex.attachPics.push_back({ r, PreviewURL(att.m_proxyUrl, w, h, att.m_width, att.m_height) });
+			ex.links.push_back(ItemLink{ r, att.m_actualUrl });
+			y += h + 4;
+			continue;
+		}
+		ex.attachPics.push_back({ Rect(TEXT_X, y, right, y + lh), "" });
 		ex.links.push_back(ItemLink{ Rect(TEXT_X, y, right, y + lh), att.m_actualUrl });
 		y += lh;
 	}
@@ -330,10 +374,17 @@ void MessageView::LayoutItem(Item& item, int width)
 	ex.embedTexts.clear();
 	ex.embedTops.clear();
 	ex.embedHeights.clear();
+	ex.embedThumbs.clear();
+	ex.embedImages.clear();
+	const int THUMB = 80;
 	for (auto& em : m.m_embeds)
 	{
 		y += 4;
 		int top = y;
+		int boxRight = std::min(right, TEXT_X + 520);
+		// a thumbnail sits at the top right, beside the text
+		bool thumb = em.m_bHasThumbnail && !em.m_thumbnailProxiedUrl.empty() && !em.m_bHasImage;
+		int textRight = thumb ? boxRight - THUMB - 12 : boxRight;
 		y += 6;
 		if (!em.m_providerName.empty())
 			y += Fonts::LineHeight(FS_REGULAR, m_ctx.px - 3) + 2;
@@ -349,9 +400,33 @@ void MessageView::LayoutItem(Item& item, int width)
 		if (!body.empty()) {
 			ft.reset(new FormattedText);
 			ft->SetMessage(body);
-			ft->Layout(&m_ctx, Rect(TEXT_X + 12, y, std::min(right, TEXT_X + 520), y + 100000));
+			ft->Layout(&m_ctx, Rect(TEXT_X + 12, y, textRight, y + 100000));
 			y = std::max(y, ft->GetExtent().bottom);
 		}
+
+		ItemExtra::Pic img, th;
+		if (thumb) {
+			int w = em.m_thumbnailWidth, h = em.m_thumbnailHeight;
+			FitBox(w, h, THUMB, THUMB);
+			th.rect = Rect(boxRight - 8 - w, top + 8, boxRight - 8, top + 8 + h);
+			th.url = PreviewURL(em.m_thumbnailProxiedUrl, w, h, em.m_thumbnailWidth, em.m_thumbnailHeight);
+			y = std::max(y, th.rect.bottom);
+		}
+		std::string imgUrl = em.m_bHasImage ? em.m_imageProxiedUrl :
+			(em.m_bHasThumbnail && !thumb ? em.m_thumbnailProxiedUrl : "");
+		if (!imgUrl.empty()) {
+			int ow = em.m_bHasImage ? em.m_imageWidth : em.m_thumbnailWidth;
+			int oh = em.m_bHasImage ? em.m_imageHeight : em.m_thumbnailHeight;
+			int w = ow, h = oh;
+			FitBox(w, h, std::min(300, boxRight - TEXT_X - 24), 300);
+			y += 6;
+			img.rect = Rect(TEXT_X + 12, y, TEXT_X + 12 + w, y + h);
+			img.url = PreviewURL(imgUrl, w, h, ow, oh);
+			y += h;
+		}
+		ex.embedThumbs.push_back(th);
+		ex.embedImages.push_back(img);
+
 		if (!em.m_footerText.empty())
 			y += Fonts::LineHeight(FS_REGULAR, m_ctx.px - 3) + 4;
 		y += 6;
@@ -497,6 +572,45 @@ static Rgb AvatarColor(Snowflake sf)
 	return colors[(sf >> 22) % (sizeof colors / sizeof colors[0])];
 }
 
+void MessageView::DrawPicture(const Rect& r, const std::string& url, int top, const std::string& label)
+{
+	Canvas& c = m_canvas;
+	int w = r.Width(), h = r.Height();
+	int x = r.left, y = r.top + top;
+	if (y + h < 0 || y > m_viewH)
+		return; // not on screen: not fetched either
+	const Image* img = ImageCache::Get(ImageCache::URL, url, 0, w, h);
+	if (img) {
+		// opaque images on the background; centred in their box
+		c.BlendArgb(x + (w - img->w) / 2, y + (h - img->h) / 2, img->px.data(), img->w, img->h, img->w);
+		return;
+	}
+	c.Fill(x, y, w, h, m_ctx.codeBg);
+	c.Frame(x, y, w, h, m_ctx.codeFrame);
+	bool failed = ImageCache::Failed(ImageCache::URL, url, 0, w, h);
+	std::string text = failed ? (label.empty() ? std::string("Image not available") : label) : std::string("Loading\xe2\x80\xa6");
+	int spx = m_ctx.px - 2;
+	text = Fonts::Elide(text, FS_ITALIC, spx, w - 8);
+	int tw = Fonts::Measure(text, FS_ITALIC, spx);
+	if (h > Fonts::LineHeight(FS_ITALIC, spx))
+		Fonts::Draw(c, x + (w - tw) / 2, y + h / 2 + Fonts::Ascent(FS_ITALIC, spx) / 2, text, FS_ITALIC, spx, m_ctx.muted);
+}
+
+void MessageView::ImagesChanged()
+{
+	// Downloads come in bursts: repaint once for each burst.
+	if (m_repaintTimer)
+		return;
+	m_repaintTimer = XtAppAddTimeOut(XtWidgetToApplicationContext(m_area), 80, RepaintTimerCB, this);
+}
+
+void MessageView::RepaintTimerCB(XtPointer client, XtIntervalId*)
+{
+	MessageView* self = (MessageView*) client;
+	self->m_repaintTimer = 0;
+	self->Paint();
+}
+
 void MessageView::PaintItem(Item& item, int top)
 {
 	Canvas& c = m_canvas;
@@ -548,11 +662,19 @@ void MessageView::PaintItem(Item& item, int top)
 	if (!item.grouped)
 	{
 		int y = top + ex.headerTop;
-		// avatar: a coloured disc with the initial
+		// the avatar; a coloured disc with the initial until it arrives
+		const Image* av = m.m_avatar.empty() ?
+			ImageCache::Get(ImageCache::DEFAULT_AVATAR, "", m.m_author_snowflake, AVATAR, AVATAR) :
+			ImageCache::Get(ImageCache::AVATAR, m.m_avatar, m.m_author_snowflake, AVATAR, AVATAR);
 		Rgb ac = AvatarColor(m.m_author_snowflake);
 		std::vector<uint32_t> disc((size_t) AVATAR * AVATAR, 0xff000000u | ac);
-		c.BlendArgbCircle(MARGIN, y, disc.data(), AVATAR, AVATAR, AVATAR);
-		if (!m.m_author.empty()) {
+		if (av) {
+			c.BlendArgbCircle(MARGIN + (AVATAR - av->w) / 2, y + (AVATAR - av->h) / 2, av->px.data(), av->w, av->h, av->w);
+		}
+		else {
+			c.BlendArgbCircle(MARGIN, y, disc.data(), AVATAR, AVATAR, AVATAR);
+		}
+		if (!av && !m.m_author.empty()) {
 			const char* p = m.m_author.c_str();
 			const char* end = p + m.m_author.size();
 			DecodeUtf8(p, end);
@@ -587,7 +709,13 @@ void MessageView::PaintItem(Item& item, int top)
 	// attachments
 	int ay = top + ex.attachTop;
 	int lh = Fonts::LineHeight(FS_REGULAR, m_ctx.px) + 4;
-	for (auto& att : m.m_attachments) {
+	for (size_t ai = 0; ai < m.m_attachments.size(); ai++) {
+		const Attachment& att = m.m_attachments[ai];
+		if (ai < ex.attachPics.size() && !ex.attachPics[ai].url.empty()) {
+			DrawPicture(ex.attachPics[ai].rect, ex.attachPics[ai].url, top, att.m_fileName);
+			continue;
+		}
+		ay = top + (ai < ex.attachPics.size() ? ex.attachPics[ai].rect.top : ay - top);
 		int asc = Fonts::Ascent(FS_REGULAR, m_ctx.px);
 		// a page with a folded corner
 		int ih = asc + 1, iw = ih * 3 / 4, iy = ay + 3, fold = iw / 3;
@@ -634,6 +762,10 @@ void MessageView::PaintItem(Item& item, int top)
 		}
 		if (ex.embedTexts[i])
 			ex.embedTexts[i]->Draw(&m_ctx, top);
+		if (i < ex.embedThumbs.size() && !ex.embedThumbs[i].url.empty())
+			DrawPicture(ex.embedThumbs[i].rect, ex.embedThumbs[i].url, top, "");
+		if (i < ex.embedImages.size() && !ex.embedImages[i].url.empty())
+			DrawPicture(ex.embedImages[i].rect, ex.embedImages[i].url, top, "");
 		if (!em.m_footerText.empty()) {
 			int spx = m_ctx.px - 3;
 			int fy = top + ex.embedTops[i] + ex.embedHeights[i] - 6 - Fonts::Descent(FS_REGULAR, spx);
