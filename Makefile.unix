@@ -20,8 +20,8 @@ X_LIBS      ?= -lXm -lXt -lXext -lX11
 FT_CFLAGS   ?= -I$(PREFIX_DEPS)/include/freetype2
 FT_LIBS     ?= -lfreetype
 
-BUILD_DIR = build-unix/$(FRONTEND)
-TARGET    = bin/dm-$(FRONTEND)
+BUILD_DIR ?= build-unix/$(FRONTEND)
+TARGET    ?= bin/dm-$(FRONTEND)
 
 DEFINES = \
 	-DASIO_STANDALONE             \

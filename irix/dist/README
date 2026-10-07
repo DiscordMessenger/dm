@@ -1,0 +1,49 @@
+Discord Messenger for IRIX
+==========================
+
+Discord Messenger (https://github.com/DiscordMessenger/dm), the Discord-
+compatible messenger for old versions of Windows, ported to IRIX 6.5 with a
+Motif user interface.
+
+Run:     /usr/local/bin/discord-messenger
+Needs:   IRIX 6.5.22 or later, X11 and IRIX's Motif (x_eoe, motif_eoe);
+         any MIPS CPU.  Nothing else: every library it uses besides IRIX's
+         is linked into the program.
+
+Logging in: the first start asks you to scan a QR code with the Discord
+app on your phone (tap your avatar, then Scan QR Code).  Discord sometimes
+asks for a captcha at the end of that, which this program cannot show;
+then use "Use a Token Instead": the token is the "authorization" header of
+any request a logged-in discord.com page makes (the browser's developer
+tools, Network).  It is kept in ~/.discordmessenger/settings.json, readable
+only by you.
+
+Note: third-party clients are against Discord's terms of service.  The
+risk of a ban is low, but it is there, and it is yours.
+
+What it shows: servers (with their icons), channels, the member list and
+messages, with Discord's formatting, replies, embeds, image attachments,
+avatars and colour emoji (Noto Color Emoji).  Colours follow your desktop's
+Motif scheme.  View > Larger/Smaller Text sets the text size.
+
+Files:   ~/.discordmessenger: settings.json, motif.conf (text size) and
+         cache/ (images, kept between runs).
+         /usr/local/lib/discord-messenger: fonts/ (DejaVu, Noto Color
+         Emoji; DM_FONT_DIR names another directory), cacert.pem (the
+         roots of trust; DM_CA_FILE names another file), licenses/.
+Links:   open in the browser that DM_BROWSER or BROWSER names.
+Debugging: DM_DEBUG=1 prints the client's log on stderr.
+
+Source, and how it was built: https://github.com/atomchild411/dm
+(branch irix; irix/dist has this package's recipe).
+
+Licenses: licenses/ -- Discord Messenger is MIT licensed.  Linked in:
+OpenSSL (Apache License 2.0), LLVM's libc++ (Apache License 2.0 with LLVM
+exception), FreeType (FreeType License), libpng (PNG Reference Library
+licence), zlib, bzip2 (BSD-style), libwebp (BSD, with Google's patent
+grant), asio and Boost.Beast's base64 (Boost Software License 1.0),
+WebSocket++ (BSD 3-clause), cpp-httplib, JSON for Modern C++ and Nayuki's
+QR Code generator (MIT), stb_image (MIT or public domain) and the RSA
+reference MD5.  The fonts: DejaVu (Bitstream Vera licence, and public
+domain changes) and Noto Color Emoji (SIL Open Font License 1.1).
+cacert.pem is from Mozilla (MPL 2.0).
