@@ -71,7 +71,9 @@ CXXFILES := \
 	deps/asio/src/asio_ssl.cpp \
 	deps/md5/MD5.cpp
 
-OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(CXXFILES))
+CFILES := deps/qrcodegen/qrcodegen.c
+
+OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(CXXFILES)) $(patsubst %.c,$(BUILD_DIR)/%.o,$(CFILES))
 DEP := $(OBJ:.o=.d)
 
 .PHONY: all clean
@@ -86,6 +88,11 @@ $(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
 	@echo ">> $<"
 	@$(CXX) $(CXXFLAGS) -MMD -MF $(BUILD_DIR)/$*.d -c $< -o $@
+
+$(BUILD_DIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	@echo ">> $<"
+	@$(CC) -std=c99 $(OPT) $(EXTRA_CXXFLAGS:-std=%=) -MMD -MF $(BUILD_DIR)/$*.d -c $< -o $@
 
 $(TARGET): $(OBJ) Makefile.unix
 	@mkdir -p bin

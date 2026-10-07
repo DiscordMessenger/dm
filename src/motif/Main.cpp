@@ -21,6 +21,7 @@
 #include "Fonts.hpp"
 #include "ImageCache.hpp"
 #include "LogonDialog.hpp"
+#include "QrLogin.hpp"
 #include "MainWindow.hpp"
 #include "MessageView.hpp"
 #include "Theme.hpp"
@@ -109,6 +110,28 @@ public:
 	void RefreshMembers(const std::set<Snowflake>& members) override {
 		GetMainWindow()->UpdateMemberList();
 	}
+	// the QR login's gateway is not the session's
+	void OnWebsocketMessage(int gatewayID, const std::string& payload) override {
+		if (gatewayID >= 0 && gatewayID == QrLogin::GatewayId()) {
+			MainQueue::Post([payload] { QrLogin::OnGatewayMessage(payload); });
+			return;
+		}
+		Frontend_Posix::OnWebsocketMessage(gatewayID, payload);
+	}
+	void OnWebsocketClose(int gatewayID, int errorCode, const std::string& message) override {
+		if (gatewayID >= 0 && gatewayID == QrLogin::GatewayId()) {
+			MainQueue::Post([errorCode, message] { QrLogin::OnGatewayClosed(errorCode, message); });
+			return;
+		}
+		Frontend_Posix::OnWebsocketClose(gatewayID, errorCode, message);
+	}
+	void OnWebsocketFail(int gatewayID, int errorCode, const std::string& message, bool isTLSError, bool mayRetry) override {
+		if (gatewayID >= 0 && gatewayID == QrLogin::GatewayId()) {
+			MainQueue::Post([errorCode, message] { QrLogin::OnGatewayClosed(errorCode, message); });
+			return;
+		}
+		Frontend_Posix::OnWebsocketFail(gatewayID, errorCode, message, isTLSError, mayRetry);
+	}
 	void UpdateUserData(Snowflake userID) override {
 		GetMainWindow()->UpdateMemberList();
 	}
@@ -193,7 +216,7 @@ static void ShowLogon(const std::string& why)
 	if (s_showing)
 		return;
 	s_showing = true;
-	ShowLogonDialog(g_toplevel, why, [](const std::string& token) {
+	auto done = [](const std::string& token) {
 		s_showing = false;
 		if (token.empty()) {
 			g_bQuit = true;
@@ -202,6 +225,10 @@ static void ShowLogon(const std::string& why)
 		GetLocalSettings()->SetToken(token);
 		GetLocalSettings()->Save();
 		StartWithToken();
+	};
+	// a QR code for the phone app first; a pasted token on request
+	QrLogin::Show(g_toplevel, g_pixelFormat, why, done, [why, done] {
+		ShowLogonDialog(g_toplevel, why, done);
 	});
 }
 
