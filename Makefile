@@ -182,7 +182,9 @@ AUX_CXXFILES = \
 	$(shell $(FIND) deps/md5               -not -path '*/.*' -type f -name '*.cpp')
 
 # All source files
-CXXFILES := $(shell $(FIND) $(SRC_DIR) -not -path '*/.*' -type f -name '*.cpp') $(AUX_CXXFILES)
+# (src/motif, src/posix and src/cli are the Unix clients: Makefile.unix)
+CXXFILES := $(shell $(FIND) $(SRC_DIR) -not -path '*/.*' -not -path '$(SRC_DIR)/motif/*' \
+	-not -path '$(SRC_DIR)/posix/*' -not -path '$(SRC_DIR)/cli/*' -type f -name '*.cpp') $(AUX_CXXFILES)
 RESFILES := $(shell $(FIND) $(SRC_DIR) -not -path '*/.*' -type f -name '*.rc')
 
 # Objects and dependency files
