@@ -1,6 +1,7 @@
 #include "QrLogin.hpp"
 
 #include <atomic>
+#include <cstdio>
 #include <cstring>
 #include <thread>
 #include <vector>
@@ -52,6 +53,9 @@ namespace
 		int heartbeatMs = 0;
 		std::vector<uint8_t> qr; // qrcodegen's buffer; empty until a code arrives
 		bool waitingForPhone = false;
+		bool loggingIn = false;   // the ticket is being exchanged: keep the dialog as it is
+		bool failed = false;      // an error is shown: wait for Try Again
+		Widget retry = nullptr;
 		int generation = 0;   // bumped by every new dialog
 	};
 
@@ -224,6 +228,9 @@ namespace
 			return;
 		g_state->qr.clear();
 		g_state->waitingForPhone = false;
+		g_state->loggingIn = false;
+		g_state->failed = false;
+		XtSetSensitive(g_state->retry, False);
 		Paint();
 		SetStatus("Connecting to Discord\xe2\x80\xa6");
 		int id = GetWebsocketClient()->Connect(GATEWAY_URL);
@@ -242,6 +249,26 @@ namespace
 	{
 		CloseGateway();
 		XtAppAddTimeOut(XtWidgetToApplicationContext(g_state->shell), ms, ReconnectCB, (XtPointer) (long) g_state->generation);
+	}
+
+	// Shows why the login failed and waits for Try Again (or a token).
+	void Fail(const std::string& why, const std::string& detail)
+	{
+		if (!g_state)
+			return;
+		fprintf(stderr, "dm: QR login failed: %s%s%s\n", why.c_str(), detail.empty() ? "" : " -- ", detail.c_str());
+		g_state->failed = true;
+		g_state->loggingIn = false;
+		CloseGateway();
+		g_state->qr.clear();
+		Paint();
+		SetStatus(why);
+		XtSetSensitive(g_state->retry, True);
+	}
+
+	void RetryCB(Widget, XtPointer, XtPointer)
+	{
+		Connect();
 	}
 
 	void Finish(const std::string& token, bool wantToken)
@@ -288,15 +315,27 @@ namespace
 					}
 				}
 				catch (...) {}
-				SetStatus("Discord's answer could not be read.  Try again, or log in with a token.");
+				Fail("Discord's answer could not be read.\nTry again, or log in with a token.", "unreadable 200 response");
+				return;
 			}
-			else if (response.find("captcha") != std::string::npos) {
-				SetStatus("Discord wants a captcha for this login, which Discord Messenger cannot show.\nLog in with a token instead.");
+			// the error's code and message (never anything secret)
+			std::string detail = "HTTP " + std::to_string(result);
+			try {
+				Json j = Json::parse(response);
+				if (j.contains("code"))
+					detail += " code " + j["code"].dump();
+				if (j.contains("message"))
+					detail += " message " + j["message"].dump();
+				if (j.contains("captcha_key"))
+					detail += " captcha " + j["captcha_key"].dump() + " service " + j.value("captcha_service", std::string());
 			}
-			else {
-				SetStatus("Discord refused the login (" + std::to_string(result) + ").  Try again, or log in with a token.");
+			catch (...) {
+				detail += " body " + response.substr(0, 200);
 			}
-			ReconnectSoon(4000);
+			if (response.find("captcha") != std::string::npos)
+				Fail("Discord wants a captcha for this login, which Discord\nMessenger cannot show.  Log in with a token instead.", detail);
+			else
+				Fail("Discord refused the login (" + std::to_string(result) + ").\nTry again, or log in with a token.", detail);
 		});
 	}
 
@@ -348,6 +387,8 @@ void QrLogin::OnGatewayMessage(const std::string& payload)
 		return;
 	}
 	std::string op = j.value("op", "");
+	if (op != "heartbeat_ack")
+		fprintf(stderr, "dm: QR login: %s\n", op.c_str());
 
 	if (op == "hello")
 	{
@@ -407,6 +448,7 @@ void QrLogin::OnGatewayMessage(const std::string& payload)
 	}
 	else if (op == "pending_login")
 	{
+		s->loggingIn = true;
 		SetStatus("Logging in\xe2\x80\xa6");
 		Json body;
 		body["ticket"] = j.value("ticket", "");
@@ -435,6 +477,11 @@ void QrLogin::OnGatewayClosed(int code, const std::string& reason)
 		return;
 	g_gateway = -1;
 	StopHeartbeat();
+	// the gateway closes once it handed over the ticket; and an error
+	// stays on screen until Try Again
+	if (g_state->loggingIn || g_state->failed)
+		return;
+	fprintf(stderr, "dm: QR login gateway closed: %d %s\n", code, reason.c_str());
 	// codes last a couple of minutes: get a new one
 	SetStatus("The code expired.  Getting a new one\xe2\x80\xa6");
 	XtAppAddTimeOut(XtWidgetToApplicationContext(g_state->shell), 1500, ReconnectCB, (XtPointer) (long) g_state->generation);
@@ -500,6 +547,17 @@ void QrLogin::Show(Widget parent, const PixelFormat& fmt, const std::string& mes
 		XmNtopOffset, 10, XmNleftOffset, 12, XmNbottomOffset, 10,
 		NULL);
 	XtAddCallback(token, XmNactivateCallback, UseTokenCB, NULL);
+
+	s->retry = XtVaCreateManagedWidget("Try Again", xmPushButtonWidgetClass, form,
+		XmNtopAttachment, XmATTACH_WIDGET,
+		XmNtopWidget, sep,
+		XmNleftAttachment, XmATTACH_WIDGET,
+		XmNleftWidget, token,
+		XmNbottomAttachment, XmATTACH_FORM,
+		XmNtopOffset, 10, XmNleftOffset, 8, XmNbottomOffset, 10,
+		XmNsensitive, False,
+		NULL);
+	XtAddCallback(s->retry, XmNactivateCallback, RetryCB, NULL);
 
 	Widget quit = XtVaCreateManagedWidget("Quit", xmPushButtonWidgetClass, form,
 		XmNtopAttachment, XmATTACH_WIDGET,
