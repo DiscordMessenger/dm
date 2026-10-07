@@ -237,6 +237,7 @@ static void LoadDemo()
 		{ 1001, "Ada", 45, "Here is what fixed it for me:\n```\nsetenv netaddr 192.168.1.20\nboot -f bootp()/unix\n```\nThen it went straight to the miniroot.", MessageType::DEFAULT },
 		{ 1004, "Bjarne", 30, "> it went straight to the miniroot\nNice. *Italic*, __underlined__, ~~struck~~ and a link: https://www.sgi.com/ and caf\xc3\xa9 na\xc3\xafve \xe2\x80\x94 \xe2\x9c\x93 \xe2\x98\x85 \xf0\x9f\x98\x80", MessageType::DEFAULT },
 		{ 1002, "Grace", 12, "# Release notes\n- MIPS IV build\n- FreeType text\n- Motif UI\n-# small print: tested on an emulated R10000", MessageType::DEFAULT },
+		{ 1003, "Linus", 6, "Emoji: \xf0\x9f\x98\x80 \xf0\x9f\x8e\x89 \xe2\x9c\xa8 \xe2\x9d\xa4\xef\xb8\x8f \xf0\x9f\x91\x8d\xf0\x9f\x8f\xbd \xf0\x9f\x87\xa8\xf0\x9f\x87\xad \xf0\x9f\x91\xa8\xe2\x80\x8d\xf0\x9f\x91\xa9\xe2\x80\x8d\xf0\x9f\x91\xa7 1\xef\xb8\x8f\xe2\x83\xa3 \xf0\x9f\x96\xa5\xef\xb8\x8f and text \xe2\x98\x85 \xe2\x9c\x93 stays text", MessageType::DEFAULT },
 		{ 1005, "Dennis", 2, "A long line to see the wrapping: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.", MessageType::DEFAULT },
 	};
 	Snowflake id = 1000000;
@@ -349,7 +350,6 @@ int main(int argc, char** argv)
 	}
 
 	LoadMotifConfig();
-	ApplyThemeResources(dpy);
 	PickVisual(dpy);
 	g_pixelFormat.Init(dpy, g_visual, g_depth, g_colormap);
 

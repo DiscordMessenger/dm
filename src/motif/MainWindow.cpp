@@ -44,7 +44,6 @@ enum
 	MI_SMALLER,
 	MI_MEMBERS,
 	MI_MARKREAD,
-	MI_DARK,
 	MI_ABOUT,
 };
 
@@ -68,6 +67,7 @@ MainWindow::MainWindow(Widget toplevel, const PixelFormat& fmt)
 		XmNwidth, 1000,
 		XmNheight, 680,
 		NULL);
+	InitPalette(m_form);
 
 	Arg args[16];
 	int n;
@@ -165,17 +165,6 @@ MainWindow::MainWindow(Widget toplevel, const PixelFormat& fmt)
 		"<Key>Return: activate()\n"
 		"<Key>KP_Enter: activate()"));
 	XtAddCallback(m_editor, XmNactivateCallback, SendCB, this);
-	if (IsDarkTheme()) {
-		// SGI's schemes give text widgets their own colours: set them here
-		XtVaSetValues(m_editor,
-			XmNbackground, fmt.PixelOf(0x383a40),
-			XmNforeground, fmt.PixelOf(0xdbdee1),
-			NULL);
-		XtVaSetValues(m_sendButton,
-			XmNbackground, fmt.PixelOf(0x5865f2),
-			XmNforeground, fmt.PixelOf(0xffffff),
-			NULL);
-	}
 	XtAddCallback(m_editor, XmNvalueChangedCallback, EditorChangedCB, this);
 
 	m_messages = new MessageView(m_form, fmt);
@@ -218,7 +207,6 @@ void MainWindow::BuildMenus(Widget menubar)
 			{ "Smaller Text", MI_SMALLER, 'S' },
 			{ "-", 0, 0 },
 			{ "Member List", MI_MEMBERS, 'M' },
-			{ "Dark Theme", MI_DARK, 'D' },
 		} },
 		{ "Help", 'H', {
 			{ "About Discord Messenger", MI_ABOUT, 'A' },
@@ -244,10 +232,9 @@ void MainWindow::BuildMenus(Widget menubar)
 				continue;
 			}
 			Widget b;
-			if (item.id == MI_MEMBERS || item.id == MI_DARK) {
+			if (item.id == MI_MEMBERS) {
 				b = XtVaCreateManagedWidget(item.label, xmToggleButtonWidgetClass, pulldown,
-					XmNset, item.id == MI_MEMBERS ? True : (IsDarkTheme() ? True : False),
-					XmNmnemonic, (KeySym) item.mnemonic, NULL);
+					XmNset, True, XmNmnemonic, (KeySym) item.mnemonic, NULL);
 				XtAddCallback(b, XmNvalueChangedCallback, MenuCB, (XtPointer) (long) item.id);
 			}
 			else {
@@ -281,11 +268,6 @@ void MainWindow::MenuCB(Widget w, XtPointer client, XtPointer)
 			self->UpdateGuildList();
 			self->UpdateChannelList();
 			self->UpdateMemberList();
-			break;
-		case MI_DARK:
-			SetDarkTheme(XmToggleButtonGetState(w));
-			self->ShowError(std::string("The ") + (XmToggleButtonGetState(w) ? "dark" : "light") +
-				" theme takes effect the next time Discord Messenger starts.");
 			break;
 		case MI_MEMBERS:
 			self->m_memberListShown = XmToggleButtonGetState(w);

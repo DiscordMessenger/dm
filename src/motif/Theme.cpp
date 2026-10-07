@@ -8,26 +8,65 @@
 #include "utils/Util.hpp"
 
 static int g_textSize = 0;
-static bool g_dark = false;
-static bool g_darkSaved = false; // what the config file says (applies at the next start)
-
-static const Palette g_light = {
-	0xe3e5e8, 0xf2f3f5, 0x313338, 0x6d6f78, 0x5c5e66,
-	0xd4d7dc, 0x060607, 0xe8eaed,
-	0x060607, 0xf23f43, 0xffffff,
-	0xffffff, 0x1e1f22, 0x6d6f78, 0x0060c0, 0x4752c4, 0xf2f3f5, 0xd4d7dc, 0xc4c9ce,
-	0x23a55a, 0xf0b232, 0xf23f43, 0x80848e,
-	nullptr, nullptr, nullptr,
+static Palette g_palette = {
+	0xd6d6d6, 0xd6d6d6, 0x000000, 0x5c5c5c, 0x404040,
+	0xb0b0b0, 0x000000,
+	0x000000, 0xd83a3a, 0xffffff,
+	0xf4f4f4, 0x000000, 0x5c5c5c, 0x0040c0, 0x3c45b0, 0xe8e8e8, 0xb8b8b8, 0xa0a0a0,
+	0x23a55a, 0xd89a10, 0xd83a3a, 0x80848e,
 };
 
-static const Palette g_darkPalette = {
-	0x1e1f22, 0x2b2d31, 0x949ba4, 0x80848e, 0x949ba4,
-	0x404249, 0xf2f3f5, 0x35373c,
-	0xf2f3f5, 0xf23f43, 0xffffff,
-	0x313338, 0xdbdee1, 0x949ba4, 0x00a8fc, 0xc9cdfb, 0x2b2d31, 0x1e1f22, 0x4e5058,
-	0x23a55a, 0xf0b232, 0xf23f43, 0x80848e,
-	"#2b2d31", "#dbdee1", "#383a40",
-};
+static Rgb PixelToRgb(Display* dpy, Colormap cmap, Pixel p)
+{
+	XColor xc;
+	xc.pixel = p;
+	XQueryColor(dpy, cmap, &xc);
+	return MakeRgb(xc.red >> 8, xc.green >> 8, xc.blue >> 8);
+}
+
+static int Luma(Rgb c)
+{
+	return (RgbR(c) * 299 + RgbG(c) * 587 + RgbB(c) * 114) / 1000;
+}
+
+void InitPalette(Widget w)
+{
+	Pixel bg = 0, fg = 0;
+	Colormap cmap = 0;
+	XtVaGetValues(w, XmNbackground, &bg, XmNforeground, &fg, XmNcolormap, &cmap, NULL);
+	Display* dpy = XtDisplay(w);
+	Pixel top, bottom, select, fgCalc;
+	XmGetColors(XtScreen(w), cmap, bg, &fgCalc, &top, &bottom, &select);
+
+	Rgb b = PixelToRgb(dpy, cmap, bg);
+	Rgb f = PixelToRgb(dpy, cmap, fg);
+	Rgb sel = PixelToRgb(dpy, cmap, select);
+	bool darkScheme = Luma(b) < 110;
+	Rgb paper = darkScheme ? LerpRgb(b, 0x000000, 25, 100) : LerpRgb(b, 0xffffff, 70, 100);
+
+	Palette& p = g_palette;
+	p.guildBg = LerpRgb(b, f, 6, 100);
+	p.listBg = b;
+	p.listFg = f;
+	p.listMuted = LerpRgb(f, b, 45, 100);
+	p.listHeader = LerpRgb(f, b, 30, 100);
+	p.selBg = sel;
+	p.selFg = f;
+	p.unread = f;
+	p.msgBg = paper;
+	p.msgFg = f;
+	p.msgMuted = LerpRgb(f, paper, 45, 100);
+	p.link = darkScheme ? 0x6cb4ff : 0x0040c0;
+	p.mention = darkScheme ? 0xc9cdfb : 0x3c45b0;
+	p.codeBg = LerpRgb(paper, f, 6, 100);
+	p.codeFrame = LerpRgb(paper, f, 22, 100);
+	p.quoteBar = LerpRgb(paper, f, 30, 100);
+}
+
+const Palette& GetPalette()
+{
+	return g_palette;
+}
 
 static std::string ConfigPath()
 {
@@ -43,15 +82,11 @@ void LoadMotifConfig()
 			char key[64], val[128];
 			if (sscanf(line, " %63[^= ] = %127s", key, val) != 2)
 				continue;
-			if (!strcmp(key, "theme"))
-				g_dark = g_darkSaved = !strcmp(val, "dark");
-			else if (!strcmp(key, "textsize"))
+			if (!strcmp(key, "textsize"))
 				SetTextSize(atoi(val));
 		}
 		fclose(f);
 	}
-	if (const char* e = getenv("DM_THEME"))
-		g_dark = !strcmp(e, "dark");
 	if (const char* e = getenv("DM_TEXT_SIZE"))
 		SetTextSize(atoi(e));
 }
@@ -62,27 +97,11 @@ void SaveMotifConfig()
 	FILE* f = fopen(tmp.c_str(), "w");
 	if (!f)
 		return;
-	fprintf(f, "theme = %s\ntextsize = %d\n", g_darkSaved ? "dark" : "light", GetTextSize());
+	fprintf(f, "textsize = %d\n", GetTextSize());
 	if (fclose(f) == 0)
 		rename(tmp.c_str(), path.c_str());
 	else
 		remove(tmp.c_str());
-}
-
-bool IsDarkTheme()
-{
-	return g_dark;
-}
-
-void SetDarkTheme(bool dark)
-{
-	g_darkSaved = dark;
-	SaveMotifConfig();
-}
-
-const Palette& GetPalette()
-{
-	return g_dark ? g_darkPalette : g_light;
 }
 
 int GetTextSize()
@@ -108,25 +127,6 @@ void ApplyTheme(DrawingContext& ctx)
 	ctx.codeFrame = p.codeFrame;
 	ctx.quoteBar = p.quoteBar;
 	ctx.muted = p.msgMuted;
-}
-
-void ApplyThemeResources(Display* dpy)
-{
-	const Palette& p = GetPalette();
-	if (!p.widgetBg)
-		return;
-	XrmDatabase db = XtDatabase(dpy);
-	std::string lines[] = {
-		std::string("DiscordMessenger*background: ") + p.widgetBg,
-		std::string("DiscordMessenger*foreground: ") + p.widgetFg,
-		std::string("DiscordMessenger*XmText*background: ") + p.textBg,
-		std::string("DiscordMessenger*XmTextField*background: ") + p.textBg,
-		std::string("DiscordMessenger*XmText*foreground: ") + p.widgetFg,
-		std::string("DiscordMessenger*XmTextField*foreground: ") + p.widgetFg,
-		"DiscordMessenger*useSchemes: none",
-	};
-	for (auto& l : lines)
-		XrmPutLineResource(&db, l.c_str());
 }
 
 static unsigned NextCodePoint(const std::string& s, size_t& i)
