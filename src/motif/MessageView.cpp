@@ -163,7 +163,6 @@ MessageView::MessageView(Widget parent, const PixelFormat& fmt) : m_fmt(fmt)
 
 	XtManageChild(m_form);
 	ApplyTheme(m_ctx);
-	ImageCache::SetChangedCallback([this] { ImagesChanged(); });
 }
 
 int MessageView::ContentWidth() const
@@ -566,6 +565,8 @@ void MessageView::RequestVisibleGaps()
 	}
 }
 
+Rgb RoleColor(Snowflake user, Snowflake guild); // MainWindow.cpp
+
 static Rgb AvatarColor(Snowflake sf)
 {
 	static const Rgb colors[] = { 0x5865f2, 0x3ba55c, 0xfaa61a, 0xed4245, 0xeb459e, 0x747f8d, 0x2d8f9e, 0x9b59b6 };
@@ -685,17 +686,21 @@ void MessageView::PaintItem(Item& item, int top)
 
 		int asc = Fonts::Ascent(FS_BOLD, m_ctx.px);
 		int x = TEXT_X;
-		x += Fonts::Draw(c, x, y + asc, m.m_author, FS_BOLD, m_ctx.px, m_ctx.fg) + 8;
+		std::string when = m.m_dateFull.empty() ? m.m_dateCompact : m.m_dateFull;
+		if (!m.m_editedText.empty())
+			when += "  (edited)";
+		int whenW = Fonts::Measure(when, FS_REGULAR, m_ctx.px - 3);
+		Rgb nameColor = RoleColor(m.m_author_snowflake, m_guild);
+		std::string name = Fonts::Elide(m.m_author, FS_BOLD, m_ctx.px, std::max(40, right - x - whenW - 60));
+		x += Fonts::Draw(c, x, y + asc, name, FS_BOLD, m_ctx.px, nameColor ? nameColor : m_ctx.fg) + 8;
 		if (m.m_bIsAuthorBot || m.IsWebHook()) {
 			int bw = Fonts::Measure("BOT", FS_BOLD, m_ctx.px - 4) + 8;
 			c.FillRounded(x, y + 2, bw, asc, 3, 0x5865f2);
 			Fonts::Draw(c, x + 4, y + asc - 1, "BOT", FS_BOLD, m_ctx.px - 4, 0xffffff);
 			x += bw + 6;
 		}
-		std::string when = m.m_dateFull.empty() ? m.m_dateCompact : m.m_dateFull;
-		if (!m.m_editedText.empty())
-			when += "  (edited)";
-		Fonts::Draw(c, x, y + asc, when, FS_REGULAR, m_ctx.px - 3, m_ctx.muted);
+		// the time on the right, as Abaddon and IRC clients put it
+		Fonts::Draw(c, right - whenW, y + asc, when, FS_REGULAR, m_ctx.px - 3, m_ctx.muted);
 	}
 
 	if (!item.text.Empty()) {

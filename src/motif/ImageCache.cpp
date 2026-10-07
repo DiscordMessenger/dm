@@ -73,6 +73,8 @@ namespace
 				return GetDiscordCDN() + "icons/" + std::to_string(sf) + "/" + place + ".png?size=" + std::to_string(px);
 			case ImageCache::EMOJI:
 				return GetDiscordCDN() + "emojis/" + std::to_string(sf) + ".png?size=" + std::to_string(px);
+			case ImageCache::CHANNEL_ICON:
+				return GetDiscordCDN() + "channel-icons/" + std::to_string(sf) + "/" + place + ".png?size=" + std::to_string(px);
 			case ImageCache::DEFAULT_AVATAR:
 				return GetDiscordCDN() + "embed/avatars/" + std::to_string((sf >> 22) % 6) + ".png";
 			case ImageCache::URL:

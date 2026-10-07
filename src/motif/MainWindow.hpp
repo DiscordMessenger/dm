@@ -10,6 +10,7 @@
 #include "Canvas.hpp"
 
 class MessageView;
+class IconList;
 
 // The main window: guilds, channels, the message view with its editor and
 // header, the member list, a status line and the menus.
@@ -38,9 +39,16 @@ public:
 
 	bool IsIconic() const;
 
+	// Images arrived: repaint what may show them.
+	void OnImagesChanged();
+
+	// Sample rows for --demo.
+	void ShowDemoLists();
+
 private:
-	static void GuildSelectCB(Widget, XtPointer, XtPointer);
-	static void ChannelSelectCB(Widget, XtPointer, XtPointer);
+	void OnGuildPicked(Snowflake sf);
+	void OnChannelPicked(Snowflake sf);
+	static void ListRepaintCB(XtPointer, XtIntervalId*);
 	static void SendCB(Widget, XtPointer, XtPointer);
 	static void EditorChangedCB(Widget, XtPointer, XtPointer);
 	static void MenuCB(Widget, XtPointer, XtPointer);
@@ -55,10 +63,11 @@ private:
 	Widget m_header, m_editor, m_sendButton, m_status;
 	Widget m_memberPane;
 	MessageView* m_messages;
+	IconList* m_guilds;
+	IconList* m_channels;
+	IconList* m_members;
+	XtIntervalId m_listRepaintTimer = 0;
 
-	// list rows -> ids (0 rows are headers)
-	std::vector<Snowflake> m_guildRows;
-	std::vector<Snowflake> m_channelRows;
 
 	// typing: channel -> user -> when it expires
 	std::map<Snowflake, std::map<Snowflake, time_t>> m_typing;

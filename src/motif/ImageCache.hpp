@@ -25,6 +25,7 @@ namespace ImageCache
 		ICON,        // place = icon hash, sf = guild
 		EMOJI,       // sf = emoji
 		DEFAULT_AVATAR, // sf = user (Discord's coloured default avatars)
+		CHANNEL_ICON, // place = icon hash, sf = channel (group DMs)
 		URL,         // place = the URL (attachments, embed images)
 	};
 

@@ -109,7 +109,12 @@ public:
 	void RefreshMembers(const std::set<Snowflake>& members) override {
 		GetMainWindow()->UpdateMemberList();
 	}
-	void UpdateUserData(Snowflake userID) override {}
+	void UpdateUserData(Snowflake userID) override {
+		GetMainWindow()->UpdateMemberList();
+	}
+	void UpdateProfileAvatar(Snowflake userID, const std::string& resid) override {
+		GetMainWindow()->UpdateMemberList();
+	}
 	void OnAttachmentDownloaded(bool bIsProfilePicture, const uint8_t* pData, size_t nSize, const std::string& additData) override {
 		ImageCache::Downloaded(additData, pData, nSize);
 	}
@@ -282,6 +287,7 @@ static void LoadDemo()
 		GetMessageCache()->AddMessage(chan, m);
 	}
 	GetMainWindow()->GetMessageView()->SetChannel(0, chan);
+	GetMainWindow()->ShowDemoLists();
 	GetMainWindow()->SetStatus("Demo: sample messages, not connected.");
 }
 
@@ -342,6 +348,8 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
+	LoadMotifConfig();
+	ApplyThemeResources(dpy);
 	PickVisual(dpy);
 	g_pixelFormat.Init(dpy, g_visual, g_depth, g_colormap);
 
@@ -363,6 +371,7 @@ int main(int argc, char** argv)
 	GetLocalSettings()->Load();
 
 	new MainWindow(g_toplevel, g_pixelFormat);
+	ImageCache::SetChangedCallback([] { GetMainWindow()->OnImagesChanged(); });
 
 	Atom wmDelete = XmInternAtom(dpy, (char*) "WM_DELETE_WINDOW", False);
 	XtVaSetValues(g_toplevel, XmNdeleteResponse, XmDO_NOTHING, NULL);

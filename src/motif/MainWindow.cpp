@@ -24,6 +24,8 @@
 #include "state/ProfileCache.hpp"
 #include "MessageView.hpp"
 #include "Theme.hpp"
+#include "IconList.hpp"
+#include "models/ActiveStatus.hpp"
 
 static MainWindow* g_pMainWindow;
 
@@ -42,6 +44,7 @@ enum
 	MI_SMALLER,
 	MI_MEMBERS,
 	MI_MARKREAD,
+	MI_DARK,
 	MI_ABOUT,
 };
 
@@ -49,15 +52,6 @@ void RequestLogout();   // Main.cpp
 void RequestReconnect(); // Main.cpp
 int AddVisualArgs(Arg* args, int n); // Main.cpp
 
-static Widget MakeScrolledList(Widget parent, const char* name, Arg* args, int n)
-{
-	XtSetArg(args[n], XmNselectionPolicy, XmBROWSE_SELECT); n++;
-	XtSetArg(args[n], XmNscrollBarDisplayPolicy, XmAS_NEEDED); n++;
-	XtSetArg(args[n], XmNlistSizePolicy, XmCONSTANT); n++;
-	Widget list = XmCreateScrolledList(parent, (char*) name, args, n);
-	XtManageChild(list);
-	return list;
-}
 
 MainWindow::MainWindow(Widget toplevel, const PixelFormat& fmt)
 {
@@ -78,48 +72,47 @@ MainWindow::MainWindow(Widget toplevel, const PixelFormat& fmt)
 	Arg args[16];
 	int n;
 
-	// guilds, on the left
-	n = 0;
-	XtSetArg(args[n], XmNtopAttachment, XmATTACH_FORM); n++;
-	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
-	XtSetArg(args[n], XmNleftAttachment, XmATTACH_FORM); n++;
-	XtSetArg(args[n], XmNtopOffset, 4); n++;
-	XtSetArg(args[n], XmNleftOffset, 4); n++;
-	XtSetArg(args[n], XmNbottomOffset, 4); n++;
-	XtSetArg(args[n], XmNwidth, 170); n++;
-	m_guildList = MakeScrolledList(m_form, "guilds", args, n);
-	XtAddCallback(m_guildList, XmNbrowseSelectionCallback, GuildSelectCB, this);
+	// guilds on the left, then channels; members on the right
+	m_guilds = new IconList(m_form, "guilds", fmt, 28, true);
+	m_guildList = m_guilds->GetWidget();
+	XtVaSetValues(m_guildList,
+		XmNtopAttachment, XmATTACH_FORM,
+		XmNbottomAttachment, XmATTACH_FORM,
+		XmNleftAttachment, XmATTACH_FORM,
+		XmNtopOffset, 4, XmNleftOffset, 4, XmNbottomOffset, 4,
+		XmNwidth, 200,
+		NULL);
+	m_guilds->SetSelectCallback([this](Snowflake sf) { OnGuildPicked(sf); });
 
-	// channels
-	n = 0;
-	XtSetArg(args[n], XmNtopAttachment, XmATTACH_FORM); n++;
-	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
-	XtSetArg(args[n], XmNleftAttachment, XmATTACH_WIDGET); n++;
-	XtSetArg(args[n], XmNleftWidget, XtParent(m_guildList)); n++;
-	XtSetArg(args[n], XmNtopOffset, 4); n++;
-	XtSetArg(args[n], XmNleftOffset, 4); n++;
-	XtSetArg(args[n], XmNbottomOffset, 4); n++;
-	XtSetArg(args[n], XmNwidth, 190); n++;
-	m_channelList = MakeScrolledList(m_form, "channels", args, n);
-	XtAddCallback(m_channelList, XmNbrowseSelectionCallback, ChannelSelectCB, this);
+	m_channels = new IconList(m_form, "channels", fmt, 22, false);
+	m_channelList = m_channels->GetWidget();
+	XtVaSetValues(m_channelList,
+		XmNtopAttachment, XmATTACH_FORM,
+		XmNbottomAttachment, XmATTACH_FORM,
+		XmNleftAttachment, XmATTACH_WIDGET,
+		XmNleftWidget, m_guildList,
+		XmNtopOffset, 4, XmNleftOffset, 2, XmNbottomOffset, 4,
+		XmNwidth, 210,
+		NULL);
+	m_channels->SetSelectCallback([this](Snowflake sf) { OnChannelPicked(sf); });
 
-	// members, on the right
-	n = 0;
-	XtSetArg(args[n], XmNtopAttachment, XmATTACH_FORM); n++;
-	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
-	XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM); n++;
-	XtSetArg(args[n], XmNtopOffset, 4); n++;
-	XtSetArg(args[n], XmNrightOffset, 4); n++;
-	XtSetArg(args[n], XmNbottomOffset, 4); n++;
-	XtSetArg(args[n], XmNwidth, 170); n++;
-	m_memberList = MakeScrolledList(m_form, "members", args, n);
-	m_memberPane = XtParent(m_memberList);
+	m_members = new IconList(m_form, "members", fmt, 24, false);
+	m_memberList = m_members->GetWidget();
+	XtVaSetValues(m_memberList,
+		XmNtopAttachment, XmATTACH_FORM,
+		XmNbottomAttachment, XmATTACH_FORM,
+		XmNrightAttachment, XmATTACH_FORM,
+		XmNtopOffset, 4, XmNrightOffset, 4, XmNbottomOffset, 4,
+		XmNwidth, 200,
+		NULL);
+	m_memberPane = m_memberList;
+	m_members->SetSelectCallback([](Snowflake) {});
 
 	// the middle: header, messages, editor, status
 	m_header = XtVaCreateManagedWidget("header", xmLabelWidgetClass, m_form,
 		XmNtopAttachment, XmATTACH_FORM,
 		XmNleftAttachment, XmATTACH_WIDGET,
-		XmNleftWidget, XtParent(m_channelList),
+		XmNleftWidget, m_channelList,
 		XmNrightAttachment, XmATTACH_WIDGET,
 		XmNrightWidget, m_memberPane,
 		XmNtopOffset, 6,
@@ -131,7 +124,7 @@ MainWindow::MainWindow(Widget toplevel, const PixelFormat& fmt)
 	m_status = XtVaCreateManagedWidget("status", xmLabelWidgetClass, m_form,
 		XmNbottomAttachment, XmATTACH_FORM,
 		XmNleftAttachment, XmATTACH_WIDGET,
-		XmNleftWidget, XtParent(m_channelList),
+		XmNleftWidget, m_channelList,
 		XmNrightAttachment, XmATTACH_WIDGET,
 		XmNrightWidget, m_memberPane,
 		XmNbottomOffset, 4,
@@ -154,7 +147,7 @@ MainWindow::MainWindow(Widget toplevel, const PixelFormat& fmt)
 	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_WIDGET); n++;
 	XtSetArg(args[n], XmNbottomWidget, m_status); n++;
 	XtSetArg(args[n], XmNleftAttachment, XmATTACH_WIDGET); n++;
-	XtSetArg(args[n], XmNleftWidget, XtParent(m_channelList)); n++;
+	XtSetArg(args[n], XmNleftWidget, m_channelList); n++;
 	XtSetArg(args[n], XmNrightAttachment, XmATTACH_WIDGET); n++;
 	XtSetArg(args[n], XmNrightWidget, m_sendButton); n++;
 	XtSetArg(args[n], XmNbottomOffset, 4); n++;
@@ -172,6 +165,17 @@ MainWindow::MainWindow(Widget toplevel, const PixelFormat& fmt)
 		"<Key>Return: activate()\n"
 		"<Key>KP_Enter: activate()"));
 	XtAddCallback(m_editor, XmNactivateCallback, SendCB, this);
+	if (IsDarkTheme()) {
+		// SGI's schemes give text widgets their own colours: set them here
+		XtVaSetValues(m_editor,
+			XmNbackground, fmt.PixelOf(0x383a40),
+			XmNforeground, fmt.PixelOf(0xdbdee1),
+			NULL);
+		XtVaSetValues(m_sendButton,
+			XmNbackground, fmt.PixelOf(0x5865f2),
+			XmNforeground, fmt.PixelOf(0xffffff),
+			NULL);
+	}
 	XtAddCallback(m_editor, XmNvalueChangedCallback, EditorChangedCB, this);
 
 	m_messages = new MessageView(m_form, fmt);
@@ -181,7 +185,7 @@ MainWindow::MainWindow(Widget toplevel, const PixelFormat& fmt)
 		XmNbottomAttachment, XmATTACH_WIDGET,
 		XmNbottomWidget, XtParent(m_editor),
 		XmNleftAttachment, XmATTACH_WIDGET,
-		XmNleftWidget, XtParent(m_channelList),
+		XmNleftWidget, m_channelList,
 		XmNrightAttachment, XmATTACH_WIDGET,
 		XmNrightWidget, m_memberPane,
 		XmNtopOffset, 6,
@@ -214,6 +218,7 @@ void MainWindow::BuildMenus(Widget menubar)
 			{ "Smaller Text", MI_SMALLER, 'S' },
 			{ "-", 0, 0 },
 			{ "Member List", MI_MEMBERS, 'M' },
+			{ "Dark Theme", MI_DARK, 'D' },
 		} },
 		{ "Help", 'H', {
 			{ "About Discord Messenger", MI_ABOUT, 'A' },
@@ -239,9 +244,10 @@ void MainWindow::BuildMenus(Widget menubar)
 				continue;
 			}
 			Widget b;
-			if (item.id == MI_MEMBERS) {
+			if (item.id == MI_MEMBERS || item.id == MI_DARK) {
 				b = XtVaCreateManagedWidget(item.label, xmToggleButtonWidgetClass, pulldown,
-					XmNset, True, XmNmnemonic, (KeySym) item.mnemonic, NULL);
+					XmNset, item.id == MI_MEMBERS ? True : (IsDarkTheme() ? True : False),
+					XmNmnemonic, (KeySym) item.mnemonic, NULL);
 				XtAddCallback(b, XmNvalueChangedCallback, MenuCB, (XtPointer) (long) item.id);
 			}
 			else {
@@ -270,7 +276,16 @@ void MainWindow::MenuCB(Widget w, XtPointer client, XtPointer)
 		case MI_BIGGER:
 		case MI_SMALLER:
 			SetTextSize(GetTextSize() + ((int) (long) client == MI_BIGGER ? 1 : -1));
+			SaveMotifConfig();
 			self->m_messages->Relayout();
+			self->UpdateGuildList();
+			self->UpdateChannelList();
+			self->UpdateMemberList();
+			break;
+		case MI_DARK:
+			SetDarkTheme(XmToggleButtonGetState(w));
+			self->ShowError(std::string("The ") + (XmToggleButtonGetState(w) ? "dark" : "light") +
+				" theme takes effect the next time Discord Messenger starts.");
 			break;
 		case MI_MEMBERS:
 			self->m_memberListShown = XmToggleButtonGetState(w);
@@ -327,58 +342,67 @@ bool MainWindow::IsIconic() const
 	return wa.map_state != IsViewable;
 }
 
-static void SetListItems(Widget list, const std::vector<std::string>& rows, int selected)
-{
-	std::vector<XmString> items;
-	for (auto& r : rows)
-		items.push_back(MakeXmString(r));
-	XtVaSetValues(list, XmNitems, items.empty() ? NULL : items.data(), XmNitemCount, (int) items.size(), NULL);
-	for (auto& x : items)
-		XmStringFree(x);
-	if (selected >= 0) {
-		XmListSelectPos(list, selected + 1, False);
-		XmListSetKbdItemPos(list, selected + 1);
-		int top = 0, visible = 0;
-		XtVaGetValues(list, XmNtopItemPosition, &top, XmNvisibleItemCount, &visible, NULL);
-		if (selected + 1 < top || selected + 1 >= top + visible)
-			XmListSetPos(list, std::max(1, selected + 1 - visible / 2));
-	}
-	else
-		XmListDeselectAllItems(list);
-}
-
 void MainWindow::UpdateGuildList()
 {
 	DiscordInstance* pInst = GetDiscordInstance();
 	std::vector<Snowflake> ids;
 	pInst->GetGuildIDsOrdered(ids, true);
 
-	std::vector<std::string> rows;
-	m_guildRows.clear();
-	int selected = -1;
+	std::vector<IconRow> rows;
 	bool inFolder = false;
 	for (Snowflake sf : ids)
 	{
-		if (sf == 1)
-			continue; // the UI gap after Direct Messages
-		if (sf & BIT_FOLDER) {
-			if (sf == BIT_FOLDER) {
-				inFolder = false;
-				continue;
-			}
-			inFolder = true;
-			rows.push_back("[" + pInst->GetGuildFolderName(sf & ~BIT_FOLDER) + "]");
-			m_guildRows.push_back(BIT_FOLDER);
+		if (sf == 1) {
+			// the gap after Direct Messages
+			IconRow r;
+			r.type = IconRow::SPACE;
+			rows.push_back(r);
 			continue;
 		}
-		Guild* pGuild = pInst->GetGuild(sf);
-		std::string name = sf == 0 ? GetFrontend()->GetDirectMessagesText() : (pGuild ? pGuild->m_name : "?");
-		if (sf == pInst->GetCurrentGuildID())
-			selected = (int) rows.size();
-		rows.push_back((inFolder ? "   " : "") + name);
-		m_guildRows.push_back(sf);
+		if (sf & BIT_FOLDER) {
+			inFolder = sf != BIT_FOLDER;
+			if (inFolder) {
+				IconRow r;
+				r.type = IconRow::HEADER;
+				r.text = pInst->GetGuildFolderName(sf & ~BIT_FOLDER);
+				rows.push_back(r);
+			}
+			continue;
+		}
+		IconRow r;
+		r.id = sf;
+		r.indent = inFolder ? 8 : 0;
+		if (sf == 0) {
+			r.text = GetFrontend()->GetDirectMessagesText();
+			r.glyph = "@";
+		}
+		else {
+			Guild* pGuild = pInst->GetGuild(sf);
+			if (!pGuild)
+				continue;
+			r.text = pGuild->m_name;
+			r.initials = true;
+			if (!pGuild->m_avatarlnk.empty()) {
+				r.hasImage = true;
+				r.imageKind = ImageCache::ICON;
+				r.imagePlace = pGuild->m_avatarlnk;
+				r.imageSf = sf;
+			}
+			// unread: any channel the user can see with newer messages
+			int mentions = 0;
+			bool unread = false;
+			for (auto& ch : pGuild->m_channels) {
+				mentions += ch.m_mentionCount;
+				if (ch.HasUnreadMessages() && ch.HasPermissionConst(PERM_VIEW_CHANNEL) &&
+					!pInst->IsChannelMuted(sf, ch.m_snowflake))
+					unread = true;
+			}
+			r.unread = unread;
+			r.mentions = mentions;
+		}
+		rows.push_back(r);
 	}
-	SetListItems(m_guildList, rows, selected);
+	m_guilds->SetRows(rows, pInst->GetCurrentGuildID());
 }
 
 void MainWindow::UpdateSelectedGuild()
@@ -405,14 +429,14 @@ void MainWindow::UpdateChannelList()
 {
 	DiscordInstance* pInst = GetDiscordInstance();
 	Guild* pGuild = pInst->GetCurrentGuild();
-	std::vector<std::string> rows;
-	m_channelRows.clear();
-	int selected = -1;
+	std::vector<IconRow> rows;
 
 	if (pGuild && !pGuild->m_bChannelsLoaded) {
 		pGuild->RequestFetchChannels();
-		rows.push_back(GetFrontend()->GetPleaseWaitText());
-		m_channelRows.push_back(0);
+		IconRow r;
+		r.type = IconRow::HEADER;
+		r.text = GetFrontend()->GetPleaseWaitText();
+		rows.push_back(r);
 	}
 	else if (pGuild)
 	{
@@ -421,53 +445,68 @@ void MainWindow::UpdateChannelList()
 			chans.push_back(&ch);
 		std::stable_sort(chans.begin(), chans.end(), [](const Channel* a, const Channel* b) { return *a < *b; });
 
-		auto addChannel = [&](const Channel* ch, bool indent) {
+		auto addChannel = [&](const Channel* ch) {
 			if (!ch->HasPermissionConst(PERM_VIEW_CHANNEL))
 				return;
-			std::string mark;
-			if (ch->WasMentioned())
-				mark = " (" + std::to_string(ch->m_mentionCount) + ")";
-			else if (ch->HasUnreadMessages())
-				mark = " *";
-			std::string prefix = ch->IsDM() ? "@ " : IsTextChannel(*ch) ? "# " : "~ ";
-			if (ch->m_channelType == Channel::GROUPDM)
-				prefix = "@@ ";
-			if (ch->m_snowflake == pInst->GetCurrentChannelID())
-				selected = (int) rows.size();
-			rows.push_back((indent ? "  " : "") + prefix + ch->m_name + mark);
-			m_channelRows.push_back(IsTextChannel(*ch) ? ch->m_snowflake : 0);
+			IconRow r;
+			r.id = ch->m_snowflake;
+			r.text = ch->m_name;
+			r.mentions = ch->m_mentionCount;
+			r.unread = ch->HasUnreadMessages() && !pInst->IsChannelMuted(pGuild->m_snowflake, ch->m_snowflake);
+			r.selectable = IsTextChannel(*ch);
+			r.dim = !r.selectable;
+			if (ch->m_channelType == Channel::DM) {
+				Snowflake who = ch->m_recipients.empty() ? 0 : ch->m_recipients[0];
+				r.hasImage = true;
+				r.imageKind = ch->m_avatarLnk.empty() ? ImageCache::DEFAULT_AVATAR : ImageCache::AVATAR;
+				r.imagePlace = ch->m_avatarLnk;
+				r.imageSf = who;
+				r.colorSeed = who;
+				Profile* pf = who ? GetProfileCache()->LookupProfile(who, "", "", "", false) : nullptr;
+				r.status = pf ? (int) pf->m_activeStatus : -1;
+			}
+			else if (ch->m_channelType == Channel::GROUPDM) {
+				r.initials = true;
+				if (!ch->m_avatarLnk.empty()) {
+					r.hasImage = true;
+					r.imageKind = ImageCache::CHANNEL_ICON;
+					r.imagePlace = ch->m_avatarLnk;
+					r.imageSf = ch->m_snowflake;
+				}
+			}
+			else if (ch->m_channelType == Channel::VOICE || ch->m_channelType == Channel::STAGEVOICE)
+				r.glyph = "\xe2\x99\xaa"; // a note: voice
+			else if (ch->m_channelType == Channel::FORUM || ch->m_channelType == Channel::MEDIA)
+				r.glyph = "\xe2\x96\xa4";
+			else
+				r.glyph = "#";
+			rows.push_back(r);
 		};
 
 		// channels outside categories first, then each category's
 		for (const Channel* ch : chans)
 			if (!ch->IsCategory() && ch->m_parentCateg == 0)
-				addChannel(ch, false);
+				addChannel(ch);
 		for (const Channel* cat : chans)
 		{
 			if (!cat->IsCategory())
 				continue;
-			size_t headerRow = rows.size();
-			rows.push_back(Utf8ToLatin1(cat->m_name).empty() ? "?" : cat->m_name);
-			m_channelRows.push_back(0);
+			IconRow h;
+			h.type = IconRow::HEADER;
+			h.text = cat->m_name;
+			for (auto& c : h.text)
+				if (c >= 'a' && c <= 'z') c -= 32;
 			size_t before = rows.size();
+			rows.push_back(h);
 			for (const Channel* ch : chans)
 				if (!ch->IsCategory() && ch->m_parentCateg == cat->m_snowflake)
-					addChannel(ch, true);
-			if (rows.size() == before) {
-				// an empty (or wholly hidden) category is not shown
-				rows.erase(rows.begin() + headerRow);
-				m_channelRows.erase(m_channelRows.begin() + headerRow);
-			}
-			else {
-				// upper-case category names, as Discord shows them
-				std::string& h = rows[headerRow];
-				for (auto& c : h)
-					if (c >= 'a' && c <= 'z') c -= 32;
-			}
+					addChannel(ch);
+			if (rows.size() == before + 1)
+				rows.pop_back(); // an empty (or wholly hidden) category
 		}
 	}
 
-	SetListItems(m_channelList, rows, selected);
+	m_channels->SetRows(rows, pInst->GetCurrentChannelID());
 }
 
 void MainWindow::UpdateSelectedChannel()
@@ -484,11 +523,37 @@ void MainWindow::UpdateSelectedChannel()
 	m_messages->Refresh();
 }
 
+// The colour of the member's highest coloured role, or 0.
+Rgb RoleColor(Snowflake user, Snowflake guild)
+{
+	Guild* pGuild = GetDiscordInstance()->GetGuild(guild);
+	if (!pGuild || !guild)
+		return 0;
+	Profile* pf = GetProfileCache()->LookupProfile(user, "", "", "", false);
+	if (!pf)
+		return 0;
+	auto gm = pf->m_guildMembers.find(guild);
+	if (gm == pf->m_guildMembers.end())
+		return 0;
+	int bestPos = -1;
+	Rgb best = 0;
+	for (Snowflake role : gm->second.m_roles) {
+		auto it = pGuild->m_roles.find(role);
+		if (it == pGuild->m_roles.end())
+			continue;
+		if (it->second.m_colorOriginal && it->second.m_position > bestPos) {
+			bestPos = it->second.m_position;
+			best = (Rgb) it->second.m_colorOriginal;
+		}
+	}
+	return best;
+}
+
 void MainWindow::UpdateMemberList()
 {
 	DiscordInstance* pInst = GetDiscordInstance();
 	Guild* pGuild = pInst->GetCurrentGuild();
-	std::vector<std::string> rows;
+	std::vector<IconRow> rows;
 	if (pGuild && pGuild->m_snowflake != 0)
 	{
 		for (Snowflake sf : pGuild->m_members)
@@ -497,15 +562,103 @@ void MainWindow::UpdateMemberList()
 			if (!gm)
 				continue;
 			if (gm->m_bIsGroup) {
-				if (gm->m_groupCount)
-					rows.push_back(pGuild->GetGroupName(gm->m_groupId) + " - " + std::to_string(gm->m_groupCount));
+				if (gm->m_groupCount) {
+					IconRow h;
+					h.type = IconRow::HEADER;
+					h.text = pGuild->GetGroupName(gm->m_groupId) + " \xe2\x80\x94 " + std::to_string(gm->m_groupCount);
+					rows.push_back(h);
+				}
 				continue;
 			}
 			Profile* p = GetProfileCache()->LookupProfile(gm->m_user, "", "", "", false);
-			rows.push_back("  " + (p ? p->GetName(pGuild->m_snowflake) : std::string("?")));
+			IconRow r;
+			r.id = gm->m_user;
+			r.text = p ? p->GetName(pGuild->m_snowflake) : std::string("?");
+			r.hasImage = true;
+			r.colorSeed = gm->m_user;
+			std::string av = !gm->m_avatar.empty() ? gm->m_avatar : (p ? p->m_avatarlnk : "");
+			r.imageKind = av.empty() ? ImageCache::DEFAULT_AVATAR : ImageCache::AVATAR;
+			r.imagePlace = av;
+			r.imageSf = gm->m_user;
+			r.status = p ? (int) p->m_activeStatus : -1;
+			r.dim = p && p->m_activeStatus == STATUS_OFFLINE;
+			r.textColor = RoleColor(gm->m_user, pGuild->m_snowflake);
+			rows.push_back(r);
 		}
 	}
-	SetListItems(m_memberList, rows, -1);
+	m_members->SetRows(rows, 0);
+}
+
+void MainWindow::ShowDemoLists()
+{
+	auto item = [](Snowflake id, const char* text) { IconRow r; r.id = id; r.text = text; return r; };
+	auto header = [](const char* text) { IconRow r; r.type = IconRow::HEADER; r.text = text; return r; };
+	std::vector<IconRow> g;
+	IconRow dm = item(1, "Direct Messages"); dm.glyph = "@"; g.push_back(dm);
+	IconRow sp; sp.type = IconRow::SPACE; g.push_back(sp);
+	const char* names[] = { "Silicon Graphics User Group", "Vintage Computer CH", "Demoscene", "IRIX Network \xe2\x9c\xa8", "Octane Owners" };
+	for (int i = 0; i < 5; i++) {
+		IconRow r = item(100 + i, names[i]);
+		r.initials = true;
+		r.colorSeed = (Snowflake) (i * 3 + 1) << 22;
+		r.unread = i == 1;
+		r.mentions = i == 2 ? 3 : 0;
+		if (i == 0) {
+			r.hasImage = true;
+			r.imageKind = ImageCache::DEFAULT_AVATAR;
+			r.imageSf = (Snowflake) 2 << 22;
+		}
+		g.push_back(r);
+	}
+	g.push_back(header("Folder"));
+	IconRow f = item(200, "Tezro Fans"); f.initials = true; f.indent = 8; g.push_back(f);
+	m_guilds->SetRows(g, 100);
+
+	std::vector<IconRow> c;
+	c.push_back(header("INFORMATION"));
+	IconRow c1 = item(300, "rules"); c1.glyph = "#"; c.push_back(c1);
+	IconRow c2 = item(301, "announcements \xf0\x9f\x93\xa2"); c2.glyph = "#"; c2.unread = true; c.push_back(c2);
+	c.push_back(header("TEXT CHANNELS"));
+	IconRow c3 = item(302, "general"); c3.glyph = "#"; c.push_back(c3);
+	IconRow c4 = item(303, "marketplace"); c4.glyph = "#"; c4.mentions = 2; c4.unread = true; c.push_back(c4);
+	IconRow c5 = item(304, "Lounge"); c5.glyph = "\xe2\x99\xaa"; c5.selectable = false; c5.dim = true; c.push_back(c5);
+	m_channels->SetRows(c, 302);
+
+	std::vector<IconRow> m;
+	m.push_back(header("Online \xe2\x80\x94 3"));
+	const char* who[] = { "Ada", "Grace", "Dennis" };
+	Rgb colors[] = { 0xe91e63, 0x3498db, 0 };
+	for (int i = 0; i < 3; i++) {
+		IconRow r = item(400 + i, who[i]);
+		r.hasImage = true;
+		r.imageKind = ImageCache::DEFAULT_AVATAR;
+		r.imageSf = (Snowflake) (i + 3) << 22;
+		r.status = i + 1;
+		r.textColor = colors[i];
+		m.push_back(r);
+	}
+	m.push_back(header("Offline \xe2\x80\x94 1"));
+	IconRow off = item(410, "Linus");
+	off.hasImage = true; off.imageKind = ImageCache::DEFAULT_AVATAR; off.imageSf = (Snowflake) 7 << 22;
+	off.status = 0; off.dim = true;
+	m.push_back(off);
+	m_members->SetRows(m, 0);
+}
+
+void MainWindow::OnImagesChanged()
+{
+	m_messages->ImagesChanged();
+	if (!m_listRepaintTimer)
+		m_listRepaintTimer = XtAppAddTimeOut(XtWidgetToApplicationContext(m_shell), 100, ListRepaintCB, this);
+}
+
+void MainWindow::ListRepaintCB(XtPointer client, XtIntervalId*)
+{
+	MainWindow* self = (MainWindow*) client;
+	self->m_listRepaintTimer = 0;
+	self->m_guilds->Repaint();
+	self->m_channels->Repaint();
+	self->m_members->Repaint();
 }
 
 void MainWindow::UpdateHeader()
@@ -616,35 +769,13 @@ void MainWindow::TypingTimerCB(XtPointer client, XtIntervalId*)
 		self->m_typingTimer = XtAppAddTimeOut(XtWidgetToApplicationContext(self->m_shell), 1000, TypingTimerCB, self);
 }
 
-void MainWindow::GuildSelectCB(Widget, XtPointer client, XtPointer call)
+void MainWindow::OnGuildPicked(Snowflake sf)
 {
-	MainWindow* self = (MainWindow*) client;
-	XmListCallbackStruct* cbs = (XmListCallbackStruct*) call;
-	int row = cbs->item_position - 1;
-	if (row < 0 || row >= (int) self->m_guildRows.size())
-		return;
-	Snowflake sf = self->m_guildRows[row];
-	if (sf & BIT_FOLDER) {
-		// folders are headings: keep the current guild selected
-		self->UpdateGuildList();
-		return;
-	}
 	GetDiscordInstance()->OnSelectGuild(sf);
 }
 
-void MainWindow::ChannelSelectCB(Widget, XtPointer client, XtPointer call)
+void MainWindow::OnChannelPicked(Snowflake sf)
 {
-	MainWindow* self = (MainWindow*) client;
-	XmListCallbackStruct* cbs = (XmListCallbackStruct*) call;
-	int row = cbs->item_position - 1;
-	if (row < 0 || row >= (int) self->m_channelRows.size())
-		return;
-	Snowflake sf = self->m_channelRows[row];
-	if (!sf) {
-		// a category or a voice channel
-		self->UpdateChannelList();
-		return;
-	}
 	GetDiscordInstance()->OnSelectChannel(sf);
 }
 

@@ -34,6 +34,9 @@ public:
 	// The text size changed, or the colours: lay everything out again.
 	void Relayout();
 
+	// Images arrived: repaint soon (once for a burst).
+	void ImagesChanged();
+
 private:
 	struct ItemExtra;
 	struct Item
@@ -67,7 +70,6 @@ private:
 	void RequestVisibleGaps();
 	void OnClick(int x, int y);
 	void DrawPicture(const Rect& r, const std::string& url, int top, const std::string& label);
-	void ImagesChanged();
 	static void RepaintTimerCB(XtPointer, XtIntervalId*);
 	int ContentWidth() const;
 
