@@ -15,7 +15,9 @@
 # pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#ifdef _WIN32
 #include "ri/resock2.hpp"
+#endif
 
 #include "asio/detail/config.hpp"
 

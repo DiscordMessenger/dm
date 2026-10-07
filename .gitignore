@@ -12,3 +12,4 @@ keep/
 *.user
 /vs/x64/*
 /vs/DiscordMessenger/x64/**/*
+build-unix/

@@ -17,7 +17,9 @@
 
 #include "asio/detail/config.hpp"
 
+#ifdef _WIN32
 #include "ri/reimpl.hpp"
+#endif
 
 #if defined(ASIO_WINDOWS) \
   && !defined(ASIO_WINDOWS_APP) \

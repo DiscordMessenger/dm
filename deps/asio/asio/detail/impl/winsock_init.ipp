@@ -19,8 +19,12 @@
 
 #if defined(ASIO_WINDOWS) || defined(__CYGWIN__)
 
+#ifdef _WIN32
 #include "ri/reimpl.hpp"
+#endif
+#ifdef _WIN32
 #include "ri/resock2.hpp"
+#endif
 
 #include "asio/detail/socket_types.hpp"
 #include "asio/detail/winsock_init.hpp"

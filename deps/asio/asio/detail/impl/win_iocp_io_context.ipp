@@ -30,7 +30,9 @@
 
 #include "asio/detail/push_options.hpp"
 
+#ifdef _WIN32
 #include "ri/reimpl.hpp"
+#endif
 
 namespace asio {
 namespace detail {

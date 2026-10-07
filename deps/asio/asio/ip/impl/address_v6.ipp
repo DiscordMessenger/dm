@@ -112,7 +112,11 @@ std::string address_v6::to_string() const
     char buffer[256];
     snprintf(buffer, sizeof buffer, "Yo, about to throw an error.  We tried to convert an IPv6 address and got error %d.\nJust letting ya know.\n",
         ec.value());
+#ifdef _WIN32
     OutputDebugStringA(buffer);
+#else
+    fputs(buffer, stderr);
+#endif
     return "[placeholder so asio doesnt crash]";
     //asio::detail::throw_error(ec);
   }

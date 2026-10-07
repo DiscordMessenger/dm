@@ -8,7 +8,9 @@
 #ifndef CPPHTTPLIB_HTTPLIB_H
 #define CPPHTTPLIB_HTTPLIB_H
 
+#ifdef _WIN32
 #include "ri/resock2.hpp"
+#endif
 
 extern int g_latestSSLError; // HACK - To debug an "SSL connection failed" issue.
 
@@ -255,6 +257,12 @@ using socket_t = int;
 #define INVALID_SOCKET (-1)
 #endif
 #endif //_WIN32
+
+#ifndef GET_ADDR_INFO // not Windows
+#define GET_ADDR_INFO getaddrinfo
+#define GET_NAME_INFO getnameinfo
+#define FREE_ADDR_INFO freeaddrinfo
+#endif
 
 #include <algorithm>
 #include <array>

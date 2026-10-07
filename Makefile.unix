@@ -1,0 +1,89 @@
+# Discord Messenger for Unix-like systems (IRIX first).
+#
+#   make -f Makefile.unix [FRONTEND=motif|cli] [CXX=...] [PREFIX_DEPS=...]
+#
+# FRONTEND picks the user interface: motif (the X11/Motif client) or cli
+# (a text test client that exercises the core).  PREFIX_DEPS is where
+# OpenSSL and libwebp are installed (include/ and lib/ below it).
+
+FRONTEND    ?= motif
+DEBUG       ?= no
+DISABLE_WEBP ?= 0
+STATIC_DEPS ?= 0
+PREFIX_DEPS ?= /usr/pkg
+CXX         ?= c++
+CC          ?= cc
+EXTRA_CXXFLAGS ?=
+EXTRA_LDFLAGS  ?=
+X_LIBS      ?= -lXm -lXt -lXext -lX11
+
+BUILD_DIR = build-unix/$(FRONTEND)
+TARGET    = bin/dm-$(FRONTEND)
+
+DEFINES = \
+	-DASIO_STANDALONE             \
+	-DASIO_HAS_THREADS            \
+	-DASIO_SEPARATE_COMPILATION   \
+	-DDISCORD_MESSENGER           \
+	-DCPPHTTPLIB_OPENSSL_SUPPORT  \
+	-DCPPHTTPLIB_NO_EXCEPTIONS
+
+INC_DIRS = -Isrc -Isrc/core -Ideps -Ideps/asio -Ideps/websocketpp \
+	-I$(PREFIX_DEPS)/include
+
+ifeq ($(DEBUG),yes)
+OPT = -D_DEBUG -g -O0
+else
+OPT = -DNDEBUG -O2
+endif
+
+CXXFLAGS = $(INC_DIRS) $(DEFINES) -std=c++11 -pthread $(OPT) $(EXTRA_CXXFLAGS)
+LDFLAGS  = -L$(PREFIX_DEPS)/lib -pthread $(EXTRA_LDFLAGS)
+# STATIC_DEPS=1 links OpenSSL and libwebp from their static archives, so the
+# program needs nothing but the system's own libraries.
+ifeq ($(STATIC_DEPS),1)
+LIBS     = $(PREFIX_DEPS)/lib/libssl.a $(PREFIX_DEPS)/lib/libcrypto.a
+else
+LIBS     = -lssl -lcrypto
+endif
+
+ifneq ($(DISABLE_WEBP),1)
+ifeq ($(STATIC_DEPS),1)
+LIBS += $(PREFIX_DEPS)/lib/libwebp.a $(PREFIX_DEPS)/lib/libsharpyuv.a
+else
+LIBS += -lwebp
+endif
+else
+DEFINES += -DDISABLE_WEBP
+endif
+
+ifeq ($(FRONTEND),motif)
+LIBS += $(X_LIBS)
+endif
+
+CXXFILES := \
+	$(shell find src/core src/posix src/$(FRONTEND) -type f -name '*.cpp') \
+	deps/asio/src/asio.cpp \
+	deps/asio/src/asio_ssl.cpp \
+	deps/md5/MD5.cpp
+
+OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(CXXFILES))
+DEP := $(OBJ:.o=.d)
+
+.PHONY: all clean
+all: $(TARGET)
+
+clean:
+	rm -rf $(BUILD_DIR) $(TARGET)
+
+-include $(DEP)
+
+$(BUILD_DIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	@echo ">> $<"
+	@$(CXX) $(CXXFLAGS) -MMD -MF $(BUILD_DIR)/$*.d -c $< -o $@
+
+$(TARGET): $(OBJ)
+	@mkdir -p bin
+	@echo ">> linking $@"
+	@$(CXX) -o $@ $(OBJ) $(LDFLAGS) $(LIBS)

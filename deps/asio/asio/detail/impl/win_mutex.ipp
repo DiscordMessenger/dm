@@ -20,7 +20,9 @@
 
 #if defined(ASIO_WINDOWS)
 
+#ifdef _WIN32
 #include "ri/reimpl.hpp"
+#endif
 #include "asio/detail/throw_error.hpp"
 #include "asio/detail/win_mutex.hpp"
 #include "asio/error.hpp"

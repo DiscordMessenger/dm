@@ -22,7 +22,9 @@
   && !defined(UNDER_CE)
 
 #include <cstddef>
+#ifdef _WIN32
 #include "ri/reimpl.hpp"
+#endif
 #include "asio/detail/noncopyable.hpp"
 #include "asio/detail/socket_types.hpp"
 
