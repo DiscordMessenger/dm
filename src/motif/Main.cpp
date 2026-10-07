@@ -1,6 +1,7 @@
 // Discord Messenger for X11/Motif (IRIX first).
 
 #include "Xm.hpp"
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -20,6 +21,7 @@
 #include "Canvas.hpp"
 #include "Fonts.hpp"
 #include "ImageCache.hpp"
+#include "AppIcon.hpp"
 #include "LogonDialog.hpp"
 #include "QrLogin.hpp"
 #include "MainWindow.hpp"
@@ -268,6 +270,16 @@ static void LoadDemo()
 		{ 1005, "Dennis", 2, "A long line to see the wrapping: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.", MessageType::DEFAULT },
 	};
 	Snowflake id = 1000000;
+	// enough older messages to need scrolling
+	for (int k = 0; k < 30; k++) {
+		Message m;
+		m.m_snowflake = ++id;
+		m.m_author_snowflake = (Snowflake) (1001 + k % 3) << 22;
+		m.m_author = k % 3 == 0 ? "Ada" : k % 3 == 1 ? "Grace" : "Dennis";
+		m.m_message = "Older message number " + std::to_string(k + 1) + ", to scroll back to.";
+		m.SetTime(now - (3 * 24 * 60 - k * 20) * 60);
+		GetMessageCache()->AddMessage(chan, m);
+	}
 	for (auto& sm : samples)
 	{
 		Message m;
@@ -351,6 +363,59 @@ static void PickVisual(Display* dpy)
 	}
 }
 
+// The picture 4Dwm shows for the minimised window: the app icon on a soft
+// gradient, at the window manager's largest icon size (85 x 67 on IRIX).
+// It is made on the screen's default visual, which window managers draw
+// icons with (the app itself may run on a deeper one).
+static Pixmap MakeIconPixmap(Display* dpy)
+{
+	int scr = DefaultScreen(dpy);
+	int w = 85, h = 67;
+	XIconSize* sizes = nullptr;
+	int count = 0;
+	if (XGetIconSizes(dpy, RootWindow(dpy, scr), &sizes, &count) && count > 0) {
+		w = std::max(sizes[0].min_width, std::min(w, sizes[0].max_width));
+		h = std::max(sizes[0].min_height, std::min(h, sizes[0].max_height));
+		XFree(sizes);
+	}
+
+	Canvas c;
+	c.Resize(w, h);
+	for (int y = 0; y < h; y++)
+		c.HLine(0, y, w, LerpRgb(0xe8eefa, 0xa9b6d8, y, h - 1));
+
+	int s = std::min(APP_ICON_SIZE, std::min(w, h) - 4);
+	int x0 = (w - s) / 2, y0 = (h - s) / 2;
+	// a soft shadow under the sphere
+	for (int k = 3; k >= 1; k--) {
+		std::vector<uint32_t> disc((size_t) (s + 2 * k) * (s + 2 * k), ((uint32_t) (18 * (4 - k)) << 24) | 0x1a2040);
+		c.BlendArgbCircle(x0 - k + 2, y0 - k + 3, disc.data(), s + 2 * k, s + 2 * k, s + 2 * k);
+	}
+	if (s == APP_ICON_SIZE) {
+		c.BlendArgb(x0, y0, g_appIcon, s, s, s);
+	}
+	else {
+		Image src, out;
+		src.w = src.h = APP_ICON_SIZE;
+		src.px.assign(g_appIcon, g_appIcon + APP_ICON_SIZE * APP_ICON_SIZE);
+		// nearest scaling is enough for the rare smaller icon sizes
+		out.w = out.h = s;
+		out.px.resize((size_t) s * s);
+		for (int y = 0; y < s; y++)
+			for (int x = 0; x < s; x++)
+				out.px[(size_t) y * s + x] = src.px[(size_t) (y * APP_ICON_SIZE / s) * APP_ICON_SIZE + x * APP_ICON_SIZE / s];
+		c.BlendArgb(x0, y0, out.px.data(), s, s, s);
+	}
+
+	PixelFormat fmt;
+	fmt.Init(dpy, DefaultVisual(dpy, scr), DefaultDepth(dpy, scr), DefaultColormap(dpy, scr));
+	Pixmap pm = XCreatePixmap(dpy, RootWindow(dpy, scr), w, h, DefaultDepth(dpy, scr));
+	GC gc = XCreateGC(dpy, pm, 0, NULL);
+	c.Present(fmt, pm, gc, 0, 0, w, h, 0, 0);
+	XFreeGC(dpy, gc);
+	return pm;
+}
+
 static XtString g_fallbackResources[] = {
 	(XtString) "*sgiMode: True",
 	(XtString) "*useSchemes: all",
@@ -385,6 +450,7 @@ int main(int argc, char** argv)
 	n = AddVisualArgs(args, n);
 	XtSetArg(args[n], XmNtitle, "Discord Messenger"); n++;
 	XtSetArg(args[n], XmNiconName, "Discord"); n++;
+	XtSetArg(args[n], XmNiconPixmap, MakeIconPixmap(dpy)); n++;
 	g_toplevel = XtAppCreateShell("dm", "DiscordMessenger", applicationShellWidgetClass, dpy, args, n);
 
 	std::string fontErr;
